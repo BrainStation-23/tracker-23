@@ -4,7 +4,7 @@ import { PlayIcon } from "@/icons/playIcon";
 import React from "react";
 import { StopIcon } from "@/icons/stopIcon";
 
-function BtnComponent(props) {
+function BtnComponent(props: any) {
   return (
     <div className="col-span-1 hover:cursor-pointer">
       {props.status === 0 ? (
@@ -18,7 +18,7 @@ function BtnComponent(props) {
           id={`horizontal-start${props.id}`}
         >
           <Tooltip placement="bottom" title={"Start Session"} color="blue">
-            <div type="ghost" className="mx-auto w-min border-0 text-white">
+            <div className="mx-auto w-min border-0 text-white">
               <PlayIcon fill="white" className="h-6 w-6" />
             </div>
           </Tooltip>
@@ -43,10 +43,7 @@ function BtnComponent(props) {
             color="blue"
             className="mx-auto w-min"
           >
-            <div
-              className="mx-auto w-min border-0 text-white"
-              // type="ghost"
-            >
+            <div className="mx-auto w-min border-0 text-white">
               <StopIcon fill="white" className="h-6 w-6" />
             </div>
           </Tooltip>
@@ -66,7 +63,7 @@ function BtnComponent(props) {
           }}
         >
           <Tooltip placement="bottom" title={"Start Session"} color="blue">
-            <div type="ghost" className="mx-auto w-min border-0 text-white">
+            <div className="mx-auto w-min border-0 text-white">
               <PlayIcon fill="white" className="h-6 w-6" />
             </div>
           </Tooltip>

@@ -1,7 +1,7 @@
 import { Tooltip } from "antd";
 import React from "react";
 
-function DisplayComponent(props) {
+function DisplayComponent(props: any) {
   const h = () => {
     if (props.time.h === 0) {
       return "";
@@ -13,31 +13,24 @@ function DisplayComponent(props) {
   };
   // console.log(props.sessionTime);
   return (
-    <div className=" col-span-5 m-auto text-center font-semibold">
-      <Tooltip placement="bottom" title={"Total Spent Time"} color="blue">
-        {props.sessionTime.h > 0 && (
-          <span>
-            {props.sessionTime.h >= 10
-              ? props.sessionTime.h
-              : props.sessionTime.h}
-            h{" "}
-          </span>
-        )}
-        {/* &nbsp;:&nbsp; */}
-        {props.sessionTime.m + props.sessionTime.h > 0 && (
-          <span>
-            {props.sessionTime.m >= 10
-              ? props.sessionTime.m
-              : props.sessionTime.m}
-            m{" "}
-          </span>
-        )}
-        {/* &nbsp;:&nbsp; */}
+    <div className="col-span-5 m-auto text-center text-2xl font-bold">
+      <Tooltip placement="left" title={"Current Session Time"} color="blue">
+        <span>
+          {props.sessionTime.h >= 10
+            ? props.sessionTime.h
+            : "0" + props.sessionTime.h}
+        </span>
+        &nbsp;:&nbsp;
+        <span>
+          {props.sessionTime.m >= 10
+            ? props.sessionTime.m
+            : "0" + props.sessionTime.m}
+        </span>
+        &nbsp;:&nbsp;
         <span>
           {props.sessionTime.s >= 10
             ? props.sessionTime.s
-            : props.sessionTime.s}
-          s
+            : "0" + props.sessionTime.s}
         </span>{" "}
       </Tooltip>
       {/* &nbsp;:&nbsp;
