@@ -10,16 +10,22 @@ import TaskInput from "./components/taskInput";
 import VerticalCard from "./components/verticalCard";
 import { userAPI } from "APIs";
 
-export const TaskContext = createContext<any>({ taskList: [], task: null });
+export const TaskContext = createContext<any>({
+  taskList: [],
+  runningTask: null,
+  handleWarning: null,
+  selectedTask: null,
+  setRunningTask: null,
+});
 const TasksPage = () => {
   const [viewModalOpen, setViewModalOpen] = useState<boolean>(false);
   const [warningModalOpen, setWarningModalOpen] = useState<boolean>(false);
+  const [warningData, setWarningData] = useState<any>([]);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
   const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
-  const [tasklist, setTasklist] = useState();
 
   const createTask = async (data: any) => {
     setLoading(true);
@@ -42,25 +48,19 @@ const TasksPage = () => {
       setLoading(false);
     }
   };
-  const handleWarning = async (data: any) => {
-    try {
-      const res = await userAPI.createTask(data);
-      message.success("Task created successfully");
-      setTasks((tasks) => [res, ...tasks]);
-      if (tasks) {
-        tasks.map((task) => {
-          if (task.sessions[task.sessions.length - 1]?.status === "STARTED") {
-            setRunningTask(task);
-          }
-        });
-      }
-      setWarningModalOpen(false);
-    } catch (error) {
-      message.error("Error creating task");
-      setWarningModalOpen(false);
-    } finally {
-      setLoading(false);
+  const handleWarning = async (tmpTask: any, startFunction: Function) => {
+    const tmp = [];
+    tmp.push(tmpTask);
+    tmp.push(startFunction);
+    setWarningData(tmp);
+    setWarningModalOpen(true);
+  };
+  const handleWarningClick = async (proceed: boolean) => {
+    if (proceed) {
+      await warningData[1]();
+      setWarningData([]);
     }
+    setWarningModalOpen(false);
   };
 
   const deleteTask = async (taskId: any) => {
@@ -79,7 +79,7 @@ const TasksPage = () => {
     setLoading(true);
     try {
       const res = await userAPI.getTasks();
-      setTasks(res || []);
+      setTasks([...res] || []);
     } catch (error) {
       message.error("Error getting tasks");
     } finally {
@@ -90,7 +90,7 @@ const TasksPage = () => {
     setLoading(true);
     try {
       const res = await userAPI.syncTasks();
-      setTasks(res || []);
+      setTasks([...res] || []);
       message.success("Sync Successful");
     } catch (error) {
       message.error("Error syncing tasks");
@@ -104,9 +104,27 @@ const TasksPage = () => {
     getTasks();
   }, []);
 
-  useEffect(() => {}, [tasks]);
+  useEffect(() => {
+    if (tasks) {
+      tasks.map((task) => {
+        if (task.sessions[task.sessions.length - 1]?.status === "STARTED") {
+          setRunningTask(task);
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  console.log("runningTask", runningTask);
+
   return (
-    <TaskContext.Provider value={{ tasklist: tasklist }}>
+    <TaskContext.Provider
+      value={{
+        tasklist: tasks,
+        runningTask: runningTask,
+        handleWarning,
+        setRunningTask,
+      }}
+    >
       <div
         className="mr-8 overflow-y-clip"
         style={{ height: "calc(100vh - 100px)" }}
@@ -154,6 +172,8 @@ const TasksPage = () => {
                 )}
               </div>
             </div>
+          ) : loading ? (
+            <Empty description="Getting tasks" />
           ) : (
             <Empty description="No tasks" />
           )}
@@ -163,7 +183,7 @@ const TasksPage = () => {
           isModalOpen={viewModalOpen}
           setIsModalOpen={setViewModalOpen}
         >
-          <TaskInput taskList={tasklist} createTask={createTask} />
+          <TaskInput taskList={tasks} createTask={createTask} />
         </GlobalModal>
         <GlobalModal
           isModalOpen={warningModalOpen}
@@ -171,7 +191,8 @@ const TasksPage = () => {
         >
           <SessionStartWarning
             runningTask={runningTask}
-            handleWarning={handleWarning}
+            warningData={warningData}
+            handleWarningClick={handleWarningClick}
           />
         </GlobalModal>
       </div>

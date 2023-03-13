@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import DisplayComponent from "./Components/DisplayComponent";
 import BtnComponent from "./Components/BtnComponent";
 import { getTotalSpentTime } from "@/services/timeActions";
 import { toast } from "react-toastify";
 import { message } from "antd";
+import { TaskContext } from "@/components/tasks";
 
 function ReactStopWatchCopy({ task }: any) {
   const { sessions } = task;
@@ -13,6 +14,7 @@ function ReactStopWatchCopy({ task }: any) {
   const [interv, setInterv] = useState<any>();
   const [status, setStatus] = useState<any>(0);
   const [resumeTime, setResumeTime] = useState<boolean>(false);
+  const { runningTask } = useContext(TaskContext);
 
   const startSession = async () => {
     console.log("start");
@@ -96,7 +98,7 @@ function ReactStopWatchCopy({ task }: any) {
   const reset = () => {
     clearInterval(interv);
     setStatus(0);
-    setTime({ ms: 0, s: 0, m: 0, h: 0 });
+    // setTime({ ms: 0, s: 0, m: 0, h: 0 });
   };
 
   const resume = () => start();
@@ -157,19 +159,20 @@ function ReactStopWatchCopy({ task }: any) {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // useEffect(() => {
+  //   if (resumeTime) resumeTimeFunction();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [resumeTime]);
   useEffect(() => {
-    if (resumeTime) resumeTimeFunction();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resumeTime]);
-
-  useEffect(() => {
-    console.log(task);
-  }, [task]);
+    if (runningTask?.id !== task.id) {
+      reset();
+    } else if (resumeTime) resumeTimeFunction();
+  }, [resumeTime, task]);
 
   return (
-    <div className="flex flex-col w-min mx-auto">
+    <div className="mx-auto flex w-min flex-col">
       <DisplayComponent time={time} sessionTime={sessionTime} />
-      <div className="py-6 w-min mx-auto">
+      <div className="mx-auto w-min py-6">
         <BtnComponent
           status={status}
           resume={resume}

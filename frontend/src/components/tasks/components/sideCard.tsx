@@ -23,7 +23,6 @@ const SideCard = ({ task }: Props) => {
     });
   };
   useEffect(() => {
-    console.log(task, newTask);
     if (newTask !== task) setNewTask(task);
   }, [task, newTask]);
   return (

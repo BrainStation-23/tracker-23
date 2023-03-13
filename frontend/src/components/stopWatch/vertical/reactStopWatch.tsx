@@ -1,14 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import DisplayComponent from "./Components/DisplayComponent";
 import BtnComponent from "./Components/BtnComponent";
 import { userAPI } from "APIs";
 import { getTotalSpentTime } from "@/services/timeActions";
 import { toast } from "react-toastify";
 import { message } from "antd";
+import { TaskContext } from "@/components/tasks";
+import { TaskDto } from "models/tasks";
 
-function StopWatch({ task, addSession, addEndTime, disable }: any) {
+type Props = {
+  task: TaskDto;
+  addSession: any;
+  addEndTime: any;
+  disable: any;
+};
+
+function StopWatch({ task, addSession, addEndTime, disable }: Props) {
   const { sessions } = task;
-
+  const { runningTask, handleWarning, setRunningTask } =
+    useContext(TaskContext);
   const [time, setTime] = useState({ ms: 0, s: 0, m: 0, h: 0 });
   const [sessionTime, setSessionTime] = useState({ ms: 0, s: 0, m: 0, h: 0 });
   const [interv, setInterv] = useState<any>();
@@ -17,6 +27,8 @@ function StopWatch({ task, addSession, addEndTime, disable }: any) {
 
   const startSession = async () => {
     console.log("start");
+    setRunningTask(task);
+
     const res = await userAPI.createSession(task.id);
     res && addSession(res);
     res && message.success("Session Started");
@@ -24,6 +36,7 @@ function StopWatch({ task, addSession, addEndTime, disable }: any) {
   };
   const stopSession = async () => {
     console.log("stop");
+    task.id === runningTask?.id && setRunningTask(null);
     const res = await userAPI.stopSession(task.id);
     res && addEndTime(res);
     res && message.success("Session Ended");
@@ -31,15 +44,20 @@ function StopWatch({ task, addSession, addEndTime, disable }: any) {
   };
 
   const start = async () => {
-    startSession();
-    // setSessionTime({ ms: 0, s: 0, m: 0, h: 0 });
-    (updatedSessionMs = sessionTime.ms),
-      (updatedSessionS = sessionTime.s),
-      (updatedSessionM = sessionTime.m),
-      (updatedSessionH = sessionTime.h);
-    run();
-    setStatus(1);
-    setInterv(setInterval(run, 100));
+    const startFunction = () => {
+      startSession();
+      // setSessionTime({ ms: 0, s: 0, m: 0, h: 0 });
+      (updatedSessionMs = sessionTime.ms),
+        (updatedSessionS = sessionTime.s),
+        (updatedSessionM = sessionTime.m),
+        (updatedSessionH = sessionTime.h);
+      run();
+      setStatus(1);
+      setInterv(setInterval(run, 100));
+    };
+    if (runningTask && runningTask.id !== task.id) {
+      await handleWarning(task, startFunction);
+    } else startFunction();
   };
   // console.log(time);
   var updatedMs = time.ms,
@@ -96,8 +114,8 @@ function StopWatch({ task, addSession, addEndTime, disable }: any) {
 
   const reset = () => {
     clearInterval(interv);
-    setStatus(0);
-    setTime({ ms: 0, s: 0, m: 0, h: 0 });
+    setStatus(2);
+    // setTime({ ms: 0, s: 0, m: 0, h: 0 });
   };
 
   const resume = () => start();
@@ -126,11 +144,7 @@ function StopWatch({ task, addSession, addEndTime, disable }: any) {
     }
     setTime(initialTime);
     setSessionTime(initialTime);
-    // console.log(
-    //   "🚀 ~ file: reactStopWatch.tsx:122 ~ useEffect ~ initialTime",
-    //   initialTime
-    // );
-
+      
     sessions?.forEach((session: any) => {
       if (session.startTime && !session.endTime) {
         const initialTime = { ms: 0, s: 0, m: 0, h: 0 };
@@ -166,10 +180,19 @@ function StopWatch({ task, addSession, addEndTime, disable }: any) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resumeTime]);
 
+  useEffect(() => {
+    if (runningTask && runningTask.id !== task.id) {
+      console.log(task.sessions[task.sessions.length - 1]);
+
+      if (task.sessions[task.sessions.length - 1]?.status === "STARTED") stop();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runningTask]);
+
   return (
-    <div className="grid grid-cols-6 w-44 mx-auto">
+    <div className="mx-auto grid w-44 grid-cols-6">
       <DisplayComponent time={time} sessionTime={sessionTime} />
-      {!disable && (
+      {/* {!false && ( */}
         <BtnComponent
           status={status}
           resume={resume}
@@ -179,7 +202,7 @@ function StopWatch({ task, addSession, addEndTime, disable }: any) {
           id={task.id}
           disable={disable}
         />
-      )}
+      {/* )} */}
     </div>
   );
 }

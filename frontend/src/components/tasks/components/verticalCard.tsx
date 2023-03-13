@@ -4,7 +4,8 @@ import { TaskDto } from "../../../../models/tasks/index";
 import { Tooltip } from "antd";
 import { getTotalSpentTime } from "@/services/timeActions";
 import { statusColorEnum } from "utils/constants";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { TaskContext } from "@/components/tasks";
 
 type Props = {
   task: TaskDto;
@@ -21,6 +22,8 @@ const VerticalCard = ({
 }: Props) => {
   const [completed, setCompleted] = useState(false);
   const taskName = task ? task.title : "Task 1";
+  const { runningTask } = useContext(TaskContext);
+
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const addSession = (session: any) => {
     if (!task.sessions) task.sessions = [];
@@ -32,7 +35,7 @@ const VerticalCard = ({
       if (_session.id === session.id) return session;
       else return _session;
     });
-    setSelectedTask({ ...task });
+    runningTask?.id === task.id && setSelectedTask({ ...task });
   };
   const handleDelete = async () => {
     await deleteTask(task.id);
@@ -40,7 +43,6 @@ const VerticalCard = ({
   const spentPercentage = Math.round(
     getTotalSpentTime(task.sessions) / (task?.estimation * 36000)
   );
-  console.log(getTotalSpentTime(task.sessions), task?.estimation * 3600000);
 
   return (
     <>
