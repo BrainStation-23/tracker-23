@@ -3,7 +3,7 @@ import TaskDetailsModal from "../../modals/taskDetails.modal";
 import { TaskDto } from "../../../../models/tasks/index";
 import { Tooltip } from "antd";
 import { getTotalSpentTime } from "@/services/timeActions";
-import { statusColorEnum } from "utils/constants";
+import { statusColorEnum, taskStatusEnum } from "utils/constants";
 import { useContext, useState } from "react";
 import { TaskContext } from "@/components/tasks";
 
@@ -52,11 +52,14 @@ const VerticalCard = ({
         }`}
         onClick={() => setSelectedTask(task)}
       >
-        <div className="flex w-full items-center justify-between">
-          <div
-            className="flex items-center gap-2 text-lg font-medium hover:cursor-pointer hover:text-blue-500"
-            onClick={() => setViewModalOpen(true)}
-          >
+        <div className="flex w-full items-center justify-between gap-1">
+          <div className="flex max-w-[300px] flex-col gap-2 text-left text-lg font-medium">
+            <div
+              className="hover:cursor-pointer hover:text-blue-500"
+              onClick={() => setViewModalOpen(true)}
+            >
+              Title: {taskName}
+            </div>
             {/* <div onClick={() => setCompleted(!completed)}>
               {completed ? (
                 <BsCircle className="text-gray-300" />
@@ -64,7 +67,9 @@ const VerticalCard = ({
                 <BsCheck2Circle className="text-blue-700" />
               )}{" "}
             </div> */}
-            {taskName}
+            <div className="text-sm font-normal">
+              Description: {task.description}
+            </div>
           </div>
           {/* <div className="w-32 h-1 bg-gray-200">
             <div
@@ -78,8 +83,9 @@ const VerticalCard = ({
               }}
             />
           </div> */}
-          <div>
-            <div className="grid w-80 grid-cols-6 items-center gap-1 pr-3">
+          <div className="grid w-72 grid-cols-6 items-center gap-1">
+            <div className="col-span-2 flex flex-col gap-2">
+              <div className="mx-auto w-min text-xs">Progress:</div>
               <Tooltip
                 placement="bottom"
                 title={`${
@@ -89,18 +95,18 @@ const VerticalCard = ({
                 }`}
                 color={`${spentPercentage > 100 ? "red" : "blue"}  `}
               >
-                <div className="col-span-2 flex h-full items-center ">
+                <div className=" flex h-full items-center ">
                   {" "}
                   {spentPercentage <= 100 ? (
                     <div
-                      className={`col-span-2 h-1 w-24 ${
+                      className={`col-span-2 h-1.5 w-24 rounded-lg ${
                         task.id === selectedTask?.id
                           ? "bg-white"
                           : "bg-gray-200"
                       }`}
                     >
                       <div
-                        className=" h-1 "
+                        className=" h-1.5 rounded-lg "
                         style={{
                           width: `${spentPercentage}%`,
                           backgroundColor: statusColorEnum[task.status],
@@ -109,7 +115,7 @@ const VerticalCard = ({
                     </div>
                   ) : (
                     <div
-                      className={`col-span-2 h-1 w-24 ${
+                      className={`col-span-2 h-1.5 w-24 rounded-lg ${
                         task.id === selectedTask?.id
                           ? "bg-red-500"
                           : "bg-red-500"
@@ -118,22 +124,23 @@ const VerticalCard = ({
                   )}
                 </div>
               </Tooltip>
-              {/* <div
-                className={`text-sm text-center font-medium col-span-2 `}
+              <div
+                className={`col-span-2 text-center text-sm font-medium `}
                 style={{
                   color: statusColorEnum[task.status],
                 }}
               >
+                <div className="mx-auto w-min text-xs">Status:</div>
                 {typeof task?.status === "string" &&
                   taskStatusEnum[task.status]}
-              </div> */}
-              <Stopwatch
-                task={task}
-                disable={task.id !== selectedTask?.id}
-                addSession={addSession}
-                addEndTime={addEndTime}
-              />
+              </div>
             </div>
+            <Stopwatch
+              task={task}
+              disable={task.id !== selectedTask?.id}
+              addSession={addSession}
+              addEndTime={addEndTime}
+            />
           </div>
         </div>
       </div>

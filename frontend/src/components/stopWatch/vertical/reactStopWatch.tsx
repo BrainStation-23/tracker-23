@@ -144,7 +144,7 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
     }
     setTime(initialTime);
     setSessionTime(initialTime);
-      
+
     sessions?.forEach((session: any) => {
       if (session.startTime && !session.endTime) {
         const initialTime = { ms: 0, s: 0, m: 0, h: 0 };
@@ -190,18 +190,24 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
   }, [runningTask]);
 
   return (
-    <div className="mx-auto grid w-44 grid-cols-6">
-      <DisplayComponent time={time} sessionTime={sessionTime} />
+    <div className="col-span-4 mx-auto grid w-40 grid-cols-6 items-center">
+      <div className="col-span-5 flex flex-col gap-2 text-center">
+        <div className="mx-auto w-max text-xs">Total Spent:</div>
+        <DisplayComponent time={time} sessionTime={sessionTime} />
+        <div className="text-xs font-semibold">
+          Estimation: {task.estimation} h
+        </div>
+      </div>
       {/* {!false && ( */}
-        <BtnComponent
-          status={status}
-          resume={resume}
-          reset={reset}
-          stop={stop}
-          start={start}
-          id={task.id}
-          disable={disable}
-        />
+      <BtnComponent
+        status={status}
+        resume={resume}
+        reset={reset}
+        stop={stop}
+        start={start}
+        id={task.id}
+        disable={disable}
+      />
       {/* )} */}
     </div>
   );
