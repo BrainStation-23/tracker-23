@@ -16,8 +16,8 @@ const SideMenu = () => {
     const router = useRouter();
     return (
       <li
-        className={`m-5 flex h-6 w-6 flex-col justify-center rounded px-1  hover:cursor-pointer hover:bg-indigo-500 hover:text-white ${
-          active ? "scale-110 bg-indigo-500 text-white" : "text-black"
+        className={`m-5 mx-auto flex h-7 w-7 scale-110 flex-col items-center justify-center rounded px-1 hover:cursor-pointer hover:bg-indigo-500 hover:text-white ${
+          active ? "bg-indigo-500 text-white" : "text-gray-400"
         }`}
         onClick={() => {
           router.push(option.link);
