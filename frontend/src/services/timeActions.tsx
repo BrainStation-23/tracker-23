@@ -8,9 +8,11 @@ export const getFormattedTotalTime = (time: number) => {
   const mins = tmp % 60;
   tmp = Math.floor(tmp / 60);
 
-  return `${tmp ? tmp + " h " : ""}${mins ? mins + " m " : ""}${
-    seconds ?? seconds + "s"
-  }`;
+  return `${tmp ? tmp + "hrs " : ""}${mins ? mins + "m" : ""}
+  `;
+  // ${
+  //   seconds ?? seconds + "s"
+  // }
 };
 export const formatDate = (time: any) => (time ? new Date(time) : null);
 export const getFormattedTime = (timestamp: any) => {
@@ -33,18 +35,14 @@ export const getFormattedTime = (timestamp: any) => {
   if (minutes < 10) zeroM = "0";
   if (hours < 10) zeroH = "0";
   return (
-    zeroH +
-    hours +
-    ":" +
-    zeroM +
-    minutes +
-    time +
-    ", " +
-    day +
-    " " +
-    monthsList[month] +
-    "," +
-    year
+    // zeroH +
+    // hours +
+    // ":" +
+    // zeroM +
+    // minutes +
+    // time +
+    // ", " +
+    monthsList[month] + " " + day + "," + " " + year
   );
   // return (
   //   hours + ":" + minutes + ":" + seconds + " " + day + "/" + month + "/" + year

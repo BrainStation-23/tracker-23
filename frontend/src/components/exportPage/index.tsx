@@ -92,8 +92,8 @@ const columns: any = [
     key: "priority",
     filters: [
       {
-        text: "NORMAL",
-        value: "NORMAL",
+        text: "MEDIUM",
+        value: "MEDIUM",
       },
       {
         text: "LOW",

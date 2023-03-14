@@ -11,9 +11,29 @@ export const taskStatusEnum = {
   DONE: "Done",
 };
 export enum statusColorEnum {
-  IN_PROGRESS = "#bf80ff",
+  IN_PROGRESS = "#85C6DB",
   TODO = "#0099ff",
-  DONE = "#04AA6D",
+  DONE = "#BADF4F",
+  BG = "#ECECED",
+}
+
+export const taskPriorityEnum = {
+  HIGH: "High",
+  LOW: "Low",
+  MEDIUM: "Medium",
+  NORMAL: "Medium",
+};
+export enum PriorityBGColorEnum {
+  HIGH = "#FFF0ED",
+  LOW = "#FFF9E2",
+  MEDIUM = "#FFF4E8",
+  NORMAL = "#FFF4E8",
+}
+export enum PriorityBorderColorEnum {
+  HIGH = "#FE8A6F",
+  LOW = "#F7DC7E",
+  MEDIUM = "#FEBC6F",
+  NORMAL = "#FEBC6F",
 }
 
 export const monthsList = [

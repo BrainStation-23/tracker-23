@@ -36,7 +36,7 @@ const TaskInput = ({ taskList, createTask }: any) => {
   };
   const options: SelectProps["options"] = [];
   const initialValues = {
-    priority: "NORMAL",
+    priority: "MEDIUM",
   };
 
   return (
@@ -75,7 +75,7 @@ const TaskInput = ({ taskList, createTask }: any) => {
           onChange={handlePriorityChange}
           options={[
             { value: "LOW", label: "LOW" },
-            { value: "NORMAL", label: "NORMAL" },
+            { value: "MEDIUM", label: "MEDIUM" },
             { value: "HIGH", label: "HIGH" },
           ]}
         />

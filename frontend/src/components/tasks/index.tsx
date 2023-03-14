@@ -1,14 +1,39 @@
-import { Button, Empty, Spin, message, Input } from "antd";
+import {
+  Button,
+  Empty,
+  Spin,
+  message,
+  Input,
+  Table,
+  Space,
+  Progress,
+  Tag,
+} from "antd";
 import { createContext, useEffect, useState } from "react";
 
 import GlobalModal from "../modals/globalModal";
 import SessionStartWarning from "./components/warning";
 import SideCard from "./components/sideCard";
-import { SyncOutlined } from "@ant-design/icons";
+import { MoreOutlined, SyncOutlined } from "@ant-design/icons";
 import { TaskDto } from "models/tasks";
 import TaskInput from "./components/taskInput";
 import VerticalCard from "./components/verticalCard";
 import { userAPI } from "APIs";
+import {
+  formatDate,
+  getFormattedTime,
+  getFormattedTotalTime,
+  getTotalSpentTime,
+} from "@/services/timeActions";
+import {
+  PriorityBGColorEnum,
+  PriorityBorderColorEnum,
+  statusColorEnum,
+  taskPriorityEnum,
+} from "utils/constants";
+import { PlayIcon } from "@/icons/playIcon";
+import PlayIconSvg from "@/assets/svg/playIconSvg";
+import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 const { Search } = Input;
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -17,6 +42,7 @@ export const TaskContext = createContext<any>({
   selectedTask: null,
   setRunningTask: null,
 });
+
 const TasksPage = () => {
   const [viewModalOpen, setViewModalOpen] = useState<boolean>(false);
   const [warningModalOpen, setWarningModalOpen] = useState<boolean>(false);
@@ -85,8 +111,39 @@ const TasksPage = () => {
     setLoading(true);
     try {
       const res = await userAPI.getTasks();
-      setTasks([...res] || []);
-      setSearchedTasks([...res] || []);
+      const tmpTasks = res.map((task: TaskDto) => {
+        const started = task.sessions[0]
+          ? getFormattedTime(formatDate(task.sessions[0].startTime))
+          : "Not Started";
+        const ended = task.sessions[task.sessions.length - 1]?.endTime
+          ? getFormattedTime(
+              formatDate(task.sessions[task.sessions.length - 1].endTime)
+            )
+          : task.sessions[0]
+          ? "Running"
+          : "Not Started";
+        const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
+        return {
+          ...task,
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          estimation: task.estimation,
+          startTime: formatDate(task.sessions[0]?.startTime),
+          endTime: formatDate(task.sessions[task.sessions.length - 1]?.endTime),
+          started: started,
+          ended: ended,
+          total: total,
+          percentage: task.estimation
+            ? Math.round(
+                getTotalSpentTime(task.sessions) / (task.estimation * 36000)
+              )
+            : -1,
+          totalSpent: getTotalSpentTime(task.sessions),
+          priority: task.priority,
+        };
+      });
+      setTasks(tmpTasks || []);
     } catch (error) {
       message.error("Error getting tasks");
     } finally {
@@ -140,6 +197,174 @@ const TasksPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   console.log("runningTask", runningTask);
+  const columns: any = [
+    {
+      title: "Task Name",
+      dataIndex: "title",
+      key: "title",
+      render: (_: any, task: TaskDto) => {
+        return (
+          <div className="flex items-center gap-2">
+            {task.sessions[task.sessions.length - 1].endTime ? (
+              <PlayIconSvg />
+            ) : (
+              <PauseIconSvg />
+            )}
+            <div>{task.title}</div>
+          </div>
+        );
+      },
+    },
+    {
+      title: "Date",
+      dataIndex: "started",
+      key: "started",
+      // align: "center",
+    },
+    {
+      title: "Priority",
+      dataIndex: "priority",
+      key: "priority",
+      render: (_: any, { priority }: TaskDto) => (
+        <div
+          style={{
+            backgroundColor: PriorityBGColorEnum[priority],
+            border: `1px solid ${PriorityBorderColorEnum[priority]}`,
+          }}
+          className="w-min rounded px-2 text-black"
+        >
+          {taskPriorityEnum[priority]}
+        </div>
+      ),
+    },
+    // {
+    //   title: "Description",
+    //   dataIndex: "description",
+    //   key: "description",
+    //   align: "center",
+    // },
+    // {
+    //   title: "Ended",
+    //   dataIndex: "ended",
+    //   key: "ended",
+    //   align: "center",
+    // },
+
+    {
+      title: "Progress",
+      dataIndex: "percentage",
+      key: "percentage",
+
+      // align: "center",
+      render: (_: any, record: TaskDto) => (
+        <div
+          className="flex w-max gap-3"
+          // style={{
+          //   color:
+          //     record.percentage >= 0 && record.percentage < 100
+          //       ? statusColorEnum[record.status]
+          //       : "red",
+          // }}
+        >
+          <div style={{ width: 80 }}>
+            {/* <Progress percent={30} size="small" />
+          <Progress percent={50} size="small" status="active" />
+           */}
+            {record.percentage >= 0 && record.percentage < 100 ? (
+              <Progress
+                percent={record.percentage}
+                size="small"
+                strokeColor={statusColorEnum[record.status]}
+                trailColor={statusColorEnum["BG"]}
+                showInfo={false}
+              />
+            ) : record.percentage === 100 ? (
+              <Progress
+                percent={record.percentage}
+                size="small"
+                status="success"
+                strokeColor={statusColorEnum[record.status]}
+                trailColor={statusColorEnum["BG"]}
+                showInfo={false}
+              />
+            ) : (
+              <Progress
+                percent={record.percentage}
+                size="small"
+                status="exception"
+                // strokeColor={statusColorEnum[record.status]}
+                trailColor={statusColorEnum["BG"]}
+                showInfo={false}
+              />
+            )}
+          </div>
+          {record.percentage >= 0 ? (
+            <>{record.percentage}% Progress</>
+          ) : (
+            <>Not Started</>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "Total Spent",
+      dataIndex: "total",
+      key: "total",
+      // align: "center",
+    },
+    {
+      title: "Estimation",
+      dataIndex: "estimation",
+      key: "estimation",
+      render: (_: any, record: any) => (
+        <div className="text-center">{record.estimation}hrs</div>
+      ),
+    },
+    {
+      title: "",
+      dataIndex: "estimation",
+      key: "estimation",
+
+      render: () => (
+        <div className="flex justify-end gap-2">
+          <Button className="h-10 text-sm font-semibold">View</Button>
+          <Button className="flex h-10 w-10 items-center p-2">
+            <MoreOutlined className="w-6" style={{ fontSize: "24px" }} />
+          </Button>
+        </div>
+      ),
+    },
+    // {
+    //   title: "Tags",
+    //   key: "tags",
+    //   dataIndex: "tags",
+    //   render: (_, { tags }) => (
+    //     <>
+    //       {tags.map((tag) => {
+    //         let color = tag.length > 5 ? "geekblue" : "green";
+    //         if (tag === "loser") {
+    //           color = "volcano";
+    //         }
+    //         return (
+    //           <Tag color={color} key={tag}>
+    //             {tag.toUpperCase()}
+    //           </Tag>
+    //         );
+    //       })}
+    //     </>
+    //   ),
+    // },
+    // {
+    //   title: "Action",
+    //   key: "action",
+    //   render: (_, record) => (
+    //     <Space size="middle">
+    //       <a>Invite {record.name}</a>
+    //       <a>Delete</a>
+    //     </Space>
+    //   ),
+    // },
+  ];
 
   return (
     <TaskContext.Provider
@@ -174,35 +399,15 @@ const TasksPage = () => {
 
         <Spin spinning={loading}>
           {tasks.length ? (
-            <div className="grid grid-cols-2 gap-4 overflow-y-auto">
-              <div
-                className="flex flex-col gap-2 overflow-y-auto border-r-2 pr-2"
-                style={{ height: "calc(100vh - 155px)" }}
-              >
-                <Search
-                  placeholder="input search text"
-                  onChange={(e) => {
-                    setSearchText(e.target.value);
-                  }}
-                  allowClear
-                />
-                {searchedTasks.map((task) => (
-                  <VerticalCard
-                    key={task.id}
-                    task={task}
-                    deleteTask={deleteTask}
-                    selectedTask={selectedTask}
-                    setSelectedTask={setSelectedTask}
-                  />
-                ))}
-              </div>
-              <div>
-                {selectedTask ? (
-                  <SideCard task={selectedTask} />
-                ) : (
-                  <Empty description="No task selected" />
-                )}
-              </div>
+            <div className="text-xs font-medium">
+              <Table
+                columns={columns}
+                dataSource={tasks}
+                // onChange={onChange}
+                rowKey={"id"}
+                pagination={{ position: ["bottomCenter"] }}
+                
+              />
             </div>
           ) : loading ? (
             <Empty description="Getting tasks" />
