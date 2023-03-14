@@ -11,6 +11,7 @@ const GlobalClock = () => {
     time.h = today.getHours();
     time.m = today.getMinutes();
     time.s = today.getSeconds();
+    time.h = checkTime(time.h);
     time.m = checkTime(time.m);
     time.s = checkTime(time.s);
     setTime({ ...time });
@@ -20,17 +21,20 @@ const GlobalClock = () => {
   function checkTime(i: any) {
     if (i < 10) {
       i = "0" + i;
-    } // add zero in front of numbers < 10
+    }
     return i;
   }
   useEffect(() => {
     startTime();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {}, [time]);
   return (
     <div className="fixed right-0 bottom-0 pr-2 font-bold">
       Current Time:{" "}
-      {`${time.h % 12}:${time.m}:${time.s} ${time.h > 12 ? "pm" : "am"}`}
+      {`${checkTime(time.h % 12)}:${time.m}:${time.s} ${
+        time.h > 12 ? "pm" : "am"
+      }`}
     </div>
   );
 };
