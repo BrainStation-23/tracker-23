@@ -1,12 +1,12 @@
 import Stopwatch from "../../stopWatch/vertical/reactStopWatch";
 import TaskDetailsModal from "../../modals/taskDetails.modal";
 import { TaskDto } from "../../../../models/tasks/index";
-import { Tooltip } from "antd";
+import { Tooltip, Typography } from "antd";
 import { getTotalSpentTime } from "@/services/timeActions";
 import { statusColorEnum, taskStatusEnum } from "utils/constants";
 import { useContext, useState } from "react";
 import { TaskContext } from "@/components/tasks";
-
+const { Paragraph, Text } = Typography;
 type Props = {
   task: TaskDto;
   deleteTask: Function;
@@ -53,12 +53,18 @@ const VerticalCard = ({
         onClick={() => setSelectedTask(task)}
       >
         <div className="flex w-full items-center justify-between gap-1">
-          <div className="flex max-w-[300px] flex-col gap-2 text-left text-lg font-medium">
+          <div className="flex max-w-[100px] flex-col gap-2 text-left text-lg font-medium xl:max-w-[200px] 2xl:max-w-[300px]">
             <div
               className="hover:cursor-pointer hover:text-blue-500"
               onClick={() => setViewModalOpen(true)}
             >
-              Title: {taskName}
+              <Text
+                className="max-w-[100px] xl:max-w-[300px]"
+                ellipsis={{ tooltip: taskName }}
+              >
+                {taskName}
+              </Text>
+              {/* {taskName} */}
             </div>
             {/* <div onClick={() => setCompleted(!completed)}>
               {completed ? (
@@ -67,9 +73,12 @@ const VerticalCard = ({
                 <BsCheck2Circle className="text-blue-700" />
               )}{" "}
             </div> */}
-            <div className="text-sm font-normal">
-              Description: {task.description}
-            </div>
+            <Text
+              className="max-w-[100px] text-sm font-normal xl:max-w-[300px]"
+              ellipsis={{ tooltip: task.description }}
+            >
+              {task.description}
+            </Text>
           </div>
           {/* <div className="w-32 h-1 bg-gray-200">
             <div
@@ -85,7 +94,7 @@ const VerticalCard = ({
           </div> */}
           <div className="grid w-72 grid-cols-6 items-center gap-1">
             <div className="col-span-2 flex flex-col gap-2">
-              <div className="mx-auto w-min text-xs">Progress:</div>
+              {/* <div className="mx-auto w-min text-xs">Progress:</div> */}
               <Tooltip
                 placement="bottom"
                 title={`${
@@ -130,7 +139,6 @@ const VerticalCard = ({
                   color: statusColorEnum[task.status],
                 }}
               >
-                <div className="mx-auto w-min text-xs">Status:</div>
                 {typeof task?.status === "string" &&
                   taskStatusEnum[task.status]}
               </div>

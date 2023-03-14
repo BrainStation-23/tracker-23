@@ -192,7 +192,7 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
   return (
     <div className="col-span-4 mx-auto grid w-40 grid-cols-6 items-center">
       <div className="col-span-5 flex flex-col gap-2 text-center">
-        <div className="mx-auto w-max text-xs">Total Spent:</div>
+        {/* <div className="mx-auto w-max text-xs">Total Spent:</div> */}
         <DisplayComponent time={time} sessionTime={sessionTime} />
         <div className="text-xs font-semibold">
           Estimation: {task.estimation} h

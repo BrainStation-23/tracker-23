@@ -30,3 +30,21 @@ export const monthsList = [
   "November",
   "December",
 ];
+
+export const supportedIntegrations = ["JIRA"];
+export const importCardData = [
+  {
+    title: "Jira Software",
+    type: "JIRA",
+    logo: "jira.png",
+    description: "Connect JIRA tickets to your Project",
+  },
+
+  {
+    title: "Trello",
+    type: "Trello",
+    logo: "trello.png",
+    full: true,
+    description: "Connect Trello to your Project",
+  },
+];

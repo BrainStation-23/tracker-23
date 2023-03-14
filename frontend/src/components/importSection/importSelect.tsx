@@ -4,18 +4,24 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import ImportCard from "./importCard";
 
-const ImportSelect = ({ data }: any) => {
+type Props = {
+  importCardData: any;
+  integratedTypes: string[];
+};
+
+const ImportSelect = ({ importCardData, integratedTypes }: Props) => {
   const [selected, setSelected] = useState("");
   return (
     <div className="mx-auto flex max-w-[900px] flex-col gap-2">
       <div className="mx-auto">Select Source of Import</div>
       <div className="flex gap-4 rounded border-2 p-4">
-        {data.map((d: any) => (
+        {importCardData?.map((d: any) => (
           <ImportCard
             key={Math.random()}
             data={d}
             selected={selected}
             setSelected={setSelected}
+            installed={integratedTypes.includes(d.type)}
           />
         ))}
       </div>
