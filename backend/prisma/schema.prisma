@@ -22,6 +22,8 @@ model User {
 
   tasks        Task[]
   integrations Integration[]
+  taskIntegrations TaskIntegration[]
+  sessions Session[]
 }
 
 model Integration {
@@ -60,13 +62,15 @@ model Task {
 
 model TaskIntegration {
   id Int @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
   task Task @relation(fields: [taskId], references: [id])
   taskId Int
   type IntegrationType 
   integratedTaskId Int
   url String?
 
-  @@unique([type, integratedTaskId], name: "integratedTaskIdentifier")
+  @@unique([type, integratedTaskId, userId], name: "integratedTaskIdentifier")
 }
 
 model Session {
@@ -79,6 +83,9 @@ model Session {
 
   task   Task @relation(fields: [taskId], references: [id])
   taskId Int
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 }
 
 enum Priority {

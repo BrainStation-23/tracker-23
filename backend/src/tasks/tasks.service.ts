@@ -1,5 +1,3 @@
-import { Version3Client } from 'jira.js';
-
 import { Injectable } from '@nestjs/common';
 import { IntegrationType, Task, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -83,6 +81,7 @@ export class TasksService {
         const doesExist = await this.prisma.taskIntegration.findUnique({
           where: {
             integratedTaskIdentifier: {
+              userId: user.id,
               integratedTaskId: Number(jiraTask.id),
               type: IntegrationType.JIRA,
             },
@@ -98,6 +97,7 @@ export class TasksService {
           });
           await this.prisma.taskIntegration.create({
             data: {
+              userId: user.id,
               taskId: task.id,
               integratedTaskId: Number(jiraTask.id),
               type: IntegrationType.JIRA,
