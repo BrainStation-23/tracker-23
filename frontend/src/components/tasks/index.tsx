@@ -34,6 +34,7 @@ import {
 import { PlayIcon } from "@/icons/playIcon";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
+import StopWatchTabular from "../stopWatch/tabular/reactStopWatchTabular";
 const { Search } = Input;
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -52,6 +53,7 @@ const TasksPage = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [syncing, setSyncing] = useState(false);
+  const [reload, setReload] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
   const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
 
@@ -64,7 +66,10 @@ const TasksPage = () => {
       setSearchedTasks((tasks) => [res, ...tasks]);
       if (tasks) {
         tasks.map((task) => {
-          if (task.sessions[task.sessions.length - 1]?.status === "STARTED") {
+          if (
+            task.sessions &&
+            task.sessions[task.sessions?.length - 1]?.status === "STARTED"
+          ) {
             setRunningTask(task);
           }
         });
@@ -112,16 +117,18 @@ const TasksPage = () => {
     try {
       const res = await userAPI.getTasks();
       const tmpTasks = res.map((task: TaskDto) => {
-        const started = task.sessions[0]
-          ? getFormattedTime(formatDate(task.sessions[0].startTime))
-          : "Not Started";
-        const ended = task.sessions[task.sessions.length - 1]?.endTime
-          ? getFormattedTime(
-              formatDate(task.sessions[task.sessions.length - 1].endTime)
-            )
-          : task.sessions[0]
-          ? "Running"
-          : "Not Started";
+        const started =
+          task.sessions && task.sessions[0]
+            ? getFormattedTime(formatDate(task.sessions[0].startTime))
+            : "Not Started";
+        const ended =
+          task.sessions && task.sessions[task.sessions?.length - 1]?.endTime
+            ? getFormattedTime(
+                formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
+              )
+            : task.sessions[0]
+            ? "Running"
+            : "Not Started";
         const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
         return {
           ...task,
@@ -130,7 +137,9 @@ const TasksPage = () => {
           description: task.description,
           estimation: task.estimation,
           startTime: formatDate(task.sessions[0]?.startTime),
-          endTime: formatDate(task.sessions[task.sessions.length - 1]?.endTime),
+          endTime: formatDate(
+            task.sessions[task.sessions?.length - 1]?.endTime
+          ),
           started: started,
           ended: ended,
           total: total,
@@ -166,6 +175,37 @@ const TasksPage = () => {
     setSyncing(false);
   };
 
+  const startSession = async (task: TaskDto) => {
+    const session = await userAPI.createSession(task.id);
+    if (session) {
+      if (!task.sessions) task.sessions = [];
+      task.sessions?.push(session);
+      setRunningTask({ ...task });
+      session && message.success("Session Started");
+      setReload(!reload);
+    } else message.error("Session Start Failed");
+  };
+  const stopSession = async (task: TaskDto) => {
+    const session = await userAPI.stopSession(task.id);
+    if (session) {
+      task.sessions = task.sessions?.map((_session: any) => {
+        if (_session.id === session.id) return session;
+        else return _session;
+      });
+      const st: any = formatDate(session.endTime);
+      const en: any = formatDate(session.startTime);
+      console.log("🚀 🚀🚀🚀🚀🚀🚀🚀🚀", session, st - en);
+
+      (task.percentage = task.estimation
+        ? Math.round(
+            getTotalSpentTime(task.sessions) / (task.estimation * 36000)
+          )
+        : -1),
+        setRunningTask(null);
+      session && message.success("Session Ended");
+      setReload(!reload);
+    } else message.error("Session Ending Failed");
+  };
   useEffect(() => {
     getTasks();
   }, []);
@@ -189,7 +229,7 @@ const TasksPage = () => {
   useEffect(() => {
     if (tasks) {
       tasks.map((task) => {
-        if (task.sessions[task.sessions.length - 1]?.status === "STARTED") {
+        if (task.sessions[task.sessions?.length - 1]?.status === "STARTED") {
           setRunningTask(task);
         }
       });
@@ -205,10 +245,24 @@ const TasksPage = () => {
       render: (_: any, task: TaskDto) => {
         return (
           <div className="flex items-center gap-2">
-            {task.sessions[task.sessions.length - 1].endTime ? (
-              <PlayIconSvg />
+            {task.sessions &&
+            (task.sessions[task.sessions?.length - 1]?.endTime ||
+              task.sessions?.length === 0) ? (
+              <div
+                onClick={() => {
+                  startSession(task);
+                }}
+              >
+                <PlayIconSvg />
+              </div>
             ) : (
-              <PauseIconSvg />
+              <div
+                onClick={() => {
+                  stopSession(task);
+                }}
+              >
+                <PauseIconSvg />
+              </div>
             )}
             <div>{task.title}</div>
           </div>
@@ -311,6 +365,14 @@ const TasksPage = () => {
       dataIndex: "total",
       key: "total",
       // align: "center",
+      render: (_: any, task: any) => (
+        <StopWatchTabular
+          task={task}
+          disable={task.id !== selectedTask?.id}
+          addSession={() => {}}
+          addEndTime={() => {}}
+        />
+      ),
     },
     {
       title: "Estimation",
@@ -365,7 +427,14 @@ const TasksPage = () => {
     //   ),
     // },
   ];
-
+  const getRowClassName = (task: TaskDto, index: any) => {
+    if (!task.sessions) task.sessions = [];
+    return task.sessions[task.sessions?.length - 1]?.endTime ||
+      task.sessions?.length === 0
+      ? ""
+      : "bg-green-200";
+  };
+  useEffect(() => {}, [reload]);
   return (
     <TaskContext.Provider
       value={{
@@ -376,7 +445,7 @@ const TasksPage = () => {
       }}
     >
       <div
-        className="mr-8 overflow-y-clip"
+        className="mr-8 overflow-y-auto"
         style={{ height: "calc(100vh - 100px)" }}
       >
         <div className="mb-4 flex justify-between">
@@ -406,7 +475,7 @@ const TasksPage = () => {
                 // onChange={onChange}
                 rowKey={"id"}
                 pagination={{ position: ["bottomCenter"] }}
-                
+                rowClassName={getRowClassName}
               />
             </div>
           ) : loading ? (

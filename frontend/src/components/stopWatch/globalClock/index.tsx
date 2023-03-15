@@ -32,9 +32,9 @@ const GlobalClock = () => {
   return (
     <div className="fixed right-0 bottom-0 pr-2 font-bold">
       Current Time:{" "}
-      {`${checkTime(time.h % 12)}:${time.m}:${time.s} ${
-        time.h > 12 ? "pm" : "am"
-      }`}
+      {`${checkTime(time.h % 12 === 0 ? 12 : time.h % 12)}:${time.m}:${
+        time.s
+      } ${time.h >= 12 && time.h < 24 ? "pm" : "am"}`}
     </div>
   );
 };
