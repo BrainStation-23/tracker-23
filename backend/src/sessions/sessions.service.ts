@@ -13,7 +13,6 @@ import {
   User,
 } from '@prisma/client';
 import { AxiosHeaders } from 'axios';
-import { session } from 'passport';
 import { lastValueFrom } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SessionDto } from './dto';
@@ -51,7 +50,7 @@ export class SessionsService {
     }
 
     return await this.prisma.session.create({
-      data: { ...dto },
+      data: { ...dto, userId: user.id },
     });
   }
 
