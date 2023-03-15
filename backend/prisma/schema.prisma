@@ -58,7 +58,7 @@ model Task {
 
   taskIntegrations TaskIntegration[]
   sessions Session[]
-  pined Boolean @default(false)
+  pinned Boolean? @default(false)
 }
 
 model TaskIntegration {
