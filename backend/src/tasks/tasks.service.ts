@@ -88,6 +88,7 @@ export class TasksService {
             data: {
               userId: user.id,
               title: jiraTask.fields.summary,
+              estimation: jiraTask.fields.timeestimate / 3600,
             },
           });
           await this.prisma.taskIntegration.create({
