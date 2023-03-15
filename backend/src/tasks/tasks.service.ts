@@ -34,7 +34,13 @@ export class TasksService {
   }
 
   async deleteTask(id: number): Promise<Task> {
-    return await this.prisma.task.delete({ where: { id } });
+    console.log(id);
+    const task = await this.prisma.task.findUnique({
+      where: { id },
+    });
+    console.log(task);
+    const deletedTask = await this.prisma.task.delete({ where: { id } });
+    return deletedTask;
   }
 
   async syncTasks(user: User) {
@@ -88,6 +94,7 @@ export class TasksService {
             data: {
               userId: user.id,
               title: jiraTask.fields.summary,
+              estimation: jiraTask.fields.timeestimate / 3600,
             },
           });
           await this.prisma.taskIntegration.create({
