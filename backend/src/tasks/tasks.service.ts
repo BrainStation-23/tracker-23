@@ -59,7 +59,6 @@ export class TasksService {
       const tokenResp = (
         await lastValueFrom(this.httpService.post(tokenUrl, data, headers))
       ).data;
-
       const updated_integration = await this.prisma.integration.update({
         where: { id: integration.id },
         data: {
@@ -69,14 +68,11 @@ export class TasksService {
       });
 
       headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
-      const searchUrl = `https://api.atlassian.com/ex/jira/${integration.siteId}/rest/api/3/search?jql=assignee=currentUser()`;
+      const searchUrl = `https://api.atlassian.com/ex/jira/${integration.siteId}/rest/api/3/search?`;
       // currently status is not considered.
       const respTasks = (
         await lastValueFrom(this.httpService.get(searchUrl, { headers }))
       ).data;
-
-      console.log(respTasks);
-
       respTasks.issues.forEach(async (jiraTask: any) => {
         const doesExist = await this.prisma.taskIntegration.findUnique({
           where: {
