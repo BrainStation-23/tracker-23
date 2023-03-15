@@ -47,7 +47,7 @@ model Task {
   estimation  Decimal? @db.Decimal(5,2)
   status      Status    @default(TODO)
   due         DateTime?
-  priority    Priority  @default(NORMAL)
+  priority    Priority  @default(MEDIUM)
   labels      Labels[]  @default([])
 
   createdAt DateTime @default(now())
@@ -58,6 +58,7 @@ model Task {
 
   taskIntegrations TaskIntegration[]
   sessions Session[]
+  pinned Boolean? @default(false)
 }
 
 model TaskIntegration {
@@ -90,7 +91,7 @@ model Session {
 
 enum Priority {
   LOW
-  NORMAL
+  MEDIUM
   HIGH
 }
 
