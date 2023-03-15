@@ -5,18 +5,30 @@ export const menuOptions = [
   // { link: "/onBoarding", title: "OnBoarding Page" },
 ];
 
-export const taskStatusEnum = {
-  IN_PROGRESS: "In Progress",
-  TODO: "To Do",
-  DONE: "Done",
-};
-export enum statusColorEnum {
+export enum progressColorEnum {
   IN_PROGRESS = "#85C6DB",
   TODO = "#0099ff",
   DONE = "#BADF4F",
   BG = "#ECECED",
 }
+export const taskStatusEnum = {
+  IN_PROGRESS: "In progress",
+  TODO: "To do",
+  DONE: "Done",
+};
 
+export enum statusBorderColorEnum {
+  IN_PROGRESS = "#56A2E9",
+  TODO = "#ADACB0",
+  DONE = "#BADF4F",
+  BG = "#ECECED",
+}
+export enum statusBGColorEnum {
+  IN_PROGRESS = "#E4F2FF",
+  TODO = "#F9F9F9",
+  DONE = "#FAFFEA",
+  BG = "#ECECED",
+}
 export const taskPriorityEnum = {
   HIGH: "High",
   LOW: "Low",

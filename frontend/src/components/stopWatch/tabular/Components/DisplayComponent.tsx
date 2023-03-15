@@ -24,13 +24,15 @@ function DisplayComponent(props: any) {
           </span>
         )}
         {/* &nbsp;:&nbsp; */}
-        {props.sessionTime.m + props.sessionTime.h > 0 && (
+        {props.sessionTime.m + props.sessionTime.h > 0 ? (
           <span>
             {props.sessionTime.m >= 10
               ? props.sessionTime.m
               : props.sessionTime.m}
             m
           </span>
+        ) : (
+          <span>{parseFloat((props.sessionTime.s / 60).toFixed(1))}m</span>
         )}
         &nbsp;:&nbsp;
         <span>

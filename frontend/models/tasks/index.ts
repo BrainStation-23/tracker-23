@@ -1,3 +1,6 @@
+import { TablePaginationConfig } from "antd";
+import { FilterValue } from "antd/es/table/interface";
+
 export type CreateTaskDto = {
   title: string;
 };
@@ -17,3 +20,9 @@ export type TaskDto = {
   userId: any;
   percentage?: number;
 };
+export interface TableParams {
+  pagination?: TablePaginationConfig;
+  sortField?: string;
+  sortOrder?: string;
+  filters?: Record<string, FilterValue>;
+}

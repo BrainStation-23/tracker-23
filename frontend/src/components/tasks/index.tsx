@@ -8,6 +8,7 @@ import {
   Space,
   Progress,
   Tag,
+  TablePaginationConfig,
 } from "antd";
 import { createContext, useEffect, useState } from "react";
 
@@ -15,7 +16,7 @@ import GlobalModal from "../modals/globalModal";
 import SessionStartWarning from "./components/warning";
 import SideCard from "./components/sideCard";
 import { MoreOutlined, SyncOutlined } from "@ant-design/icons";
-import { TaskDto } from "models/tasks";
+import { TableParams, TaskDto } from "models/tasks";
 import TaskInput from "./components/taskInput";
 import VerticalCard from "./components/verticalCard";
 import { userAPI } from "APIs";
@@ -28,13 +29,17 @@ import {
 import {
   PriorityBGColorEnum,
   PriorityBorderColorEnum,
-  statusColorEnum,
+  statusBGColorEnum,
+  statusBorderColorEnum,
+  progressColorEnum,
   taskPriorityEnum,
+  taskStatusEnum,
 } from "utils/constants";
 import { PlayIcon } from "@/icons/playIcon";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import StopWatchTabular from "../stopWatch/tabular/reactStopWatchTabular";
+import { FilterValue, SorterResult } from "antd/es/table/interface";
 const { Search } = Input;
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -153,6 +158,17 @@ const TasksPage = () => {
         };
       });
       setTasks(tmpTasks || []);
+      console.log(tmpTasks, tmpTasks.length);
+
+      setTableParams({
+        ...tableParams,
+        pagination: {
+          ...tableParams.pagination,
+          total: tmpTasks.length,
+          // 200 is mock data, you should read it from server
+          // total: data.totalCount,
+        },
+      });
     } catch (error) {
       message.error("Error getting tasks");
     } finally {
@@ -180,6 +196,7 @@ const TasksPage = () => {
     if (session) {
       if (!task.sessions) task.sessions = [];
       task.sessions?.push(session);
+      task.status = "IN_PROGRESS";
       setRunningTask({ ...task });
       session && message.success("Session Started");
       setReload(!reload);
@@ -224,6 +241,7 @@ const TasksPage = () => {
     } else {
       setSearchedTasks(tasks);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
   useEffect(() => {
@@ -268,6 +286,31 @@ const TasksPage = () => {
           </div>
         );
       },
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      // align: "center",
+      render: (_: any, { status }: TaskDto) => (
+        <div
+          style={{
+            backgroundColor: statusBGColorEnum[status],
+            border: `1px solid ${statusBorderColorEnum[status]}`,
+            borderRadius: "36px",
+          }}
+          className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
+        >
+          <div
+            className="h-2 w-2 rounded-full"
+            style={{
+              backgroundColor: statusBorderColorEnum[status],
+            }}
+          />
+
+          <div>{taskStatusEnum[status]}</div>
+        </div>
+      ),
     },
     {
       title: "Date",
@@ -316,7 +359,7 @@ const TasksPage = () => {
           // style={{
           //   color:
           //     record.percentage >= 0 && record.percentage < 100
-          //       ? statusColorEnum[record.status]
+          //       ? progressColorEnum[record.status]
           //       : "red",
           // }}
         >
@@ -328,8 +371,8 @@ const TasksPage = () => {
               <Progress
                 percent={record.percentage}
                 size="small"
-                strokeColor={statusColorEnum[record.status]}
-                trailColor={statusColorEnum["BG"]}
+                strokeColor={progressColorEnum[record.status]}
+                trailColor={progressColorEnum["BG"]}
                 showInfo={false}
               />
             ) : record.percentage === 100 ? (
@@ -337,8 +380,8 @@ const TasksPage = () => {
                 percent={record.percentage}
                 size="small"
                 status="success"
-                strokeColor={statusColorEnum[record.status]}
-                trailColor={statusColorEnum["BG"]}
+                strokeColor={progressColorEnum[record.status]}
+                trailColor={progressColorEnum["BG"]}
                 showInfo={false}
               />
             ) : (
@@ -346,17 +389,13 @@ const TasksPage = () => {
                 percent={record.percentage}
                 size="small"
                 status="exception"
-                // strokeColor={statusColorEnum[record.status]}
-                trailColor={statusColorEnum["BG"]}
+                // strokeColor={progressColorEnum[record.status]}
+                trailColor={progressColorEnum["BG"]}
                 showInfo={false}
               />
             )}
           </div>
-          {record.percentage >= 0 ? (
-            <>{record.percentage}% Progress</>
-          ) : (
-            <>Not Started</>
-          )}
+          {record.percentage >= 0 ? <>{record.percentage}%</> : <>0%</>}
         </div>
       ),
     },
@@ -378,9 +417,12 @@ const TasksPage = () => {
       title: "Estimation",
       dataIndex: "estimation",
       key: "estimation",
-      render: (_: any, record: any) => (
-        <div className="text-center">{record.estimation}hrs</div>
-      ),
+      render: (_: any, record: any) =>
+        record.estimation ? (
+          <div className="text-center">{record.estimation}hrs</div>
+        ) : (
+          <div className="text-center">---</div>
+        ),
     },
     {
       title: "",
@@ -432,9 +474,37 @@ const TasksPage = () => {
     return task.sessions[task.sessions?.length - 1]?.endTime ||
       task.sessions?.length === 0
       ? ""
-      : "bg-green-200";
+      : "bg-[#F3FCFF]";
   };
   useEffect(() => {}, [reload]);
+  const [tableParams, setTableParams] = useState<TableParams>({
+    pagination: {
+      current: 1,
+      pageSize: 10,
+      showSizeChanger: true,
+      showLessItems: true,
+      position: ["bottomRight", "bottomLeft"],
+
+      // total: 100,
+    },
+  });
+  const [data, setData] = useState<TaskDto[]>(tasks);
+  const handleTableChange = (
+    pagination: TablePaginationConfig,
+    filters: Record<string, FilterValue>,
+    sorter: SorterResult<TaskDto> | SorterResult<TaskDto>[]
+  ) => {
+    setTableParams({
+      pagination,
+      filters,
+      ...sorter,
+    });
+
+    // `dataSource` is useless since `pageSize` changed
+    if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+      setData([]);
+    }
+  };
   return (
     <TaskContext.Provider
       value={{
@@ -473,9 +543,10 @@ const TasksPage = () => {
                 columns={columns}
                 dataSource={tasks}
                 // onChange={onChange}
-                rowKey={"id"}
-                pagination={{ position: ["bottomCenter"] }}
+                rowKey={(record) => record.id}
+                pagination={tableParams.pagination}
                 rowClassName={getRowClassName}
+                onChange={handleTableChange}
               />
             </div>
           ) : loading ? (
