@@ -5,15 +5,47 @@ export const menuOptions = [
   // { link: "/onBoarding", title: "OnBoarding Page" },
 ];
 
+export enum progressColorEnum {
+  IN_PROGRESS = "#85C6DB",
+  TODO = "#0099ff",
+  DONE = "#BADF4F",
+  BG = "#ECECED",
+}
 export const taskStatusEnum = {
-  IN_PROGRESS: "In Progress",
-  TODO: "To Do",
+  IN_PROGRESS: "In progress",
+  TODO: "To do",
   DONE: "Done",
 };
-export enum statusColorEnum {
-  IN_PROGRESS = "#bf80ff",
-  TODO = "#0099ff",
-  DONE = "#04AA6D",
+
+export enum statusBorderColorEnum {
+  IN_PROGRESS = "#56A2E9",
+  TODO = "#ADACB0",
+  DONE = "#BADF4F",
+  BG = "#ECECED",
+}
+export enum statusBGColorEnum {
+  IN_PROGRESS = "#E4F2FF",
+  TODO = "#F9F9F9",
+  DONE = "#FAFFEA",
+  BG = "#ECECED",
+}
+export const taskPriorityEnum = {
+  HIGH: "High",
+  LOW: "Low",
+  MEDIUM: "Medium",
+  NORMAL: "Medium",
+};
+export enum PriorityBGColorEnum {
+  HIGH = "#FFF0ED",
+  LOW = "#FFF9E2",
+  MEDIUM = "#FFF4E8",
+  NORMAL = "#FFF4E8",
+}
+export enum PriorityBorderColorEnum {
+  HIGH = "#FE8A6F",
+  LOW = "#F7DC7E",
+  MEDIUM = "#FEBC6F",
+  NORMAL = "#FEBC6F",
 }
 
 export const monthsList = [
@@ -29,4 +61,22 @@ export const monthsList = [
   "October",
   "November",
   "December",
+];
+
+export const supportedIntegrations = ["JIRA"];
+export const importCardData = [
+  {
+    title: "Jira Software",
+    type: "JIRA",
+    logo: "jira.png",
+    description: "Connect JIRA tickets to your Project",
+  },
+
+  {
+    title: "Trello",
+    type: "Trello",
+    logo: "trello.png",
+    full: true,
+    description: "Connect Trello to your Project",
+  },
 ];

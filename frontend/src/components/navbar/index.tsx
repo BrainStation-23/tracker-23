@@ -17,9 +17,9 @@ function Navbar() {
     if (!userDetails && tmp) setUserDetails(tmp);
   }, [userDetails, path]);
   return (
-    <div className=" flex h-16 px-5 w-full justify-between items-center shadow mb-2">
+    <div className=" mb-2 flex h-16 w-full items-center justify-between px-5 shadow">
       <div
-        className="text-xl text-blue-500 hover:text-green-500  py-6"
+        className="py-6 text-xl text-blue-500  hover:text-green-500"
         onClick={() => {
           router.push("/");
         }}
@@ -39,10 +39,17 @@ function Navbar() {
       ) : (
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            {userDetails?.picture && (
+            {userDetails?.picture ? (
               <Avatar src={userDetails.picture} alt="N" />
+            ) : (
+              <Avatar
+                src={
+                  "https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
+                }
+                alt="N"
+              />
             )}
-            {userDetails?.firstName}
+            {userDetails?.firstName} {userDetails?.lastName}
           </div>
           {/* <LogOutButton /> */}
         </div>

@@ -15,7 +15,7 @@ type Props = {
   disable: any;
 };
 
-function StopWatch({ task, addSession, addEndTime, disable }: Props) {
+function StopWatchTabular({ task, addSession, addEndTime, disable }: Props) {
   const { sessions } = task;
   const { runningTask, handleWarning, setRunningTask } =
     useContext(TaskContext);
@@ -45,7 +45,7 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
 
   const start = async () => {
     const startFunction = () => {
-      startSession();
+      // startSession();
       // setSessionTime({ ms: 0, s: 0, m: 0, h: 0 });
       (updatedSessionMs = sessionTime.ms),
         (updatedSessionS = sessionTime.s),
@@ -107,7 +107,7 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
   };
 
   const stop = () => {
-    stopSession();
+    // stopSession();
     const res = clearInterval(interv);
     setStatus(2);
   };
@@ -181,11 +181,28 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
   }, [resumeTime]);
 
   useEffect(() => {
+    if (!task.sessions) task.sessions = [];
     if (runningTask && runningTask.id !== task.id) {
       console.log(task.sessions[task.sessions.length - 1]);
 
       if (task.sessions[task.sessions.length - 1]?.status === "STARTED") stop();
     }
+    if (
+      !runningTask &&
+      task.sessions[task.sessions.length - 1]?.status === "STOPPED"
+    )
+      stop();
+    if (
+      runningTask &&
+      runningTask.id === task.id &&
+      task.sessions[task.sessions.length - 1]?.status === "STARTED"
+    )
+      resumeTimeFunction();
+    console.log(
+      "🚀 ~ file: reactStopWatchTabular.tsx:191 ~ StopWatchTabular ~ runningTask:",
+      runningTask,
+      task.sessions[task.sessions.length - 1]?.status
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runningTask]);
 
@@ -194,12 +211,9 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
       <div className="col-span-5 flex flex-col gap-2 text-center">
         {/* <div className="mx-auto w-max text-xs">Total Spent:</div> */}
         <DisplayComponent time={time} sessionTime={sessionTime} />
-        <div className="text-xs font-semibold">
-          Estimation: {task.estimation} h
-        </div>
       </div>
       {/* {!false && ( */}
-      <BtnComponent
+      {/* <BtnComponent
         status={status}
         resume={resume}
         reset={reset}
@@ -207,10 +221,10 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
         start={start}
         id={task.id}
         disable={disable}
-      />
+      /> */}
       {/* )} */}
     </div>
   );
 }
 
-export default StopWatch;
+export default StopWatchTabular;

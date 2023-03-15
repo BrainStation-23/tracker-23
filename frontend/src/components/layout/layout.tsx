@@ -7,6 +7,7 @@ import Navbar from "../navbar";
 import SideBar from "../navbar/sideBar";
 import SideMenu from "../navbar/sideMenu";
 import TopBar from "../navbar/topBar";
+import GlobalClock from "../stopWatch/globalClock";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -40,16 +41,17 @@ const CustomLayout = ({ children }: any) => {
             </div>
           </>
         )} */}
-        <div className="flex flex-col w-full overflow-y-auto">
+        <div className="flex w-full flex-col overflow-y-auto">
           <Navbar />
           <div
-            className={` w-full pt-2 px-8 bg-white ${
+            className={` w-full bg-white px-8 pt-2 ${
               !path.includes("/login") && !path.includes("/register")
                 ? "pl-8 "
                 : "mx-auto flex flex-col"
             } `}
             style={{ height: "calc(100vh - 80px)" }}
           >
+            <GlobalClock />
             {/* <TopBar /> */}
             {children}
           </div>

@@ -3,24 +3,11 @@ import { useEffect, useState } from "react";
 import { Button } from "antd";
 import ImportSelect from "./importSelect";
 import { userAPI } from "APIs";
+import { importCardData } from "utils/constants";
 
 const ImportSection = () => {
   const [integratedTypes, setIntegratedTypes] = useState([]);
 
-  const data = [
-    {
-      title: "Jira Software",
-      type: "JIRA",
-      logo: "jira.png",
-    },
-
-    {
-      title: "Trello",
-      type: "Trello",
-      logo: "trello.png",
-      full: true,
-    },
-  ];
   const handleOnclick = async () => {
     try {
       const response = await userAPI.getJiraLink();
@@ -51,7 +38,7 @@ const ImportSection = () => {
 
   return (
     <div className="flex w-full flex-col gap-2">
-      <ImportSelect {...{ data }} />
+      <ImportSelect {...{ importCardData, integratedTypes }} />
 
       {/* <IntegratedServices {...{ data }} /> */}
       <div className="flex justify-end">

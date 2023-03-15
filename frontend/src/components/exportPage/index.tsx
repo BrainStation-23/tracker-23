@@ -1,4 +1,4 @@
-import { Empty, Spin, Table, message } from "antd";
+import { Empty, Spin, Table, message, Input } from "antd";
 import React, { useEffect, useState } from "react";
 import {
   formatDate,
@@ -10,7 +10,8 @@ import type { TableProps } from "antd/es/table";
 import { TaskDto } from "models/tasks";
 import { getFormattedTime } from "../../services/timeActions";
 import { userAPI } from "APIs";
-
+import DateRangePicker from "../datePicker";
+const { Search } = Input;
 interface DataType {
   key: string;
   name: string;
@@ -91,8 +92,8 @@ const columns: any = [
     key: "priority",
     filters: [
       {
-        text: "NORMAL",
-        value: "NORMAL",
+        text: "MEDIUM",
+        value: "MEDIUM",
       },
       {
         text: "LOW",
@@ -198,7 +199,23 @@ const ExportPageComponent = () => {
     <>
       <Spin spinning={loading}>
         {tasks.length ? (
-          <div className="">
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-6 gap-2">
+              <div className="col-span-2">
+                <DateRangePicker />{" "}
+              </div>
+              <div className="col-span-2">
+                <Search
+                  placeholder="input search loading with enterButton"
+                  loading
+                  enterButton
+                  onChange={(e) => console.log(e.target.value)}
+                  onPressEnter={(e) => {
+                    console.log(e);
+                  }}
+                />
+              </div>
+            </div>
             <Table
               columns={columns}
               dataSource={tasks}
