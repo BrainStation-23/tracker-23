@@ -15,7 +15,7 @@ import { createContext, useEffect, useState } from "react";
 import GlobalModal from "../modals/globalModal";
 import SessionStartWarning from "./components/warning";
 import SideCard from "./components/sideCard";
-import { MoreOutlined, SyncOutlined } from "@ant-design/icons";
+import { DeleteFilled, MoreOutlined, SyncOutlined } from "@ant-design/icons";
 import { TableParams, TaskDto } from "models/tasks";
 import TaskInput from "./components/taskInput";
 import VerticalCard from "./components/verticalCard";
@@ -417,9 +417,9 @@ const TasksPage = () => {
       title: "Estimation",
       dataIndex: "estimation",
       key: "estimation",
-      render: (_: any, record: any) =>
-        record.estimation ? (
-          <div className="text-center">{record.estimation}hrs</div>
+      render: (_: any, task: TaskDto) =>
+        task.estimation ? (
+          <div className="text-center">{task.estimation}hrs</div>
         ) : (
           <div className="text-center">---</div>
         ),
@@ -429,11 +429,18 @@ const TasksPage = () => {
       dataIndex: "estimation",
       key: "estimation",
 
-      render: () => (
+      render: (_: any, task: TaskDto) => (
         <div className="flex justify-end gap-2">
           <Button className="h-10 text-sm font-semibold">View</Button>
           <Button className="flex h-10 w-10 items-center p-2">
-            <MoreOutlined className="w-6" style={{ fontSize: "24px" }} />
+            <DeleteFilled
+              className="w-6 text-red-600"
+              style={{ fontSize: "24px" }}
+              onClick={() => {
+                deleteTask(task.id);
+              }}
+            />
+            {/* <MoreOutlined className="w-6" style={{ fontSize: "24px" }} /> */}
           </Button>
         </div>
       ),
