@@ -88,7 +88,6 @@ export class TasksService {
             data: {
               userId: user.id,
               title: jiraTask.fields.summary,
-              description: jiraTask.fields.description,
             },
           });
           await this.prisma.taskIntegration.create({
