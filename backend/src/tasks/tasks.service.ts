@@ -89,7 +89,9 @@ export class TasksService {
                   data: {
                     userId: user.id,
                     title: jiraTask.fields.summary,
-                    estimation: jiraTask.fields.timeestimate / 3600,
+                    estimation: jiraTask.fields.timeestimate
+                      ? jiraTask.fields.timeestimate / 3600
+                      : null,
                   },
                 })
                 .then((task) => {
