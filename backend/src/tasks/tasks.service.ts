@@ -37,74 +37,80 @@ export class TasksService {
     return await this.prisma.task.delete({ where: { id } });
   }
 
-  async syncTasks(user: User) {
-    // A LOT OF CLEANUP WILL BE REQUIRED
-    const integrations = await this.prisma.integration.findMany({
-      where: { userId: user.id, type: IntegrationType.JIRA },
-    }); // for now only jira
+  async syncTasks(user: User): Promise<Task[]> {
     const tokenUrl = 'https://auth.atlassian.com/oauth/token';
     const headers: any = { 'Content-Type': 'application/json' };
+    const taskPromises: Promise<any>[] = [];
 
-    integrations.forEach(async (integration) => {
-      // refresh access token if expired for each integration sites. errors may be thrown if comes.
-      // add expiry time to integration access token model
+    const integrations = await this.prisma.integration.findMany({
+      where: { userId: user.id, type: IntegrationType.JIRA },
+    });
 
+    for (const integration of integrations) {
       const data = {
         grant_type: 'refresh_token',
         client_id: this.config.get('JIRA_CLIENT_ID'),
         client_secret: this.config.get('JIRA_SECRET_KEY'),
         refresh_token: integration.refreshToken,
       };
-
-      const tokenResp = (
-        await lastValueFrom(this.httpService.post(tokenUrl, data, headers))
-      ).data;
-      const updated_integration = await this.prisma.integration.update({
-        where: { id: integration.id },
-        data: {
-          accessToken: tokenResp.access_token,
-          refreshToken: tokenResp.refresh_token,
-        },
-      });
-
-      headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
-      const searchUrl = `https://api.atlassian.com/ex/jira/${integration.siteId}/rest/api/3/search?`;
-      // currently status is not considered.
-      const respTasks = (
-        await lastValueFrom(this.httpService.get(searchUrl, { headers }))
-      ).data;
-      respTasks.issues.forEach(async (jiraTask: any) => {
-        const doesExist = await this.prisma.taskIntegration.findUnique({
-          where: {
-            integratedTaskIdentifier: {
-              userId: user.id,
-              integratedTaskId: Number(jiraTask.id),
-              type: IntegrationType.JIRA,
-            },
+      try {
+        const tokenResp = (
+          await lastValueFrom(this.httpService.post(tokenUrl, data, headers))
+        ).data;
+        const updated_integration = await this.prisma.integration.update({
+          where: { id: integration.id },
+          data: {
+            accessToken: tokenResp.access_token,
+            refreshToken: tokenResp.refresh_token,
           },
         });
-        if (!doesExist) {
-          const task = await this.prisma.task.create({
-            data: {
-              userId: user.id,
-              title: jiraTask.fields.summary,
-              estimation: jiraTask.fields.timeestimate / 3600,
-            },
-          });
-          await this.prisma.taskIntegration.create({
-            data: {
-              userId: user.id,
-              taskId: task.id,
-              integratedTaskId: Number(jiraTask.id),
-              type: IntegrationType.JIRA,
-              url: jiraTask.self,
-            },
-          });
-        }
-      });
-    });
 
-    // bring tasks from jira sites
-    // add tasks to our platform if doesn't exists
+        headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
+        const searchUrl = `https://api.atlassian.com/ex/jira/${integration.siteId}/rest/api/3/search?`;
+        // currently status is not considered.
+        const respTasks = (
+          await lastValueFrom(this.httpService.get(searchUrl, { headers }))
+        ).data;
+
+        for (const jiraTask of respTasks.issues) {
+          const doesExist = await this.prisma.taskIntegration.findUnique({
+            where: {
+              integratedTaskIdentifier: {
+                userId: user.id,
+                integratedTaskId: Number(jiraTask.id),
+                type: IntegrationType.JIRA,
+              },
+            },
+          });
+          if (!doesExist) {
+            taskPromises.push(
+              this.prisma.task
+                .create({
+                  data: {
+                    userId: user.id,
+                    title: jiraTask.fields.summary,
+                    estimation: jiraTask.fields.timeestimate / 3600,
+                  },
+                })
+                .then((task) => {
+                  return this.prisma.taskIntegration.create({
+                    data: {
+                      userId: user.id,
+                      taskId: task.id,
+                      integratedTaskId: Number(jiraTask.id),
+                      type: IntegrationType.JIRA,
+                      url: jiraTask.self,
+                    },
+                  });
+                }),
+            );
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    await Promise.allSettled(taskPromises);
+    return await this.getTasks(user);
   }
 }
