@@ -51,7 +51,7 @@ function Navbar() {
             )}
             {userDetails?.firstName} {userDetails?.lastName}
           </div>
-          {/* <LogOutButton /> */}
+          <LogOutButton />
         </div>
       )}
     </div>
