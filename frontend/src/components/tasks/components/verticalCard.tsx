@@ -3,7 +3,7 @@ import TaskDetailsModal from "../../modals/taskDetails.modal";
 import { TaskDto } from "../../../../models/tasks/index";
 import { Tooltip, Typography } from "antd";
 import { getTotalSpentTime } from "@/services/timeActions";
-import { statusColorEnum, taskStatusEnum } from "utils/constants";
+import {  taskStatusEnum } from "utils/constants";
 import { useContext, useState } from "react";
 import { TaskContext } from "@/components/tasks";
 const { Paragraph, Text } = Typography;
@@ -118,7 +118,7 @@ const VerticalCard = ({
                         className=" h-1.5 rounded-lg "
                         style={{
                           width: `${spentPercentage}%`,
-                          backgroundColor: statusColorEnum[task.status],
+                          // backgroundColor: statusColorEnum[task.status],
                         }}
                       />
                     </div>
@@ -135,9 +135,9 @@ const VerticalCard = ({
               </Tooltip>
               <div
                 className={`col-span-2 text-center text-sm font-medium `}
-                style={{
-                  color: statusColorEnum[task.status],
-                }}
+                // style={{
+                //   color: statusColorEnum[task.status],
+                // }}
               >
                 {typeof task?.status === "string" &&
                   taskStatusEnum[task.status]}
