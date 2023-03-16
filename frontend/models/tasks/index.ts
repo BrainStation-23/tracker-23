@@ -18,6 +18,7 @@ export type TaskDto = {
   sessions: any;
   updatedAt: string;
   userId: any;
+  pinned: boolean;
   percentage?: number;
 };
 export interface TableParams {
