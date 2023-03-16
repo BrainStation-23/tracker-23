@@ -4,9 +4,6 @@ import { TiExport } from "react-icons/ti";
 import { UnorderedListOutlined } from "@ant-design/icons";
 import { useRouter } from "next/router";
 import { userAPI } from "APIs";
-import BSLogoSvg from "@/assets/svg/BSLogoSvg";
-import TasksIconSvg from "@/assets/svg/tasksIconSvg";
-import DashboardIconSvg from "@/assets/svg/dashboardIconSvg";
 
 const SideMenu = () => {
   const router = useRouter();
@@ -18,40 +15,33 @@ const SideMenu = () => {
   const SideMenuOption = ({ option, active }: any) => {
     const router = useRouter();
     return (
-      <div
-        className={`flex items-center gap-2 rounded-lg px-1 hover:cursor-pointer hover:bg-[#ECECED] hover:text-black ${
-          active ? "bg-[#ECECED] text-black" : ""
+      <li
+        className={`m-5 mx-auto flex h-7 w-7 scale-110 flex-col items-center justify-center rounded px-1 hover:cursor-pointer hover:bg-indigo-500 hover:text-white ${
+          active ? "bg-indigo-500 text-white" : "text-gray-400"
         }`}
         onClick={() => {
           router.push(option.link);
         }}
       >
-        <div>{option.icon}</div>
-        <div className={`text-sm ${active ? "text-black " : "text-[#4D4E55]"}`}>
-          {option.title}
-        </div>
-      </div>
+        {option.icon}
+      </li>
     );
   };
   return (
-    <div className="flex h-screen w-[280px] items-center justify-center bg-[#F8F8F8] px-5">
-      <div className="flex h-full w-full flex-col justify-between">
-        <div className="flex w-full flex-col gap-6">
+    <div className="flex h-screen items-center justify-center bg-indigo-700">
+      <div className="flex h-full w-16 flex-col justify-between">
+        <div>
           {" "}
           <div
-            // className="flex items-center justify-center rounded-md p-4 text-white hover:cursor-pointer"
-            className="flex w-full gap-2 pt-8 text-left"
+            className="flex items-center justify-center rounded-md p-4 text-white hover:cursor-pointer"
             onClick={() => {
               router.push("/");
             }}
           >
-            <div className="">
-              <BSLogoSvg />
-            </div>{" "}
-            <div>Tracker 23</div>
+            T23
           </div>
           <div className=" rounded-md text-gray-200">
-            <div className="flex flex-col gap-3">
+            <ul>
               {sideMenuOptions?.map((option) => (
                 <SideMenuOption
                   key={Math.random()}
@@ -59,7 +49,7 @@ const SideMenu = () => {
                   active={router.asPath.includes(option.link)}
                 />
               ))}
-            </div>
+            </ul>
           </div>
         </div>
         <div className="flex items-center justify-center pb-5 text-white">
@@ -78,11 +68,11 @@ const SideMenu = () => {
 export default SideMenu;
 
 export const sideMenuOptions = [
-  { link: "/dashboard", title: "DashBoard", icon: <DashboardIconSvg /> },
-  { link: "/taskList", title: "All Tasks", icon: <TasksIconSvg /> },
+  { link: "/taskList", title: "Tasks Page", icon: <UnorderedListOutlined /> },
+  // { link: "/dashboard", title: "DashBoard Page" },
   {
     link: "/integrations",
-    title: "Integrations",
+    title: "Integrations Page",
     icon: <BiImport />,
   },
   {

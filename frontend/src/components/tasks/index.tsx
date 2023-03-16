@@ -40,6 +40,7 @@ import PlayIconSvg from "@/assets/svg/playIconSvg";
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import StopWatchTabular from "../stopWatch/tabular/reactStopWatchTabular";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
+import TopPanel from "./components/topPanel";
 const { Search } = Input;
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -57,6 +58,7 @@ const TasksPage = () => {
   const [searchedTasks, setSearchedTasks] = useState<TaskDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [activeTab, setActiveTab] = useState("All");
   const [syncing, setSyncing] = useState(false);
   const [reload, setReload] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
@@ -109,6 +111,7 @@ const TasksPage = () => {
       if (res) {
         setTasks((tasks) => tasks.filter((task) => task.id !== taskId));
         setSearchedTasks((tasks) => tasks.filter((task) => task.id !== taskId));
+        tableParamsAll.pagination.total = tableParamsAll.pagination.total - 1;
       }
     } catch (error) {
       message.error("Error deleting task");
@@ -160,10 +163,10 @@ const TasksPage = () => {
       setTasks(tmpTasks || []);
       console.log(tmpTasks, tmpTasks.length);
 
-      setTableParams({
-        ...tableParams,
+      setTableParamsAll({
+        ...tableParamsAll,
         pagination: {
-          ...tableParams.pagination,
+          ...tableParamsAll.pagination,
           total: tmpTasks.length,
           // 200 is mock data, you should read it from server
           // total: data.totalCount,
@@ -179,9 +182,53 @@ const TasksPage = () => {
     setLoading(true);
     try {
       const res = await userAPI.syncTasks();
-      setTasks([...res] || []);
-      setSearchedTasks([...res] || []);
-
+      const tmpTasks = res.map((task: TaskDto) => {
+        const started =
+          task.sessions && task.sessions[0]
+            ? getFormattedTime(formatDate(task.sessions[0].startTime))
+            : "Not Started";
+        const ended =
+          task.sessions && task.sessions[task.sessions?.length - 1]?.endTime
+            ? getFormattedTime(
+                formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
+              )
+            : task.sessions[0]
+            ? "Running"
+            : "Not Started";
+        const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
+        return {
+          ...task,
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          estimation: task.estimation,
+          startTime: formatDate(task.sessions[0]?.startTime),
+          endTime: formatDate(
+            task.sessions[task.sessions?.length - 1]?.endTime
+          ),
+          started: started,
+          ended: ended,
+          total: total,
+          percentage: task.estimation
+            ? Math.round(
+                getTotalSpentTime(task.sessions) / (task.estimation * 36000)
+              )
+            : -1,
+          totalSpent: getTotalSpentTime(task.sessions),
+          priority: task.priority,
+        };
+      });
+      setTasks(tmpTasks || []);
+      setSearchedTasks(tmpTasks || []);
+      setTableParamsAll({
+        ...tableParamsAll,
+        pagination: {
+          ...tableParamsAll.pagination,
+          total: tmpTasks.length,
+          // 200 is mock data, you should read it from server
+          // total: data.totalCount,
+        },
+      });
       message.success("Sync Successful");
     } catch (error) {
       message.error("Error syncing tasks");
@@ -282,7 +329,18 @@ const TasksPage = () => {
                 <PauseIconSvg />
               </div>
             )}
-            <div>{task.title}</div>
+            <div className="flex flex-col gap-2">
+              <div>{task.title}</div>
+              <div
+                className="w-min bg-[#4D4E55] px-2 py-0.5 text-xs font-medium"
+                style={{
+                  background: "#ECECED",
+                  borderRadius: "4px",
+                }}
+              >
+                Microsoft
+              </div>
+            </div>
           </div>
         );
       },
@@ -431,7 +489,21 @@ const TasksPage = () => {
 
       render: (_: any, task: TaskDto) => (
         <div className="flex justify-end gap-2">
-          <Button className="h-10 text-sm font-semibold">View</Button>
+          <Button
+            className="h-10 text-sm font-semibold"
+            onClick={() => {
+              task.pinned
+                ? (tableParamsPinned.pagination.total =
+                    tableParamsPinned.pagination.total - 1)
+                : (tableParamsPinned.pagination.total =
+                    tableParamsPinned.pagination.total + 1);
+              task.pinned = !task.pinned;
+              setReload(!reload);
+            }}
+          >
+            {task.pinned ? "Unpin" : "Pin"}
+            {/* View */}
+          </Button>
           <Button className="flex h-10 w-10 items-center p-2">
             <DeleteFilled
               className="w-6 text-red-600"
@@ -484,7 +556,7 @@ const TasksPage = () => {
       : "bg-[#F3FCFF]";
   };
   useEffect(() => {}, [reload]);
-  const [tableParams, setTableParams] = useState<TableParams>({
+  const [tableParamsAll, setTableParamsAll] = useState<TableParams>({
     pagination: {
       current: 1,
       pageSize: 10,
@@ -495,23 +567,39 @@ const TasksPage = () => {
       // total: 100,
     },
   });
-  const [data, setData] = useState<TaskDto[]>(tasks);
+
+  const [tableParamsPinned, setTableParamsPinned] = useState<TableParams>({
+    pagination: {
+      current: 1,
+      pageSize: 10,
+      showSizeChanger: true,
+      showLessItems: true,
+      position: ["bottomRight", "bottomLeft"],
+
+      // total: 100,
+    },
+  });
   const handleTableChange = (
     pagination: TablePaginationConfig,
     filters: Record<string, FilterValue>,
     sorter: SorterResult<TaskDto> | SorterResult<TaskDto>[]
   ) => {
-    setTableParams({
+    setTableParamsAll({
       pagination,
       filters,
       ...sorter,
     });
 
     // `dataSource` is useless since `pageSize` changed
-    if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-      setData([]);
-    }
+    // if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+    //   setData([]);
+    // }
   };
+
+  const getPinnedTasks = () => {
+    return tasks.filter((task) => task.pinned);
+  };
+
   return (
     <TaskContext.Provider
       value={{
@@ -542,16 +630,35 @@ const TasksPage = () => {
             </Button>
           </div>
         </div>
+        <TopPanel {...{ tasks, activeTab, setActiveTab }} />
 
         <Spin spinning={loading}>
-          {tasks.length ? (
+          {activeTab === "All" ? (
+            tasks.length ? (
+              <div className="text-xs font-medium">
+                <Table
+                  columns={columns}
+                  dataSource={tasks}
+                  // onChange={onChange}
+                  rowKey={(record) => record.id}
+                  pagination={tableParamsAll.pagination}
+                  rowClassName={getRowClassName}
+                  onChange={handleTableChange}
+                />
+              </div>
+            ) : loading ? (
+              <Empty description="Getting tasks" />
+            ) : (
+              <Empty description="No tasks" />
+            )
+          ) : getPinnedTasks().length ? (
             <div className="text-xs font-medium">
               <Table
                 columns={columns}
-                dataSource={tasks}
+                dataSource={getPinnedTasks()}
                 // onChange={onChange}
                 rowKey={(record) => record.id}
-                pagination={tableParams.pagination}
+                pagination={tableParamsPinned.pagination}
                 rowClassName={getRowClassName}
                 onChange={handleTableChange}
               />
@@ -559,7 +666,7 @@ const TasksPage = () => {
           ) : loading ? (
             <Empty description="Getting tasks" />
           ) : (
-            <Empty description="No tasks" />
+            <Empty description="No pinned tasks" />
           )}
         </Spin>
 

@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  font-family: "Inter", sans-serif;
+}
+
+.ant-table-wrapper .ant-table,
+.ant-btn {
+  font-family: "Inter", sans-serif;
+}
+
 .ant-btn-primary {
   color: #fff;
   background-color: #1677ff;
