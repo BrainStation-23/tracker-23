@@ -19,14 +19,20 @@ const SideMenu = () => {
     const router = useRouter();
     return (
       <div
-        className={`flex items-center gap-2 rounded-lg px-1 hover:cursor-pointer hover:bg-[#ECECED] hover:text-black ${
+        className={`group flex items-center gap-2 rounded-lg px-1 hover:cursor-pointer hover:bg-[#ECECED] hover:text-black ${
           active ? "bg-[#ECECED] text-black" : ""
         }`}
         onClick={() => {
           router.push(option.link);
         }}
       >
-        <div>{option.icon}</div>
+        <div
+          className={` group-hover:stroke-black ${
+            active ? "stroke-black" : "stroke-gray-200"
+          }`}
+        >
+          {option.icon}
+        </div>
         <div className={`text-sm ${active ? "text-black " : "text-[#4D4E55]"}`}>
           {option.title}
         </div>
