@@ -5,8 +5,8 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategy';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { GoogleOAuth2Controller } from './controllers/google-auth.controller';
-import { FacebookStrategy } from './strategy/facebook.strategy';
-import { FacebookOAuth2Controller } from './controllers/fb-auth.controller';
+// import { FacebookStrategy } from './strategy/facebook.strategy';
+// import { FacebookOAuth2Controller } from './controllers/fb-auth.controller';
 import { PassportModule } from '@nestjs/passport';
 import { APP_FILTER } from '@nestjs/core';
 import { TokenErrorFilter } from 'src/filters/token-error.filter';
@@ -16,13 +16,13 @@ import { TokenErrorFilter } from 'src/filters/token-error.filter';
   controllers: [
     AuthController,
     GoogleOAuth2Controller,
-    FacebookOAuth2Controller,
+    // FacebookOAuth2Controller,
   ],
   providers: [
     AuthService,
     JwtStrategy,
     GoogleStrategy,
-    FacebookStrategy,
+    // FacebookStrategy,
 
     {
       provide: APP_FILTER,
