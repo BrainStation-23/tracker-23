@@ -78,7 +78,7 @@ export class AuthService {
     // const referer: any = req.headers?.referer
     //   ? req.headers?.referer
     //   : 'http://localhost:3001/';
-    const referer: any = 'https://oversear.vercel.app/';
+    const referer: any = 'https://tracker23-bs23.vercel.app/';
     // console.log(
     //   '🚀 ~ file: auth.service.ts:79 ~ AuthService ~ googleLogin ~ referer:',
     //   referer,
