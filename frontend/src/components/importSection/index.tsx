@@ -41,9 +41,9 @@ const ImportSection = () => {
       <ImportSelect {...{ importCardData, integratedTypes }} />
 
       {/* <IntegratedServices {...{ data }} /> */}
-      <div className="flex justify-end">
+      {/* <div className="flex justify-end">
         <Button type="link">Skip ...</Button>{" "}
-      </div>
+      </div> */}
       {/* <Button onClick={() => handleOnclick()}>jira link</Button> */}
     </div>
   );

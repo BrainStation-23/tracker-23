@@ -11,6 +11,12 @@ import { TaskDto } from "models/tasks";
 import { getFormattedTime } from "../../services/timeActions";
 import { userAPI } from "APIs";
 import DateRangePicker from "../datePicker";
+import {
+  PriorityBGColorEnum,
+  PriorityBorderColorEnum,
+  taskPriorityEnum,
+} from "utils/constants";
+import TopPanelExportPage from "./components/topPanelExportPage";
 const { Search } = Input;
 interface DataType {
   key: string;
@@ -42,18 +48,28 @@ const columns: any = [
     // render: (text) => <a>{text}</a>,
   },
   {
-    title: "Description",
-    dataIndex: "description",
-    key: "description",
-    align: "center",
-  },
-  {
     title: "Estimation",
     dataIndex: "estimation",
     key: "estimation",
     // defaultSortOrder: "descend",
     sorter: (a: any, b: any) => a.estimation - b.estimation,
     align: "center",
+  },
+  {
+    title: "Priority",
+    dataIndex: "priority",
+    key: "priority",
+    render: (_: any, { priority }: TaskDto) => (
+      <div
+        style={{
+          backgroundColor: PriorityBGColorEnum[priority],
+          border: `1px solid ${PriorityBorderColorEnum[priority]}`,
+        }}
+        className="w-min rounded px-2 text-black"
+      >
+        {taskPriorityEnum[priority]}
+      </div>
+    ),
   },
   {
     title: "Started",
@@ -81,6 +97,7 @@ const columns: any = [
     title: "Total Spent",
     dataIndex: "total",
     key: "total",
+    render: (_: any, task: any) => (task.total ? <>{task.total}s</> : <>---</>),
 
     // defaultSortOrder: "descend",
     sorter: (a: any, b: any) => a.totalSpent - b.totalSpent,
@@ -168,12 +185,13 @@ const ExportPageComponent = () => {
           endTime: formatDate(task.sessions[task.sessions.length - 1]?.endTime),
           started: started,
           ended: ended,
-          total: total + "  s",
+          total: total,
           totalSpent: getTotalSpentTime(task.sessions),
           priority: task.priority,
         };
       });
       setTasks(tmpTasks || []);
+      console.log("🚀 ~ file: index.tsx:177 ~ getTasks ~ tmpTasks:", tmpTasks);
     } catch (error) {
       message.error("Error getting tasks");
     } finally {
@@ -197,25 +215,11 @@ const ExportPageComponent = () => {
   console.log("🚀 ~ file: index.tsx:106 ~ useEffect ~ tasks:", tasks);
   return (
     <>
+      <TopPanelExportPage {...{ tasks }} />
       <Spin spinning={loading}>
         {tasks.length ? (
           <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-6 gap-2">
-              <div className="col-span-2">
-                <DateRangePicker />{" "}
-              </div>
-              <div className="col-span-2">
-                <Search
-                  placeholder="input search loading with enterButton"
-                  loading
-                  enterButton
-                  onChange={(e) => console.log(e.target.value)}
-                  onPressEnter={(e) => {
-                    console.log(e);
-                  }}
-                />
-              </div>
-            </div>
+            
             <Table
               columns={columns}
               dataSource={tasks}

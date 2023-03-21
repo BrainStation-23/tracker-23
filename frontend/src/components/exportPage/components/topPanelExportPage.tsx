@@ -9,15 +9,14 @@ import { useState } from "react";
 import SortNameIconSvg from "../../../assets/svg/sortIcons/SortNameIconSvg";
 import SortStatusIconSvg from "../../../assets/svg/sortIcons/SortStatusIconSvg";
 import SortProgressIconSvg from "../../../assets/svg/sortIcons/SortProgressIconSvg";
+import DateRangePicker from "@/components/datePicker";
 
 const { Search } = Input;
 
 type Props = {
   tasks: TaskDto[];
-  activeTab: string;
-  setActiveTab: Function;
 };
-const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
+const TopPanelExportPage = ({ tasks }: Props) => {
   const [searchText, setSearchText] = useState("");
   const [active, setActive] = useState("");
   const totalPinned = tasks?.filter((task) => task.pinned)?.length;
@@ -94,12 +93,8 @@ const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
   ];
   return (
     <div className="my-5 flex w-full justify-between">
-      <div className="flex gap-3">
-        {tabs?.map((tab) => {
-          return activeTab === tab
-            ? activeButton(tab, setActiveTab)
-            : inactiveButton(tab, setActiveTab);
-        })}
+      <div>
+        <DateRangePicker />
       </div>
       <div className="flex gap-12">
         <Input
@@ -181,4 +176,4 @@ const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
   );
 };
 
-export default TopPanel;
+export default TopPanelExportPage;

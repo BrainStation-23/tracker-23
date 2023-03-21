@@ -1,13 +1,20 @@
 import { monthsList } from "utils/constants";
 
 export const getFormattedTotalTime = (time: number) => {
+  if (!time) return null;
+  console.log(
+    "🚀 ~ file: timeActions.tsx:18 ~ getFormattedTotalTime ~ time:",
+    time
+  );
   let tmp = time;
   tmp = Math.round(tmp / 1000);
   const seconds = tmp % 60;
   tmp = Math.floor(tmp / 60);
   const mins = tmp % 60;
   tmp = Math.floor(tmp / 60);
-
+  if (mins + tmp === 0)
+    return `${seconds ? seconds : ""}
+    `;
   return `${tmp ? tmp + "hrs " : ""}${mins ? mins + "m" : ""}
   `;
   // ${
