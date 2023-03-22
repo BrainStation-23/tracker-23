@@ -9,7 +9,7 @@ type Props = {
   task: TaskDto;
 };
 const SideCard = ({ task }: Props) => {
-  const taskName = task ? task.title : "Task 1";
+  const taskName = task ? task?.title : "Task 1";
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [newTask, setNewTask] = useState<TaskDto>();
   const addSession = (session: any) => {

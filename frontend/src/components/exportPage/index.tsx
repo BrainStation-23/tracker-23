@@ -32,7 +32,7 @@ const columns: any = [
     dataIndex: "title",
     key: "title",
     render: (_: any, { title }: TaskDto) => (
-      <div className=" max-w-[200px] mx-auto">{title ? title : "---"}</div>
+      <div className=" mx-auto max-w-[200px]">{title ? title : "---"}</div>
     ),
     // defaultSortOrder: "descend",
     sorter: (a: any, b: any) => {
@@ -172,7 +172,7 @@ const ExportPageComponent = () => {
         return {
           ...task,
           id: task.id,
-          title: task.title,
+          title: task?.title,
           description: task.description,
           estimation: task.estimation,
           startTime: formatDate(task.sessions[0]?.startTime),

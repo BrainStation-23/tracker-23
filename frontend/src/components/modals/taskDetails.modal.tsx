@@ -53,7 +53,7 @@ const TaskDetailsModal = ({
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
             <span className="font-medium">TItle :</span>
-            <div className="flex-1">{task.title}</div>
+            <div className="flex-1">{task?.title}</div>
           </div>
           <div className="flex items-center gap-4">
             <span className="font-medium">Description:</span>{" "}

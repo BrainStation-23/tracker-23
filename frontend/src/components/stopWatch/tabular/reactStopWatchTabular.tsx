@@ -180,28 +180,31 @@ function StopWatchTabular({ task, addSession, addEndTime }: Props) {
   }, [resumeTime]);
 
   useEffect(() => {
-    if (!task.sessions) task.sessions = [];
-    if (runningTask && runningTask.id !== task.id) {
-      console.log(task.sessions[task.sessions.length - 1]);
+    if (status) {
+      if (!task.sessions) task.sessions = [];
+      if (runningTask && runningTask.id !== task.id) {
+        console.log(task.sessions[task.sessions.length - 1]);
 
-      if (task.sessions[task.sessions.length - 1]?.status === "STARTED") stop();
+        if (task.sessions[task.sessions.length - 1]?.status === "STARTED")
+          stop();
+      }
+      if (
+        !runningTask &&
+        task.sessions[task.sessions.length - 1]?.status === "STOPPED"
+      )
+        stop();
+      if (
+        runningTask &&
+        runningTask.id === task.id &&
+        task.sessions[task.sessions.length - 1]?.status === "STARTED"
+      )
+        resumeTimeFunction();
+      console.log(
+        "🚀 ~ file: reactStopWatchTabular.tsx:191 ~ StopWatchTabular ~ runningTask:",
+        runningTask,
+        task.sessions[task.sessions.length - 1]?.status
+      );
     }
-    if (
-      !runningTask &&
-      task.sessions[task.sessions.length - 1]?.status === "STOPPED"
-    )
-      stop();
-    if (
-      runningTask &&
-      runningTask.id === task.id &&
-      task.sessions[task.sessions.length - 1]?.status === "STARTED"
-    )
-      resumeTimeFunction();
-    console.log(
-      "🚀 ~ file: reactStopWatchTabular.tsx:191 ~ StopWatchTabular ~ runningTask:",
-      runningTask,
-      task.sessions[task.sessions.length - 1]?.status
-    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runningTask]);
 

@@ -3,7 +3,7 @@ import TaskDetailsModal from "../../modals/taskDetails.modal";
 import { TaskDto } from "../../../../models/tasks/index";
 import { Tooltip, Typography } from "antd";
 import { getTotalSpentTime } from "@/services/timeActions";
-import {  taskStatusEnum } from "utils/constants";
+import { taskStatusEnum } from "utils/constants";
 import { useContext, useState } from "react";
 import { TaskContext } from "@/components/tasks";
 const { Paragraph, Text } = Typography;
@@ -21,7 +21,7 @@ const VerticalCard = ({
   selectedTask,
 }: Props) => {
   const [completed, setCompleted] = useState(false);
-  const taskName = task ? task.title : "Task 1";
+  const taskName = task ? task?.title : "Task 1";
   const { runningTask } = useContext(TaskContext);
 
   const [viewModalOpen, setViewModalOpen] = useState(false);

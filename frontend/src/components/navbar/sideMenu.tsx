@@ -19,7 +19,7 @@ const SideMenu = () => {
     const router = useRouter();
     return (
       <div
-        className={`group flex items-center gap-2 rounded-lg px-1 hover:cursor-pointer hover:bg-[#ECECED] hover:text-black ${
+        className={`group flex items-center gap-2 rounded-lg py-[10px] px-1 pl-[10px] hover:cursor-pointer hover:bg-[#ECECED] hover:text-black ${
           active ? "bg-[#ECECED] text-black" : ""
         }`}
         onClick={() => {

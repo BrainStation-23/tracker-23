@@ -118,7 +118,7 @@ const TasksPage = () => {
       setSearchedTasks(
         tasks.filter((task) => {
           if (
-            task.title.includes(searchText) ||
+            task?.title.includes(searchText) ||
             task.description.includes(searchText)
           )
             return task;

@@ -157,7 +157,7 @@ const TasksPage = () => {
         return {
           ...task,
           id: task.id,
-          title: task.title,
+          title: task?.title,
           description: task.description,
           estimation: task.estimation,
           startTime: formatDate(task.sessions[0]?.startTime),
@@ -215,7 +215,7 @@ const TasksPage = () => {
         return {
           ...task,
           id: task.id,
-          title: task.title,
+          title: task?.title,
           description: task.description,
           estimation: task.estimation,
           startTime: formatDate(task.sessions[0]?.startTime),
@@ -305,7 +305,7 @@ const TasksPage = () => {
       setSearchedTasks(
         tasks.filter((task) => {
           if (
-            task.title.includes(searchText) ||
+            task?.title.includes(searchText) ||
             task.description.includes(searchText)
           )
             return task;
@@ -411,7 +411,7 @@ const TasksPage = () => {
               )
             }
             <div className="flex flex-col gap-2">
-              <div>{task.title}</div>
+              <div>{task?.title}</div>
               {task.projectName && (
                 <div
                   className="w-max bg-[#4D4E55] px-2 py-0.5 text-xs font-medium"

@@ -3,7 +3,7 @@ import SearchIconSvg from "@/assets/svg/searchIconSvg";
 import ClockIconSvg from "@/assets/svg/sortIcons/ClockIconSvg";
 import SortPriorityIconSvg from "@/assets/svg/sortIcons/SortPriorityIconSvg";
 import SortIconSvg from "@/assets/svg/sortIconSvg";
-import { Input } from "antd";
+import { Input, Select } from "antd";
 import { TaskDto } from "models/tasks";
 import { useState } from "react";
 import SortNameIconSvg from "../../../assets/svg/sortIcons/SortNameIconSvg";
@@ -20,6 +20,8 @@ type Props = {
 };
 const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
   const [searchText, setSearchText] = useState("");
+  const [status, setStatus] = useState("Status");
+  const [priority, setPriority] = useState("Priority");
   const [active, setActive] = useState("");
   const totalPinned = tasks?.filter((task) => task.pinned)?.length;
   const tabs = ["All", "Pin"];
@@ -86,7 +88,18 @@ const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
       // onClick={() => setActive("Sort")}
     >
       <SortProgressIconSvg />
-      <span className="font-normal">Priority</span>
+      {/* <span className="font-normal">Priority</span> */}
+      <Select
+        defaultValue="Priority"
+        style={{ width: 120 }}
+        value={priority}
+        options={[
+          { value: "High", label: "High" },
+          { value: "Medium", label: "Medium" },
+          { value: "Low", label: "Low" },
+        ]}
+        onChange={(value) => setPriority(value)}
+      />
     </div>,
     <div
       key={Math.random()}
@@ -98,7 +111,18 @@ const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
       // onClick={() => setActive("Sort")}
     >
       <SortStatusIconSvg />
-      <span className="font-normal">Status</span>
+      {/* <span className="font-normal">Status</span> */}
+      <Select
+        defaultValue="Status"
+        value={status}
+        style={{ width: 120 }}
+        options={[
+          { value: "Todo", label: "Todo" },
+          { value: "In Progress", label: "In Progress" },
+          { value: "Done", label: "Done" },
+        ]}
+        onChange={(value) => setStatus(value)}
+      />
     </div>,
     // {
     //   icon: <ClockIconSvg />,
@@ -156,12 +180,16 @@ const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
               color: active === "Filter" ? "#00A3DE" : "black",
               // backgroundColor: "#00A3DE",
             }}
-            onClick={() =>
-              active === "Filter" ? setActive("") : setActive("Filter")
-            }
           >
-            <FilterIconSvg />
-            <span className="font-normal">Filter</span>
+            <div
+              className="flex"
+              onClick={() =>
+                active === "Filter" ? setActive("") : setActive("Filter")
+              }
+            >
+              <FilterIconSvg />
+              <span className="font-normal">Filter</span>
+            </div>
             <div
               className={`${active === "Filter" ? "duration-500" : "hidden h-0"}
               absolute  top-[25px] right-0 z-50 flex
