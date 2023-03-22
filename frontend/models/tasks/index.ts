@@ -20,6 +20,7 @@ export type TaskDto = {
   userId: any;
   pinned: boolean;
   percentage?: number;
+  projectName?: string;
 };
 export interface TableParams {
   pagination?: TablePaginationConfig;
