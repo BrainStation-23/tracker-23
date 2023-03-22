@@ -41,6 +41,7 @@ import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import StopWatchTabular from "../stopWatch/tabular/reactStopWatchTabular";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 import TopPanel from "./components/topPanel";
+import { toast } from "react-toastify";
 const { Search } = Input;
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -89,17 +90,20 @@ const TasksPage = () => {
       setLoading(false);
     }
   };
-  const handleWarning = async (tmpTask: any, startFunction: Function) => {
-    const tmp = [];
-    tmp.push(tmpTask);
-    tmp.push(startFunction);
-    setWarningData(tmp);
+  const handleWarning = async (tmpTask: any) => {
+    setWarningData(tmpTask);
     setWarningModalOpen(true);
   };
   const handleWarningClick = async (proceed: boolean) => {
     if (proceed) {
-      await warningData[1]();
-      setWarningData([]);
+      try {
+        await stopSession(runningTask);
+        setRunningTask(warningData);
+        await handleSessionStart(warningData);
+        setWarningData(null);
+      } catch (error) {
+        toast.error("Something went wrong.");
+      }
     }
     setWarningModalOpen(false);
   };
@@ -237,8 +241,7 @@ const TasksPage = () => {
     }
     setSyncing(false);
   };
-
-  const startSession = async (task: TaskDto) => {
+  const handleSessionStart = async (task: TaskDto) => {
     const session = await userAPI.createSession(task.id);
     if (session) {
       if (!task.sessions) task.sessions = [];
@@ -248,6 +251,16 @@ const TasksPage = () => {
       session && message.success("Session Started");
       setReload(!reload);
     } else message.error("Session Start Failed");
+  };
+  const startSession = async (task: TaskDto) => {
+    console.log(">>>>>>", runningTask);
+
+    if (runningTask && runningTask?.id != task.id) {
+      setWarningData(task);
+      setWarningModalOpen(true);
+    } else {
+      await handleSessionStart(task);
+    }
   };
   const stopSession = async (task: TaskDto) => {
     const session = await userAPI.stopSession(task.id);
@@ -311,25 +324,28 @@ const TasksPage = () => {
       render: (_: any, task: TaskDto) => {
         return (
           <div className="flex items-center gap-2">
-            {task.sessions &&
-            (task.sessions[task.sessions?.length - 1]?.endTime ||
-              task.sessions?.length === 0) ? (
-              <div
-                onClick={() => {
-                  startSession(task);
-                }}
-              >
-                <PlayIconSvg />
-              </div>
-            ) : (
-              <div
-                onClick={() => {
-                  stopSession(task);
-                }}
-              >
-                <PauseIconSvg />
-              </div>
-            )}
+            {
+              // task.sessions &&
+              // (task.sessions[task.sessions?.length - 1]?.endTime ||
+              //   task.sessions?.length === 0)
+              runningTask?.id != task.id ? (
+                <div
+                  onClick={() => {
+                    startSession(task);
+                  }}
+                >
+                  <PlayIconSvg />
+                </div>
+              ) : (
+                <div
+                  onClick={() => {
+                    stopSession(task);
+                  }}
+                >
+                  <PauseIconSvg />
+                </div>
+              )
+            }
             <div className="flex flex-col gap-2">
               <div>{task.title}</div>
               {task.projectName && (
