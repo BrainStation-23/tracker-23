@@ -6,6 +6,7 @@ import {
   DownOutlined,
   UserOutlined,
 } from "@ant-design/icons";
+import DownArrowIconSvg from "@/assets/svg/DownArrowIconSvg";
 const { RangePicker } = DatePicker;
 const DateRangePicker = () => {
   const today = dayjs();
@@ -57,7 +58,7 @@ const DateRangePicker = () => {
         <Dropdown
           menu={menuProps}
           trigger={["click"]}
-          className="flex w-72 items-center bg-gray-50 p-1 hover:bg-gray-100"
+          className="flex w-[300px] items-center bg-gray-50 p-2 hover:bg-gray-100 rounded"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -70,7 +71,8 @@ const DateRangePicker = () => {
                 )}
               </div>
             </div>
-            <DownOutlined />
+            <DownArrowIconSvg />
+            {/* <DownOutlined /> */}
           </div>
         </Dropdown>
       </div>
