@@ -95,6 +95,7 @@ const TasksPage = () => {
     setWarningModalOpen(true);
   };
   const handleWarningClick = async (proceed: boolean) => {
+    setWarningModalOpen(false);
     if (proceed) {
       try {
         await stopSession(runningTask);
@@ -129,6 +130,9 @@ const TasksPage = () => {
     try {
       const res = await userAPI.getTasks();
       const tmpTasks = res.map((task: TaskDto) => {
+        task.sessions = task.sessions.sort(function compareFn(a: any, b: any) {
+          return a.id - b.id;
+        });
         const started =
           task.sessions && task.sessions[0]
             ? getFormattedTime(formatDate(task.sessions[0].startTime))
@@ -141,6 +145,7 @@ const TasksPage = () => {
             : task.sessions[0]
             ? "Running"
             : "Not Started";
+        if (ended === "Running") setRunningTask(task);
         const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
         return {
           ...task,
@@ -165,7 +170,7 @@ const TasksPage = () => {
         };
       });
       setTasks(tmpTasks || []);
-      console.log(tmpTasks, tmpTasks.length);
+      console.log(">>>>>", tmpTasks, tmpTasks.length);
 
       setTableParamsAll({
         ...tableParamsAll,
@@ -481,10 +486,11 @@ const TasksPage = () => {
       dataIndex: "total",
       key: "total",
       // align: "center",
-      render: (_: any, task: any) => (
+      render: (_: any, task: TaskDto) => (
         <StopWatchTabular
           task={task}
-          disable={task.id !== selectedTask?.id}
+          sessions={task.sessions}
+          runningTask={runningTask}
           addSession={() => {}}
           addEndTime={() => {}}
         />
@@ -569,12 +575,9 @@ const TasksPage = () => {
   ];
   const getRowClassName = (task: TaskDto, index: any) => {
     if (!task.sessions) task.sessions = [];
-    return task.sessions[task.sessions?.length - 1]?.endTime ||
-      task.sessions?.length === 0
-      ? ""
-      : "bg-[#F3FCFF]";
+    return runningTask?.id === task.id ? "bg-[#F3FCFF]" : "";
   };
-  useEffect(() => {}, [reload]);
+  useEffect(() => {}, [reload, runningTask]);
   const [tableParamsAll, setTableParamsAll] = useState<TableParams>({
     pagination: {
       current: 1,

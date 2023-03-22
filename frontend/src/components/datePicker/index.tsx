@@ -15,17 +15,17 @@ const DateRangePicker = () => {
     start: today.subtract(dayOfTheWeek - 1, "day"),
     end: today.add(7 - dayOfTheWeek, "day"),
   };
-  console.log([today, thisWeek, month]);
+  // console.log([today, thisWeek, month]);
 
   const [dates, setDates] = useState<any>([today.subtract(7, "day"), today]);
   const [value, setValue] = useState<any>(null);
   const [dropdownText, setDropdownText] = useState<any>(
     getDateRangeArray("this-week")
   );
-  console.log(
-    "🚀 ~ file: index.tsx:23 ~ DateRangePicker ~ dropdownText:",
-    dropdownText
-  );
+  // console.log(
+  //   "🚀 ~ file: index.tsx:23 ~ DateRangePicker ~ dropdownText:",
+  //   dropdownText
+  // );
   // console.log(
   //   "🚀 ~ file: index.tsx:9 ~ DateRangePicker ~ dayjs().date():",
   //   today

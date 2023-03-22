@@ -98,9 +98,7 @@ export async function deleteTaskRest(taskId: any) {
 }
 
 export async function getTasksRest(token?: string) {
-  console.log("🚀 ~ file: restApi.ts:100 ~ getTasksRest ~ token:", token);
-  console.log("<><><>", getLocalStorage("access_token"));
-
+  
   try {
     const res = await axios.get(`${apiEndPoints.tasks}`, {
       headers: {
