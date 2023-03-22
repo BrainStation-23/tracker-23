@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { IntegrationType, Task, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTaskDto, UpdateTaskDto } from './dto';
@@ -38,22 +38,21 @@ export class TasksService {
   }
 
   async syncTasks(user: User): Promise<Task[]> {
-    const tokenUrl = 'https://auth.atlassian.com/oauth/token';
-    const headers: any = { 'Content-Type': 'application/json' };
-    const taskPromises: Promise<any>[] = [];
+    try {
+      const tokenUrl = 'https://auth.atlassian.com/oauth/token';
+      const headers: any = { 'Content-Type': 'application/json' };
+      const taskPromises: Promise<any>[] = [];
 
-    const integrations = await this.prisma.integration.findMany({
-      where: { userId: user.id, type: IntegrationType.JIRA },
-    });
-
-    for (const integration of integrations) {
-      const data = {
-        grant_type: 'refresh_token',
-        client_id: this.config.get('JIRA_CLIENT_ID'),
-        client_secret: this.config.get('JIRA_SECRET_KEY'),
-        refresh_token: integration.refreshToken,
-      };
-      try {
+      const integrations = await this.prisma.integration.findMany({
+        where: { userId: user.id, type: IntegrationType.JIRA },
+      });
+      for (const integration of integrations) {
+        const data = {
+          grant_type: 'refresh_token',
+          client_id: this.config.get('JIRA_CLIENT_ID'),
+          client_secret: this.config.get('JIRA_SECRET_KEY'),
+          refresh_token: integration.refreshToken,
+        };
         const tokenResp = (
           await lastValueFrom(this.httpService.post(tokenUrl, data, headers))
         ).data;
@@ -83,18 +82,22 @@ export class TasksService {
             },
           });
           if (!doesExist) {
+            // console.log(jiraTask.fields.project.name);
             taskPromises.push(
               this.prisma.task
                 .create({
                   data: {
                     userId: user.id,
                     title: jiraTask.fields.summary,
+                    assignee: jiraTask.fields.assignee?.accountId || null,
                     estimation: jiraTask.fields.timeestimate
                       ? jiraTask.fields.timeestimate / 3600
                       : null,
+                    projectName: jiraTask.fields.project.name,
                   },
                 })
                 .then((task) => {
+                  // console.log(task);
                   return this.prisma.taskIntegration.create({
                     data: {
                       userId: user.id,
@@ -108,11 +111,12 @@ export class TasksService {
             );
           }
         }
-      } catch (err) {
-        console.error(err);
       }
+      await Promise.allSettled(taskPromises);
+      return await this.getTasks(user);
+    } catch (err) {
+      console.error('checking error', err);
+      throw new InternalServerErrorException('Something went wrong');
     }
-    await Promise.allSettled(taskPromises);
-    return await this.getTasks(user);
   }
 }

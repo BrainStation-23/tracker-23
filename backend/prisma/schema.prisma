@@ -44,6 +44,8 @@ model Task {
   id          Int       @id @default(autoincrement())
   title       String
   description String?
+  assignee String?
+  projectName String?
   estimation  Decimal? @db.Decimal(5,2)
   status      Status    @default(TODO)
   due         DateTime?
