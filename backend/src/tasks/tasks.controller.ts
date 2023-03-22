@@ -9,9 +9,10 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import { CreateTaskDto } from './dto';
+import { CreateTaskDto, GetTaskQuery } from './dto';
 import { TasksService } from './tasks.service';
 import { Task, User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/guard';
@@ -24,8 +25,11 @@ export class TasksController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getTasks(@GetUser() user: User): Promise<Task[]> {
-    return this.tasksService.getTasks(user);
+  async getTasks(
+    @GetUser() user: User,
+    @Query() query: GetTaskQuery,
+  ): Promise<Task[]> {
+    return this.tasksService.getTasks(user, query);
   }
 
   @Post()

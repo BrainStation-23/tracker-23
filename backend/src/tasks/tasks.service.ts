@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { IntegrationType, Task, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateTaskDto, UpdateTaskDto } from './dto';
+import { CreateTaskDto, GetTaskQuery, UpdateTaskDto } from './dto';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
@@ -14,7 +14,33 @@ export class TasksService {
     private httpService: HttpService,
   ) {}
 
-  async getTasks(user: User): Promise<Task[]> {
+  async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
+    const { priority, status } = query;
+    const priority1: any = (priority as unknown as string)?.split(',');
+    const status1: any = (status as unknown as string)?.split(',');
+
+    let { startDate, endDate } = query as unknown as GetTaskQuery;
+    startDate = new Date(startDate);
+    endDate = new Date(endDate);
+
+    const databaseQuery = {
+      userId: user.id,
+      createdAt: { gte: startDate, lte: endDate },
+      ...(priority1 && { priority: { in: priority1 } }),
+      ...(status1 && { status: { in: status1 } }),
+    };
+    // console.log(databaseQuery);
+
+    const task = await this.prisma.task.findMany({
+      where: databaseQuery,
+      include: {
+        sessions: true,
+      },
+    });
+    return task;
+  }
+
+  async getTasks2(user: User): Promise<Task[]> {
     return await this.prisma.task.findMany({
       where: { userId: user.id },
       include: {
@@ -46,6 +72,7 @@ export class TasksService {
       const integrations = await this.prisma.integration.findMany({
         where: { userId: user.id, type: IntegrationType.JIRA },
       });
+
       for (const integration of integrations) {
         const data = {
           grant_type: 'refresh_token',
@@ -53,9 +80,11 @@ export class TasksService {
           client_secret: this.config.get('JIRA_SECRET_KEY'),
           refresh_token: integration.refreshToken,
         };
+
         const tokenResp = (
           await lastValueFrom(this.httpService.post(tokenUrl, data, headers))
         ).data;
+
         const updated_integration = await this.prisma.integration.update({
           where: { id: integration.id },
           data: {
@@ -67,11 +96,13 @@ export class TasksService {
         headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
         const searchUrl = `https://api.atlassian.com/ex/jira/${integration.siteId}/rest/api/3/search?`;
         // currently status is not considered.
+
         const respTasks = (
           await lastValueFrom(this.httpService.get(searchUrl, { headers }))
         ).data;
 
         for (const jiraTask of respTasks.issues) {
+          // console.log(jiraTask);
           const doesExist = await this.prisma.taskIntegration.findUnique({
             where: {
               integratedTaskIdentifier: {
@@ -81,8 +112,11 @@ export class TasksService {
               },
             },
           });
-          if (!doesExist) {
-            // console.log(jiraTask.fields.project.name);
+
+          if (
+            !doesExist &&
+            integration.accountId === jiraTask.fields.assignee?.accountId
+          ) {
             taskPromises.push(
               this.prisma.task
                 .create({
@@ -113,7 +147,7 @@ export class TasksService {
         }
       }
       await Promise.allSettled(taskPromises);
-      return await this.getTasks(user);
+      return await this.getTasks2(user);
     } catch (err) {
       console.error('checking error', err);
       throw new InternalServerErrorException('Something went wrong');
