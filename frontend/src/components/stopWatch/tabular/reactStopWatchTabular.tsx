@@ -12,10 +12,9 @@ type Props = {
   task: TaskDto;
   addSession: any;
   addEndTime: any;
-  disable: any;
 };
 
-function StopWatchTabular({ task, addSession, addEndTime, disable }: Props) {
+function StopWatchTabular({ task, addSession, addEndTime }: Props) {
   const { sessions } = task;
   const { runningTask, handleWarning, setRunningTask } =
     useContext(TaskContext);

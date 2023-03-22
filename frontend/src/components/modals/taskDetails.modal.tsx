@@ -8,13 +8,18 @@ import { EditOutlined, SaveOutlined } from "@ant-design/icons";
 import { Button, Input, Modal } from "antd";
 import { TaskDto } from "models/tasks";
 import { useState } from "react";
+import {
+  statusBGColorEnum,
+  statusBorderColorEnum,
+  taskStatusEnum,
+} from "utils/constants";
 import Sessions from "./components/sessions";
 
 type Props = {
   task: TaskDto;
   isModalOpen: boolean;
   setIsModalOpen: Function;
-  handleDelete: Function;
+  handleDelete?: Function;
 };
 
 const TaskDetailsModal = ({
@@ -47,59 +52,18 @@ const TaskDetailsModal = ({
       >
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
-            <span className="w-20 text-right font-medium">Task Name:</span>
-            <div className="flex-1">
-              {editing && false ? (
-                <Input
-                  size="small"
-                  value={currentTaskName}
-                  onChange={(e) => setCurrentTaskName(e.target.value)}
-                />
-              ) : (
-                <div className="text-lg font-medium">{currentTaskName}</div>
-              )}
-            </div>
-            {/* {editing ? (
-              <div className="flex gap-2">
-                <Button
-                  type="primary"
-                  icon={<SaveOutlined />}
-                  onClick={() => {
-                    if (taskDetails) taskDetails.title = currentTaskName;
-                    updateTask(task, taskDetails.title);
-                    SetEditing(false);
-                  }}
-                >
-                  Save
-                </Button>
-                <Button onClick={() => SetEditing(false)}>Cancel</Button>
-              </div>
-            ) : (
-              <Button icon={<EditOutlined />} onClick={() => SetEditing(true)}>
-                Edit
-              </Button>
-            )} */}
-            {editing && (
-              <Button
-                danger
-                onClick={() => {
-                  handleDelete();
-                  setIsModalOpen(false);
-                }}
-              >
-                Delete
-              </Button>
-            )}
+            <span className="font-medium">TItle :</span>
+            <div className="flex-1">{task.title}</div>
           </div>
-          <div>
+          <div className="flex items-center gap-4">
             <span className="font-medium">Description:</span>{" "}
             {taskDetails?.description ?? <em>No description provided.</em>}
           </div>
-          <div>
+          <div className="flex items-center gap-4">
             <span className="font-medium">Estimation:</span>{" "}
             {taskDetails?.estimation ?? <em>No estimation provided.</em>}
           </div>
-          <div>
+          <div className="flex items-center gap-4">
             Time Left :{" "}
             {taskDetails?.estimation
               ? getFormattedTotalTime(
@@ -109,11 +73,32 @@ const TaskDetailsModal = ({
               : "No estimation"}{" "}
           </div>
 
-          <div>Status : {taskDetails?.status ? taskDetails?.status : ""}</div>
+          <div className="flex items-center gap-4">
+            Status :{" "}
+            <div
+              style={{
+                backgroundColor: statusBGColorEnum[taskDetails?.status],
+                border: `1px solid ${
+                  statusBorderColorEnum[taskDetails?.status]
+                }`,
+                borderRadius: "36px",
+              }}
+              className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
+            >
+              <div
+                className="h-2 w-2 rounded-full"
+                style={{
+                  backgroundColor: statusBorderColorEnum[taskDetails?.status],
+                }}
+              />
+
+              <div>{taskStatusEnum[taskDetails?.status]}</div>
+            </div>
+          </div>
 
           <div>
             Total Spent :{" "}
-            {getFormattedTotalTime(getTotalSpentTime(task.sessions))} seconds{" "}
+            {getFormattedTotalTime(getTotalSpentTime(task?.sessions))}
           </div>
           <Sessions {...{ taskDetails }} />
         </div>
