@@ -83,11 +83,12 @@ const columns: any = [
           backgroundColor: PriorityBGColorEnum[priority],
           border: `1px solid ${PriorityBorderColorEnum[priority]}`,
         }}
-        className="w-min rounded px-2 text-black"
+        className="mx-auto w-min rounded px-2 text-black"
       >
         {taskPriorityEnum[priority]}
       </div>
     ),
+    align: "center",
   },
   {
     title: "Started",
