@@ -55,7 +55,9 @@ const columns: any = [
     dataIndex: "projectName",
     key: "projectName",
     render: (_: any, { projectName }: TaskDto) => (
-      <div className=" max-w-[200px] ">{projectName ? projectName : "---"}</div>
+      <div className="m-max mx-auto max-w-[200px] ">
+        {projectName ? projectName : "---"}
+      </div>
     ),
     align: "center",
     // render: (text) => <a>{text}</a>,
