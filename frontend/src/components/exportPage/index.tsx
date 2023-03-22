@@ -113,7 +113,7 @@ const columns: any = [
     title: "Total Spent",
     dataIndex: "total",
     key: "total",
-    render: (_: any, task: any) => (task.total ? <>{task.total}s</> : <>---</>),
+    render: (_: any, task: any) => (task.total ? <>{task.total}</> : <>---</>),
 
     // defaultSortOrder: "descend",
     sorter: (a: any, b: any) => a.totalSpent - b.totalSpent,
