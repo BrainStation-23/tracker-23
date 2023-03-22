@@ -44,12 +44,12 @@ const CustomLayout = ({ children }: any) => {
         <div className="flex w-full flex-col overflow-y-auto">
           <Navbar />
           <div
-            className={` w-full bg-white px-8 pt-2 ${
+            className={` h-full w-full bg-white px-8 pt-2 pb-3 ${
               !path.includes("/login") && !path.includes("/register")
                 ? "pl-8 "
                 : "mx-auto flex flex-col"
             } `}
-            style={{ height: "calc(100vh - 80px)" }}
+            // style={{ height: "calc(100vh - 80px)" }}
           >
             <GlobalClock />
             {/* <TopBar /> */}

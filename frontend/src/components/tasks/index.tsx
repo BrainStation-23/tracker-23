@@ -694,7 +694,7 @@ const TasksPage = () => {
     >
       <div
         className="mr-8 overflow-y-auto"
-        style={{ height: "calc(100vh - 100px)" }}
+        // style={{ height: "calc(100vh - 100px)" }}
       >
         <div className="mb-4 flex justify-between">
           <h2 className="text-2xl font-bold">Tasks</h2>
