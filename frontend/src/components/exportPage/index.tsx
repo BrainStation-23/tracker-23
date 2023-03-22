@@ -31,7 +31,9 @@ const columns: any = [
     title: "Title",
     dataIndex: "title",
     key: "title",
-
+    render: (_: any, { title }: TaskDto) => (
+      <div className=" max-w-[200px] mx-auto">{title ? title : "---"}</div>
+    ),
     // defaultSortOrder: "descend",
     sorter: (a: any, b: any) => {
       if (a.title === b.title) {
@@ -44,6 +46,16 @@ const columns: any = [
 
       return -1;
     },
+    align: "center",
+    // render: (text) => <a>{text}</a>,
+  },
+  {
+    title: "Project Name",
+    dataIndex: "projectName",
+    key: "projectName",
+    render: (_: any, { projectName }: TaskDto) => (
+      <div className=" max-w-[200px] ">{projectName ? projectName : "---"}</div>
+    ),
     align: "center",
     // render: (text) => <a>{text}</a>,
   },
@@ -158,6 +170,7 @@ const ExportPageComponent = () => {
           : "Not Started";
         const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
         return {
+          ...task,
           id: task.id,
           title: task.title,
           description: task.description,

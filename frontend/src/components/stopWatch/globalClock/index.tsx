@@ -30,7 +30,7 @@ const GlobalClock = () => {
   }, []);
   useEffect(() => {}, [time]);
   return (
-    <div className="fixed right-0 bottom-0 pr-2 font-bold">
+    <div className="fixed left-0 bottom-3 pl-5 font-bold">
       Current Time:{" "}
       {`${checkTime(time.h % 12 === 0 ? 12 : time.h % 12)}:${time.m}:${
         time.s
