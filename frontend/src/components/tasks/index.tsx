@@ -332,15 +332,17 @@ const TasksPage = () => {
             )}
             <div className="flex flex-col gap-2">
               <div>{task.title}</div>
-              <div
-                className="w-min bg-[#4D4E55] px-2 py-0.5 text-xs font-medium"
-                style={{
-                  background: "#ECECED",
-                  borderRadius: "4px",
-                }}
-              >
-                Microsoft
-              </div>
+              {task.projectName && (
+                <div
+                  className="w-max bg-[#4D4E55] px-2 py-0.5 text-xs font-medium"
+                  style={{
+                    background: "#ECECED",
+                    borderRadius: "4px",
+                  }}
+                >
+                  {task.projectName}
+                </div>
+              )}
             </div>
           </div>
         );

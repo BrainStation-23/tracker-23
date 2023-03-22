@@ -9,6 +9,7 @@ import { useState } from "react";
 import SortNameIconSvg from "../../../assets/svg/sortIcons/SortNameIconSvg";
 import SortStatusIconSvg from "../../../assets/svg/sortIcons/SortStatusIconSvg";
 import SortProgressIconSvg from "../../../assets/svg/sortIcons/SortProgressIconSvg";
+import DateRangePicker from "@/components/datePicker";
 
 const { Search } = Input;
 
@@ -75,14 +76,30 @@ const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
     //   icon: <SortNameIconSvg />,
     //   title: "Name",
     // },
-    {
-      icon: <SortProgressIconSvg />,
-      title: "Priority",
-    },
-    {
-      icon: <SortStatusIconSvg />,
-      title: "Status",
-    },
+    <div
+      key={Math.random()}
+      className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
+      // style={{
+      //   color: active === "Sort" ? "#00A3DE" : "black",
+      //   // backgroundColor: "#00A3DE",
+      // }}
+      // onClick={() => setActive("Sort")}
+    >
+      <SortProgressIconSvg />
+      <span className="font-normal">Priority</span>
+    </div>,
+    <div
+      key={Math.random()}
+      className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
+      // style={{
+      //   color: active === "Sort" ? "#00A3DE" : "black",
+      //   // backgroundColor: "#00A3DE",
+      // }}
+      // onClick={() => setActive("Sort")}
+    >
+      <SortStatusIconSvg />
+      <span className="font-normal">Status</span>
+    </div>,
     // {
     //   icon: <ClockIconSvg />,
     //   title: "Estimation",
@@ -101,7 +118,8 @@ const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
             : inactiveButton(tab, setActiveTab);
         })}
       </div>
-      <div className="flex gap-12">
+      <div className="flex items-center gap-12">
+        <DateRangePicker />
         <Input
           placeholder="Search"
           prefix={<SearchIconSvg />}
@@ -146,23 +164,20 @@ const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
             <span className="font-normal">Filter</span>
             <div
               className={`${active === "Filter" ? "duration-500" : "hidden h-0"}
-              absolute  top-8 right-0 z-50 flex
-              w-[230px] flex-col gap-2 p-6  `}
+              absolute  top-[25px] right-0 z-50 flex
+              w-[230px] flex-col gap-2 p-6`}
               style={{
-                /* White */
-
                 background: "#FFFFFF",
-                /* SH-2 */
-
                 boxShadow:
                   "0px 2px 6px rgba(24, 24, 28, 0.08), 0px 41px 32px -23px rgba(24, 24, 28, 0.06)",
                 borderRadius: "12px",
               }}
             >
-              {sortOptions?.map((option) => (
+              {sortOptions?.map((option) => option)}
+              {/* {sortOptions?.map((option) => (
                 <div
                   key={Math.random()}
-                  className={`flex w-full items-center gap-2 text-sm font-normal text-black`}
+                  className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
                   // style={{
                   //   color: active === "Sort" ? "#00A3DE" : "black",
                   //   // backgroundColor: "#00A3DE",
@@ -172,7 +187,7 @@ const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
                   {option.icon}
                   <span className="font-normal">{option.title}</span>
                 </div>
-              ))}
+              ))} */}
             </div>
           </div>
         </div>

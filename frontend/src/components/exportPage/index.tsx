@@ -52,6 +52,9 @@ const columns: any = [
     dataIndex: "estimation",
     key: "estimation",
     // defaultSortOrder: "descend",
+    render: (_: any, { estimation }: TaskDto) => (
+      <>{estimation ? estimation : "---"}</>
+    ),
     sorter: (a: any, b: any) => a.estimation - b.estimation,
     align: "center",
   },
@@ -101,28 +104,6 @@ const columns: any = [
 
     // defaultSortOrder: "descend",
     sorter: (a: any, b: any) => a.totalSpent - b.totalSpent,
-    align: "center",
-  },
-  {
-    title: "Priority",
-    dataIndex: "priority",
-    key: "priority",
-    filters: [
-      {
-        text: "MEDIUM",
-        value: "MEDIUM",
-      },
-      {
-        text: "LOW",
-        value: "LOW",
-      },
-      {
-        text: "HIGH",
-        value: "HIGH",
-      },
-    ],
-    onFilter: (value: string, record: any) =>
-      record.priority.indexOf(value) === 0,
     align: "center",
   },
   // {
@@ -219,7 +200,6 @@ const ExportPageComponent = () => {
       <Spin spinning={loading}>
         {tasks.length ? (
           <div className="flex flex-col gap-4">
-            
             <Table
               columns={columns}
               dataSource={tasks}
