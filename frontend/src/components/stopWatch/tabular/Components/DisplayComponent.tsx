@@ -34,13 +34,13 @@ function DisplayComponent(props: any) {
         ) : (
           <span>{parseFloat((props.sessionTime.s / 60).toFixed(1))}m</span>
         )}
-        &nbsp;:&nbsp;
+        {/* &nbsp;:&nbsp;
         <span>
           {props.sessionTime.s >= 10
             ? props.sessionTime.s
             : props.sessionTime.s}
           s
-        </span>
+        </span> */}
       </Tooltip>
       {/* &nbsp;:&nbsp;
       <span>{props.time.ms >= 10 ? props.time.ms : "0" + props.time.ms}</span> */}

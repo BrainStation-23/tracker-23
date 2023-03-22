@@ -95,8 +95,11 @@ function Navbar() {
                 className="h-[40px] w-[40px]"
               />
             )}
-            <div>
-              {userDetails?.firstName} {userDetails?.lastName}
+            <div className="flex flex-col text-sm">
+              <div className="font-semibold">
+                {userDetails?.firstName} {userDetails?.lastName}
+              </div>
+              <div className="font-normal">Project Manager</div>
             </div>
           </div>
           <div

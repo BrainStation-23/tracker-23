@@ -17,6 +17,7 @@ import {
   taskPriorityEnum,
 } from "utils/constants";
 import TopPanelExportPage from "./components/topPanelExportPage";
+import { DownloadOutlined } from "@ant-design/icons";
 const { Search } = Input;
 interface DataType {
   key: string;
@@ -225,6 +226,10 @@ const ExportPageComponent = () => {
           <Empty description="No tasks" />
         )}
       </Spin>
+      <div className="float-right flex cursor-pointer items-center gap-2 rounded-md bg-[#016C37] p-2 text-white hover:bg-[#1F9B60]">
+        <DownloadOutlined />
+        Export to Excel
+      </div>
     </>
   );
 };

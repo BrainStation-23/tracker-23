@@ -3,7 +3,7 @@ import SearchIconSvg from "@/assets/svg/searchIconSvg";
 import ClockIconSvg from "@/assets/svg/sortIcons/ClockIconSvg";
 import SortPriorityIconSvg from "@/assets/svg/sortIcons/SortPriorityIconSvg";
 import SortIconSvg from "@/assets/svg/sortIconSvg";
-import { Input } from "antd";
+import { Input, Select } from "antd";
 import { TaskDto } from "models/tasks";
 import { useState } from "react";
 import SortNameIconSvg from "../../../assets/svg/sortIcons/SortNameIconSvg";
@@ -19,6 +19,8 @@ type Props = {
 const TopPanelExportPage = ({ tasks }: Props) => {
   const [searchText, setSearchText] = useState("");
   const [active, setActive] = useState("");
+  const [status, setStatus] = useState("Status");
+  const [priority, setPriority] = useState("Priority");
   const totalPinned = tasks?.filter((task) => task.pinned)?.length;
   const tabs = ["All", "Pin"];
   const activeButton = (tab: string, setActiveTab: Function) => (
@@ -74,14 +76,52 @@ const TopPanelExportPage = ({ tasks }: Props) => {
     //   icon: <SortNameIconSvg />,
     //   title: "Name",
     // },
-    {
-      icon: <SortProgressIconSvg />,
-      title: "Priority",
-    },
-    {
-      icon: <SortStatusIconSvg />,
-      title: "Status",
-    },
+    <div
+      key={Math.random()}
+      className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
+      // style={{
+      //   color: active === "Sort" ? "#00A3DE" : "black",
+      //   // backgroundColor: "#00A3DE",
+      // }}
+      // onClick={() => setActive("Sort")}
+    >
+      <SortProgressIconSvg />
+      {/* <span className="font-normal">Priority</span> */}
+      <Select
+        defaultValue="Priority"
+        style={{ width: 120 }}
+        value={priority}
+        options={[
+          { value: "High", label: "High" },
+          { value: "Medium", label: "Medium" },
+          { value: "Low", label: "Low" },
+        ]}
+        onChange={(value) => setPriority(value)}
+      />
+    </div>,
+    <div
+      key={Math.random()}
+      className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
+      // style={{
+      //   color: active === "Sort" ? "#00A3DE" : "black",
+      //   // backgroundColor: "#00A3DE",
+      // }}
+      // onClick={() => setActive("Sort")}
+    >
+      <SortStatusIconSvg />
+      {/* <span className="font-normal">Status</span> */}
+      <Select
+        defaultValue="Status"
+        value={status}
+        style={{ width: 120 }}
+        options={[
+          { value: "Todo", label: "Todo" },
+          { value: "In Progress", label: "In Progress" },
+          { value: "Done", label: "Done" },
+        ]}
+        onChange={(value) => setStatus(value)}
+      />
+    </div>,
     // {
     //   icon: <ClockIconSvg />,
     //   title: "Estimation",
@@ -133,12 +173,16 @@ const TopPanelExportPage = ({ tasks }: Props) => {
               color: active === "Filter" ? "#00A3DE" : "black",
               // backgroundColor: "#00A3DE",
             }}
-            onClick={() =>
-              active === "Filter" ? setActive("") : setActive("Filter")
-            }
           >
-            <FilterIconSvg />
-            <span className="font-normal">Filter</span>
+            <div
+              className="flex"
+              onClick={() =>
+                active === "Filter" ? setActive("") : setActive("Filter")
+              }
+            >
+              <FilterIconSvg />
+              <span className="font-normal">Filter</span>
+            </div>
             <div
               className={`${active === "Filter" ? "duration-500" : "hidden h-0"}
               absolute  top-8 right-0 z-50 flex
@@ -154,20 +198,7 @@ const TopPanelExportPage = ({ tasks }: Props) => {
                 borderRadius: "12px",
               }}
             >
-              {sortOptions?.map((option) => (
-                <div
-                  key={Math.random()}
-                  className={`flex w-full items-center gap-2 text-sm font-normal text-black`}
-                  // style={{
-                  //   color: active === "Sort" ? "#00A3DE" : "black",
-                  //   // backgroundColor: "#00A3DE",
-                  // }}
-                  // onClick={() => setActive("Sort")}
-                >
-                  {option.icon}
-                  <span className="font-normal">{option.title}</span>
-                </div>
-              ))}
+              {sortOptions?.map((option) => option)}
             </div>
           </div>
         </div>
