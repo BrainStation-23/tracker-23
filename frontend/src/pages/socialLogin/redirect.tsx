@@ -1,6 +1,6 @@
 import { SetCookie } from "@/services/cookie.service";
 import { setLocalStorage } from "@/storage/storage";
-import { Spin } from "antd";
+import { message, Spin } from "antd";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -25,7 +25,7 @@ const GoogleCallbackPage = () => {
         SetCookie("access_token", decoded?.access_token);
         setLocalStorage("access_token", decoded?.access_token);
         setLocalStorage("userDetails", decoded);
-        toast.success("Successfully Logged in");
+        message.success("Successfully Logged in");
         router.push("/");
       }
       // const decoded = Buffer.from(encodedData, "base64").toString();
@@ -34,7 +34,7 @@ const GoogleCallbackPage = () => {
   }, [router, router.query]);
 
   return (
-    <div className="flex justify-center w-full p-40">
+    <div className="flex w-full justify-center p-40">
       <Spin tip="Loading" size="large" className="scale-150"></Spin>
     </div>
   );

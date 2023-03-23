@@ -10,6 +10,7 @@ import { CreateTaskDto } from "models/tasks";
 import { apiEndPoints } from "utils/apiEndPoints";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { message } from "antd";
 
 export async function loginRest(
   data: LoginDto
@@ -23,7 +24,6 @@ export async function loginRest(
       SetCookie("access_token", res?.data?.access_token);
       setLocalStorage("access_token", res?.data?.access_token);
       setLocalStorage("userDetails", res.data);
-      toast.success("Successfully Logged in");
     }
     return res.data;
   } catch (error: any) {
@@ -57,7 +57,7 @@ export async function logoutRest() {
   try {
     RemoveCookie("access_token");
     deleteFromLocalStorage("userDetails");
-    toast.success("Logged Out");
+    message.success("Logged Out");
     return true;
   } catch (error: any) {
     toast.error("Failed to Log Out");
@@ -98,7 +98,6 @@ export async function deleteTaskRest(taskId: any) {
 }
 
 export async function getTasksRest(token?: string) {
-  
   try {
     const res = await axios.get(`${apiEndPoints.tasks}`, {
       headers: {
