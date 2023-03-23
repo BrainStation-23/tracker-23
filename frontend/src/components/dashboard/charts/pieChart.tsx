@@ -31,9 +31,9 @@ const PieChart: React.FC<Props> = ({ data, title }) => {
     series.slices.template.strokeWidth = 2;
     series.slices.template.strokeOpacity = 1;
 
-    chart.legend = new am4charts.Legend();
-    chart.legend.position = "right";
-    chart.legend.maxWidth = 350;
+    // chart.legend = new am4charts.Legend();
+    // chart.legend.position = "right";
+    // chart.legend.maxWidth = 350;
 
     return () => {
       chart.dispose();
@@ -43,7 +43,7 @@ const PieChart: React.FC<Props> = ({ data, title }) => {
   return (
     <div className="w-full">
       {title && <h2 className="text-lg font-bold">{title}</h2>}
-      <div ref={chartRef} className="h-96" />
+      <div ref={chartRef} className="h-[250px] w-5/6" />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { DeleteFilled, MoreOutlined } from "@ant-design/icons";
+import { DeleteFilled, DeleteOutlined, MoreOutlined } from "@ant-design/icons";
 import { Button, Dropdown, MenuProps, Tooltip } from "antd";
 import { TaskDto } from "models/tasks";
 import { BsPinAngle, BsPinAngleFill } from "react-icons/bs";
@@ -17,13 +17,16 @@ const MoreFunctionComponent = ({ deleteTask, task, handlePin }: Props) => {
       key: "1",
       label: (
         <Tooltip title="Delete Task">
-          <DeleteFilled
-            className="w-6 text-red-600"
-            style={{ fontSize: "24px" }}
-            onClick={() => {
-              deleteTask(task.id);
-            }}
-          />
+          <div className="flex gap-2">
+            <DeleteOutlined
+              className="w-6 gap-2"
+              style={{ fontSize: "24px" }}
+              onClick={() => {
+                deleteTask(task.id);
+              }}
+            />
+            Delete
+          </div>
         </Tooltip>
       ),
     },
@@ -32,7 +35,7 @@ const MoreFunctionComponent = ({ deleteTask, task, handlePin }: Props) => {
       label: (
         <Tooltip title={task.pinned ? "Unpin Task" : "Pin Task"}>
           <div
-            className=""
+            className="flex gap-3"
             onClick={() => {
               handlePin(task);
             }}
@@ -42,6 +45,7 @@ const MoreFunctionComponent = ({ deleteTask, task, handlePin }: Props) => {
             ) : (
               <BsPinAngle className="h-5 w-5" />
             )}
+            {!task.pinned ? "Pin" : "Unpin"}
           </div>
         </Tooltip>
       ),

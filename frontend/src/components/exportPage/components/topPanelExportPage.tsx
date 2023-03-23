@@ -10,6 +10,7 @@ import SortNameIconSvg from "../../../assets/svg/sortIcons/SortNameIconSvg";
 import SortStatusIconSvg from "../../../assets/svg/sortIcons/SortStatusIconSvg";
 import SortProgressIconSvg from "../../../assets/svg/sortIcons/SortProgressIconSvg";
 import DateRangePicker from "@/components/datePicker";
+import { DownloadOutlined } from "@ant-design/icons";
 
 const { Search } = Input;
 
@@ -136,7 +137,7 @@ const TopPanelExportPage = ({ tasks }: Props) => {
       <div>
         <DateRangePicker />
       </div>
-      <div className="flex gap-12">
+      <div className="flex gap-8">
         <Input
           placeholder="Search"
           prefix={<SearchIconSvg />}
@@ -201,6 +202,10 @@ const TopPanelExportPage = ({ tasks }: Props) => {
               {sortOptions?.map((option) => option)}
             </div>
           </div>
+        </div>
+        <div className="flex w-[320px] cursor-pointer items-center gap-2 rounded-md bg-[#016C37] p-2 text-white hover:bg-[#1F9B60]">
+          <DownloadOutlined />
+          Export to Excel
         </div>
       </div>
     </div>

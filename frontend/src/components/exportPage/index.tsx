@@ -229,10 +229,7 @@ const ExportPageComponent = () => {
           <Empty description="No tasks" />
         )}
       </Spin>
-      <div className="float-right flex cursor-pointer items-center gap-2 rounded-md bg-[#016C37] p-2 text-white hover:bg-[#1F9B60]">
-        <DownloadOutlined />
-        Export to Excel
-      </div>
+     
     </>
   );
 };
