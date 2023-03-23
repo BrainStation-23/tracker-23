@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import { LoadingOutlined } from "@ant-design/icons";
 import { Modal, Spin } from "antd";
+import { config } from "config";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -99,9 +100,11 @@ export default function LoginV2() {
 											/>
 										</svg>
 									</span>
-									<span onClick={() => setIsModalOpen(true)}>
-										Sign in with Google
-									</span>
+									<Link href={`${config?.baseUrl}/auth/google`}>
+										<span onClick={() => setIsModalOpen(true)}>
+											Sign in with Google
+										</span>
+									</Link>
 								</button>
 							</div>
 						</div>
