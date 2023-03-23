@@ -11,6 +11,7 @@ import {
   TablePaginationConfig,
   Dropdown,
   MenuProps,
+  Typography,
 } from "antd";
 import { createContext, useEffect, useState } from "react";
 
@@ -51,6 +52,9 @@ import TaskDetailsModal from "../modals/taskDetails.modal";
 import { getLocalStorage, setLocalStorage } from "@/storage/storage";
 import TimeDisplayComponent from "./components/timeDisplayComponent";
 import Stopwatch from "../stopWatch/tabular/timerComponent";
+import ProgressComponent from "./components/progessComponent";
+import StaticProgressComponent from "./components/progessComponentStatic";
+const { Text } = Typography;
 const { Search } = Input;
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -171,6 +175,7 @@ const TasksPage = () => {
             task.sessions[task.sessions?.length - 1]?.endTime
           ),
           started: started,
+          created: getFormattedTime(formatDate(task.createdAt)),
           ended: ended,
           total: total,
           percentage: task.estimation
@@ -391,7 +396,10 @@ const TasksPage = () => {
             )}
             {task.status === "DONE" && <div className="w-[34px]"></div>}
             <div className="flex flex-col gap-2">
-              <div>{task?.title}</div>
+              <Text className="w-[200px] " ellipsis={{ tooltip: task?.title }}>
+                {/* <div>{task?.title}</div> */}
+                {task?.title}
+              </Text>
               {task.projectName && (
                 <div
                   className="w-max bg-[#4D4E55] px-2 py-0.5 text-xs font-medium"
@@ -435,8 +443,8 @@ const TasksPage = () => {
     },
     {
       title: "Date",
-      dataIndex: "started",
-      key: "started",
+      dataIndex: "created",
+      key: "created",
       // align: "center",
     },
     {
@@ -462,43 +470,12 @@ const TasksPage = () => {
       key: "percentage",
 
       // align: "center",
-      render: (_: any, record: TaskDto) => (
-        <div className="flex w-max gap-3">
-          <div style={{ width: 80 }}>
-            {/* <Progress percent={30} size="small" />
-          <Progress percent={50} size="small" status="active" />
-           */}
-            {record.percentage >= 0 && record.percentage < 100 ? (
-              <Progress
-                percent={record.percentage}
-                size="small"
-                strokeColor={progressColorEnum[record.status]}
-                trailColor={progressColorEnum["BG"]}
-                showInfo={false}
-              />
-            ) : record.percentage === 100 ? (
-              <Progress
-                percent={record.percentage}
-                size="small"
-                status="success"
-                strokeColor={progressColorEnum[record.status]}
-                trailColor={progressColorEnum["BG"]}
-                showInfo={false}
-              />
-            ) : (
-              <Progress
-                percent={record.percentage}
-                size="small"
-                status="exception"
-                // strokeColor={progressColorEnum[record.status]}
-                trailColor={progressColorEnum["BG"]}
-                showInfo={false}
-              />
-            )}
-          </div>
-          {record.percentage >= 0 ? <>{record.percentage}%</> : <>0%</>}
-        </div>
-      ),
+      render: (_: any, task: TaskDto) =>
+        runningTask?.id != task.id ? (
+          <StaticProgressComponent task={task} />
+        ) : (
+          <ProgressComponent task={task} />
+        ),
     },
     {
       title: "Total Spent",
@@ -573,9 +550,9 @@ const TasksPage = () => {
     // {
     //   title: "Action",
     //   key: "action",
-    //   render: (_, record) => (
+    //   render: (_, task) => (
     //     <Space size="middle">
-    //       <a>Invite {record.name}</a>
+    //       <a>Invite {task.name}</a>
     //       <a>Delete</a>
     //     </Space>
     //   ),
@@ -670,7 +647,7 @@ const TasksPage = () => {
                   columns={columns}
                   dataSource={tasks}
                   // onChange={onChange}
-                  rowKey={(record) => record.id}
+                  rowKey={(task) => task.id}
                   pagination={tableParamsAll.pagination}
                   rowClassName={getRowClassName}
                   onChange={handleTableChange}
@@ -687,7 +664,7 @@ const TasksPage = () => {
                 columns={columns}
                 dataSource={getPinnedTasks()}
                 // onChange={onChange}
-                rowKey={(record) => record.id}
+                rowKey={(task) => task.id}
                 pagination={tableParamsPinned.pagination}
                 rowClassName={getRowClassName}
                 onChange={handleTableChange}

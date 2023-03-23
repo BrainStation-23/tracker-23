@@ -10,7 +10,14 @@ import {
   getTotalSpentTime,
 } from "@/services/timeActions";
 import { getLocalStorage } from "@/storage/storage";
-import { Button, message, Progress, Table, TablePaginationConfig } from "antd";
+import {
+  Button,
+  message,
+  Progress,
+  Table,
+  TablePaginationConfig,
+  Typography,
+} from "antd";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { userAPI } from "APIs";
 import { TableParams, TaskDto } from "models/tasks";
@@ -26,10 +33,15 @@ import {
 } from "utils/constants";
 import GlobalMOdal from "../modals/globalModal";
 import StopWatchTabular from "../stopWatch/tabular/reactStopWatchTabular";
+import Stopwatch from "../stopWatch/tabular/timerComponent";
+import ProgressComponent from "../tasks/components/progessComponent";
+import StaticProgressComponent from "../tasks/components/progessComponentStatic";
+import TimeDisplayComponent from "../tasks/components/timeDisplayComponent";
 import SessionStartWarning from "../tasks/components/warning";
 import DonutChart from "./charts/donutChart";
 import Line from "./charts/MultiValueAxesChart";
 import MultiValueAxesChart from "./charts/MultiValueAxesChart";
+const { Text } = Typography;
 
 const DashBoard = () => {
   const [loading, setLoading] = useState(false);
@@ -311,7 +323,10 @@ const DashBoard = () => {
               </div>
             )}
             <div className="flex flex-col gap-2">
-              <div>{task?.title}</div>
+              <Text className="w-[200px] " ellipsis={{ tooltip: task?.title }}>
+                {/* <div>{task?.title}</div> */}
+                {task?.title}
+              </Text>
               {task.projectName && (
                 <div
                   className="w-max bg-[#4D4E55] px-2 py-0.5 text-xs font-medium"
@@ -381,59 +396,31 @@ const DashBoard = () => {
       key: "percentage",
 
       // align: "center",
-      render: (_: any, record: TaskDto) => (
-        <div className="flex w-max gap-3">
-          <div style={{ width: 80 }}>
-            {/* <Progress percent={30} size="small" />
-          <Progress percent={50} size="small" status="active" />
-           */}
-            {record.percentage >= 0 && record.percentage < 100 ? (
-              <Progress
-                percent={record.percentage}
-                size="small"
-                strokeColor={progressColorEnum[record.status]}
-                trailColor={progressColorEnum["BG"]}
-                showInfo={false}
-              />
-            ) : record.percentage === 100 ? (
-              <Progress
-                percent={record.percentage}
-                size="small"
-                status="success"
-                strokeColor={progressColorEnum[record.status]}
-                trailColor={progressColorEnum["BG"]}
-                showInfo={false}
-              />
-            ) : (
-              <Progress
-                percent={record.percentage}
-                size="small"
-                status="exception"
-                // strokeColor={progressColorEnum[record.status]}
-                trailColor={progressColorEnum["BG"]}
-                showInfo={false}
-              />
-            )}
-          </div>
-          {record.percentage >= 0 ? <>{record.percentage}%</> : <>0%</>}
-        </div>
-      ),
+      render: (_: any, task: TaskDto) =>
+        runningTask?.id != task.id ? (
+          <StaticProgressComponent task={task} />
+        ) : (
+          <ProgressComponent task={task} />
+        ),
     },
     {
       title: "Total Spent",
       dataIndex: "total",
       key: "total",
       // align: "center",
-      render: (_: any, task: TaskDto) => (
-        <StopWatchTabular
-          task={task}
-          // sessions={task.sessions}
-          // runningTask={runningTask}
-          addSession={() => {}}
-          addEndTime={() => {}}
-        />
-      ),
-      colSpan: 0.1,
+      render: (_: any, task: TaskDto) =>
+        runningTask?.id !== task.id ? (
+          <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
+        ) : (
+          <Stopwatch milliseconds={getTotalSpentTime(task.sessions)} />
+          // <StopWatchTabular
+          //   task={task}
+          //   // sessions={task.sessions}
+          //   // runningTask={runningTask}
+          //   addSession={() => {}}
+          //   addEndTime={() => {}}
+          // />
+        ),
     },
     {
       title: "Estimation",
