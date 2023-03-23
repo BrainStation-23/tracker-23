@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export enum PriorityEnum {
   HIGH = 'HIGH',
@@ -13,11 +13,11 @@ export enum StatusEnum {
 }
 export class GetTaskQuery {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   startDate: Date;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   endDate: Date;
 
   @IsOptional()

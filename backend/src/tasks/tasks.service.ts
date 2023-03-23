@@ -20,16 +20,18 @@ export class TasksService {
     const status1: any = (status as unknown as string)?.split(',');
 
     let { startDate, endDate } = query as unknown as GetTaskQuery;
-    startDate = new Date(startDate);
-    endDate = new Date(endDate);
+    startDate = startDate && new Date(startDate);
+    endDate = endDate && new Date(endDate);
 
     const databaseQuery = {
       userId: user.id,
-      createdAt: { gte: startDate, lte: endDate },
+      ...(startDate &&
+        endDate && {
+          createdAt: { gte: startDate, lte: endDate },
+        }),
       ...(priority1 && { priority: { in: priority1 } }),
       ...(status1 && { status: { in: status1 } }),
     };
-    // console.log(databaseQuery);
 
     const task = await this.prisma.task.findMany({
       where: databaseQuery,
@@ -123,7 +125,7 @@ export class TasksService {
                   data: {
                     userId: user.id,
                     title: jiraTask.fields.summary,
-                    assignee: jiraTask.fields.assignee?.accountId || null,
+                    assigneeId: jiraTask.fields.assignee?.accountId || null,
                     estimation: jiraTask.fields.timeestimate
                       ? jiraTask.fields.timeestimate / 3600
                       : null,
