@@ -1,8 +1,8 @@
 import { HttpService } from '@nestjs/axios';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Integration, IntegrationType, User } from '@prisma/client';
-import { lastValueFrom, map } from 'rxjs';
+import { IntegrationType, User } from '@prisma/client';
+import { lastValueFrom } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthorizeJiraDto } from './dto';
 
@@ -30,6 +30,8 @@ export class JiraService {
     );
     // get access token and refresh tokens and store those on integrations table.
     const url = 'https://auth.atlassian.com/oauth/token';
+    const urlResources =
+      'https://api.atlassian.com/oauth/token/accessible-resources';
     const headers: any = { 'Content-Type': 'application/json' };
     const body = {
       grant_type: 'authorization_code',
@@ -42,14 +44,13 @@ export class JiraService {
     const resp = (
       await lastValueFrom(this.httpService.post(url, body, { headers }))
     ).data;
-
     // console.log(resp);
 
     // get resources from jira
     headers['Authorization'] = `Bearer ${resp['access_token']}`;
-
-    const urlResources =
-      'https://api.atlassian.com/oauth/token/accessible-resources';
+    const accountId = JSON.parse(
+      Buffer.from(resp['access_token'].split('.')[1], 'base64').toString(),
+    ).sub as string;
 
     const respResources = (
       await lastValueFrom(this.httpService.get(urlResources, { headers }))
@@ -57,7 +58,8 @@ export class JiraService {
 
     // add all available resources in our database if doesn't exist
     respResources.forEach(async (element: any) => {
-      const integration = await this.prisma.integration.upsert({
+      // const integration = await this.prisma.integration.upsert({
+      await this.prisma.integration.upsert({
         where: {
           integrationIdentifier: { userId: user.id, siteId: element.id },
         },
@@ -73,8 +75,10 @@ export class JiraService {
           accessToken: resp.access_token,
           refreshToken: resp.refresh_token,
           site: element.url,
+          accountId: accountId,
         },
       });
+      // console.log(integration);
     });
     return await this.prisma.integration.findMany({
       where: { userId: user.id },
