@@ -9,7 +9,7 @@ export interface apiFunction {
   registerUser: (data: RegisterDto) => Promise<RegisterDto | undefined>;
   createTask: (data: CreateTaskDto) => Promise<TaskDto>;
   deleteTask: (data: any) => Promise<any | undefined>;
-  getTasks: (token?: string) => Promise<any>;
+  getTasks: (searchParams?: any) => Promise<any>;
   syncTasks: (token?: string) => Promise<any>;
   getIntegrations: (token?: string) => Promise<any>;
   createSession: (taskID: string) => Promise<any>;

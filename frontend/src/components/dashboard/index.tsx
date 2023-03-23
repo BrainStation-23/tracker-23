@@ -41,9 +41,11 @@ import SessionStartWarning from "../tasks/components/warning";
 import DonutChart from "./charts/donutChart";
 import Line from "./charts/MultiValueAxesChart";
 import MultiValueAxesChart from "./charts/MultiValueAxesChart";
+import { useRouter } from "next/router";
 const { Text } = Typography;
 
 const DashBoard = () => {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const data = [
@@ -145,6 +147,7 @@ const DashBoard = () => {
   const [reload, setReload] = useState(false);
 
   const [warningModalOpen, setWarningModalOpen] = useState<boolean>(false);
+  const [morePin, setMorePin] = useState<boolean>(false);
   const [warningData, setWarningData] = useState<any>([]);
   const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
   const getPinnedTasks = () => {
@@ -216,7 +219,13 @@ const DashBoard = () => {
         };
       });
       console.log("****************************************");
-      const pinnedTaskList = tmpTasks?.filter((task: TaskDto) => task?.pinned);
+      const tmpPinnedTaskList = tmpTasks?.filter(
+        (task: TaskDto) => task?.pinned
+      );
+      if (tmpPinnedTaskList?.length > 5) setMorePin(true);
+      const pinnedTaskList = tmpPinnedTaskList?.filter(
+        (task: TaskDto, index: any) => index < 5
+      );
       console.log(
         "🚀 ~ file: index.tsx:154 ~ getTasks ~ tmpTasks:",
         tmpTasks,
@@ -497,7 +506,7 @@ const DashBoard = () => {
         <div className="text-lg font-semibold ">Project wise Track hour</div>
         <DonutChart data={dataDonut} />
       </div>
-      <div className="flex flex-col gap-2 ">
+      <div className="relative flex flex-col gap-2">
         <div className="text-lg font-semibold ">Pinned tasks</div>
         <Table
           columns={columns}
@@ -505,7 +514,8 @@ const DashBoard = () => {
           // onChange={onChange}
           size="small"
           rowKey={(record) => record.id}
-          pagination={tableParamsPinned.pagination}
+          pagination={null}
+          // pagination={tableParamsPinned.pagination}
           rowClassName={getRowClassName}
           onChange={handleTableChange}
           scroll={{
@@ -513,6 +523,17 @@ const DashBoard = () => {
             x: true,
           }}
         />
+        {morePin && (
+          <div
+            className="absolute bottom-0 right-1/2 left-1/2 w-max cursor-pointer hover:text-blue-500"
+            onClick={() => {
+              router.push("/taskList?tab=pin");
+            }}
+          >
+            {" "}
+            Click to View More
+          </div>
+        )}
       </div>
       <div className="relative flex flex-col gap-8">
         <div className="absolute right-32 top-[30px] rounded-lg border-2 p-2">

@@ -55,7 +55,11 @@ const ProgressComponent = ({ task }: Props) => {
           />
         )}
       </div>
-      {(time / (task.estimation * 36000)).toFixed(1)}%
+      {task.estimation ? (
+        <> {(time / (task.estimation * 36000)).toFixed(1)}%</>
+      ) : (
+        <>0%</>
+      )}
     </div>
   );
 };

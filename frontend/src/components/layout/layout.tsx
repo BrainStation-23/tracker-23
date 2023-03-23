@@ -46,7 +46,7 @@ const CustomLayout = ({ children }: any) => {
             </div>
           </>
         )} */}
-				<div className="flex w-full flex-col overflow-y-auto">
+				<div className="flex w-full flex-col overflow-y-auto pl-4">
 					{!isPublicRoute && <Navbar />}
 
 					<div

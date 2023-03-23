@@ -25,9 +25,9 @@ function Stopwatch({ milliseconds }: Props) {
     const seconds = Math.floor((time % 60000) / 1000)
       .toString()
       .padStart(2, "0");
-    // return `${h > 0 ? hours + "hrs " : ""} ${
-    //   (time % 3600000) / 60000 < 1 ? sm : minutes
-    // }mins`;
+    return `${h > 0 ? hours + "hrs " : ""} ${
+      (time % 3600000) / 60000 < 1 ? sm : minutes
+    }m`;
     return `${hours}:${minutes}:${seconds}`;
   };
 
