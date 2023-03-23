@@ -1,5 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { IntegrationType, Task, User } from '@prisma/client';
+import { IntegrationType, Priority, Status, Task, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTaskDto, GetTaskQuery, UpdateTaskDto } from './dto';
 import { HttpService } from '@nestjs/axios';
@@ -104,7 +104,6 @@ export class TasksService {
         ).data;
 
         for (const jiraTask of respTasks.issues) {
-          // console.log(jiraTask);
           const doesExist = await this.prisma.taskIntegration.findUnique({
             where: {
               integratedTaskIdentifier: {
@@ -119,6 +118,23 @@ export class TasksService {
             !doesExist &&
             integration.accountId === jiraTask.fields.assignee?.accountId
           ) {
+            // console.log(jiraTask);
+            let taskStatus: Status = 'TODO';
+            if (jiraTask.fields.status.name === 'Done') {
+              taskStatus = 'DONE';
+            } else if (jiraTask.fields.status.name === 'In Progress') {
+              taskStatus = 'IN_PROGRESS';
+            }
+
+            let taskPriority: Priority;
+            if (jiraTask.fields.priority.name === 'High') {
+              taskPriority = 'HIGH';
+            } else if (jiraTask.fields.priority.name === 'Medium') {
+              taskPriority = 'MEDIUM';
+            } else {
+              taskPriority = 'LOW';
+            }
+
             taskPromises.push(
               this.prisma.task
                 .create({
@@ -130,6 +146,9 @@ export class TasksService {
                       ? jiraTask.fields.timeestimate / 3600
                       : null,
                     projectName: jiraTask.fields.project.name,
+                    status: taskStatus,
+                    priority: taskPriority,
+                    createdAt: new Date(jiraTask.fields.created),
                   },
                 })
                 .then((task) => {
@@ -149,6 +168,7 @@ export class TasksService {
         }
       }
       await Promise.allSettled(taskPromises);
+      // console.log(tasks);
       return await this.getTasks2(user);
     } catch (err) {
       console.error('checking error', err);
