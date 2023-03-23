@@ -54,6 +54,8 @@ import TimeDisplayComponent from "./components/timeDisplayComponent";
 import Stopwatch from "../stopWatch/tabular/timerComponent";
 import ProgressComponent from "./components/progessComponent";
 import StaticProgressComponent from "./components/progessComponentStatic";
+import { useRouter } from "next/router";
+import { getDateRangeArray } from "../datePicker";
 const { Text } = Typography;
 const { Search } = Input;
 export const TaskContext = createContext<any>({
@@ -65,6 +67,11 @@ export const TaskContext = createContext<any>({
 });
 
 const TasksPage = () => {
+  const router = useRouter();
+  console.log(
+    "🚀 ~ file: index.tsx:70 ~ TasksPage ~ router:",
+    router.query.tab
+  );
   const [viewModalOpen, setViewModalOpen] = useState<boolean>(false);
   const [taskViewModalOpen, setTaskViewModalOpen] = useState<boolean>(false);
   const [warningModalOpen, setWarningModalOpen] = useState<boolean>(false);
@@ -73,7 +80,15 @@ const TasksPage = () => {
   const [searchedTasks, setSearchedTasks] = useState<TaskDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [activeTab, setActiveTab] = useState("All");
+  const [activeTab, setActiveTab] = useState(
+    router.query.tab === "pin" ? "Pin" : "All"
+  );
+  const [searchParams, setSearchParams] = useState({
+    searchText: null,
+    selectedDate: getDateRangeArray("this-week"),
+    priority: null,
+    status: null,
+  });
   const [syncing, setSyncing] = useState(false);
   const [reload, setReload] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
@@ -144,7 +159,7 @@ const TasksPage = () => {
     let pinnedTasks = getLocalStorage("pinnedTasks");
     if (!pinnedTasks) pinnedTasks = [];
     try {
-      const res = await userAPI.getTasks();
+      const res = await userAPI.getTasks(searchParams);
       const tmpTasks = res.map((task: TaskDto) => {
         task.sessions = task.sessions.sort(function compareFn(a: any, b: any) {
           return a.id - b.id;
@@ -331,6 +346,10 @@ const TasksPage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
+
+  // useEffect(() => {
+  //   getTasks();
+  // }, [searchParams]);
 
   useEffect(() => {
     if (tasks) {
@@ -637,7 +656,7 @@ const TasksPage = () => {
             </Button>
           </div>
         </div>
-        <TopPanel {...{ tasks, activeTab, setActiveTab }} />
+        <TopPanel {...{ tasks, activeTab, setActiveTab, setSearchParams }} />
 
         <Spin spinning={loading}>
           {activeTab === "All" ? (

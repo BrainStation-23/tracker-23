@@ -9,7 +9,8 @@ import { useState } from "react";
 import SortNameIconSvg from "../../../assets/svg/sortIcons/SortNameIconSvg";
 import SortStatusIconSvg from "../../../assets/svg/sortIcons/SortStatusIconSvg";
 import SortProgressIconSvg from "../../../assets/svg/sortIcons/SortProgressIconSvg";
-import DateRangePicker from "@/components/datePicker";
+import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
+import { useEffect } from "react";
 
 const { Search } = Input;
 
@@ -17,12 +18,21 @@ type Props = {
   tasks: TaskDto[];
   activeTab: string;
   setActiveTab: Function;
+  setSearchParams: Function;
 };
-const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
+const TopPanel = ({
+  tasks,
+  activeTab,
+  setActiveTab,
+  setSearchParams,
+}: Props) => {
   const [searchText, setSearchText] = useState("");
   const [status, setStatus] = useState("Status");
   const [priority, setPriority] = useState("Priority");
   const [active, setActive] = useState("");
+  const [selectedDate, setSelectedDate] = useState(
+    getDateRangeArray("this-week")
+  );
   const totalPinned = tasks?.filter((task) => task.pinned)?.length;
   const tabs = ["All", "Pin"];
   const activeButton = (tab: string, setActiveTab: Function) => (
@@ -72,7 +82,15 @@ const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
     </div>
   );
   // const handleOnClick = () => {};
-
+  useEffect(() => {
+    setSearchParams({
+      searchText: searchText,
+      selectedDate: selectedDate,
+      priority: priority,
+      status: status,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchText, selectedDate, priority, status]);
   const sortOptions = [
     // {
     //   icon: <SortNameIconSvg />,
@@ -143,7 +161,7 @@ const TopPanel = ({ tasks, activeTab, setActiveTab }: Props) => {
         })}
       </div>
       <div className="flex items-center gap-12">
-        <DateRangePicker />
+        <DateRangePicker {...{ setSelectedDate }} />
         <Input
           placeholder="Search"
           prefix={<SearchIconSvg />}
