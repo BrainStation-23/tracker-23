@@ -365,28 +365,28 @@ const TasksPage = () => {
       render: (_: any, task: TaskDto) => {
         return (
           <div className=" flex items-center gap-2">
-            {
-              // task.sessions &&
-              // (task.sessions[task.sessions?.length - 1]?.endTime ||
-              //   task.sessions?.length === 0)
-              runningTask?.id != task.id ? (
-                <div
-                  onClick={() => {
-                    startSession(task);
-                  }}
-                >
-                  <PlayIconSvg />
-                </div>
-              ) : (
-                <div
-                  onClick={() => {
-                    stopSession(task);
-                  }}
-                >
-                  <PauseIconSvg />
-                </div>
-              )
-            }
+            {task.status !== "DONE" && (
+              <>
+                {runningTask?.id != task.id ? (
+                  <div
+                    onClick={() => {
+                      startSession(task);
+                    }}
+                  >
+                    <PlayIconSvg />
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => {
+                      stopSession(task);
+                    }}
+                  >
+                    <PauseIconSvg />
+                  </div>
+                )}
+              </>
+            )}
+            {task.status === "DONE" && <div className="w-[34px]"></div>}
             <div className="flex flex-col gap-2">
               <div>{task?.title}</div>
               {task.projectName && (

@@ -16,22 +16,22 @@ const MoreFunctionComponent = ({ deleteTask, task, handlePin }: Props) => {
     {
       key: "1",
       label: (
-        <div
-          className="flex gap-2 bg-white p-1"
+        <Button
+          className="flex gap-2 bg-white p-1 px-2"
           onClick={() => {
             deleteTask(task.id);
           }}
         >
           <DeleteOutlined className="w-6 gap-2" style={{ fontSize: "24px" }} />
           Delete
-        </div>
+        </Button>
       ),
     },
     {
       key: "1",
       label: (
-        <div
-          className="flex gap-3  p-1"
+        <Button
+          className="flex w-full gap-3 p-1  px-2"
           onClick={() => {
             handlePin(task);
           }}
@@ -42,7 +42,7 @@ const MoreFunctionComponent = ({ deleteTask, task, handlePin }: Props) => {
             <BsPinAngle className="h-5 w-5" />
           )}
           {task.pinned ? "Pin" : "Unpin"}
-        </div>
+        </Button>
       ),
     },
   ];
