@@ -13,7 +13,7 @@ const LogOutButton = () => {
     if (loggedOut) router.push("/login");
   };
   return (
-    <Button type="primary" className="" onClick={() => handleLogOut()}>
+    <Button type="primary" danger className="" onClick={() => handleLogOut()}>
       <LogoutOutlined /> Log out
     </Button>
   );
