@@ -11,7 +11,7 @@ const DonutChart = ({ data }: any) => {
 
     const chart = am4core.create(chartRef.current, am4charts.PieChart);
 
-    chart.logo.disabled = true;
+    // chart.logo.disabled = true;
     chart.data = data;
 
     const pieSeries = chart.series.push(new am4charts.PieSeries());
@@ -19,6 +19,11 @@ const DonutChart = ({ data }: any) => {
     pieSeries.dataFields.category = "category";
     pieSeries.labels.template.disabled = true;
     pieSeries.ticks.template.disabled = true;
+    const label = chart.seriesContainer.createChild(am4core.Label);
+    label.text = "Total : 40 hrs";
+    label.horizontalCenter = "middle";
+    label.verticalCenter = "middle";
+    label.fontSize = 20;
 
     // chart.series.push(new am4charts.PieSeries());
     // const series2 = chart.series.push(new am4charts.PieSeries());
@@ -33,8 +38,8 @@ const DonutChart = ({ data }: any) => {
     // series2.hiddenState.properties.startAngle = -90;
     // series2.hiddenState.properties.endAngle = 270;
 
-    // chart.legend = new am4charts.Legend();
-    // chart.legend.position = 'right';
+    chart.legend = new am4charts.Legend();
+    chart.legend.position = "right";
 
     chart.innerRadius = am4core.percent(40);
 

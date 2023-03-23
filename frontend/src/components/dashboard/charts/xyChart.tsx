@@ -10,8 +10,8 @@ export default function XYChart({ data }: any) {
     // Themes end
 
     // Create chart instance
-    const chart = am4core.create("chartdiv", am4charts.XYChart);
-    chart.logo.disabled = true;
+    const chart = am4core.create("chartDiv", am4charts.XYChart);
+    // chart.logo.disabled = true;
 
     // Add data
     chart.data = data;
@@ -19,8 +19,9 @@ export default function XYChart({ data }: any) {
     // Create axes
     const categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
     categoryAxis.dataFields.category = "day";
-    categoryAxis.renderer.grid.template.location = 0;
-    categoryAxis.renderer.minGridDistance = 30;
+    categoryAxis.renderer.grid.template.location = null;
+    categoryAxis.renderer.grid.template.strokeOpacity = 0;
+    // categoryAxis.renderer.minGridDistance = 30;
 
     categoryAxis.renderer.labels.template.adapter.add(
       "dy",
@@ -42,6 +43,7 @@ export default function XYChart({ data }: any) {
     const columnTemplate = series.columns.template;
     columnTemplate.strokeWidth = 2;
     columnTemplate.strokeOpacity = 1;
+    columnTemplate.width = 10;
 
     // Clean up
     return () => {
@@ -50,5 +52,5 @@ export default function XYChart({ data }: any) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <div id="chartdiv" style={{ width: "90%", height: "500px" }}></div>;
+  return <div id="chartDiv" style={{ width: "90%", height: "500px" }}></div>;
 }

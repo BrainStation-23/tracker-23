@@ -24,8 +24,12 @@ import {
   taskPriorityEnum,
   taskStatusEnum,
 } from "utils/constants";
+import GlobalMOdal from "../modals/globalModal";
 import StopWatchTabular from "../stopWatch/tabular/reactStopWatchTabular";
+import SessionStartWarning from "../tasks/components/warning";
 import DonutChart from "./charts/donutChart";
+import Line from "./charts/MultiValueAxesChart";
+import MultiValueAxesChart from "./charts/MultiValueAxesChart";
 
 const DashBoard = () => {
   const [loading, setLoading] = useState(false);
@@ -36,6 +40,11 @@ const DashBoard = () => {
     { category: "Testing", value: 15 },
     { category: "UI", value: 10 },
     { category: "Backend", value: 30 },
+  ];
+  const dataDonut = [
+    { category: "Tracker23", value: 20 },
+    { category: "Time Tackle", value: 15 },
+    { category: "BS Commerce", value: 5 },
   ];
   const data2 = [
     { day: 1, hours: 3 },
@@ -69,6 +78,42 @@ const DashBoard = () => {
     { day: 29, hours: 1 },
     { day: 30, hours: 5 },
   ];
+  const weekData = [
+    { day: "18 March", hours: 8 },
+    { day: "19 March", hours: 1 },
+    { day: "20 March", hours: 6 },
+    { day: "21 March", hours: 2 },
+    { day: "22 March", hours: 3 },
+    { day: "23 March", hours: 4 },
+    { day: "24 March", hours: 8 },
+  ];
+  const data3 = [
+    {
+      category: "Category 1",
+      value1: 10,
+      value2: 20,
+    },
+    {
+      category: "Category 2",
+      value1: 20,
+      value2: 25,
+    },
+    {
+      category: "Category 3",
+      value1: 15,
+      value2: 30,
+    },
+    {
+      category: "Category 4",
+      value1: 5,
+      value2: 15,
+    },
+    {
+      category: "Category 5",
+      value1: 25,
+      value2: 10,
+    },
+  ];
   const handleTableChange = (
     pagination: TablePaginationConfig,
     filters: Record<string, FilterValue>,
@@ -85,6 +130,10 @@ const DashBoard = () => {
     //   setData([]);
     // }
   };
+  const [reload, setReload] = useState(false);
+
+  const [warningModalOpen, setWarningModalOpen] = useState<boolean>(false);
+  const [warningData, setWarningData] = useState<any>([]);
   const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
   const getPinnedTasks = () => {
     return tasks.filter((task) => task.pinned);
@@ -179,6 +228,63 @@ const DashBoard = () => {
       setLoading(false);
     }
   };
+
+  const handleWarningClick = async (proceed: boolean) => {
+    setWarningModalOpen(false);
+    if (proceed) {
+      try {
+        await stopSession(runningTask);
+        setRunningTask(warningData);
+        await handleSessionStart(warningData);
+        setWarningData(null);
+      } catch (error) {
+        message.error("Something went wrong.");
+      }
+    }
+    setWarningModalOpen(false);
+  };
+  const handleSessionStart = async (task: TaskDto) => {
+    const session = await userAPI.createSession(task.id);
+    if (session) {
+      if (!task.sessions) task.sessions = [];
+      task.sessions?.push(session);
+      task.status = "IN_PROGRESS";
+      setRunningTask({ ...task });
+      session && message.success("Session Started");
+      setReload(!reload);
+    } else message.error("Session Start Failed");
+  };
+  const startSession = async (task: TaskDto) => {
+    console.log(">>>>>>", runningTask);
+
+    if (runningTask && runningTask?.id != task.id) {
+      setWarningData(task);
+      setWarningModalOpen(true);
+    } else {
+      await handleSessionStart(task);
+    }
+  };
+  const stopSession = async (task: TaskDto) => {
+    const session = await userAPI.stopSession(task.id);
+    if (session) {
+      task.sessions = task.sessions?.map((_session: any) => {
+        if (_session.id === session.id) return session;
+        else return _session;
+      });
+      const st: any = formatDate(session.endTime);
+      const en: any = formatDate(session.startTime);
+      console.log("🚀 🚀🚀🚀🚀🚀🚀🚀🚀", session, st - en);
+
+      (task.percentage = task.estimation
+        ? Math.round(
+            getTotalSpentTime(task.sessions) / (task.estimation * 36000)
+          )
+        : -1),
+        setRunningTask(null);
+      session && message.success("Session Ended");
+      setReload(!reload);
+    } else message.error("Session Ending Failed");
+  };
   const columns: any = [
     {
       title: "Task Name",
@@ -187,25 +293,23 @@ const DashBoard = () => {
       render: (_: any, task: TaskDto) => {
         return (
           <div className=" flex items-center gap-2">
-            {/* {
-              runningTask?.id != task.id ? (
-                <div
-                  onClick={() => {
-                    startSession(task);
-                  }}
-                >
-                  <PlayIconSvg />
-                </div>
-              ) : (
-                <div
-                  onClick={() => {
-                    stopSession(task);
-                  }}
-                >
-                  <PauseIconSvg />
-                </div>
-              )
-            } */}
+            {runningTask?.id != task.id ? (
+              <div
+                onClick={() => {
+                  startSession(task);
+                }}
+              >
+                <PlayIconSvg />
+              </div>
+            ) : (
+              <div
+                onClick={() => {
+                  stopSession(task);
+                }}
+              >
+                <PauseIconSvg />
+              </div>
+            )}
             <div className="flex flex-col gap-2">
               <div>{task?.title}</div>
               {task.projectName && (
@@ -398,38 +502,65 @@ const DashBoard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <>
-      <DonutChart data={data} />
-      <div className="">
-        <div className="flex flex-col gap-2 ">
-          <div className="text-lg font-semibold ">Pinned tasks</div>
-          <Table
-            columns={columns}
-            dataSource={getPinnedTasks()}
-            // onChange={onChange}
-            size="small"
-            rowKey={(record) => record.id}
-            pagination={tableParamsPinned.pagination}
-            rowClassName={getRowClassName}
-            onChange={handleTableChange}
-            scroll={{
-              scrollToFirstRowOnChange: true,
-              x: true,
-            }}
-          />
+    <div className="flex flex-col gap-6">
+      <div className="relative flex flex-col gap-2">
+        <div className="absolute right-32 top-[90px] rounded-lg border-2 p-2">
+          This Week
         </div>
-        <div>
-          <PieChart data={data} title="Work Distribution" />
+        <div className="text-lg font-semibold ">Project wise Track hour</div>
+        <DonutChart data={dataDonut} />
+      </div>
+      <div className="flex flex-col gap-2 ">
+        <div className="text-lg font-semibold ">Pinned tasks</div>
+        <Table
+          columns={columns}
+          dataSource={getPinnedTasks()}
+          // onChange={onChange}
+          size="small"
+          rowKey={(record) => record.id}
+          pagination={tableParamsPinned.pagination}
+          rowClassName={getRowClassName}
+          onChange={handleTableChange}
+          scroll={{
+            scrollToFirstRowOnChange: true,
+            x: true,
+          }}
+        />
+      </div>
+      <div className="relative flex flex-col gap-8">
+        <div className="absolute right-32 top-[30px] rounded-lg border-2 p-2">
+          This Week
+        </div>
+        <div className="text-lg font-semibold ">Tracker By Day</div>
+        <XYChart data={weekData} />
+      </div>
+      <div>
+        <PieChart data={data} title="Task wise Track hour" />
+      </div>
+      {/* <MultiValueAxesChart data={data3} /> */}
+      <div className="relative flex w-[700px] flex-col gap-2">
+        <div className="absolute right-32 top-[40px] rounded-lg border-2 p-2">
+          This Week
+        </div>
+        <div className="text-lg font-semibold ">Actual VS Estimate</div>
+        <div className="w-full">
+          <Line />
         </div>
       </div>
-      <div className="">
-        <h1>Monthly Work Chart</h1>
-        <XYChart data={data2} />
+      <div>
+        <MyTasks />
       </div>
-      <PieChart data={data} title="Work Distribution" />
-      <div> Dash Board</div>
-      <MyTasks />
-    </>
+      <GlobalMOdal
+        isModalOpen={warningModalOpen}
+        setIsModalOpen={setWarningModalOpen}
+      >
+        <SessionStartWarning
+          runningTask={runningTask}
+          warningData={warningData}
+          handleWarningClick={handleWarningClick}
+        />
+      </GlobalMOdal>
+    </div>
   );
 };
 

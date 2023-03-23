@@ -22,7 +22,7 @@ const PieChart: React.FC<Props> = ({ data, title }) => {
     const chart = am4core.create(chartRef.current!, am4charts.PieChart);
 
     chart.data = data;
-    chart.logo.disabled = true;
+    // chart.logo.disabled = true;
 
     const series = chart.series.push(new am4charts.PieSeries());
     series.dataFields.value = "value";
@@ -43,7 +43,7 @@ const PieChart: React.FC<Props> = ({ data, title }) => {
   return (
     <div className="w-full">
       {title && <h2 className="text-lg font-bold">{title}</h2>}
-      <div ref={chartRef} className="h-[250px] w-5/6" />
+      <div ref={chartRef} className="h-[450px] w-5/6" />
     </div>
   );
 };
