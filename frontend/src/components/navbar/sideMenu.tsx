@@ -27,13 +27,17 @@ const SideMenu = () => {
         }}
       >
         <div
-          className={` group-hover:stroke-black ${
-            active ? "stroke-black" : "stroke-gray-200"
+          className={` group-hover:stroke-black group-hover:text-black ${
+            active ? "stroke-black " : "stroke-[#ADACB0] text-[#ADACB0]"
           }`}
         >
           {option.icon}
         </div>
-        <div className={`text-sm ${active ? "text-black " : "text-[#4D4E55]"}`}>
+        <div
+          className={`text-sm ${
+            active ? "font-semibold text-black" : "font-medium text-[#4D4E55]"
+          }`}
+        >
           {option.title}
         </div>
       </div>
@@ -53,8 +57,7 @@ const SideMenu = () => {
           >
             <div className="">
               <BSLogoSvg />
-            </div>{" "}
-            <div>Tracker 23</div>
+            </div>
           </div>
           <div className=" rounded-md text-gray-200">
             <div className="flex flex-col gap-3">
@@ -89,12 +92,12 @@ export const sideMenuOptions = [
   {
     link: "/integrations",
     title: "Integrations",
-    icon: <BiImport />,
+    icon: <BiImport className="h-6 w-6" />,
   },
   {
     link: "/exports",
     title: "Exports",
-    icon: <TiExport />,
+    icon: <TiExport className="h-6 w-6" />,
   },
   // { link: "/onBoarding", title: "OnBoarding Page" },
 ];
