@@ -207,6 +207,12 @@ function StopWatchTabular({ task, addSession, addEndTime }: Props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runningTask]);
+  runningTask &&
+    runningTask.id === task.id &&
+    console.log(
+      "🚀 ~ file: reactStopWatchTabular.tsx:210 ~ StopWatchTabular ~ runningTask:",
+      runningTask.title
+    );
 
   return (
     <div className="col-span-4 mx-auto grid w-40 grid-cols-6 items-center">

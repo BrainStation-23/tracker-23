@@ -16,38 +16,33 @@ const MoreFunctionComponent = ({ deleteTask, task, handlePin }: Props) => {
     {
       key: "1",
       label: (
-        <Tooltip title="Delete Task">
-          <div className="flex gap-2">
-            <DeleteOutlined
-              className="w-6 gap-2"
-              style={{ fontSize: "24px" }}
-              onClick={() => {
-                deleteTask(task.id);
-              }}
-            />
-            Delete
-          </div>
-        </Tooltip>
+        <div
+          className="flex gap-2 bg-white p-1"
+          onClick={() => {
+            deleteTask(task.id);
+          }}
+        >
+          <DeleteOutlined className="w-6 gap-2" style={{ fontSize: "24px" }} />
+          Delete
+        </div>
       ),
     },
     {
       key: "1",
       label: (
-        <Tooltip title={task.pinned ? "Unpin Task" : "Pin Task"}>
-          <div
-            className="flex gap-3"
-            onClick={() => {
-              handlePin(task);
-            }}
-          >
-            {task.pinned ? (
-              <BsPinAngleFill className="h-5 w-5" />
-            ) : (
-              <BsPinAngle className="h-5 w-5" />
-            )}
-            {!task.pinned ? "Pin" : "Unpin"}
-          </div>
-        </Tooltip>
+        <div
+          className="flex gap-3  p-1"
+          onClick={() => {
+            handlePin(task);
+          }}
+        >
+          {task.pinned ? (
+            <BsPinAngleFill className="h-5 w-5" />
+          ) : (
+            <BsPinAngle className="h-5 w-5" />
+          )}
+          {task.pinned ? "Pin" : "Unpin"}
+        </div>
       ),
     },
   ];

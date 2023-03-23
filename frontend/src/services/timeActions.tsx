@@ -2,10 +2,6 @@ import { monthsList } from "utils/constants";
 
 export const getFormattedTotalTime = (time: number) => {
   if (!time) return null;
-  console.log(
-    "🚀 ~ file: timeActions.tsx:18 ~ getFormattedTotalTime ~ time:",
-    time
-  );
   let tmp = time;
   tmp = Math.round(tmp / 1000);
   const seconds = tmp % 60;
