@@ -48,6 +48,7 @@ import { BsPinAngle } from "react-icons/bs";
 import { BsPinAngleFill } from "react-icons/bs";
 import MoreFunctionComponent from "./components/moreFunction";
 import TaskDetailsModal from "../modals/taskDetails.modal";
+import { getLocalStorage, setLocalStorage } from "@/storage/storage";
 const { Search } = Input;
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -134,6 +135,7 @@ const TasksPage = () => {
 
   const getTasks = async () => {
     setLoading(true);
+    let pinnedTasks = getLocalStorage("pinnedTasks");
     try {
       const res = await userAPI.getTasks();
       const tmpTasks = res.map((task: TaskDto) => {
@@ -156,6 +158,7 @@ const TasksPage = () => {
         const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
         return {
           ...task,
+          pinned: pinnedTasks.includes(task.id),
           id: task.id,
           title: task?.title,
           description: task.description,
@@ -196,6 +199,7 @@ const TasksPage = () => {
   };
   const syncTasks = async () => {
     setLoading(true);
+    let pinnedTasks = getLocalStorage("pinnedTasks");
     try {
       const res = await userAPI.syncTasks();
       const tmpTasks = res.map((task: TaskDto) => {
@@ -214,6 +218,7 @@ const TasksPage = () => {
         const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
         return {
           ...task,
+          pinned: pinnedTasks.includes(task.id),
           id: task.id,
           title: task?.title,
           description: task.description,
@@ -328,44 +333,28 @@ const TasksPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   console.log("runningTask", runningTask);
-  const items: MenuProps["items"] = [
-    {
-      key: "1",
-      label: (
-        <DeleteFilled
-          className="w-6 text-red-600"
-          style={{ fontSize: "24px" }}
-          onClick={() => {
-            // deleteTask(task.id);
-          }}
-        />
-      ),
-    },
-    {
-      key: "2",
-      label: (
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://www.aliyun.com"
-        >
-          2nd menu item
-        </a>
-      ),
-    },
-    {
-      key: "3",
-      label: (
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://www.luohanacademy.com"
-        >
-          3rd menu item
-        </a>
-      ),
-    },
-  ];
+  const handlePin = (task: TaskDto) => {
+    task.pinned
+      ? (tableParamsPinned.pagination.total =
+          tableParamsPinned.pagination.total - 1)
+      : (tableParamsPinned.pagination.total =
+          tableParamsPinned.pagination.total + 1);
+
+    if (task.pinned) {
+      let pinnedTasks = getLocalStorage("pinnedTasks");
+      if (!pinnedTasks) pinnedTasks = [];
+      pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
+      setLocalStorage("pinnedTasks", pinnedTasks);
+    } else {
+      let pinnedTasks = getLocalStorage("pinnedTasks");
+      if (!pinnedTasks) pinnedTasks = [];
+      pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
+      pinnedTasks.push(task.id);
+      setLocalStorage("pinnedTasks", pinnedTasks);
+    }
+    task.pinned = !task.pinned;
+    setReload(!reload);
+  };
   const columns: any = [
     {
       title: "Task Name",
@@ -373,21 +362,7 @@ const TasksPage = () => {
       key: "title",
       render: (_: any, task: TaskDto) => {
         return (
-          <div className="relative flex items-center gap-2">
-            <div
-              className="absolute top-[-10px] left-[-10px]  hover:visible"
-              onClick={() => {
-                task.pinned
-                  ? (tableParamsPinned.pagination.total =
-                      tableParamsPinned.pagination.total - 1)
-                  : (tableParamsPinned.pagination.total =
-                      tableParamsPinned.pagination.total + 1);
-                task.pinned = !task.pinned;
-                setReload(!reload);
-              }}
-            >
-              {task.pinned ? <BsPinAngleFill /> : <BsPinAngle />}
-            </div>
+          <div className=" flex items-center gap-2">
             {
               // task.sessions &&
               // (task.sessions[task.sessions?.length - 1]?.endTime ||
@@ -475,18 +450,6 @@ const TasksPage = () => {
         </div>
       ),
     },
-    // {
-    //   title: "Description",
-    //   dataIndex: "description",
-    //   key: "description",
-    //   align: "center",
-    // },
-    // {
-    //   title: "Ended",
-    //   dataIndex: "ended",
-    //   key: "ended",
-    //   align: "center",
-    // },
 
     {
       title: "Progress",
@@ -495,15 +458,7 @@ const TasksPage = () => {
 
       // align: "center",
       render: (_: any, record: TaskDto) => (
-        <div
-          className="flex w-max gap-3"
-          // style={{
-          //   color:
-          //     record.percentage >= 0 && record.percentage < 100
-          //       ? progressColorEnum[record.status]
-          //       : "red",
-          // }}
-        >
+        <div className="flex w-max gap-3">
           <div style={{ width: 80 }}>
             {/* <Progress percent={30} size="small" />
           <Progress percent={50} size="small" status="active" />
@@ -568,8 +523,8 @@ const TasksPage = () => {
     },
     {
       title: "",
-      dataIndex: "estimation",
-      key: "estimation",
+      dataIndex: "",
+      key: "",
 
       render: (_: any, task: TaskDto) => (
         <div className="flex justify-end gap-2">
@@ -582,24 +537,7 @@ const TasksPage = () => {
           >
             View
           </Button>
-          <MoreFunctionComponent {...{ task, deleteTask }} />
-          {/* <Button className="relative flex h-10 w-10 items-center p-2">
-            <MoreOutlined className="w-6" style={{ fontSize: "24px" }} />
-            <div
-              className="absolute top-[40px] right-0 z-20 rounded-lg bg-white p-4 "
-              style={{
-                border: "1px solid rgb(236, 236, 237)",
-              }}
-            >
-              <DeleteFilled
-                className="w-6 text-red-600"
-                style={{ fontSize: "24px" }}
-                onClick={() => {
-                  deleteTask(task.id);
-                }}
-              />
-            </div>
-          </Button> */}
+          <MoreFunctionComponent {...{ task, deleteTask, handlePin }} />
         </div>
       ),
     },
