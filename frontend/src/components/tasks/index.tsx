@@ -136,6 +136,7 @@ const TasksPage = () => {
   const getTasks = async () => {
     setLoading(true);
     let pinnedTasks = getLocalStorage("pinnedTasks");
+    if (!pinnedTasks) pinnedTasks = [];
     try {
       const res = await userAPI.getTasks();
       const tmpTasks = res.map((task: TaskDto) => {
@@ -200,6 +201,7 @@ const TasksPage = () => {
   const syncTasks = async () => {
     setLoading(true);
     let pinnedTasks = getLocalStorage("pinnedTasks");
+    if (!pinnedTasks) pinnedTasks = [];
     try {
       const res = await userAPI.syncTasks();
       const tmpTasks = res.map((task: TaskDto) => {
