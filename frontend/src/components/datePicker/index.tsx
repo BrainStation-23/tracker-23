@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons";
 import DownArrowIconSvg from "@/assets/svg/DownArrowIconSvg";
 const { RangePicker } = DatePicker;
-const DateRangePicker = () => {
+const DateRangePicker = ({ setSelectedDate }: any) => {
   const today = dayjs();
   const month = dayjs().month(2);
   const dayOfTheWeek = dayjs().day();
@@ -47,6 +47,7 @@ const DateRangePicker = () => {
     onClick: (val: any) => {
       console.log(val);
       setDropdownText(getDateRangeArray(val.key));
+      setSelectedDate(getDateRangeArray(val.key));
     },
   };
 
@@ -58,7 +59,7 @@ const DateRangePicker = () => {
         <Dropdown
           menu={menuProps}
           trigger={["click"]}
-          className="flex w-[300px] items-center bg-gray-50 p-2 hover:bg-gray-100 rounded"
+          className="flex w-[300px] items-center rounded bg-gray-50 p-2 hover:bg-gray-100"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

@@ -97,13 +97,31 @@ export async function deleteTaskRest(taskId: any) {
   }
 }
 
-export async function getTasksRest(token?: string) {
+export async function getTasksRest(searchParams: any) {
+  console.log(
+    "🚀 ~ file: restApi.ts:101 ~ getTasksRest ~ searchParams:",
+    searchParams
+  );
   try {
     const res = await axios.get(`${apiEndPoints.tasks}`, {
       headers: {
-        Authorization: `Bearer ${token ? token : GetCookie("access_token")}`,
+        Authorization: `Bearer ${GetCookie("access_token")}`,
       },
     });
+    // const res = await axios.get(
+    //   `${apiEndPoints.tasks}?${
+    //     searchParams?.selectedDate?.length === 2
+    //       ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[0]}`
+    //       : ""
+    //   }${searchParams?.priority ? `priority=${searchParams?.priority}` : ""}${
+    //     searchParams?.status ? `status=${searchParams?.status}` : ""
+    //   }`,
+    //   {
+    //     headers: {
+    //       Authorization: `Bearer ${GetCookie("access_token")}`,
+    //     },
+    //   }
+    // );
     console.log("getTasksRest", res);
     return res.data;
   } catch (error: any) {
@@ -113,7 +131,6 @@ export async function getTasksRest(token?: string) {
 }
 
 export async function syncTasksRest(token?: string) {
-  console.log("🚀 ~ file: restApi.ts:100 ~ getTasksRest ~ token:", token);
   console.log("<><><>", getLocalStorage("access_token"));
 
   try {
@@ -122,7 +139,6 @@ export async function syncTasksRest(token?: string) {
         Authorization: `Bearer ${token ? token : GetCookie("access_token")}`,
       },
     });
-    console.log("getTasksRest", res);
     return res.data;
   } catch (error: any) {
     toast.error("Failed to Get Task : " + error.message);
