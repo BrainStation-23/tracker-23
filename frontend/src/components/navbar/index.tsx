@@ -142,6 +142,8 @@ function Navbar() {
               menu={menuProps}
               dropdownRender={dropdownRender}
               trigger={["click"]}
+              className="duration-1000 delay-1000 transition-all"
+              overlayClassName="duration-1000 delay-1000 transition-all"
             >
               <div
                 className="flex w-[300px] items-center justify-between"

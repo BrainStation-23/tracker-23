@@ -59,6 +59,11 @@ export const getTotalSpentTime = (sessions: any) => {
       const endTime: any = new Date(session.endTime);
       total += endTime - startTime;
     }
+    else{
+      const startTime: any = new Date(session.startTime);
+      const endTime: any = new Date();
+      total += endTime - startTime;
+    }
   });
 
   if (!sessions || sessions?.length === 0) return 0;

@@ -49,6 +49,8 @@ import { BsPinAngleFill } from "react-icons/bs";
 import MoreFunctionComponent from "./components/moreFunction";
 import TaskDetailsModal from "../modals/taskDetails.modal";
 import { getLocalStorage, setLocalStorage } from "@/storage/storage";
+import TimeDisplayComponent from "./components/timeDisplayComponent";
+import Stopwatch from "../stopWatch/tabular/timerComponent";
 const { Search } = Input;
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -300,6 +302,7 @@ const TasksPage = () => {
         setRunningTask(null);
       session && message.success("Session Ended");
       setReload(!reload);
+      // getTasks();
     } else message.error("Session Ending Failed");
   };
   useEffect(() => {
@@ -502,15 +505,19 @@ const TasksPage = () => {
       dataIndex: "total",
       key: "total",
       // align: "center",
-      render: (_: any, task: TaskDto) => (
-        <StopWatchTabular
-          task={task}
-          // sessions={task.sessions}
-          // runningTask={runningTask}
-          addSession={() => {}}
-          addEndTime={() => {}}
-        />
-      ),
+      render: (_: any, task: TaskDto) =>
+        runningTask?.id !== task.id ? (
+          <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
+        ) : (
+          <Stopwatch milliseconds={getTotalSpentTime(task.sessions)} />
+          // <StopWatchTabular
+          //   task={task}
+          //   // sessions={task.sessions}
+          //   // runningTask={runningTask}
+          //   addSession={() => {}}
+          //   addEndTime={() => {}}
+          // />
+        ),
     },
     {
       title: "Estimation",
