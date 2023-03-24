@@ -82,7 +82,7 @@ export class TasksService {
     return await this.prisma.task.delete({ where: { id } });
   }
 
-  async syncTasks(user: User): Promise<Task[]> {
+  async syncTasks(user: User) {
     try {
       const tokenUrl = 'https://auth.atlassian.com/oauth/token';
       const headers: any = { 'Content-Type': 'application/json' };
@@ -115,78 +115,81 @@ export class TasksService {
         headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
         const searchUrl = `https://api.atlassian.com/ex/jira/${integration.siteId}/rest/api/3/search?`;
         // currently status is not considered.
+        for (let startAt = 0; startAt < 50000; startAt += 100) {
+          const respTasks = (
+            await lastValueFrom(
+              this.httpService.get(searchUrl, {
+                headers,
+                params: { startAt, maxResults: 100 },
+              }),
+            )
+          ).data;
+          if (respTasks.issues.length === 0) break;
 
-        const respTasks = (
-          await lastValueFrom(this.httpService.get(searchUrl, { headers }))
-        ).data;
-
-        for (const jiraTask of respTasks.issues) {
-          const doesExist = await this.prisma.taskIntegration.findUnique({
-            where: {
-              integratedTaskIdentifier: {
-                userId: user.id,
-                integratedTaskId: Number(jiraTask.id),
-                type: IntegrationType.JIRA,
+          for (const jiraTask of respTasks.issues) {
+            const doesExist = await this.prisma.taskIntegration.findUnique({
+              where: {
+                integratedTaskIdentifier: {
+                  userId: user.id,
+                  integratedTaskId: Number(jiraTask.id),
+                  type: IntegrationType.JIRA,
+                },
               },
-            },
-          });
+            });
 
-          if (
-            !doesExist &&
-            integration.accountId === jiraTask.fields.assignee?.accountId
-          ) {
-            // console.log(jiraTask);
-            let taskStatus: Status = 'TODO';
-            if (jiraTask.fields.status.name === 'Done') {
-              taskStatus = 'DONE';
-            } else if (jiraTask.fields.status.name === 'In Progress') {
-              taskStatus = 'IN_PROGRESS';
-            }
+            // console.log(doesExist);
+            if (!doesExist) {
+              // console.log(doesExist);
+              let taskStatus: Status = 'TODO';
+              if (jiraTask.fields.status.name === 'Done') {
+                taskStatus = 'DONE';
+              } else if (jiraTask.fields.status.name === 'In Progress') {
+                taskStatus = 'IN_PROGRESS';
+              }
 
-            let taskPriority: Priority;
-            if (jiraTask.fields.priority.name === 'High') {
-              taskPriority = 'HIGH';
-            } else if (jiraTask.fields.priority.name === 'Medium') {
-              taskPriority = 'MEDIUM';
-            } else {
-              taskPriority = 'LOW';
-            }
+              let taskPriority: Priority;
+              if (jiraTask.fields.priority.name === 'High') {
+                taskPriority = 'HIGH';
+              } else if (jiraTask.fields.priority.name === 'Medium') {
+                taskPriority = 'MEDIUM';
+              } else {
+                taskPriority = 'LOW';
+              }
 
-            taskPromises.push(
-              this.prisma.task
-                .create({
-                  data: {
-                    userId: user.id,
-                    title: jiraTask.fields.summary,
-                    assigneeId: jiraTask.fields.assignee?.accountId || null,
-                    estimation: jiraTask.fields.timeestimate
-                      ? jiraTask.fields.timeestimate / 3600
-                      : null,
-                    projectName: jiraTask.fields.project.name,
-                    status: taskStatus,
-                    priority: taskPriority,
-                    createdAt: new Date(jiraTask.fields.created),
-                  },
-                })
-                .then((task) => {
-                  // console.log(task);
-                  return this.prisma.taskIntegration.create({
+              taskPromises.push(
+                this.prisma.task
+                  .create({
                     data: {
                       userId: user.id,
-                      taskId: task.id,
-                      integratedTaskId: Number(jiraTask.id),
-                      type: IntegrationType.JIRA,
-                      url: jiraTask.self,
+                      title: jiraTask.fields.summary,
+                      assigneeId: jiraTask.fields.assignee?.accountId || null,
+                      estimation: jiraTask.fields.timeestimate
+                        ? jiraTask.fields.timeestimate / 3600
+                        : null,
+                      projectName: jiraTask.fields.project.name,
+                      status: taskStatus,
+                      priority: taskPriority,
+                      createdAt: new Date(jiraTask.fields.created),
                     },
-                  });
-                }),
-            );
+                  })
+                  .then((task) => {
+                    // console.log(task);
+                    return this.prisma.taskIntegration.create({
+                      data: {
+                        userId: user.id,
+                        taskId: task.id,
+                        integratedTaskId: Number(jiraTask.id),
+                        type: IntegrationType.JIRA,
+                        url: jiraTask.self,
+                      },
+                    });
+                  }),
+              );
+            }
           }
         }
       }
       await Promise.allSettled(taskPromises);
-      // console.log(tasks);
-      return await this.getTasks2(user);
     } catch (err) {
       console.error('checking error', err);
       throw new InternalServerErrorException('Something went wrong');
