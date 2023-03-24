@@ -15,31 +15,36 @@ export class TasksService {
   ) {}
 
   async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
-    const { priority, status } = query;
-    const priority1: any = (priority as unknown as string)?.split(',');
-    const status1: any = (status as unknown as string)?.split(',');
+    try {
+      const { priority, status } = query;
+      const priority1: any = (priority as unknown as string)?.split(',');
+      const status1: any = (status as unknown as string)?.split(',');
 
-    let { startDate, endDate } = query as unknown as GetTaskQuery;
-    startDate = startDate && new Date(startDate);
-    endDate = endDate && new Date(endDate);
+      let { startDate, endDate } = query as unknown as GetTaskQuery;
+      startDate = startDate && new Date(startDate);
+      endDate = endDate && new Date(endDate);
 
-    const databaseQuery = {
-      userId: user.id,
-      ...(startDate &&
-        endDate && {
-          createdAt: { gte: startDate, lte: endDate },
-        }),
-      ...(priority1 && { priority: { in: priority1 } }),
-      ...(status1 && { status: { in: status1 } }),
-    };
+      const databaseQuery = {
+        userId: user.id,
+        ...(startDate &&
+          endDate && {
+            createdAt: { gte: startDate, lte: endDate },
+          }),
+        ...(priority1 && { priority: { in: priority1 } }),
+        ...(status1 && { status: { in: status1 } }),
+      };
 
-    const task = await this.prisma.task.findMany({
-      where: databaseQuery,
-      include: {
-        sessions: true,
-      },
-    });
-    return task;
+      const task = await this.prisma.task.findMany({
+        where: databaseQuery,
+        include: {
+          sessions: true,
+        },
+      });
+      return task;
+    } catch (err) {
+      // console.log(err.message);
+      return [];
+    }
   }
 
   async getTasks2(user: User): Promise<Task[]> {
