@@ -16,7 +16,7 @@ export class TasksService {
 
   async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
     try {
-      const { priority, status } = query;
+      const { priority, status, text } = query;
       const priority1: any = (priority as unknown as string)?.split(',');
       const status1: any = (status as unknown as string)?.split(',');
 
@@ -32,6 +32,12 @@ export class TasksService {
           }),
         ...(priority1 && { priority: { in: priority1 } }),
         ...(status1 && { status: { in: status1 } }),
+        ...(text && {
+          title: {
+            contains: text,
+            mode: 'insensitive',
+          },
+        }),
       };
 
       const task = await this.prisma.task.findMany({
