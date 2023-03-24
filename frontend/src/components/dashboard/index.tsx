@@ -57,7 +57,7 @@ const DashBoard = () => {
   ];
   const dataDonut = [
     { category: "Tracker23", value: 20 },
-    { category: "Time Tackle", value: 15 },
+    { category: "TimeTackle", value: 15 },
     { category: "BS Commerce", value: 5 },
   ];
   const data2 = [
@@ -542,9 +542,9 @@ const DashBoard = () => {
         <div className="text-lg font-semibold ">Tracker By Day</div>
         <XYChart data={weekData} />
       </div>
-      <div>
+      {/* <div>
         <PieChart data={data} title="Task wise Track hour" />
-      </div>
+      </div> */}
       {/* <MultiValueAxesChart data={data3} /> */}
       <div className="relative flex w-[700px] flex-col gap-2">
         <div className="absolute right-32 top-[40px] rounded-lg border-2 p-2">
@@ -555,9 +555,9 @@ const DashBoard = () => {
           <Line />
         </div>
       </div>
-      <div>
+      {/* <div>
         <MyTasks />
-      </div>
+      </div> */}
       <GlobalMOdal
         isModalOpen={warningModalOpen}
         setIsModalOpen={setWarningModalOpen}

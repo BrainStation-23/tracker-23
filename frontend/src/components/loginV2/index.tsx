@@ -1,4 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
+import BSLogoSvg from "@/assets/svg/BSLogoSvg";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Modal, Spin } from "antd";
 import { config } from "config";
@@ -15,10 +16,11 @@ export default function LoginV2() {
 				<div className="flex w-full flex-row">
 					<div className="m-4 hidden flex-col justify-between bg-blue-600 text-white lg:flex lg:max-w-sm lg:p-8 xl:max-w-lg xl:p-12">
 						<div className="flex items-center justify-start space-x-3">
-							<span className="h-8 w-8 rounded-full bg-black"></span>
-							<a href="#" className="text-xl font-medium">
-								Tracker23
-							</a>
+								{/* <span className="h-8 w-8 rounded-full bg-black"></span>
+								<a href="#" className="text-xl font-medium">
+									Tracker23
+								</a> */}
+							<BSLogoSvg />
 						</div>
 						<div className="space-y-5">
 							<h1 className="font-extrabold lg:text-3xl xl:text-5xl xl:leading-snug">
