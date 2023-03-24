@@ -212,7 +212,7 @@ const ExportPageComponent = () => {
   }, []);
   console.log("🚀 ~ file: index.tsx:106 ~ useEffect ~ tasks:", tasks);
   return (
-    <>
+    <div className="pr-3">
       <TopPanelExportPage {...{ tasks }} />
       <Spin spinning={loading}>
         {tasks.length ? (
@@ -230,7 +230,7 @@ const ExportPageComponent = () => {
         )}
       </Spin>
      
-    </>
+    </div>
   );
 };
 export default ExportPageComponent;

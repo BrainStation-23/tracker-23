@@ -50,7 +50,13 @@ const DonutChart = ({ data }: any) => {
     };
   }, [data]);
 
-  return <div ref={chartRef} style={{ width: "100%", height: "500px" }}></div>;
+  return (
+    <div
+      ref={chartRef}
+      className="w-3/4"
+      style={{  height: "500px" }}
+    ></div>
+  );
 };
 
 export default DonutChart;

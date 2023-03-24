@@ -11,6 +11,7 @@ import {
 } from "@/services/timeActions";
 import { getLocalStorage } from "@/storage/storage";
 import {
+  Badge,
   Button,
   message,
   Progress,
@@ -500,10 +501,10 @@ const DashBoard = () => {
   return (
     <div className="flex flex-col gap-6">
       <div className="relative flex flex-col gap-2">
-        <div className="absolute right-32 top-[90px] rounded-lg border-2 p-2">
-          This Week
+        <div className="flex items-center gap-3">
+          <div className="text-lg font-semibold ">Project wise Track hour</div>
+          <div className=" rounded-lg border-2 p-1 px-2 text-sm">This Week</div>
         </div>
-        <div className="text-lg font-semibold ">Project wise Track hour</div>
         <DonutChart data={dataDonut} />
       </div>
       <div className="relative flex flex-col gap-2">
@@ -536,10 +537,11 @@ const DashBoard = () => {
         )}
       </div>
       <div className="relative flex flex-col gap-8">
-        <div className="absolute right-32 top-[30px] rounded-lg border-2 p-2">
-          This Week
+        <div className="flex items-center gap-3">
+          <div className="text-lg font-semibold ">Tracker By Day</div>
+          <div className=" rounded-lg border-2 p-1 px-2 text-sm">This Week</div>
         </div>
-        <div className="text-lg font-semibold ">Tracker By Day</div>
+        <div className="text-lg font-semibold "></div>
         <XYChart data={weekData} />
       </div>
       {/* <div>
@@ -547,10 +549,13 @@ const DashBoard = () => {
       </div> */}
       {/* <MultiValueAxesChart data={data3} /> */}
       <div className="relative flex w-[700px] flex-col gap-2">
-        <div className="absolute right-32 top-[40px] rounded-lg border-2 p-2">
+        {/* <div className=" right-32 top-[40px] rounded-lg border-2 p-2">
           This Week
+        </div> */}
+        <div className="flex items-center gap-3">
+          <div className="text-lg font-semibold ">Actual VS Estimate </div>
+          <div className=" rounded-lg border-2 p-1 px-2 text-sm">This Week</div>
         </div>
-        <div className="text-lg font-semibold ">Actual VS Estimate</div>
         <div className="w-full">
           <Line />
         </div>
