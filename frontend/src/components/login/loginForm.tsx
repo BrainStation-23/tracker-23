@@ -33,16 +33,17 @@ const LoginForm: React.FC = () => {
   return (
     <Form
       name="basic"
-      labelCol={{ span: 8 }}
-      wrapperCol={{ span: 16 }}
+      // labelCol={{ span: 8 }}
+      // wrapperCol={{ span: 16 }}
       initialValues={{ remember: true }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
       autoComplete="off"
-      className="max-w-xl mx-auto"
+      className="mx-auto w-full"
     >
       <Form.Item
-        label="Email"
+        // label="Email"
+        className=" w-full"
         name="email"
         rules={[
           { required: true, message: "Please input your email!" },
@@ -54,29 +55,37 @@ const LoginForm: React.FC = () => {
           },
         ]}
       >
-        <Input type="email" />
+        <Input
+          type="text"
+          placeholder="Email"
+          className="flex w-full rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
+        />
+        {/* <Input type="email" className="" /> */}
       </Form.Item>
 
       <Form.Item
-        label="Password"
+        // label="Password"
         name="password"
         rules={[{ required: true, message: "Please input your password!" }]}
       >
-        <Input.Password />
+        <Input.Password
+          placeholder="Password"
+          className="flex rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
+        />
       </Form.Item>
 
-      <Form.Item
+      {/* <Form.Item
         name="remember"
         valuePropName="checked"
         wrapperCol={{ offset: 8, span: 16 }}
       >
         <Checkbox>Remember me</Checkbox>
-      </Form.Item>
+      </Form.Item> */}
 
-      <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-        <Button type="primary" htmlType="submit" className="bg-blue-600">
-          Submit
-        </Button>
+      <Form.Item >
+        <button className="w-full flex flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
+          Login
+        </button>
       </Form.Item>
     </Form>
   );

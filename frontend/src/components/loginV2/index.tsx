@@ -4,6 +4,7 @@ import { Modal, Spin } from "antd";
 import { config } from "config";
 import Link from "next/link";
 import { useState } from "react";
+import LoginForm from "../login/loginForm";
 
 export default function LoginV2() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,14 +61,15 @@ export default function LoginV2() {
 								</p>
 							</div>
 							<div className="flex max-w-md flex-col space-y-5">
-								<input
+								<LoginForm />
+								{/* <input
 									type="text"
 									placeholder="Username"
 									className="flex rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
 								/>
 								<button className="flex flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
 									Confirm with email
-								</button>
+								</button> */}
 								<div className="flex items-center justify-center">
 									<span className="w-full border border-black"></span>
 									<span className="px-4">Or</span>
