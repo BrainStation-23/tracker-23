@@ -17,15 +17,21 @@ export class TasksService {
   async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
     try {
       const { priority, status, text } = query;
+      let { startDate, endDate } = query as unknown as GetTaskQuery;
+
+      const integrations = await this.prisma.integration.findMany({
+        where: { userId: user.id, type: IntegrationType.JIRA },
+      });
+
       const priority1: any = (priority as unknown as string)?.split(',');
       const status1: any = (status as unknown as string)?.split(',');
 
-      let { startDate, endDate } = query as unknown as GetTaskQuery;
       startDate = startDate && new Date(startDate);
       endDate = endDate && new Date(endDate);
 
       const databaseQuery = {
         userId: user.id,
+        assigneeId: integrations[0].accountId,
         ...(startDate &&
           endDate && {
             createdAt: { gte: startDate, lte: endDate },
