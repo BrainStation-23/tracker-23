@@ -25,4 +25,8 @@ export class GetTaskQuery {
 
   @IsOptional()
   status: StatusEnum[];
+
+  @IsString()
+  @IsOptional()
+  text: string;
 }
