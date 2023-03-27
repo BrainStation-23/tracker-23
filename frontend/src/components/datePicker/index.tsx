@@ -87,6 +87,8 @@ export const getDateRangeArray = (key: string) => {
   let startDate, endDate;
 
   switch (key) {
+    case "all":
+      return null;
     case "today":
       startDate = localFormat(dayjs());
       endDate = localFormat(dayjs());
@@ -135,6 +137,7 @@ export const localFormat = (value: any) => {
 };
 export const dateRangeOptions = {
   today: "Today",
+  all: "All",
   yesterday: "Yesterday",
   tomorrow: "Tomorrow",
   "this-week": "This week",

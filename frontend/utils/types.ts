@@ -1,3 +1,4 @@
+import { SearchParamsModel } from "models/apiParams";
 import { LoginDto, LoginResponseDto } from "models/auth";
 import { CreateTaskDto } from "models/tasks";
 import { RegisterDto } from "../models/auth/index";
@@ -9,7 +10,7 @@ export interface apiFunction {
   registerUser: (data: RegisterDto) => Promise<RegisterDto | undefined>;
   createTask: (data: CreateTaskDto) => Promise<TaskDto>;
   deleteTask: (data: any) => Promise<any | undefined>;
-  getTasks: (searchParams?: any) => Promise<any>;
+  getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   syncTasks: (token?: string) => Promise<any>;
   getIntegrations: (token?: string) => Promise<any>;
   createSession: (taskID: string) => Promise<any>;

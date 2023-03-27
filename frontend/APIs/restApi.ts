@@ -11,6 +11,7 @@ import { apiEndPoints } from "utils/apiEndPoints";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { message } from "antd";
+import { SearchParamsModel } from "models/apiParams";
 
 export async function loginRest(
   data: LoginDto
@@ -97,31 +98,37 @@ export async function deleteTaskRest(taskId: any) {
   }
 }
 
-export async function getTasksRest(searchParams: any) {
+export async function getTasksRest(searchParams: SearchParamsModel) {
   console.log(
     "🚀 ~ file: restApi.ts:101 ~ getTasksRest ~ searchParams:",
     searchParams
   );
   try {
-    const res = await axios.get(`${apiEndPoints.tasks}`, {
-      headers: {
-        Authorization: `Bearer ${GetCookie("access_token")}`,
-      },
-    });
-    // const res = await axios.get(
-    //   `${apiEndPoints.tasks}?${
-    //     searchParams?.selectedDate?.length === 2
-    //       ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[0]}`
-    //       : ""
-    //   }${searchParams?.priority ? `priority=${searchParams?.priority}` : ""}${
-    //     searchParams?.status ? `status=${searchParams?.status}` : ""
-    //   }`,
-    //   {
-    //     headers: {
-    //       Authorization: `Bearer ${GetCookie("access_token")}`,
-    //     },
-    //   }
-    // );
+    // const res = await axios.get(`${apiEndPoints.tasks}`, {
+    //   headers: {
+    //     Authorization: `Bearer ${GetCookie("access_token")}`,
+    //   },
+    // });
+    const res = await axios.get(
+      `${apiEndPoints.tasks}?${
+        searchParams?.selectedDate?.length === 2
+          ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
+          : ""
+      }${
+        searchParams?.priority && searchParams?.priority !== "Priority"
+          ? `&priority=${searchParams.priority}`
+          : ""
+      }${
+        searchParams?.status && searchParams?.status !== "Status"
+          ? `&status=${searchParams?.status}`
+          : ""
+      }`,
+      {
+        headers: {
+          Authorization: `Bearer ${GetCookie("access_token")}`,
+        },
+      }
+    );
     console.log("getTasksRest", res);
     return res.data;
   } catch (error: any) {

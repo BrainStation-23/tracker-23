@@ -347,9 +347,10 @@ const TasksPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
-  // useEffect(() => {
-  //   getTasks();
-  // }, [searchParams]);
+  useEffect(() => {
+    getTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   useEffect(() => {
     if (tasks) {

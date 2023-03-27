@@ -112,9 +112,9 @@ const TopPanel = ({
         style={{ width: 120 }}
         value={priority}
         options={[
-          { value: "High", label: "High" },
-          { value: "Medium", label: "Medium" },
-          { value: "Low", label: "Low" },
+          { value: "HIGH", label: "High" },
+          { value: "MEDIUM", label: "Medium" },
+          { value: "LOW", label: "Low" },
         ]}
         onChange={(value) => setPriority(value)}
       />
@@ -135,9 +135,9 @@ const TopPanel = ({
         value={status}
         style={{ width: 120 }}
         options={[
-          { value: "Todo", label: "Todo" },
-          { value: "In Progress", label: "In Progress" },
-          { value: "Done", label: "Done" },
+          { value: "TODO", label: "Todo" },
+          { value: "IN_PROGRESS", label: "In Progress" },
+          { value: "DONE", label: "Done" },
         ]}
         onChange={(value) => setStatus(value)}
       />
