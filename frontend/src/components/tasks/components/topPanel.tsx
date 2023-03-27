@@ -1,18 +1,13 @@
 import FilterIconSvg from "@/assets/svg/filterIconSvg";
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
-import ClockIconSvg from "@/assets/svg/sortIcons/ClockIconSvg";
-import SortPriorityIconSvg from "@/assets/svg/sortIcons/SortPriorityIconSvg";
 import SortIconSvg from "@/assets/svg/sortIconSvg";
 import { Input, Select } from "antd";
 import { TaskDto } from "models/tasks";
 import { useState } from "react";
-import SortNameIconSvg from "../../../assets/svg/sortIcons/SortNameIconSvg";
-import SortStatusIconSvg from "../../../assets/svg/sortIcons/SortStatusIconSvg";
-import SortProgressIconSvg from "../../../assets/svg/sortIcons/SortProgressIconSvg";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { useEffect } from "react";
-
-const { Search } = Input;
+import StatusSelectorComponent from "./statusSelector";
+import PrioritySelectorComponent from "./prioritySelector";
 
 type Props = {
   tasks: TaskDto[];
@@ -81,7 +76,7 @@ const TopPanel = ({
       <div className="text-[15px] text-[#4D4E55]">{tab}</div>
     </div>
   );
-  // const handleOnClick = () => {};
+
   useEffect(() => {
     setSearchParams({
       searchText: searchText,
@@ -96,52 +91,11 @@ const TopPanel = ({
     //   icon: <SortNameIconSvg />,
     //   title: "Name",
     // },
-    <div
+    <PrioritySelectorComponent
       key={Math.random()}
-      className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
-      // style={{
-      //   color: active === "Sort" ? "#00A3DE" : "black",
-      //   // backgroundColor: "#00A3DE",
-      // }}
-      // onClick={() => setActive("Sort")}
-    >
-      <SortProgressIconSvg />
-      {/* <span className="font-normal">Priority</span> */}
-      <Select
-        defaultValue="Priority"
-        style={{ width: 120 }}
-        value={priority}
-        options={[
-          { value: "HIGH", label: "High" },
-          { value: "MEDIUM", label: "Medium" },
-          { value: "LOW", label: "Low" },
-        ]}
-        onChange={(value) => setPriority(value)}
-      />
-    </div>,
-    <div
-      key={Math.random()}
-      className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
-      // style={{
-      //   color: active === "Sort" ? "#00A3DE" : "black",
-      //   // backgroundColor: "#00A3DE",
-      // }}
-      // onClick={() => setActive("Sort")}
-    >
-      <SortStatusIconSvg />
-      {/* <span className="font-normal">Status</span> */}
-      <Select
-        defaultValue="Status"
-        value={status}
-        style={{ width: 120 }}
-        options={[
-          { value: "TODO", label: "Todo" },
-          { value: "IN_PROGRESS", label: "In Progress" },
-          { value: "DONE", label: "Done" },
-        ]}
-        onChange={(value) => setStatus(value)}
-      />
-    </div>,
+      {...{ priority, setPriority }}
+    />,
+    <StatusSelectorComponent key={Math.random()} {...{ status, setStatus }} />,
     // {
     //   icon: <ClockIconSvg />,
     //   title: "Estimation",
@@ -220,20 +174,6 @@ const TopPanel = ({
               }}
             >
               {sortOptions?.map((option) => option)}
-              {/* {sortOptions?.map((option) => (
-                <div
-                  key={Math.random()}
-                  className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
-                  // style={{
-                  //   color: active === "Sort" ? "#00A3DE" : "black",
-                  //   // backgroundColor: "#00A3DE",
-                  // }}
-                  // onClick={() => setActive("Sort")}
-                >
-                  {option.icon}
-                  <span className="font-normal">{option.title}</span>
-                </div>
-              ))} */}
             </div>
           </div>
         </div>
