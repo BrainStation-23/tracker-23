@@ -115,10 +115,16 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : ""
       }${
+        searchParams?.searchText && searchParams?.searchText.length > 0
+          ? `&text=${searchParams.searchText}`
+          : ""
+      }
+      ${
         searchParams?.priority && searchParams?.priority !== "Priority"
           ? `&priority=${searchParams.priority}`
           : ""
-      }${
+      }
+      ${
         searchParams?.status && searchParams?.status !== "Status"
           ? `&status=${searchParams?.status}`
           : ""

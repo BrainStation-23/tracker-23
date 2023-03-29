@@ -38,3 +38,12 @@ export const updateTask = (task: any, taskName: string) => {
     return false;
   }
 };
+
+export const getStringFromArray = (val: string[]) => {
+  let res = "";
+
+  val?.forEach((v, index) => {
+    index > 0 ? (res += "," + v) : (res += v);
+  });
+  return res;
+};
