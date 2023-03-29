@@ -59,15 +59,6 @@ export class TasksService {
     }
   }
 
-  async getTasks2(user: User): Promise<Task[]> {
-    return await this.prisma.task.findMany({
-      where: { userId: user.id },
-      include: {
-        sessions: true,
-      },
-    });
-  }
-
   async createTask(user: User, dto: CreateTaskDto) {
     return await this.prisma.task.create({
       data: { userId: user.id, ...dto },
@@ -82,11 +73,11 @@ export class TasksService {
     return await this.prisma.task.delete({ where: { id } });
   }
 
-  async syncTasks(user: User): Promise<Task[]> {
+  async syncTasks(user: User) {
     try {
       const tokenUrl = 'https://auth.atlassian.com/oauth/token';
       const headers: any = { 'Content-Type': 'application/json' };
-      const taskPromises: Promise<any>[] = [];
+      let taskPromises: Promise<any>[] = [];
 
       const integrations = await this.prisma.integration.findMany({
         where: { userId: user.id, type: IntegrationType.JIRA },
@@ -116,41 +107,47 @@ export class TasksService {
         const searchUrl = `https://api.atlassian.com/ex/jira/${integration.siteId}/rest/api/3/search?`;
         // currently status is not considered.
 
-        const respTasks = (
-          await lastValueFrom(this.httpService.get(searchUrl, { headers }))
-        ).data;
+        let count = 0;
+        for (let startAt = 0; startAt < 50000; startAt += 100) {
+          const respTasks = (
+            await lastValueFrom(
+              this.httpService.get(searchUrl, {
+                headers,
+                params: { startAt, maxResults: 100 },
+              }),
+            )
+          ).data;
+          if (respTasks.issues.length === 0) break;
 
-        for (const jiraTask of respTasks.issues) {
-          const doesExist = await this.prisma.taskIntegration.findUnique({
+          const map = new Map<number, any>();
+          respTasks.issues.map((issue: any) => {
+            map.set(Number(issue.id), issue);
+          });
+
+          // find task list from local database
+          const tasks = await this.prisma.taskIntegration.findMany({
             where: {
-              integratedTaskIdentifier: {
-                userId: user.id,
-                integratedTaskId: Number(jiraTask.id),
-                type: IntegrationType.JIRA,
-              },
+              userId: user.id,
+              integratedTaskId: { in: [...map.keys()] },
+              type: IntegrationType.JIRA,
+            },
+            select: {
+              integratedTaskId: true,
             },
           });
 
-          if (
-            !doesExist &&
-            integration.accountId === jiraTask.fields.assignee?.accountId
-          ) {
-            // console.log(jiraTask);
-            let taskStatus: Status = 'TODO';
-            if (jiraTask.fields.status.name === 'Done') {
-              taskStatus = 'DONE';
-            } else if (jiraTask.fields.status.name === 'In Progress') {
-              taskStatus = 'IN_PROGRESS';
-            }
+          // keep the task list that doesn't exist in the database
+          for (let j = 0, len = tasks.length; j < len; j++) {
+            const key = tasks[j].integratedTaskId;
+            map.delete(key);
+          }
 
-            let taskPriority: Priority;
-            if (jiraTask.fields.priority.name === 'High') {
-              taskPriority = 'HIGH';
-            } else if (jiraTask.fields.priority.name === 'Medium') {
-              taskPriority = 'MEDIUM';
-            } else {
-              taskPriority = 'LOW';
-            }
+          for (const taskId of map.keys()) {
+            const jiraTask = map.get(taskId);
+            const taskStatus = this.formatStatus(jiraTask.fields.status.name);
+            const taskPriority = this.formatPriority(
+              jiraTask.fields.priority.name,
+            );
 
             taskPromises.push(
               this.prisma.task
@@ -169,7 +166,6 @@ export class TasksService {
                   },
                 })
                 .then((task) => {
-                  // console.log(task);
                   return this.prisma.taskIntegration.create({
                     data: {
                       userId: user.id,
@@ -182,14 +178,37 @@ export class TasksService {
                 }),
             );
           }
+          await Promise.allSettled(taskPromises);
+          count += taskPromises.length;
+          taskPromises = [];
         }
+        return { message: `Newly ${count} Tasks Successfully synced` };
       }
-      await Promise.allSettled(taskPromises);
-      // console.log(tasks);
-      return await this.getTasks2(user);
     } catch (err) {
       console.error('checking error', err);
       throw new InternalServerErrorException('Something went wrong');
+    }
+  }
+
+  formatStatus(status: string) {
+    switch (status) {
+      case 'Done':
+        return 'DONE';
+      case 'In Progress':
+        return 'IN_PROGRESS';
+      default:
+        return 'TODO';
+    }
+  }
+
+  formatPriority(priority: string) {
+    switch (priority) {
+      case 'High':
+        return 'HIGH';
+      case 'Medium':
+        return 'MEDIUM';
+      case 'Low':
+        return 'LOW';
     }
   }
 }
