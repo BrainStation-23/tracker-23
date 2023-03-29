@@ -10,11 +10,14 @@ import type { TableProps } from "antd/es/table";
 import { TaskDto } from "models/tasks";
 import { getFormattedTime } from "../../services/timeActions";
 import { userAPI } from "APIs";
-import DateRangePicker from "../datePicker";
+import DateRangePicker, { getDateRangeArray } from "../datePicker";
 import {
   PriorityBGColorEnum,
   PriorityBorderColorEnum,
+  statusBGColorEnum,
+  statusBorderColorEnum,
   taskPriorityEnum,
+  taskStatusEnum,
 } from "utils/constants";
 import TopPanelExportPage from "./components/topPanelExportPage";
 import { DownloadOutlined } from "@ant-design/icons";
@@ -61,6 +64,31 @@ const columns: any = [
     ),
     align: "center",
     // render: (text) => <a>{text}</a>,
+  },
+  {
+    title: "Status",
+    dataIndex: "status",
+    key: "status",
+    // align: "center",
+    render: (_: any, { status }: TaskDto) => (
+      <div
+        style={{
+          backgroundColor: statusBGColorEnum[status],
+          border: `1px solid ${statusBorderColorEnum[status]}`,
+          borderRadius: "36px",
+        }}
+        className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
+      >
+        <div
+          className="h-2 w-2 rounded-full"
+          style={{
+            backgroundColor: statusBorderColorEnum[status],
+          }}
+        />
+
+        <div>{taskStatusEnum[status]}</div>
+      </div>
+    ),
   },
   {
     title: "Estimation",
@@ -157,10 +185,16 @@ const columns: any = [
 const ExportPageComponent = () => {
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchParams, setSearchParams] = useState({
+    searchText: null,
+    selectedDate: getDateRangeArray("this-week"),
+    priority: null,
+    status: null,
+  });
   const getTasks = async () => {
     setLoading(true);
     try {
-      const res = await userAPI.getTasks();
+      const res = await userAPI.getTasks(searchParams);
       const tmpTasks = res.map((task: TaskDto) => {
         const started = task.sessions[0]
           ? getFormattedTime(formatDate(task.sessions[0].startTime))
@@ -205,7 +239,10 @@ const ExportPageComponent = () => {
   ) => {
     console.log("params", pagination, filters, sorter, extra);
   };
-
+  useEffect(() => {
+    getTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
   useEffect(() => {
     if (tasks?.length <= 0) getTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -213,7 +250,7 @@ const ExportPageComponent = () => {
   console.log("🚀 ~ file: index.tsx:106 ~ useEffect ~ tasks:", tasks);
   return (
     <div className="pr-3">
-      <TopPanelExportPage {...{ tasks }} />
+      <TopPanelExportPage {...{ tasks, setSearchParams }} />
       <Spin spinning={loading}>
         {tasks.length ? (
           <div className="flex flex-col gap-4">
@@ -229,7 +266,6 @@ const ExportPageComponent = () => {
           <Empty description="No tasks" />
         )}
       </Spin>
-     
     </div>
   );
 };

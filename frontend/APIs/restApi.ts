@@ -12,6 +12,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { message } from "antd";
 import { SearchParamsModel } from "models/apiParams";
+import { getStringFromArray } from "@/services/taskActions";
 
 export async function loginRest(
   data: LoginDto
@@ -103,32 +104,26 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
     "🚀 ~ file: restApi.ts:101 ~ getTasksRest ~ searchParams:",
     searchParams
   );
+  const status = getStringFromArray(searchParams?.status);
+  const priority = getStringFromArray(searchParams?.priority);
   try {
     // const res = await axios.get(`${apiEndPoints.tasks}`, {
     //   headers: {
     //     Authorization: `Bearer ${GetCookie("access_token")}`,
     //   },
     // });
+
     const res = await axios.get(
-      `${apiEndPoints.tasks}?${
-        searchParams?.selectedDate?.length === 2
+      apiEndPoints.tasks +
+        "?" +
+        (searchParams?.selectedDate?.length === 2
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
-          : ""
-      }${
-        searchParams?.searchText && searchParams?.searchText.length > 0
+          : "") +
+        (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${searchParams.searchText}`
-          : ""
-      }
-      ${
-        searchParams?.priority && searchParams?.priority !== "Priority"
-          ? `&priority=${searchParams.priority}`
-          : ""
-      }
-      ${
-        searchParams?.status && searchParams?.status !== "Status"
-          ? `&status=${searchParams?.status}`
-          : ""
-      }`,
+          : "") +
+        (priority && priority.length > 0 ? `&priority=${priority}` : "") +
+        (status && status.length > 0 ? `&status=${status}` : ""),
       {
         headers: {
           Authorization: `Bearer ${GetCookie("access_token")}`,

@@ -5,71 +5,30 @@ import SortPriorityIconSvg from "@/assets/svg/sortIcons/SortPriorityIconSvg";
 import SortIconSvg from "@/assets/svg/sortIconSvg";
 import { Input, Select } from "antd";
 import { TaskDto } from "models/tasks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SortNameIconSvg from "../../../assets/svg/sortIcons/SortNameIconSvg";
 import SortStatusIconSvg from "../../../assets/svg/sortIcons/SortStatusIconSvg";
 import SortProgressIconSvg from "../../../assets/svg/sortIcons/SortProgressIconSvg";
-import DateRangePicker from "@/components/datePicker";
+import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { DownloadOutlined } from "@ant-design/icons";
+import StatusSelectorComponent from "@/components/tasks/components/statusSelector";
+import PrioritySelectorComponent from "@/components/tasks/components/prioritySelector";
 
 const { Search } = Input;
 
 type Props = {
   tasks: TaskDto[];
+  setSearchParams: Function;
 };
-const TopPanelExportPage = ({ tasks }: Props) => {
+const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
   const [searchText, setSearchText] = useState("");
+  const [status, setStatus] = useState([]);
+  const [priority, setPriority] = useState([]);
   const [active, setActive] = useState("");
-  const [status, setStatus] = useState("Status");
-  const [priority, setPriority] = useState("Priority");
-  const totalPinned = tasks?.filter((task) => task.pinned)?.length;
-  const tabs = ["All", "Pin"];
-  const activeButton = (tab: string, setActiveTab: Function) => (
-    <div
-      className="flex items-center gap-2 p-[11px]"
-      style={{
-        // background: "#00A3DE",
-        border: "1px solid #00A3DE",
-        borderRadius: "8px",
-      }}
-    >
-      <div
-        className="px-1 text-xs font-medium text-white"
-        style={{
-          background: "#00A3DE",
-          borderRadius: "4px",
-          color: "white",
-        }}
-      >
-        {tab === tabs[1] ? totalPinned : tasks?.length}
-      </div>
-      <div className="text-[15px]">{tab}</div>
-    </div>
+  const [selectedDate, setSelectedDate] = useState(
+    getDateRangeArray("this-month")
   );
 
-  const inactiveButton = (tab: string, setActiveTab: Function) => (
-    <div
-      className="flex items-center gap-2 p-[11px]"
-      style={{
-        // background: "#00A3DE",
-        border: "1px solid #ECECED",
-        borderRadius: "8px",
-      }}
-      onClick={() => setActiveTab(tab)}
-    >
-      <div
-        className="px-1 text-xs font-medium text-white"
-        style={{
-          background: "#E7E7E7",
-          borderRadius: "4px",
-          color: "black",
-        }}
-      >
-        {tab === tabs[1] ? totalPinned : tasks?.length}
-      </div>
-      <div className="text-[15px] text-[#4D4E55]">{tab}</div>
-    </div>
-  );
   // const handleOnClick = () => {};
 
   const sortOptions = [
@@ -77,52 +36,11 @@ const TopPanelExportPage = ({ tasks }: Props) => {
     //   icon: <SortNameIconSvg />,
     //   title: "Name",
     // },
-    <div
+    <PrioritySelectorComponent
       key={Math.random()}
-      className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
-      // style={{
-      //   color: active === "Sort" ? "#00A3DE" : "black",
-      //   // backgroundColor: "#00A3DE",
-      // }}
-      // onClick={() => setActive("Sort")}
-    >
-      <SortProgressIconSvg />
-      {/* <span className="font-normal">Priority</span> */}
-      <Select
-        defaultValue="Priority"
-        style={{ width: 120 }}
-        value={priority}
-        options={[
-          { value: "High", label: "High" },
-          { value: "Medium", label: "Medium" },
-          { value: "Low", label: "Low" },
-        ]}
-        onChange={(value) => setPriority(value)}
-      />
-    </div>,
-    <div
-      key={Math.random()}
-      className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
-      // style={{
-      //   color: active === "Sort" ? "#00A3DE" : "black",
-      //   // backgroundColor: "#00A3DE",
-      // }}
-      // onClick={() => setActive("Sort")}
-    >
-      <SortStatusIconSvg />
-      {/* <span className="font-normal">Status</span> */}
-      <Select
-        defaultValue="Status"
-        value={status}
-        style={{ width: 120 }}
-        options={[
-          { value: "Todo", label: "Todo" },
-          { value: "In Progress", label: "In Progress" },
-          { value: "Done", label: "Done" },
-        ]}
-        onChange={(value) => setStatus(value)}
-      />
-    </div>,
+      {...{ priority, setPriority }}
+    />,
+    <StatusSelectorComponent key={Math.random()} {...{ status, setStatus }} />,
     // {
     //   icon: <ClockIconSvg />,
     //   title: "Estimation",
@@ -132,10 +50,19 @@ const TopPanelExportPage = ({ tasks }: Props) => {
     //   title: "Progress",
     // },
   ];
+  useEffect(() => {
+    setSearchParams({
+      searchText: searchText,
+      selectedDate: selectedDate,
+      priority: priority,
+      status: status,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchText, selectedDate, priority, status]);
   return (
     <div className="my-5 flex w-full justify-between">
       <div>
-        <DateRangePicker />
+        <DateRangePicker {...{ setSelectedDate }} />
       </div>
       <div className="flex gap-8">
         <Input

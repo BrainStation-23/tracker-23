@@ -1,6 +1,6 @@
 import SortProgressIconSvg from "@/assets/svg/sortIcons/SortProgressIconSvg";
 import { Select } from "antd";
-type Props = { priority: string; setPriority: Function };
+type Props = { priority: string[]; setPriority: Function };
 const PrioritySelectorComponent = ({ priority, setPriority }: Props) => {
   return (
     <div
@@ -15,7 +15,8 @@ const PrioritySelectorComponent = ({ priority, setPriority }: Props) => {
       <SortProgressIconSvg />
       {/* <span className="font-normal">Priority</span> */}
       <Select
-        defaultValue="Priority"
+        placeholder="Select Priority"
+        mode="multiple"
         style={{ width: 120 }}
         value={priority}
         options={[

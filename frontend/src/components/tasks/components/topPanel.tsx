@@ -22,8 +22,8 @@ const TopPanel = ({
   setSearchParams,
 }: Props) => {
   const [searchText, setSearchText] = useState("");
-  const [status, setStatus] = useState("Status");
-  const [priority, setPriority] = useState("Priority");
+  const [status, setStatus] = useState(["TODO", "IN_PROGRESS"]);
+  const [priority, setPriority] = useState([]);
   const [active, setActive] = useState("");
   const [selectedDate, setSelectedDate] = useState(
     getDateRangeArray("this-week")

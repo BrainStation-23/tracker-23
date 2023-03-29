@@ -1,10 +1,14 @@
 import SortStatusIconSvg from "@/assets/svg/sortIcons/SortStatusIconSvg";
 import { Select } from "antd";
 type Props = {
-  status: string;
+  status: string[];
   setStatus: Function;
 };
 const StatusSelectorComponent = ({ status, setStatus }: Props) => {
+  console.log(
+    "🚀 ~ file: statusSelector.tsx:8 ~ StatusSelectorComponent ~ status:",
+    status
+  );
   return (
     <div
       className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
@@ -17,7 +21,8 @@ const StatusSelectorComponent = ({ status, setStatus }: Props) => {
       <SortStatusIconSvg />
       {/* <span className="font-normal">Status</span> */}
       <Select
-        defaultValue="Status"
+        placeholder="Select Status"
+        mode="multiple"
         value={status}
         style={{ width: 120 }}
         options={[
