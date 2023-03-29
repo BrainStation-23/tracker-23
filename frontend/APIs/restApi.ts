@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import { message } from "antd";
 import { SearchParamsModel } from "models/apiParams";
 import { getStringFromArray } from "@/services/taskActions";
+import { sortByStatus } from "../src/services/taskActions";
 
 export async function loginRest(
   data: LoginDto
@@ -131,7 +132,8 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
       }
     );
     console.log("getTasksRest", res);
-    return res.data;
+    const sortedTasks = sortByStatus(res.data);
+    return sortedTasks;
   } catch (error: any) {
     toast.error("Failed to Get Task : " + error.message);
     return false;
