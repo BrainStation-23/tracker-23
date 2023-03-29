@@ -35,8 +35,8 @@ import {
 import GlobalMOdal from "../modals/globalModal";
 import StopWatchTabular from "../stopWatch/tabular/reactStopWatchTabular";
 import Stopwatch from "../stopWatch/tabular/timerComponent";
-import ProgressComponent from "../tasks/components/progessComponent";
-import StaticProgressComponent from "../tasks/components/progessComponentStatic";
+import ProgressComponent from "../tasks/components/progressComponent";
+import StaticProgressComponent from "../tasks/components/progressComponentStatic";
 import TimeDisplayComponent from "../tasks/components/timeDisplayComponent";
 import SessionStartWarning from "../tasks/components/warning";
 import DonutChart from "./charts/donutChart";

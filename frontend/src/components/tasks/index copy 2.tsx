@@ -69,12 +69,18 @@ export const TaskContext = createContext<any>({
 
 const TasksPage = () => {
   const router = useRouter();
+  console.log(
+    "🚀 ~ file: index.tsx:70 ~ TasksPage ~ router:",
+    router.query.tab
+  );
   const [viewModalOpen, setViewModalOpen] = useState<boolean>(false);
   const [taskViewModalOpen, setTaskViewModalOpen] = useState<boolean>(false);
   const [warningModalOpen, setWarningModalOpen] = useState<boolean>(false);
   const [warningData, setWarningData] = useState<any>([]);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
+  const [searchedTasks, setSearchedTasks] = useState<TaskDto[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
   const [activeTab, setActiveTab] = useState(
     router.query.tab === "pin" ? "Pin" : "All"
   );
@@ -95,6 +101,7 @@ const TasksPage = () => {
       const res = await userAPI.createTask(data);
       message.success("Task created successfully");
       setTasks((tasks) => [res, ...tasks]);
+      setSearchedTasks((tasks) => [res, ...tasks]);
       if (tasks) {
         tasks.map((task) => {
           if (
@@ -138,6 +145,8 @@ const TasksPage = () => {
       const res = await userAPI.deleteTask(taskId);
       if (res) {
         setTasks((tasks) => tasks.filter((task) => task.id !== taskId));
+        setSearchedTasks((tasks) => tasks.filter((task) => task.id !== taskId));
+        tableParamsAll.pagination.total = tableParamsAll.pagination.total - 1;
       }
     } catch (error) {
       message.error("Error deleting task");
@@ -196,6 +205,16 @@ const TasksPage = () => {
       });
       setTasks(tmpTasks || []);
       console.log(">>>>>", tmpTasks, tmpTasks.length);
+
+      setTableParamsAll({
+        ...tableParamsAll,
+        pagination: {
+          ...tableParamsAll.pagination,
+          total: tmpTasks.length,
+          // 200 is mock data, you should read it from server
+          // total: data.totalCount,
+        },
+      });
     } catch (error) {
       message.error("Error getting tasks");
     } finally {
@@ -246,7 +265,16 @@ const TasksPage = () => {
         };
       });
       setTasks(tmpTasks || []);
-
+      setSearchedTasks(tmpTasks || []);
+      setTableParamsAll({
+        ...tableParamsAll,
+        pagination: {
+          ...tableParamsAll.pagination,
+          total: tmpTasks.length,
+          // 200 is mock data, you should read it from server
+          // total: data.totalCount,
+        },
+      });
       message.success("Sync Successful");
     } catch (error) {
       message.error("Error syncing tasks");
@@ -310,6 +338,23 @@ const TasksPage = () => {
   }, []);
 
   useEffect(() => {
+    if (searchText?.length > 0) {
+      setSearchedTasks(
+        tasks.filter((task) => {
+          if (
+            task?.title.includes(searchText) ||
+            task.description.includes(searchText)
+          )
+            return task;
+        })
+      );
+    } else {
+      setSearchedTasks(tasks);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchText]);
+
+  useEffect(() => {
     getTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
@@ -325,8 +370,265 @@ const TasksPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   console.log("runningTask", runningTask);
+  const handlePin = (task: TaskDto) => {
+    task.pinned
+      ? (tableParamsPinned.pagination.total =
+          tableParamsPinned.pagination.total - 1)
+      : (tableParamsPinned.pagination.total =
+          tableParamsPinned.pagination.total + 1);
 
+    if (task.pinned) {
+      let pinnedTasks = getLocalStorage("pinnedTasks");
+      if (!pinnedTasks) pinnedTasks = [];
+      pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
+      setLocalStorage("pinnedTasks", pinnedTasks);
+    } else {
+      let pinnedTasks = getLocalStorage("pinnedTasks");
+      if (!pinnedTasks) pinnedTasks = [];
+      pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
+      pinnedTasks.push(task.id);
+      setLocalStorage("pinnedTasks", pinnedTasks);
+    }
+    task.pinned = !task.pinned;
+    setReload(!reload);
+  };
+  const columns: any = [
+    {
+      title: "Task Name",
+      dataIndex: "title",
+      key: "title",
+      render: (_: any, task: TaskDto) => {
+        return (
+          <div className=" flex items-center gap-2">
+            {task.status !== "DONE" && (
+              <>
+                {runningTask?.id != task.id ? (
+                  <div
+                    onClick={() => {
+                      startSession(task);
+                    }}
+                  >
+                    <PlayIconSvg />
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => {
+                      stopSession(task);
+                    }}
+                  >
+                    <PauseIconSvg />
+                  </div>
+                )}
+              </>
+            )}
+            {task.status === "DONE" && <div className="w-[34px]"></div>}
+            <div className="flex flex-col gap-2">
+              <Text className="w-[200px] " ellipsis={{ tooltip: task?.title }}>
+                {/* <div>{task?.title}</div> */}
+                {task?.title}
+              </Text>
+              {task.projectName && (
+                <div
+                  className="w-max bg-[#4D4E55] px-2 py-0.5 text-xs font-medium"
+                  style={{
+                    background: "#ECECED",
+                    borderRadius: "4px",
+                  }}
+                >
+                  {task.projectName}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      // align: "center",
+      render: (_: any, { status }: TaskDto) => (
+        <div
+          style={{
+            backgroundColor: statusBGColorEnum[status],
+            border: `1px solid ${statusBorderColorEnum[status]}`,
+            borderRadius: "36px",
+          }}
+          className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
+        >
+          <div
+            className="h-2 w-2 rounded-full"
+            style={{
+              backgroundColor: statusBorderColorEnum[status],
+            }}
+          />
+
+          <div>{taskStatusEnum[status]}</div>
+        </div>
+      ),
+    },
+    {
+      title: "Date",
+      dataIndex: "created",
+      key: "created",
+      // align: "center",
+    },
+    {
+      title: "Priority",
+      dataIndex: "priority",
+      key: "priority",
+      render: (_: any, { priority }: TaskDto) => (
+        <div
+          style={{
+            backgroundColor: PriorityBGColorEnum[priority],
+            border: `1px solid ${PriorityBorderColorEnum[priority]}`,
+          }}
+          className="w-min rounded px-2 text-black"
+        >
+          {taskPriorityEnum[priority]}
+        </div>
+      ),
+    },
+
+    {
+      title: "Progress",
+      dataIndex: "percentage",
+      key: "percentage",
+
+      // align: "center",
+      render: (_: any, task: TaskDto) =>
+        runningTask?.id != task.id ? (
+          <StaticProgressComponent task={task} />
+        ) : (
+          <ProgressComponent task={task} />
+        ),
+    },
+    {
+      title: "Total Spent",
+      dataIndex: "total",
+      key: "total",
+      // align: "center",
+      render: (_: any, task: TaskDto) =>
+        runningTask?.id !== task.id ? (
+          <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
+        ) : (
+          <Stopwatch milliseconds={getTotalSpentTime(task.sessions)} />
+          // <StopWatchTabular
+          //   task={task}
+          //   // sessions={task.sessions}
+          //   // runningTask={runningTask}
+          //   addSession={() => {}}
+          //   addEndTime={() => {}}
+          // />
+        ),
+    },
+    {
+      title: "Estimation",
+      dataIndex: "estimation",
+      key: "estimation",
+      render: (_: any, task: TaskDto) =>
+        task.estimation ? (
+          <div className="text-center">{task.estimation}hrs</div>
+        ) : (
+          <div className="text-center">---</div>
+        ),
+    },
+    {
+      title: "",
+      dataIndex: "",
+      key: "",
+
+      render: (_: any, task: TaskDto) => (
+        <div className="flex justify-end gap-2">
+          <Button
+            className="h-10 text-sm font-semibold"
+            onClick={() => {
+              setSelectedTask(task);
+              setTaskViewModalOpen(true);
+            }}
+          >
+            View
+          </Button>
+          <MoreFunctionComponent {...{ task, deleteTask, handlePin }} />
+        </div>
+      ),
+    },
+    // {
+    //   title: "Tags",
+    //   key: "tags",
+    //   dataIndex: "tags",
+    //   render: (_, { tags }) => (
+    //     <>
+    //       {tags.map((tag) => {
+    //         let color = tag.length > 5 ? "geekblue" : "green";
+    //         if (tag === "loser") {
+    //           color = "volcano";
+    //         }
+    //         return (
+    //           <Tag color={color} key={tag}>
+    //             {tag.toUpperCase()}
+    //           </Tag>
+    //         );
+    //       })}
+    //     </>
+    //   ),
+    // },
+    // {
+    //   title: "Action",
+    //   key: "action",
+    //   render: (_, task) => (
+    //     <Space size="middle">
+    //       <a>Invite {task.name}</a>
+    //       <a>Delete</a>
+    //     </Space>
+    //   ),
+    // },
+  ];
+  const getRowClassName = (task: TaskDto, index: any) => {
+    if (!task.sessions) task.sessions = [];
+    return runningTask?.id === task.id ? "bg-[#F3FCFF]" : "";
+  };
   useEffect(() => {}, [reload, runningTask]);
+  const [tableParamsAll, setTableParamsAll] = useState<TableParams>({
+    pagination: {
+      current: 1,
+      pageSize: 10,
+      showSizeChanger: true,
+      showLessItems: true,
+      position: ["bottomRight", "bottomLeft"],
+
+      // total: 100,
+    },
+  });
+
+  const [tableParamsPinned, setTableParamsPinned] = useState<TableParams>({
+    pagination: {
+      current: 1,
+      pageSize: 10,
+      showSizeChanger: true,
+      showLessItems: true,
+      position: ["bottomRight", "bottomLeft"],
+
+      // total: 100,
+    },
+  });
+  const handleTableChange = (
+    pagination: TablePaginationConfig,
+    filters: Record<string, FilterValue>,
+    sorter: SorterResult<TaskDto> | SorterResult<TaskDto>[]
+  ) => {
+    setTableParamsAll({
+      pagination,
+      filters,
+      ...sorter,
+    });
+
+    // `dataSource` is useless since `pageSize` changed
+    // if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+    //   setData([]);
+    // }
+  };
 
   const getPinnedTasks = () => {
     return tasks.filter((task) => task.pinned);
@@ -375,12 +677,22 @@ const TasksPage = () => {
                     setSelectedTask,
                     setTaskViewModalOpen,
                     deleteTask,
+                    handlePin,
                     startSession,
                     stopSession,
                     setReload,
                     reload,
                   }}
                 />
+                {/* <Table
+                  columns={columns}
+                  dataSource={tasks}
+                  // onChange={onChange}
+                  rowKey={(task) => task.id}
+                  pagination={tableParamsAll.pagination}
+                  rowClassName={getRowClassName}
+                  onChange={handleTableChange}
+                /> */}
               </div>
             ) : loading ? (
               <Empty description="Getting tasks" />
@@ -396,12 +708,22 @@ const TasksPage = () => {
                   setSelectedTask,
                   setTaskViewModalOpen,
                   deleteTask,
+                  handlePin,
                   startSession,
                   stopSession,
                   setReload,
                   reload,
                 }}
               />
+              {/* <Table
+                columns={columns}
+                dataSource={getPinnedTasks()}
+                // onChange={onChange}
+                rowKey={(task) => task.id}
+                pagination={tableParamsPinned.pagination}
+                rowClassName={getRowClassName}
+                onChange={handleTableChange}
+              /> */}
             </div>
           ) : loading ? (
             <Empty description="Getting tasks" />
