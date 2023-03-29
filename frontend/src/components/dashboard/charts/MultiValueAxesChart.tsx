@@ -73,13 +73,7 @@ const Line = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return (
-    <div
-      id={id}
-      className="w-full"
-      style={{ width: "100%", height: "500px" }}
-    ></div>
-  );
+  return <div id={id} style={{ width: "100%", height: "500px" }}></div>;
 };
 
 export default Line;

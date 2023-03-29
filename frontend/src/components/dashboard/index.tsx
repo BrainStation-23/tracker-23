@@ -548,11 +548,11 @@ const DashBoard = () => {
         <PieChart data={data} title="Task wise Track hour" />
       </div> */}
       {/* <MultiValueAxesChart data={data3} /> */}
-      <div className="relative flex w-[700px] flex-col gap-2">
+      <div className="relative flex w-full flex-col gap-2">
         {/* <div className=" right-32 top-[40px] rounded-lg border-2 p-2">
           This Week
         </div> */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ">
           <div className="text-lg font-semibold ">Actual VS Estimate </div>
           <div className=" rounded-lg border-2 p-1 px-2 text-sm">This Week</div>
         </div>
