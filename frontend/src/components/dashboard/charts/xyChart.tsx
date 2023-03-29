@@ -43,7 +43,7 @@ export default function XYChart({ data }: any) {
     const columnTemplate = series.columns.template;
     columnTemplate.strokeWidth = 2;
     columnTemplate.strokeOpacity = 1;
-    columnTemplate.width = 10;
+    columnTemplate.width = 25;
 
     // Clean up
     return () => {
