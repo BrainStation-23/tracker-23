@@ -1,7 +1,9 @@
 import {
   formatDate,
+  getFormattedShortTime,
   getFormattedTime,
   getFormattedTotalTime,
+  getTotalSpentTime,
 } from "@/services/timeActions";
 
 type Props = {
@@ -9,7 +11,6 @@ type Props = {
 };
 
 const Sessions = ({ taskDetails }: Props) => {
-
   const endedSessions = taskDetails?.sessions?.filter(
     (session: any) => session.endTime
   );
@@ -19,21 +20,33 @@ const Sessions = ({ taskDetails }: Props) => {
 
   return (
     <>
-      <h3 className="w-full  text-left">Sessions</h3>
-      <div className="max-h-64 w-full overflow-y-scroll">
+      <h3 className="w-full  text-left text-base font-semibold">Sessions</h3>
+      <div className="flex max-h-64 w-full flex-col gap-3 overflow-y-scroll">
+        {endedSessions?.length > 0 && (
+          <div className="grid grid-cols-4 gap-4 font-semibold">
+            <span>No</span>
+            <span>Date</span>
+            <span>Time Stamp</span>
+            <div>Hours</div>
+          </div>
+        )}
         {endedSessions?.map((session: any, index: number) => {
           const startTime: any = formatDate(session.startTime);
           const endTime: any = formatDate(session.endTime);
 
           const totalTime = getFormattedTotalTime(endTime - startTime);
           return (
-            <div className="grid grid-cols-3 gap-4 " key={session.id}>
-              <div className="col-span-2 flex justify-between">
-                <span>{`${index + 1} : ${getFormattedTime(startTime)}`}</span>
-                <span>to</span>
-                <span>{`${getFormattedTime(endTime)}`}</span>
-              </div>
-              <div className="flex">Total : {totalTime} s</div>
+            <div
+              className="grid grid-cols-4 gap-4 text-sm font-medium"
+              key={session.id}
+            >
+              <span className="font-semibold">#{index + 1}</span>
+              <span>{` ${getFormattedTime(startTime)}`}</span>
+              <span>
+                {`${getFormattedShortTime(startTime)} `} -
+                {` ${getFormattedShortTime(endTime)}`}
+              </span>
+              <div> {getFormattedTotalTime(endTime - startTime)}</div>
             </div>
           );
         })}
@@ -42,11 +55,23 @@ const Sessions = ({ taskDetails }: Props) => {
         const startTime = formatDate(session.startTime);
         return (
           <div className="w-full" key={session.id}>
-            <p>Current Session</p>
-            <div className="flex gap-4 ">
-              <div className="flex">{`${index + 1} > Start : ${getFormattedTime(
-                startTime
-              )}`}</div>
+            <p className="w-full  text-left text-base font-semibold">
+              Current Session
+            </p>
+            <div className="grid grid-cols-4 gap-4 font-semibold">
+              <span>No</span>
+              <span>Date</span>
+              <span>Time Stamp</span>
+              <div>Hours</div>
+            </div>
+            <div
+              className="grid grid-cols-4 gap-4 text-sm font-medium"
+              key={session.id}
+            >
+              <span className="font-semibold">#{1}</span>
+              <span>{` ${getFormattedTime(startTime)}`}</span>
+              <span>{`${getFormattedShortTime(startTime)} `} -</span>
+              {/* <div> {getFormattedTotalTime(endTime - startTime)}</div> */}
             </div>
           </div>
         );
