@@ -7,6 +7,8 @@ import { userAPI } from "APIs";
 import BSLogoSvg from "@/assets/svg/BSLogoSvg";
 import TasksIconSvg from "@/assets/svg/tasksIconSvg";
 import DashboardIconSvg from "@/assets/svg/dashboardIconSvg";
+import ExportsIconSvg from "@/assets/svg/ExportsIconSvg";
+import IntegrationIconSvg from "@/assets/svg/IntegrationIconSvg";
 
 const SideMenu = () => {
   const router = useRouter();
@@ -92,12 +94,13 @@ export const sideMenuOptions = [
   {
     link: "/integrations",
     title: "Integrations",
-    icon: <BiImport className="h-6 w-6" />,
+    icon: <IntegrationIconSvg />,
   },
   {
     link: "/exports",
     title: "Exports",
-    icon: <TiExport className="h-6 w-6" />,
+    icon: <ExportsIconSvg />,
+    // icon: <TiExport className="h-6 w-6" />,
   },
   // { link: "/onBoarding", title: "OnBoarding Page" },
 ];

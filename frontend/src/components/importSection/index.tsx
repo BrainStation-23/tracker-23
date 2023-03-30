@@ -4,9 +4,11 @@ import { Button } from "antd";
 import ImportSelect from "./importSelect";
 import { userAPI } from "APIs";
 import { importCardData } from "utils/constants";
+import { Spin } from "antd";
 
 const ImportSection = () => {
-  const [integratedTypes, setIntegratedTypes] = useState([]);
+  const [integratedTypes, setIntegratedTypes] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const handleOnclick = async () => {
     try {
@@ -20,13 +22,15 @@ const ImportSection = () => {
   };
 
   const getIntegrations = async () => {
-    if (integratedTypes.length <= 0) {
+    if (integratedTypes?.length <= 0 || !integratedTypes) {
+      setLoading(true);
       const tmp: string[] = [];
       const integrations = await userAPI.getIntegrations();
       if (integrations) {
         integrations.forEach((i: any) => tmp.push(i.type));
         setIntegratedTypes(tmp);
       }
+      setLoading(false);
     }
   };
 
@@ -37,15 +41,20 @@ const ImportSection = () => {
   console.log(integratedTypes);
 
   return (
-    <div className="flex w-full flex-col gap-2">
-      <ImportSelect {...{ importCardData, integratedTypes }} />
-
-      {/* <IntegratedServices {...{ data }} /> */}
-      {/* <div className="flex justify-end">
+    <Spin spinning={loading}>
+      <div className="flex w-full flex-col gap-2">
+        <div className="flex w-full flex-col gap-2">
+          {integratedTypes && (
+            <ImportSelect {...{ importCardData, integratedTypes }} />
+          )}
+        </div>
+        {/* <IntegratedServices {...{ data }} /> */}
+        {/* <div className="flex justify-end">
         <Button type="link">Skip ...</Button>{" "}
       </div> */}
-      {/* <Button onClick={() => handleOnclick()}>jira link</Button> */}
-    </div>
+        {/* <Button onClick={() => handleOnclick()}>jira link</Button> */}
+      </div>
+    </Spin>
   );
 };
 

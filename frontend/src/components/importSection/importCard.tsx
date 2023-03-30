@@ -14,21 +14,23 @@ const ImportCard = ({
 
   return (
     <div
-      className={`w-60 rounded border-2 border-blue-600 p-2 grayscale hover:cursor-pointer ${
+      className={`flex w-60 flex-col justify-between rounded-xl border-2 border-[#ECECED] p-4 grayscale hover:cursor-pointer ${
         data.type === "JIRA" ? "grayscale-0" : "grayscale"
       }`}
     >
-      <div className="flex h-10 items-center gap-2">
-        <Image
-          height={data.full ? 60 : 15}
-          width={data.full ? 100 : 15}
-          preview={false}
-          src={`/assets/images/${data.logo}`}
-          alt="Error Loading Image"
-        />
-        {data.full ? "" : data.title}
+      <div>
+        <div className="flex h-10 items-center gap-2">
+          <Image
+            height={data.full ? 60 : 15}
+            width={data.full ? 100 : 15}
+            preview={false}
+            src={`/assets/images/${data.logo}`}
+            alt="Error Loading Image"
+          />
+          {data.full ? "" : data.title}
+        </div>
+        <div className="text-sm font-normal">{data.description}</div>
       </div>
-      <div className="text-sm font-normal">{data.description}</div>
       <div className="flex w-full pt-3">
         <Button
           onClick={async () => {
@@ -44,8 +46,19 @@ const ImportCard = ({
               } catch (error) {}
             }
           }}
+          type="default"
           disabled={installed || !supportedIntegrations.includes(data.type)}
-          className="mx-auto w-min"
+          className={`w-full 
+          cursor-pointer
+          bg-[#F1F1F1]
+          text-sm
+          font-semibold
+          ${
+            installed || !supportedIntegrations.includes(data.type)
+              ? ""
+              : "hover:bg-[#d1d1d17f] hover:text-black"
+          }
+          `}
         >
           {installed
             ? "Installed"
