@@ -40,7 +40,8 @@ const TableComponent = ({
       render: (_: any, task: TaskDto) => {
         return (
           <div className=" flex items-center gap-2">
-            {task.status !== "DONE" && (
+            {
+              // task.status !== "DONE" &&
               <>
                 {runningTask?.id != task.id ? (
                   <div
@@ -60,8 +61,8 @@ const TableComponent = ({
                   </div>
                 )}
               </>
-            )}
-            {task.status === "DONE" && <div className="w-[34px]"></div>}
+            }
+            {/* {task.status === "DONE" && <div className="w-[34px]"></div>} */}
             <div className="flex flex-col gap-2">
               <Text className="w-[200px] " ellipsis={{ tooltip: task?.title }}>
                 {/* <div>{task?.title}</div> */}
