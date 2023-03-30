@@ -66,37 +66,37 @@ const DashBoard = () => {
 
   const lineChartData = [
     {
-      date: "2023-03-19T18:00:00.000Z",
+      date: "2023-03-25T18:00:00.000Z",
       Actual: 10,
       Estimate: 8,
     },
     {
-      date: "2023-03-20T18:00:00.000Z",
+      date: "2023-03-26T18:00:00.000Z",
       Actual: 7,
       Estimate: 8,
     },
     {
-      date: "2023-03-21T18:00:00.000Z",
+      date: "2023-03-27T18:00:00.000Z",
       Actual: 9,
       Estimate: 9,
     },
     {
-      date: "2023-03-22T18:00:00.000Z",
+      date: "2023-03-28T18:00:00.000Z",
       Actual: 12,
       Estimate: 9,
     },
     {
-      date: "2023-03-23T18:00:00.000Z",
+      date: "2023-03-29T18:00:00.000Z",
       Actual: 12,
       Estimate: 8,
     },
     {
-      date: "2023-03-24T18:00:00.000Z",
+      date: "2023-03-30T18:00:00.000Z",
       Actual: 11,
       Estimate: 8,
     },
     {
-      date: "2023-03-25T18:00:00.000Z",
+      date: "2023-03-31T18:00:00.000Z",
       Actual: 10,
       Estimate: 7,
     },
@@ -542,7 +542,7 @@ const DashBoard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pr-3">
       <div className="grid grid-cols-2">
         <DashBoardSection title="Project wise Track hour">
           <DonutChart data={dataDonut} />

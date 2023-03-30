@@ -222,15 +222,17 @@ const DashboardTableComponent = ({
     // }
   };
   return (
-    <Table
-      columns={columns}
-      dataSource={tasks}
-      // onChange={onChange}
-      rowKey={(task) => task.id}
-      pagination={tableParams.pagination}
-      rowClassName={getRowClassName}
-      onChange={handleTableChange}
-    />
+    <div className="pr-4">
+      <Table
+        columns={columns}
+        dataSource={tasks}
+        // onChange={onChange}
+        rowKey={(task) => task.id}
+        pagination={tableParams.pagination}
+        rowClassName={getRowClassName}
+        onChange={handleTableChange}
+      />
+    </div>
   );
 };
 
