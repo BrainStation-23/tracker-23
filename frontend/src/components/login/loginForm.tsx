@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import { userAPI } from "APIs";
 import { GetCookie } from "@/services/cookie.service";
-import Line from "../dashboard/charts/MultiValueAxesChart";
+import Line from "../dashboard/charts/lineChart";
 
 const LoginForm: React.FC = () => {
   const router = useRouter();

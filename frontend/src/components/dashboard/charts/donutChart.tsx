@@ -15,12 +15,19 @@ const DonutChart = ({ data }: any) => {
     chart.data = data;
 
     const pieSeries = chart.series.push(new am4charts.PieSeries());
+    pieSeries.colors.list = [
+      am4core.color("#BADF4F"),
+      am4core.color("#F26956"),
+      am4core.color("#FEBC6F"),
+      am4core.color("#1BC5BD"),
+      am4core.color("#8D99AE"),
+    ];
     pieSeries.dataFields.value = "value";
     pieSeries.dataFields.category = "category";
     pieSeries.labels.template.disabled = true;
     pieSeries.ticks.template.disabled = true;
     const label = chart.seriesContainer.createChild(am4core.Label);
-    label.text = "Total : 40 hrs";
+    label.text = "Total 40 hours";
     label.horizontalCenter = "middle";
     label.verticalCenter = "middle";
     label.fontSize = 20;
@@ -39,9 +46,14 @@ const DonutChart = ({ data }: any) => {
     // series2.hiddenState.properties.endAngle = 270;
 
     chart.legend = new am4charts.Legend();
-    chart.legend.position = "right";
-
-    chart.innerRadius = am4core.percent(40);
+    chart.legend.position = "bottom";
+    const legendTemplate = chart.legend.itemContainers.template.createChild(
+      am4core.Container
+    );
+    legendTemplate.width = am4core.percent(20);
+    legendTemplate.padding(4, 4, 4, 4);
+    legendTemplate.layout = "horizontal";
+    chart.innerRadius = am4core.percent(55);
 
     // chart.chartContainer.zoomable = false;
 
@@ -51,11 +63,7 @@ const DonutChart = ({ data }: any) => {
   }, [data]);
 
   return (
-    <div
-      ref={chartRef}
-      className="w-3/4"
-      style={{  height: "500px" }}
-    ></div>
+    <div ref={chartRef} className="w-3/4" style={{ height: "500px" }}></div>
   );
 };
 

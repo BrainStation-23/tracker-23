@@ -40,9 +40,11 @@ import StaticProgressComponent from "../tasks/components/progressComponentStatic
 import TimeDisplayComponent from "../tasks/components/timeDisplayComponent";
 import SessionStartWarning from "../tasks/components/warning";
 import DonutChart from "./charts/donutChart";
-import Line from "./charts/MultiValueAxesChart";
-import MultiValueAxesChart from "./charts/MultiValueAxesChart";
+import Line from "./charts/lineChart";
+import MultiValueAxesChart from "./charts/lineChart";
 import { useRouter } from "next/router";
+import DashBoardSection from "./components/sections";
+import DashboardTableComponent from "./components/tableComponentDashboard";
 const { Text } = Typography;
 
 const DashBoard = () => {
@@ -57,9 +59,47 @@ const DashBoard = () => {
     { category: "Backend", value: 30 },
   ];
   const dataDonut = [
-    { category: "Tracker23", value: 20 },
-    { category: "TimeTackle", value: 15 },
+    { category: "Tracker23", value: 19 },
+    { category: "TimeTackle", value: 16 },
     { category: "BS Commerce", value: 5 },
+  ];
+
+  const lineChartData = [
+    {
+      date: "2023-03-19T18:00:00.000Z",
+      Actual: 10,
+      Estimate: 8,
+    },
+    {
+      date: "2023-03-20T18:00:00.000Z",
+      Actual: 7,
+      Estimate: 8,
+    },
+    {
+      date: "2023-03-21T18:00:00.000Z",
+      Actual: 9,
+      Estimate: 9,
+    },
+    {
+      date: "2023-03-22T18:00:00.000Z",
+      Actual: 12,
+      Estimate: 9,
+    },
+    {
+      date: "2023-03-23T18:00:00.000Z",
+      Actual: 12,
+      Estimate: 8,
+    },
+    {
+      date: "2023-03-24T18:00:00.000Z",
+      Actual: 11,
+      Estimate: 8,
+    },
+    {
+      date: "2023-03-25T18:00:00.000Z",
+      Actual: 10,
+      Estimate: 7,
+    },
   ];
   const data2 = [
     { day: 1, hours: 3 },
@@ -94,14 +134,15 @@ const DashBoard = () => {
     { day: 30, hours: 5 },
   ];
   const weekData = [
-    { day: "18 March", hours: 8 },
-    { day: "19 March", hours: 1 },
-    { day: "20 March", hours: 6 },
-    { day: "21 March", hours: 2 },
-    { day: "22 March", hours: 3 },
-    { day: "23 March", hours: 4 },
-    { day: "24 March", hours: 8 },
+    { day: "25 March", hours: 6 },
+    { day: "26 March", hours: 7 },
+    { day: "27 March", hours: 4 },
+    { day: "28 March", hours: 5 },
+    { day: "29 March", hours: 6 },
+    { day: "30 March", hours: 5 },
+    { day: "31 March", hours: 9 },
   ];
+
   const data3 = [
     {
       category: "Category 1",
@@ -210,6 +251,7 @@ const DashBoard = () => {
           started: started,
           ended: ended,
           total: total,
+          created: getFormattedTime(formatDate(task.createdAt)),
           // percentage: task?.estimation
           //   ? Math.round(
           //       getTotalSpentTime(task?.sessions) / (task?.estimation * 36000)
@@ -224,9 +266,10 @@ const DashBoard = () => {
         (task: TaskDto) => task?.pinned
       );
       if (tmpPinnedTaskList?.length > 5) setMorePin(true);
-      const pinnedTaskList = tmpPinnedTaskList?.filter(
-        (task: TaskDto, index: any) => index < 5
-      );
+      const pinnedTaskList = tmpPinnedTaskList;
+      // const pinnedTaskList = tmpPinnedTaskList?.filter(
+      //   (task: TaskDto, index: any) => index < 5
+      // );
       console.log(
         "🚀 ~ file: index.tsx:154 ~ getTasks ~ tmpTasks:",
         tmpTasks,
@@ -500,15 +543,15 @@ const DashBoard = () => {
   }, []);
   return (
     <div className="flex flex-col gap-6">
-      <div className="relative flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-          <div className="text-lg font-semibold ">Project wise Track hour</div>
-          <div className=" rounded-lg border-2 p-1 px-2 text-sm">This Week</div>
-        </div>
-        <DonutChart data={dataDonut} />
+      <div className="grid grid-cols-2">
+        <DashBoardSection title="Project wise Track hour">
+          <DonutChart data={dataDonut} />
+        </DashBoardSection>
+        <DashBoardSection title="Actual VS Estimate">
+          <Line data={lineChartData} />
+        </DashBoardSection>
       </div>
-      <div className="relative flex flex-col gap-2">
-        <div className="text-lg font-semibold ">Pinned tasks</div>
+      {/* <DashBoardSection title="Pinned tasks">
         <Table
           columns={columns}
           dataSource={getPinnedTasks()}
@@ -535,31 +578,23 @@ const DashBoard = () => {
             Click to View More
           </div>
         )}
-      </div>
-      <div className="relative flex flex-col gap-8">
-        <div className="flex items-center gap-3">
-          <div className="text-lg font-semibold ">Tracker By Day</div>
-          <div className=" rounded-lg border-2 p-1 px-2 text-sm">This Week</div>
-        </div>
-        <div className="text-lg font-semibold "></div>
+      </DashBoardSection> */}
+      <DashBoardSection title="Pinned tasks">
+        <DashboardTableComponent
+          tasks={getPinnedTasks()}
+          {...{
+            runningTask,
+            startSession,
+            stopSession,
+            setReload,
+            reload,
+          }}
+        />
+      </DashBoardSection>
+      <DashBoardSection title="Tracker By Day">
         <XYChart data={weekData} />
-      </div>
-      {/* <div>
-        <PieChart data={data} title="Task wise Track hour" />
-      </div> */}
-      {/* <MultiValueAxesChart data={data3} /> */}
-      <div className="relative flex w-full flex-col gap-2">
-        {/* <div className=" right-32 top-[40px] rounded-lg border-2 p-2">
-          This Week
-        </div> */}
-        <div className="flex items-center gap-3 ">
-          <div className="text-lg font-semibold ">Actual VS Estimate </div>
-          <div className=" rounded-lg border-2 p-1 px-2 text-sm">This Week</div>
-        </div>
-        <div className="w-full">
-          <Line />
-        </div>
-      </div>
+      </DashBoardSection>
+
       {/* <div>
         <MyTasks />
       </div> */}
