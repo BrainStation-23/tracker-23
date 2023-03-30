@@ -6,6 +6,7 @@ import { Button } from "antd";
 import Axios from "axios";
 import { config } from "config";
 import type { AppProps } from "next/app";
+import Head from "next/head";
 import { useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -17,6 +18,10 @@ Axios.defaults.baseURL = config?.baseUrl;
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <CustomLayout>
+      <Head>
+        <link rel="icon" href="/bsIcon.png" />
+        <title>Tracker23</title>
+      </Head>{" "}
       <Component {...pageProps} />
     </CustomLayout>
   );
