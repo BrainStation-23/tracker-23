@@ -163,55 +163,55 @@ const TasksPage = () => {
     }
   };
   const syncTasks = async () => {
-    setLoading(true);
+    // setLoading(true);
+    message.success("Syncing");
     let pinnedTasks = getLocalStorage("pinnedTasks");
     if (!pinnedTasks) pinnedTasks = [];
     try {
       const res = await userAPI.syncTasks();
-      const tmpTasks = res.map((task: TaskDto) => {
-        const started =
-          task.sessions && task.sessions[0]
-            ? getFormattedTime(formatDate(task.sessions[0].startTime))
-            : "Not Started";
-        const ended =
-          task.sessions && task.sessions[task.sessions?.length - 1]?.endTime
-            ? getFormattedTime(
-                formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
-              )
-            : task.sessions[0]
-            ? "Running"
-            : "Not Started";
-        const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
-        return {
-          ...task,
-          pinned: pinnedTasks.includes(task.id),
-          id: task.id,
-          title: task?.title,
-          description: task.description,
-          estimation: task.estimation,
-          startTime: formatDate(task.sessions[0]?.startTime),
-          endTime: formatDate(
-            task.sessions[task.sessions?.length - 1]?.endTime
-          ),
-          started: started,
-          ended: ended,
-          total: total,
-          percentage: task.estimation
-            ? Math.round(
-                getTotalSpentTime(task.sessions) / (task.estimation * 36000)
-              )
-            : -1,
-          totalSpent: getTotalSpentTime(task.sessions),
-          priority: task.priority,
-        };
-      });
-      setTasks(tmpTasks || []);
-
+      // const tmpTasks = res.map((task: TaskDto) => {
+      //   const started =
+      //     task.sessions && task.sessions[0]
+      //       ? getFormattedTime(formatDate(task.sessions[0].startTime))
+      //       : "Not Started";
+      //   const ended =
+      //     task.sessions && task.sessions[task.sessions?.length - 1]?.endTime
+      //       ? getFormattedTime(
+      //           formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
+      //         )
+      //       : task.sessions[0]
+      //       ? "Running"
+      //       : "Not Started";
+      //   const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
+      //   return {
+      //     ...task,
+      //     pinned: pinnedTasks.includes(task.id),
+      //     id: task.id,
+      //     title: task?.title,
+      //     description: task.description,
+      //     estimation: task.estimation,
+      //     startTime: formatDate(task.sessions[0]?.startTime),
+      //     endTime: formatDate(
+      //       task.sessions[task.sessions?.length - 1]?.endTime
+      //     ),
+      //     started: started,
+      //     ended: ended,
+      //     total: total,
+      //     percentage: task.estimation
+      //       ? Math.round(
+      //           getTotalSpentTime(task.sessions) / (task.estimation * 36000)
+      //         )
+      //       : -1,
+      //     totalSpent: getTotalSpentTime(task.sessions),
+      //     priority: task.priority,
+      //   };
+      // });
       message.success("Sync Successful");
+      getTasks();
     } catch (error) {
       message.error("Error syncing tasks");
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
     setSyncing(false);
   };
