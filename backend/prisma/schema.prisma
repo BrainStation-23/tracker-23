@@ -42,16 +42,16 @@ model Integration {
 }
 
 model Task {
-  id            Int       @id @default(autoincrement())
-  title         String
-  description   String?
-  assigneeId    String?
-  projectName   String?
-  estimation    Decimal?  @db.Decimal(5, 2)
-  status        Status    @default(TODO)
-  due           DateTime?
-  priority      Priority  @default(MEDIUM)
-  labels        Labels[]  @default([])
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  assigneeId  String?
+  projectName String?
+  estimation  Decimal?  @db.Decimal(5, 2)
+  status      Status    @default(TODO)
+  due         DateTime?
+  priority    Priority  @default(MEDIUM)
+  labels      Labels[]  @default([])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -90,6 +90,14 @@ model Session {
 
   user   User @relation(fields: [userId], references: [id])
   userId Int
+}
+
+model callSync {
+  id        Int      @id @default(autoincrement())
+  status    String
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Priority {
