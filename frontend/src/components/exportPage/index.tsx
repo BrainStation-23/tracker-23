@@ -96,7 +96,7 @@ const columns: any = [
     key: "estimation",
     // defaultSortOrder: "descend",
     render: (_: any, { estimation }: TaskDto) => (
-      <>{estimation ? estimation : "---"}</>
+      <>{estimation ? estimation+' hrs' : "---"}</>
     ),
     sorter: (a: any, b: any) => a.estimation - b.estimation,
     align: "center",
