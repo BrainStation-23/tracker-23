@@ -1,27 +1,11 @@
-import {
-  Button,
-  Empty,
-  Spin,
-  message,
-  Input,
-  Table,
-  Space,
-  Progress,
-  Tag,
-  TablePaginationConfig,
-  Dropdown,
-  MenuProps,
-  Typography,
-} from "antd";
+import { Button, Empty, Spin, message } from "antd";
 import { createContext, useEffect, useState } from "react";
 
 import GlobalModal from "../modals/globalModal";
 import SessionStartWarning from "./components/warning";
-import SideCard from "./components/sideCard";
-import { DeleteFilled, MoreOutlined, SyncOutlined } from "@ant-design/icons";
-import { TableParams, TaskDto } from "models/tasks";
+import { SyncOutlined } from "@ant-design/icons";
+import { TaskDto } from "models/tasks";
 import TaskInput from "./components/taskInput";
-import VerticalCard from "./components/verticalCard";
 import { userAPI } from "APIs";
 import {
   formatDate,
@@ -29,36 +13,14 @@ import {
   getFormattedTotalTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
-import {
-  PriorityBGColorEnum,
-  PriorityBorderColorEnum,
-  statusBGColorEnum,
-  statusBorderColorEnum,
-  progressColorEnum,
-  taskPriorityEnum,
-  taskStatusEnum,
-} from "utils/constants";
-import { PlayIcon } from "@/icons/playIcon";
-import PlayIconSvg from "@/assets/svg/playIconSvg";
-import PauseIconSvg from "@/assets/svg/pauseIconSvg";
-import StopWatchTabular from "../stopWatch/tabular/reactStopWatchTabular";
-import { FilterValue, SorterResult } from "antd/es/table/interface";
 import TopPanel from "./components/topPanel";
 import { toast } from "react-toastify";
-import { BsPinAngle } from "react-icons/bs";
-import { BsPinAngleFill } from "react-icons/bs";
-import MoreFunctionComponent from "./components/moreFunction";
 import TaskDetailsModal from "../modals/taskDetails.modal";
 import { getLocalStorage, setLocalStorage } from "@/storage/storage";
-import TimeDisplayComponent from "./components/timeDisplayComponent";
-import Stopwatch from "../stopWatch/tabular/timerComponent";
-import ProgressComponent from "./components/progressComponent";
-import StaticProgressComponent from "./components/progressComponentStatic";
 import { useRouter } from "next/router";
 import { getDateRangeArray } from "../datePicker";
 import TableComponent from "./components/tableComponent";
-const { Text } = Typography;
-const { Search } = Input;
+import { debounce } from "lodash";
 export const TaskContext = createContext<any>({
   taskList: [],
   runningTask: null,
@@ -79,10 +41,10 @@ const TasksPage = () => {
     router.query.tab === "pin" ? "Pin" : "All"
   );
   const [searchParams, setSearchParams] = useState({
-    searchText: null,
+    searchText: "",
     selectedDate: getDateRangeArray("this-week"),
-    priority: null,
-    status: null,
+    priority: [],
+    status: ["TODO", "IN_PROGRESS"],
   });
   const [syncing, setSyncing] = useState(false);
   const [reload, setReload] = useState(false);
@@ -195,7 +157,6 @@ const TasksPage = () => {
         };
       });
       setTasks(tmpTasks || []);
-      console.log(">>>>>", tmpTasks, tmpTasks.length);
     } catch (error) {
       message.error("Error getting tasks");
     } finally {
@@ -267,8 +228,6 @@ const TasksPage = () => {
     } else message.error("Session Start Failed");
   };
   const startSession = async (task: TaskDto) => {
-    console.log(">>>>>>", runningTask);
-
     if (runningTask && runningTask?.id != task.id) {
       setWarningData(task);
       setWarningModalOpen(true);
@@ -304,11 +263,11 @@ const TasksPage = () => {
       // getTasks();
     } else message.error("Session Ending Failed");
   };
-  useEffect(() => {
-    getTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  // useEffect(() => {
+  //   getTasks();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+  const debouncedGetTasks = debounce(getTasks, 2000);
   useEffect(() => {
     getTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -362,7 +321,9 @@ const TasksPage = () => {
             </Button>
           </div>
         </div>
-        <TopPanel {...{ tasks, activeTab, setActiveTab, setSearchParams }} />
+        <TopPanel
+          {...{ tasks, activeTab, setActiveTab, searchParams, setSearchParams }}
+        />
 
         <Spin spinning={loading}>
           {activeTab === "All" ? (

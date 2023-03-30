@@ -8,18 +8,28 @@ import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { useEffect } from "react";
 import StatusSelectorComponent from "./statusSelector";
 import PrioritySelectorComponent from "./prioritySelector";
+import { debounce } from "lodash";
+import { debouncee } from "@/services/taskActions";
+import { useMemo } from "react";
 
 type Props = {
   tasks: TaskDto[];
   activeTab: string;
   setActiveTab: Function;
   setSearchParams: Function;
+  searchParams: {
+    searchText: string;
+    selectedDate: any;
+    priority: string[];
+    status: string[];
+  };
 };
 const TopPanel = ({
   tasks,
   activeTab,
   setActiveTab,
   setSearchParams,
+  searchParams,
 }: Props) => {
   const [searchText, setSearchText] = useState("");
   const [status, setStatus] = useState(["TODO", "IN_PROGRESS"]);
@@ -32,7 +42,8 @@ const TopPanel = ({
   const tabs = ["All", "Pin"];
   const activeButton = (tab: string, setActiveTab: Function) => (
     <div
-      className="flex items-center gap-2 p-[11px]"
+      key={Math.random()}
+      className="flex cursor-pointer items-center gap-2 p-[11px]"
       style={{
         // background: "#00A3DE",
         border: "1px solid #00A3DE",
@@ -55,7 +66,8 @@ const TopPanel = ({
 
   const inactiveButton = (tab: string, setActiveTab: Function) => (
     <div
-      className="flex items-center gap-2 p-[11px]"
+      key={Math.random()}
+      className="flex cursor-pointer items-center gap-2 p-[11px]"
       style={{
         // background: "#00A3DE",
         border: "1px solid #ECECED",
@@ -77,15 +89,73 @@ const TopPanel = ({
     </div>
   );
 
+  const debouncedSetSearchParams = debounce(
+    async () =>
+      setSearchParams({
+        searchText: searchText,
+        selectedDate: selectedDate,
+        priority: priority,
+        status: status,
+      }),
+    2000
+  );
+  const dd = useMemo(
+    () =>
+      debouncee(() => {
+        console.log(
+          "<><><><><>",
+          {
+            searchText: searchText,
+            selectedDate: selectedDate,
+            priority: priority,
+            status: status,
+          },
+          searchParams
+        );
+
+        setSearchParams({
+          searchText: searchText,
+          selectedDate: selectedDate,
+          priority: priority,
+          status: status,
+        });
+      }, 500),
+    [searchText]
+  );
+
   useEffect(() => {
-    setSearchParams({
-      searchText: searchText,
-      selectedDate: selectedDate,
-      priority: priority,
-      status: status,
-    });
+    // debouncedSetSearchParams();
+    // if (searchParams.searchText != searchText)
+    {
+      console.log(
+        "XXXXXXX",
+        searchParams,
+        searchText,
+        selectedDate,
+        priority,
+        status
+      );
+      dd();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchText, selectedDate, priority, status]);
+  }, [searchText]);
+  useEffect(() => {
+    if (
+      JSON.stringify(searchParams.priority) != JSON.stringify(priority) ||
+      JSON.stringify(searchParams.selectedDate) !=
+        JSON.stringify(selectedDate) ||
+      JSON.stringify(searchParams.status) != JSON.stringify(status)
+    ) {
+      setSearchParams({
+        searchText: searchText,
+        selectedDate: selectedDate,
+        priority: priority,
+        status: status,
+      });
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate, priority, status]);
   const sortOptions = [
     // {
     //   icon: <SortNameIconSvg />,
@@ -121,6 +191,7 @@ const TopPanel = ({
           prefix={<SearchIconSvg />}
           onChange={(e) => {
             setSearchText(e.target.value);
+            // debouncedSetSearchParams();
           }}
           allowClear
         />

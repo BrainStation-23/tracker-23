@@ -5,10 +5,6 @@ type Props = {
   setStatus: Function;
 };
 const StatusSelectorComponent = ({ status, setStatus }: Props) => {
-  console.log(
-    "🚀 ~ file: statusSelector.tsx:8 ~ StatusSelectorComponent ~ status:",
-    status
-  );
   return (
     <div
       className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
