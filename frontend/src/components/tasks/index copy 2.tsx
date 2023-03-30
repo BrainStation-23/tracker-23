@@ -664,7 +664,7 @@ const TasksPage = () => {
             </Button>
           </div>
         </div>
-        <TopPanel {...{ tasks, activeTab, setActiveTab, setSearchParams }} />
+        {/* <TopPanel {...{ tasks, activeTab, setActiveTab, setSearchParams }} /> */}
 
         <Spin spinning={loading}>
           {activeTab === "All" ? (
