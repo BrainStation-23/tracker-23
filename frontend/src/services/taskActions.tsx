@@ -57,19 +57,3 @@ export function sortByStatus(tasks: TaskDto[]): TaskDto[] {
 
   return tasks.sort((a, b) => order[a.status] - order[b.status]);
 }
-
-
-export function debouncee(func: any, delay: number) {
-    let timerId: any;
-  
-    return function (...args: any[]) {
-      if (timerId) {
-        clearTimeout(timerId);
-      }
-      timerId = setTimeout(() => {
-        // @ts-ignore
-        func.apply(this, args);
-        timerId = null;
-      }, delay);
-    };
-  }

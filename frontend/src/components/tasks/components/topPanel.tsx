@@ -9,8 +9,6 @@ import { useEffect } from "react";
 import StatusSelectorComponent from "./statusSelector";
 import PrioritySelectorComponent from "./prioritySelector";
 import { debounce } from "lodash";
-import { debouncee } from "@/services/taskActions";
-import { useMemo } from "react";
 
 type Props = {
   tasks: TaskDto[];
@@ -89,54 +87,17 @@ const TopPanel = ({
     </div>
   );
 
-  const debouncedSetSearchParams = debounce(
-    async () =>
-      setSearchParams({
-        searchText: searchText,
-        selectedDate: selectedDate,
-        priority: priority,
-        status: status,
-      }),
-    2000
-  );
-  const dd = useMemo(
-    () =>
-      debouncee(() => {
-        console.log(
-          "<><><><><>",
-          {
-            searchText: searchText,
-            selectedDate: selectedDate,
-            priority: priority,
-            status: status,
-          },
-          searchParams
-        );
-
-        setSearchParams({
-          searchText: searchText,
-          selectedDate: selectedDate,
-          priority: priority,
-          status: status,
-        });
-      }, 500),
-    [searchText]
-  );
-
+  const handleInputChange = (event: any) => {
+    setSearchText(event.target.value);
+  };
+  const debouncedHandleInputChange = debounce(handleInputChange, 500);
   useEffect(() => {
-    // debouncedSetSearchParams();
-    // if (searchParams.searchText != searchText)
-    {
-      console.log(
-        "XXXXXXX",
-        searchParams,
-        searchText,
-        selectedDate,
-        priority,
-        status
-      );
-      dd();
-    }
+    setSearchParams({
+      searchText: searchText,
+      selectedDate: selectedDate,
+      priority: priority,
+      status: status,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
   useEffect(() => {
@@ -189,10 +150,14 @@ const TopPanel = ({
         <Input
           placeholder="Search"
           prefix={<SearchIconSvg />}
-          onChange={(e) => {
-            setSearchText(e.target.value);
-            // debouncedSetSearchParams();
+          onChange={(event) => {
+            event.persist();
+            debouncedHandleInputChange(event);
           }}
+          // onChange={(e) => {
+          //   setSearchText(e.target.value);
+          //   // debouncedSetSearchParams();
+          // }}
           allowClear
         />
         <div

@@ -20,7 +20,6 @@ import { getLocalStorage, setLocalStorage } from "@/storage/storage";
 import { useRouter } from "next/router";
 import { getDateRangeArray } from "../datePicker";
 import TableComponent from "./components/tableComponent";
-import { debounce } from "lodash";
 export const TaskContext = createContext<any>({
   taskList: [],
   runningTask: null,
@@ -267,7 +266,6 @@ const TasksPage = () => {
   //   getTasks();
   //   // eslint-disable-next-line react-hooks/exhaustive-deps
   // }, []);
-  const debouncedGetTasks = debounce(getTasks, 2000);
   useEffect(() => {
     getTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
