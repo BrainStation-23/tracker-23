@@ -1,4 +1,8 @@
-export const publicRoutes = ["/login", "/registration"];
+export const publicRoutes = [
+  "/login",
+  "/registration",
+  "/socialLogin/redirect",
+];
 export const ignoreRoutes = [
   "/_next",
   "/assets",

@@ -1,6 +1,6 @@
 import CustomLayout from "@/components/layout/layout";
 import "@/styles/globals.css";
-import {  Spin } from "antd";
+import { Spin } from "antd";
 import Axios from "axios";
 import { config } from "config";
 import type { AppProps } from "next/app";
@@ -40,10 +40,12 @@ export default function App({ Component, pageProps }: AppProps) {
         whiteListEmails.includes(userDetails?.email)
       );
       whiteListEmails.includes(userDetails?.email) ? "" : setValidUser(false);
+    } else if (!validUser) {
+      setValidUser(true);
     }
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [validUser, url, router]);
   return (
     <>
       <Spin spinning={loading} size="large" className="pt-[50%]">

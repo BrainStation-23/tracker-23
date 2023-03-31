@@ -1,16 +1,27 @@
 import ALertCircleIconSvg from "@/assets/svg/ALertCircleIconSvg";
 import { getLocalStorage } from "@/storage/storage";
+import LogOutButton from "../logOutButton";
+import { useEffect } from "react";
+import { useState } from "react";
 
 const InvalidUserPage = () => {
-  const userDetails = getLocalStorage("userDetails");
+  const [userDetails, serUserDetails] = useState(
+    getLocalStorage("userDetails")
+  );
+  console.log(
+    "🚀 ~ file: index.tsx:11 ~ InvalidUserPage ~ userDetails:",
+    userDetails
+  );
+  useEffect(() => {
+    serUserDetails(getLocalStorage("userDetails"));
+  }, []);
+
   return (
     <div className="m-auto flex h-screen w-full flex-col items-center justify-center">
-      <div className=" m-auto mt-[10%] flex w-[540px] flex-col gap-4 rounded-md border-2 border-[#F26956] bg-[#FFF7F5] p-4">
+      <div className=" m-auto mt-[10%] flex w-[540px] flex-col gap-4 rounded-md border-2 border-[#5670f2] bg-[#16dede0f] p-4">
         <ALertCircleIconSvg />
         <div className="flex flex-col gap-4 text-base font-medium">
-          <span>
-            Dear {userDetails?.firstName + " " + userDetails?.lastName},
-          </span>
+          <span>Dear {userDetails.firstName},</span>
           <span>
             Thank you for joining the Tracker23 waitlist! Our team is working
             hard to bring our product to life and we will keep you updated on
@@ -18,6 +29,7 @@ const InvalidUserPage = () => {
             us.
           </span>
           <span> Best, Tracker23 Team</span>
+          <LogOutButton />
         </div>
       </div>
     </div>
