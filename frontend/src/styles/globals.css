@@ -30,3 +30,7 @@ body {
   font-size: 20px; /* Set the font size */
   padding: 10px; /* Add some padding */
 }
+.custom-spin {
+  opacity: 2;
+  background: white;
+}

@@ -8,7 +8,7 @@ const DashBoardSection = ({ children, title }: Props) => {
   useEffect(() => {
     setTimeout(() => {
       setIsLoading(false);
-    }, 2000);
+    }, 500);
   }, []);
   return (
     <>
@@ -17,8 +17,8 @@ const DashBoardSection = ({ children, title }: Props) => {
           <div className="text-2xl font-semibold ">{title}</div>
           {/* <div className=" rounded-lg border-2 p-1 px-2 text-sm">This Week</div> */}
         </div>
-        <Spin spinning={isLoading}>
-          <div>{children}</div>
+        <Spin className="custom-spin" spinning={isLoading}>
+          {<div>{children}</div>}
         </Spin>
       </div>
     </>

@@ -372,6 +372,7 @@ const TasksPage = () => {
         <GlobalModal
           isModalOpen={viewModalOpen}
           setIsModalOpen={setViewModalOpen}
+          title="Add Task"
         >
           <TaskInput taskList={tasks} createTask={createTask} />
         </GlobalModal>
