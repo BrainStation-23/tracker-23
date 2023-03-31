@@ -1,3 +1,10 @@
+export const publicRoutes = ["/login", "/registration"];
+export const ignoreRoutes = [
+  "/_next",
+  "/assets",
+  "/socialLogin/redirect",
+  "/integrations",
+];
 export const menuOptions = [
   { link: "/taskList", title: "Tasks Page" },
   // { link: "/dashboard", title: "DashBoard Page" },
@@ -79,4 +86,13 @@ export const importCardData = [
     full: true,
     description: "Connect Trello to your Project",
   },
+];
+export const whiteListEmails = [
+  "seefathimel1@gmail.com",
+  "himel.bs23@gmail.com",
+  "dipubala.bs23@gmail.com",
+  "dipubala466@gmail.com",
+  "sudipta@timetackle.com",
+  "dipankar.bala@brainstation-23.com",
+  "rizwanur.rahman17@gmail.com",
 ];
