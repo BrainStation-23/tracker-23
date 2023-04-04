@@ -19,16 +19,28 @@ import { sideMenuOptions } from "./sideMenu";
 import { SyncOutlined } from "@ant-design/icons";
 import { userAPI } from "APIs";
 import ProfileIconSvg from "@/assets/svg/ProfileIconSvg";
+import { useAppDispatch, useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
+import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 
 function Navbar() {
   const [userDetails, setUserDetails] = useState<LoginResponseDto>();
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
-  const [syncing, setSyncing] = useState(false);
+  const syncing = useAppSelector(
+    (state: RootState) => state.syncStatus.syncRunning
+  );
   const router = useRouter();
   const path = router.asPath;
   const btnText = path === "/login" ? "Register" : "Login";
   const access_token = GetCookie("access_token");
   const [pageInfo, setPageInfo] = useState([]);
+
+  const dispatch = useAppDispatch();
+  const syncFunction = async () => {
+    dispatch(setSyncRunning(true));
+    const res = await userAPI.syncTasks();
+    res && dispatch(setSyncStatus(res));
+  };
   useEffect(() => {
     const tmp = getLocalStorage("userDetails");
     if (!userDetails && tmp) setUserDetails(tmp);
@@ -63,8 +75,7 @@ function Navbar() {
               syncing ? "border-green-500 text-green-500" : ""
             }`}
             onClick={async () => {
-              setSyncing(true);
-              await syncTasks();
+              syncFunction();
             }}
           >
             <SyncOutlined spin={syncing} />{" "}
@@ -82,16 +93,6 @@ function Navbar() {
       ),
     },
   ];
-  const syncTasks = async () => {
-    try {
-      const res = await userAPI.syncTasks();
-      message.success("Sync Successful");
-    } catch (error) {
-      message.error("Error syncing tasks");
-    } finally {
-      setSyncing(false);
-    }
-  };
   const menuProps = {
     items,
     onClick: () => {},

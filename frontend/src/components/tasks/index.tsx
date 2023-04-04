@@ -20,6 +20,9 @@ import { getLocalStorage, setLocalStorage } from "@/storage/storage";
 import { useRouter } from "next/router";
 import { getDateRangeArray } from "../datePicker";
 import TableComponent from "./components/tableComponent";
+import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
+import { useAppDispatch, useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
 export const TaskContext = createContext<any>({
   taskList: [],
   runningTask: null,
@@ -45,11 +48,12 @@ const TasksPage = () => {
     priority: [],
     status: ["TODO", "IN_PROGRESS"],
   });
-  const [syncing, setSyncing] = useState(false);
+  const syncRunning = useAppSelector(
+    (state: RootState) => state.syncStatus.syncRunning
+  );
   const [reload, setReload] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
   const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
-
   const createTask = async (data: any) => {
     setLoading(true);
     try {
@@ -162,58 +166,25 @@ const TasksPage = () => {
       setLoading(false);
     }
   };
+  const dispatch = useAppDispatch();
   const syncTasks = async () => {
     // setLoading(true);
     message.success("Syncing");
     let pinnedTasks = getLocalStorage("pinnedTasks");
     if (!pinnedTasks) pinnedTasks = [];
     try {
+      dispatch(setSyncRunning(true));
       const res = await userAPI.syncTasks();
-      // const tmpTasks = res.map((task: TaskDto) => {
-      //   const started =
-      //     task.sessions && task.sessions[0]
-      //       ? getFormattedTime(formatDate(task.sessions[0].startTime))
-      //       : "Not Started";
-      //   const ended =
-      //     task.sessions && task.sessions[task.sessions?.length - 1]?.endTime
-      //       ? getFormattedTime(
-      //           formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
-      //         )
-      //       : task.sessions[0]
-      //       ? "Running"
-      //       : "Not Started";
-      //   const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
-      //   return {
-      //     ...task,
-      //     pinned: pinnedTasks.includes(task.id),
-      //     id: task.id,
-      //     title: task?.title,
-      //     description: task.description,
-      //     estimation: task.estimation,
-      //     startTime: formatDate(task.sessions[0]?.startTime),
-      //     endTime: formatDate(
-      //       task.sessions[task.sessions?.length - 1]?.endTime
-      //     ),
-      //     started: started,
-      //     ended: ended,
-      //     total: total,
-      //     percentage: task.estimation
-      //       ? Math.round(
-      //           getTotalSpentTime(task.sessions) / (task.estimation * 36000)
-      //         )
-      //       : -1,
-      //     totalSpent: getTotalSpentTime(task.sessions),
-      //     priority: task.priority,
-      //   };
-      // });
-      message.success("Sync Successful");
-      getTasks();
+      res && dispatch(setSyncStatus(res));
+      if (res.status === "IN_PROGRESS") {
+        dispatch(setSyncRunning(true));
+      } else {
+        dispatch(setSyncRunning(false));
+        message.success("Sync Completed");
+      }
     } catch (error) {
       message.error("Error syncing tasks");
-    } finally {
-      // setLoading(false);
     }
-    setSyncing(false);
   };
   const handleSessionStart = async (task: TaskDto) => {
     const session = await userAPI.createSession(task.id);
@@ -270,6 +241,10 @@ const TasksPage = () => {
     getTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+  useEffect(() => {
+    !syncRunning && getTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncRunning]);
 
   useEffect(() => {
     if (tasks) {
@@ -282,6 +257,11 @@ const TasksPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   console.log("runningTask", runningTask);
+  const syncFunction = async () => {
+    dispatch(setSyncRunning(true));
+    const res = await userAPI.syncStatus();
+    res && dispatch(setSyncStatus(res));
+  };
 
   useEffect(() => {}, [reload, runningTask]);
 
@@ -308,25 +288,21 @@ const TasksPage = () => {
             <Button onClick={() => setViewModalOpen(true)}>Add Task</Button>
             <Button
               className={`flex items-center justify-center ${
-                syncing ? "border-green-500 text-green-500" : ""
+                syncRunning ? "border-green-500 text-green-500" : ""
               }`}
               onClick={async () => {
-                setSyncing(true);
                 await syncTasks();
               }}
             >
-              <SyncOutlined spin={syncing} />
+              <SyncOutlined spin={syncRunning} />
             </Button>
             <Button
               className={`flex items-center justify-center ${
-                syncing ? "border-green-500 text-green-500" : ""
+                syncRunning ? "border-green-500 text-green-500" : ""
               }`}
-              onClick={async () => {
-                setSyncing(true);
-                console.log(await userAPI.syncStatus());
-              }}
+              onClick={syncFunction}
             >
-              <SyncOutlined spin={syncing} /> Status
+              <SyncOutlined spin={syncRunning} /> Status
             </Button>
           </div>
         </div>

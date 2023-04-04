@@ -137,8 +137,6 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
 }
 
 export async function syncStatusRest(token?: string) {
-  console.log("<><><>", getLocalStorage("access_token"));
-
   try {
     const res = await axios.get(`${apiEndPoints.syncStatus}`, {
       headers: {
@@ -153,8 +151,6 @@ export async function syncStatusRest(token?: string) {
 }
 
 export async function syncTasksRest(token?: string) {
-  console.log("<><><>", getLocalStorage("access_token"));
-
   try {
     const res = await axios.get(`${apiEndPoints.syncTasks}`, {
       headers: {
@@ -170,7 +166,6 @@ export async function syncTasksRest(token?: string) {
 
 export async function createSessionRest(taskId: string) {
   console.log("🚀 ~ file: restApi.ts:91 ~ createSessionRest ~ taskID", taskId);
-  console.log("<><><>", getLocalStorage("access_token"));
 
   try {
     const res = await axios.post(
@@ -192,11 +187,6 @@ export async function createSessionRest(taskId: string) {
 
 export async function stopSessionRest(taskId: string) {
   console.log("🚀 ~ file: restApi.ts:91 ~ stopSessionRest ~ taskID", taskId);
-  console.log(
-    "<><><>",
-    getLocalStorage("access_token"),
-    GetCookie("access_token")
-  );
 
   try {
     const res = await axios.post(
@@ -270,7 +260,6 @@ export async function getIntegrationsRest(token?: string) {
     "🚀 ~ file: restApi.ts:215 ~ getIntegrationsRest ~ token:",
     token
   );
-  console.log("<><><>", getLocalStorage("access_token"));
 
   try {
     const res = await axios.get(`${apiEndPoints.integrations}`, {

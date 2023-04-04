@@ -12,6 +12,7 @@ import { publicRoutes, whiteListEmails } from "utils/constants";
 import { getLocalStorage } from "@/storage/storage";
 import { useEffect } from "react";
 import InvalidUserPage from "@/components/invalidUser";
+import { Providers } from "@/storage/redux/provider";
 
 // Axios.defaults.baseURL = process?.env?.NEXT_PUBLIC_API_PREFIX_REST;
 // Axios.defaults.baseURL =
@@ -24,21 +25,10 @@ export default function App({ Component, pageProps }: AppProps) {
   const url = router.asPath;
   const userDetails = getLocalStorage("userDetails");
 
-  console.log("🚀 ~ file: _app.tsx:21 ~ App ~ router:", url);
-  if (!publicRoutes.some((route) => url.includes(route))) {
-    console.log(
-      ">>>>>>>>>>",
-      url,
-      whiteListEmails.includes(userDetails?.email)
-    );
-  }
+
   useEffect(() => {
     if (!publicRoutes.some((route) => url.includes(route))) {
-      console.log(
-        ">>>>>>>>>>",
-        url,
-        whiteListEmails.includes(userDetails?.email)
-      );
+    
       whiteListEmails.includes(userDetails?.email) ? "" : setValidUser(false);
     } else if (!validUser) {
       setValidUser(true);
@@ -47,7 +37,7 @@ export default function App({ Component, pageProps }: AppProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validUser, url, router]);
   return (
-    <>
+    <Providers>
       <Spin spinning={loading} size="large" className="pt-[50%]">
         {!loading && (
           <>
@@ -66,6 +56,6 @@ export default function App({ Component, pageProps }: AppProps) {
           </>
         )}
       </Spin>
-    </>
+    </Providers>
   );
 }
