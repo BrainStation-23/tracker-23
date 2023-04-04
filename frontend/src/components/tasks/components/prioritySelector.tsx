@@ -1,4 +1,4 @@
-import SortProgressIconSvg from "@/assets/svg/sortIcons/SortProgressIconSvg";
+import SortPriorityIconSvg from "@/assets/svg/sortIcons/SortPriorityIconSvg";
 import { Select } from "antd";
 type Props = { priority: string[]; setPriority: Function };
 const PrioritySelectorComponent = ({ priority, setPriority }: Props) => {
@@ -12,12 +12,13 @@ const PrioritySelectorComponent = ({ priority, setPriority }: Props) => {
       // }}
       // onClick={() => setActive("Sort")}
     >
-      <SortProgressIconSvg />
+      <SortPriorityIconSvg />
       {/* <span className="font-normal">Priority</span> */}
       <Select
         placeholder="Select Priority"
         mode="multiple"
-        style={{ width: 120 }}
+        // style={{ width: 120 }}
+        className="w-full"
         value={priority}
         options={[
           { value: "HIGH", label: "High" },

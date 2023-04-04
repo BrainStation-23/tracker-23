@@ -201,7 +201,7 @@ const TopPanel = ({
             <div
               className={`${active === "Filter" ? "duration-500" : "hidden h-0"}
               absolute  top-[25px] right-0 z-50 flex
-              w-[230px] flex-col gap-2 p-6`}
+              w-[320px] flex-col gap-2 p-6`}
               style={{
                 background: "#FFFFFF",
                 boxShadow:
