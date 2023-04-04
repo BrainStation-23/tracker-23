@@ -24,3 +24,13 @@ body {
   .ant-table-cell {
   background-color: white;
 }
+.custom-modal-title {
+  background-color: #f6e05e; /* Set the background color */
+  color: #1a202c; /* Set the text color */
+  font-size: 20px; /* Set the font size */
+  padding: 10px; /* Add some padding */
+}
+.custom-spin {
+  opacity: 2;
+  background: white;
+}

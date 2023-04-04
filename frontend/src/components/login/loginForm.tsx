@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import { userAPI } from "APIs";
 import { GetCookie } from "@/services/cookie.service";
-import Line from "../dashboard/charts/MultiValueAxesChart";
+import Line from "../dashboard/charts/lineChart";
 
 const LoginForm: React.FC = () => {
   const router = useRouter();
@@ -17,7 +17,7 @@ const LoginForm: React.FC = () => {
       data,
       GetCookie("access_token")
     );
-    if (GetCookie("access_token")) router.push("/");
+    if (GetCookie("access_token")) router.push("/taskList");
   };
 
   const onFinish = async (values: any) => {
@@ -82,8 +82,8 @@ const LoginForm: React.FC = () => {
         <Checkbox>Remember me</Checkbox>
       </Form.Item> */}
 
-      <Form.Item >
-        <button className="w-full flex flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
+      <Form.Item>
+        <button className="flex w-full flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
           Login
         </button>
       </Form.Item>

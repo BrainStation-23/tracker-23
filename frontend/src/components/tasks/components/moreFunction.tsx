@@ -3,6 +3,9 @@ import { Button, Dropdown, MenuProps, Tooltip } from "antd";
 import { TaskDto } from "models/tasks";
 import { BsPinAngle, BsPinAngleFill } from "react-icons/bs";
 import { useState } from "react";
+import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
+import PinIconSvg from "@/assets/svg/PinIconSvg";
+import PinFilledIconSvg from "@/assets/svg/PinFilledIconSvg";
 type Props = {
   deleteTask: Function;
   task: TaskDto;
@@ -17,12 +20,13 @@ const MoreFunctionComponent = ({ deleteTask, task, handlePin }: Props) => {
       key: "1",
       label: (
         <Button
-          className="-2 flex gap-2 bg-white p-1"
+          className="-2 flex gap-2 p-1 hover:bg-white"
           onClick={() => {
             deleteTask(task.id);
           }}
+          type="ghost"
         >
-          <DeleteOutlined className="w-6 gap-2" style={{ fontSize: "24px" }} />
+          <DeleteIconSvg />
           Delete
         </Button>
       ),
@@ -31,16 +35,13 @@ const MoreFunctionComponent = ({ deleteTask, task, handlePin }: Props) => {
       key: "1",
       label: (
         <Button
-          className="-2 flex w-full gap-3  p-1"
+          className="-2 flex w-full gap-3 p-1 hover:bg-white"
           onClick={() => {
             handlePin(task);
           }}
+          type="ghost"
         >
-          {task.pinned ? (
-            <BsPinAngleFill className="h-5 w-5" />
-          ) : (
-            <BsPinAngle className="h-5 w-5" />
-          )}
+          {task.pinned ? <PinFilledIconSvg /> : <PinIconSvg />}
           {task.pinned ? "Unpin" : "Pin"}
         </Button>
       ),

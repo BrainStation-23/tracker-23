@@ -1,34 +1,37 @@
 import FilterIconSvg from "@/assets/svg/filterIconSvg";
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
-import ClockIconSvg from "@/assets/svg/sortIcons/ClockIconSvg";
-import SortPriorityIconSvg from "@/assets/svg/sortIcons/SortPriorityIconSvg";
 import SortIconSvg from "@/assets/svg/sortIconSvg";
 import { Input, Select } from "antd";
 import { TaskDto } from "models/tasks";
 import { useState } from "react";
-import SortNameIconSvg from "../../../assets/svg/sortIcons/SortNameIconSvg";
-import SortStatusIconSvg from "../../../assets/svg/sortIcons/SortStatusIconSvg";
-import SortProgressIconSvg from "../../../assets/svg/sortIcons/SortProgressIconSvg";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { useEffect } from "react";
-
-const { Search } = Input;
+import StatusSelectorComponent from "./statusSelector";
+import PrioritySelectorComponent from "./prioritySelector";
+import { debounce } from "lodash";
 
 type Props = {
   tasks: TaskDto[];
   activeTab: string;
   setActiveTab: Function;
   setSearchParams: Function;
+  searchParams: {
+    searchText: string;
+    selectedDate: any;
+    priority: string[];
+    status: string[];
+  };
 };
 const TopPanel = ({
   tasks,
   activeTab,
   setActiveTab,
   setSearchParams,
+  searchParams,
 }: Props) => {
   const [searchText, setSearchText] = useState("");
-  const [status, setStatus] = useState("Status");
-  const [priority, setPriority] = useState("Priority");
+  const [status, setStatus] = useState(["TODO", "IN_PROGRESS"]);
+  const [priority, setPriority] = useState([]);
   const [active, setActive] = useState("");
   const [selectedDate, setSelectedDate] = useState(
     getDateRangeArray("this-week")
@@ -37,7 +40,8 @@ const TopPanel = ({
   const tabs = ["All", "Pin"];
   const activeButton = (tab: string, setActiveTab: Function) => (
     <div
-      className="flex items-center gap-2 p-[11px]"
+      key={Math.random()}
+      className="flex cursor-pointer items-center gap-2 p-[11px]"
       style={{
         // background: "#00A3DE",
         border: "1px solid #00A3DE",
@@ -60,7 +64,8 @@ const TopPanel = ({
 
   const inactiveButton = (tab: string, setActiveTab: Function) => (
     <div
-      className="flex items-center gap-2 p-[11px]"
+      key={Math.random()}
+      className="flex cursor-pointer items-center gap-2 p-[11px]"
       style={{
         // background: "#00A3DE",
         border: "1px solid #ECECED",
@@ -81,7 +86,11 @@ const TopPanel = ({
       <div className="text-[15px] text-[#4D4E55]">{tab}</div>
     </div>
   );
-  // const handleOnClick = () => {};
+
+  const handleInputChange = (event: any) => {
+    setSearchText(event.target.value);
+  };
+  const debouncedHandleInputChange = debounce(handleInputChange, 500);
   useEffect(() => {
     setSearchParams({
       searchText: searchText,
@@ -90,58 +99,34 @@ const TopPanel = ({
       status: status,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchText, selectedDate, priority, status]);
+  }, [searchText]);
+  useEffect(() => {
+    if (
+      JSON.stringify(searchParams.priority) != JSON.stringify(priority) ||
+      JSON.stringify(searchParams.selectedDate) !=
+        JSON.stringify(selectedDate) ||
+      JSON.stringify(searchParams.status) != JSON.stringify(status)
+    ) {
+      setSearchParams({
+        searchText: searchText,
+        selectedDate: selectedDate,
+        priority: priority,
+        status: status,
+      });
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate, priority, status]);
   const sortOptions = [
     // {
     //   icon: <SortNameIconSvg />,
     //   title: "Name",
     // },
-    <div
+    <PrioritySelectorComponent
       key={Math.random()}
-      className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
-      // style={{
-      //   color: active === "Sort" ? "#00A3DE" : "black",
-      //   // backgroundColor: "#00A3DE",
-      // }}
-      // onClick={() => setActive("Sort")}
-    >
-      <SortProgressIconSvg />
-      {/* <span className="font-normal">Priority</span> */}
-      <Select
-        defaultValue="Priority"
-        style={{ width: 120 }}
-        value={priority}
-        options={[
-          { value: "High", label: "High" },
-          { value: "Medium", label: "Medium" },
-          { value: "Low", label: "Low" },
-        ]}
-        onChange={(value) => setPriority(value)}
-      />
-    </div>,
-    <div
-      key={Math.random()}
-      className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
-      // style={{
-      //   color: active === "Sort" ? "#00A3DE" : "black",
-      //   // backgroundColor: "#00A3DE",
-      // }}
-      // onClick={() => setActive("Sort")}
-    >
-      <SortStatusIconSvg />
-      {/* <span className="font-normal">Status</span> */}
-      <Select
-        defaultValue="Status"
-        value={status}
-        style={{ width: 120 }}
-        options={[
-          { value: "Todo", label: "Todo" },
-          { value: "In Progress", label: "In Progress" },
-          { value: "Done", label: "Done" },
-        ]}
-        onChange={(value) => setStatus(value)}
-      />
-    </div>,
+      {...{ priority, setPriority }}
+    />,
+    <StatusSelectorComponent key={Math.random()} {...{ status, setStatus }} />,
     // {
     //   icon: <ClockIconSvg />,
     //   title: "Estimation",
@@ -165,9 +150,14 @@ const TopPanel = ({
         <Input
           placeholder="Search"
           prefix={<SearchIconSvg />}
-          onChange={(e) => {
-            setSearchText(e.target.value);
+          onChange={(event) => {
+            event.persist();
+            debouncedHandleInputChange(event);
           }}
+          // onChange={(e) => {
+          //   setSearchText(e.target.value);
+          //   // debouncedSetSearchParams();
+          // }}
           allowClear
         />
         <div
@@ -211,7 +201,7 @@ const TopPanel = ({
             <div
               className={`${active === "Filter" ? "duration-500" : "hidden h-0"}
               absolute  top-[25px] right-0 z-50 flex
-              w-[230px] flex-col gap-2 p-6`}
+              w-[320px] flex-col gap-2 p-6`}
               style={{
                 background: "#FFFFFF",
                 boxShadow:
@@ -220,20 +210,6 @@ const TopPanel = ({
               }}
             >
               {sortOptions?.map((option) => option)}
-              {/* {sortOptions?.map((option) => (
-                <div
-                  key={Math.random()}
-                  className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
-                  // style={{
-                  //   color: active === "Sort" ? "#00A3DE" : "black",
-                  //   // backgroundColor: "#00A3DE",
-                  // }}
-                  // onClick={() => setActive("Sort")}
-                >
-                  {option.icon}
-                  <span className="font-normal">{option.title}</span>
-                </div>
-              ))} */}
             </div>
           </div>
         </div>

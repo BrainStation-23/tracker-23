@@ -4,6 +4,7 @@ import {
   setLocalStorage,
 } from "@/storage/storage";
 import { log } from "console";
+import { TaskDto } from "models/tasks";
 import { toast } from "react-toastify";
 
 export const updateTask = (task: any, taskName: string) => {
@@ -38,3 +39,21 @@ export const updateTask = (task: any, taskName: string) => {
     return false;
   }
 };
+
+export const getStringFromArray = (val: string[]) => {
+  let res = "";
+
+  val?.forEach((v, index) => {
+    index > 0 ? (res += "," + v) : (res += v);
+  });
+  return res;
+};
+export function sortByStatus(tasks: TaskDto[]): TaskDto[] {
+  const order: Record<"IN_PROGRESS" | "TODO" | "DONE", number> = {
+    IN_PROGRESS: 0,
+    TODO: 1,
+    DONE: 2,
+  };
+
+  return tasks.sort((a, b) => order[a.status] - order[b.status]);
+}

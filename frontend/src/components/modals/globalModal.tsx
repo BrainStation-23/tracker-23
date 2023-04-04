@@ -4,8 +4,14 @@ type Props = {
   children: any;
   isModalOpen: boolean;
   setIsModalOpen: Function;
+  title?: string;
 };
-const GlobalMOdal = ({ children, isModalOpen, setIsModalOpen }: Props) => {
+const GlobalMOdal = ({
+  children,
+  isModalOpen,
+  setIsModalOpen,
+  title,
+}: Props) => {
   const handleOk = () => {
     setIsModalOpen(false);
   };
@@ -14,7 +20,7 @@ const GlobalMOdal = ({ children, isModalOpen, setIsModalOpen }: Props) => {
   };
   return (
     <Modal
-      // title="TaskDetails Modal"
+      title={title}
       open={isModalOpen}
       onOk={handleOk}
       onCancel={handleCancel}

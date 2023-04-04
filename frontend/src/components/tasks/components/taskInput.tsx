@@ -43,45 +43,57 @@ const TaskInput = ({ taskList, createTask }: any) => {
     <Form
       form={form}
       name="control-hooks"
-      labelCol={{ span: 7 }}
       onFinish={onFinish}
       initialValues={initialValues}
-      style={{ width: "500px" }}
+      // style={{ width: "500px" }}
     >
-      <Form.Item name="title" label="Task Name" rules={[{ required: true }]}>
-        <Input />
+      <Form.Item
+        name="title"
+        label="Task Name"
+        rules={[{ required: true }]}
+        labelCol={{ span: 24 }}
+      >
+        <Input placeholder="Enter your task name" />
       </Form.Item>
       <Form.Item
         name="description"
         label="Description"
-        initialValue={"sample description"}
+        // initialValue={"sample description"}
+        labelCol={{ span: 24 }}
         // rules={[{ required: true }]}
       >
-        <Input />
+        <Input placeholder="Enter text here..." />
       </Form.Item>
-      <Form.Item
-        name="estimation"
-        initialValue={2}
-        label="Estimation (in hours)"
-        rules={[{ required: true }]}
-      >
-        <Input type="number" />
-      </Form.Item>
+      <div className="grid w-full grid-cols-2 gap-3">
+        <Form.Item
+          name="estimation"
+          // initialValue={2}
+          label="Estimation (in hours)"
+          labelCol={{ span: 24 }}
+          rules={[{ required: true }]}
+        >
+          <Input type="number" placeholder="hours" />
+        </Form.Item>
 
-      <Form.Item name="priority" label="Priority" rules={[{ required: true }]}>
-        {/* <Input /> */}
-        <Select
-          style={{ width: 120 }}
-          onChange={handlePriorityChange}
-          options={[
-            { value: "LOW", label: "LOW" },
-            { value: "MEDIUM", label: "MEDIUM" },
-            { value: "HIGH", label: "HIGH" },
-          ]}
-        />
-      </Form.Item>
+        <Form.Item
+          name="priority"
+          label="Priority"
+          labelCol={{ span: 24 }}
+          rules={[{ required: true }]}
+        >
+          {/* <Input /> */}
+          <Select
+            onChange={handlePriorityChange}
+            options={[
+              { value: "LOW", label: "LOW" },
+              { value: "MEDIUM", label: "MEDIUM" },
+              { value: "HIGH", label: "HIGH" },
+            ]}
+          />
+        </Form.Item>
+      </div>
 
-      <Form.Item name="label" label="Label">
+      <Form.Item name="label" label="Label" labelCol={{ span: 24 }}>
         {/* <Input /> */}
 
         <Select
@@ -96,8 +108,12 @@ const TaskInput = ({ taskList, createTask }: any) => {
       </Form.Item>
 
       <Form.Item>
-        <div className="flex  gap-2">
-          <Button type="primary" htmlType="submit" className="bg-green-500">
+        <div className="flex flex-row-reverse gap-3">
+          <Button
+            type="ghost"
+            htmlType="submit"
+            className="bg-[#00A3DE] text-white hover:bg-[#00a3deb2]"
+          >
             Submit
           </Button>
           <Button htmlType="button" onClick={onReset}>

@@ -43,7 +43,7 @@ const TaskDetailsModal = ({
   return (
     <>
       <Modal
-        title="Task Details"
+        title={<div className=" text-base font-semibold "> Task Details</div>}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
@@ -51,30 +51,48 @@ const TaskDetailsModal = ({
         width={720}
       >
         <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-4">
-            <span className="font-medium">TItle :</span>
-            <div className="flex-1">{task?.title}</div>
+          <div className="flex w-full items-center gap-4">
+            <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+              TItle
+            </span>
+            <span className="font-medium">{task?.title}</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="font-medium">Description:</span>{" "}
-            {taskDetails?.description ?? <em>No description provided.</em>}
+            <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+              Description
+            </span>{" "}
+            <span className="font-medium">
+              {taskDetails?.description ?? <em>No description provided.</em>}
+            </span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="font-medium">Estimation:</span>{" "}
-            {taskDetails?.estimation ?? <em>No estimation provided.</em>}
-          </div>
-          <div className="flex items-center gap-4">
-            Time Left :{" "}
-            {taskDetails?.estimation
-              ? getFormattedTotalTime(
-                  taskDetails?.estimation * 3600000 -
-                    getTotalSpentTime(task.sessions)
-                )
-              : "No estimation"}{" "}
+          <div className="grid grid-cols-2">
+            <div className="flex items-center gap-4">
+              <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+                Estimation
+              </span>{" "}
+              <span className="font-medium">
+                {taskDetails?.estimation ?? <em>No estimation provided.</em>}
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+                Time Left
+              </span>
+              <span className="font-medium">
+                {taskDetails?.estimation
+                  ? getFormattedTotalTime(
+                      taskDetails?.estimation * 3600000 -
+                        getTotalSpentTime(task.sessions)
+                    )
+                  : "No estimation"}{" "}
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
-            Status :{" "}
+            <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+              Status
+            </span>
             <div
               style={{
                 backgroundColor: statusBGColorEnum[taskDetails?.status],
@@ -96,9 +114,15 @@ const TaskDetailsModal = ({
             </div>
           </div>
 
-          <div>
-            Total Spent :{" "}
-            {getFormattedTotalTime(getTotalSpentTime(task?.sessions))}
+          <div className="flex items-center gap-4">
+            <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+              Total Spent{" "}
+            </span>
+            <span className="font-medium">
+              {getFormattedTotalTime(getTotalSpentTime(task?.sessions))
+                ? getFormattedTotalTime(getTotalSpentTime(task?.sessions))
+                : "---"}
+            </span>
           </div>
           <Sessions {...{ taskDetails }} />
         </div>

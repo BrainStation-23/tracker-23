@@ -4,6 +4,7 @@ import { Button } from "antd";
 import { useRouter } from "next/router";
 // import { LogOut } from "../APIs";
 import { userAPI } from "../../APIs/index";
+import LogoutIconSvg from "@/assets/svg/LogoutIconSvg";
 
 const LogOutButton = () => {
   const router = useRouter();
@@ -13,9 +14,13 @@ const LogOutButton = () => {
     if (loggedOut) router.push("/login");
   };
   return (
-    <Button className="" onClick={() => handleLogOut()}>
-      <LogoutOutlined /> Log out
-    </Button>
+    <button
+      className="flex items-center gap-1"
+      onClick={() => handleLogOut()}
+    >
+      <LogoutIconSvg />
+      <span className="text-[15px] font-semibold">Log out</span>
+    </button>
   );
 };
 

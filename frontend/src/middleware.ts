@@ -1,6 +1,6 @@
-// import  from 'jsonwebtoken';
-// const { verify } = require("jsonwebtoken");
+
 import { NextResponse } from "next/server";
+import { ignoreRoutes, publicRoutes } from "utils/constants";
 import { GetCookie } from "./services/cookie.service";
 
 export default async function middleware(req: any) {
@@ -12,13 +12,7 @@ export default async function middleware(req: any) {
   const cookies = req.headers.get("cookie");
   const access_token = cookies;
   // if (!url.includes("/_next"))
-  const publicRoutes = ["/login", "/registration"];
-  const ignoreRoutes = [
-    "/_next",
-    "/assets",
-    "/socialLogin/redirect",
-    "/integrations",
-  ];
+
   // console.log(
   //   "🚀 ~ file: _middleware.js:6 ~ middleware ~ cookies",
   //   access_token,

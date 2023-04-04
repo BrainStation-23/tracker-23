@@ -11,6 +11,9 @@ import { apiEndPoints } from "utils/apiEndPoints";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { message } from "antd";
+import { SearchParamsModel } from "models/apiParams";
+import { getStringFromArray } from "@/services/taskActions";
+import { sortByStatus } from "../src/services/taskActions";
 
 export async function loginRest(
   data: LoginDto
@@ -97,33 +100,40 @@ export async function deleteTaskRest(taskId: any) {
   }
 }
 
-export async function getTasksRest(searchParams: any) {
+export async function getTasksRest(searchParams: SearchParamsModel) {
   console.log(
     "🚀 ~ file: restApi.ts:101 ~ getTasksRest ~ searchParams:",
     searchParams
   );
+  const status = getStringFromArray(searchParams?.status);
+  const priority = getStringFromArray(searchParams?.priority);
   try {
-    const res = await axios.get(`${apiEndPoints.tasks}`, {
-      headers: {
-        Authorization: `Bearer ${GetCookie("access_token")}`,
-      },
-    });
-    // const res = await axios.get(
-    //   `${apiEndPoints.tasks}?${
-    //     searchParams?.selectedDate?.length === 2
-    //       ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[0]}`
-    //       : ""
-    //   }${searchParams?.priority ? `priority=${searchParams?.priority}` : ""}${
-    //     searchParams?.status ? `status=${searchParams?.status}` : ""
-    //   }`,
-    //   {
-    //     headers: {
-    //       Authorization: `Bearer ${GetCookie("access_token")}`,
-    //     },
-    //   }
-    // );
+    // const res = await axios.get(`${apiEndPoints.tasks}`, {
+    //   headers: {
+    //     Authorization: `Bearer ${GetCookie("access_token")}`,
+    //   },
+    // });
+
+    const res = await axios.get(
+      apiEndPoints.tasks +
+        "?" +
+        (searchParams?.selectedDate?.length === 2
+          ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
+          : "") +
+        (searchParams?.searchText && searchParams?.searchText.length > 0
+          ? `&text=${searchParams.searchText}`
+          : "") +
+        (priority && priority.length > 0 ? `&priority=${priority}` : "") +
+        (status && status.length > 0 ? `&status=${status}` : ""),
+      {
+        headers: {
+          Authorization: `Bearer ${GetCookie("access_token")}`,
+        },
+      }
+    );
     console.log("getTasksRest", res);
-    return res.data;
+    const sortedTasks = sortByStatus(res.data);
+    return sortedTasks;
   } catch (error: any) {
     toast.error("Failed to Get Task : " + error.message);
     return false;

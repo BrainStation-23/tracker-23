@@ -26,7 +26,7 @@ const GoogleCallbackPage = () => {
         setLocalStorage("access_token", decoded?.access_token);
         setLocalStorage("userDetails", decoded);
         message.success("Successfully Logged in");
-        router.push("/");
+        router.push("/taskList");
       }
       // const decoded = Buffer.from(encodedData, "base64").toString();
       setDecodedData(decoded);
