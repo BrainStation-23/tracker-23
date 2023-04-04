@@ -12,7 +12,12 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { CreateTaskDto, GetTaskQuery } from './dto';
+import {
+  CreateTaskDto,
+  GetTaskQuery,
+  StatusReqBodyDto,
+  TimeSpentReqBodyDto,
+} from './dto';
 import { TasksService } from './tasks.service';
 import { Task, User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/guard';
@@ -67,5 +72,29 @@ export class TasksController {
   @UseGuards(JwtAuthGuard)
   async callSync(@GetUser() user: User) {
     return await this.tasksService.getCallSync(user.id);
+  }
+
+  @Patch('update/status/:issueId')
+  @UseGuards(JwtAuthGuard)
+  async updateIssueStatus(
+    @GetUser() user: User,
+    @Param('issueId') issueId: string,
+    @Body() statusReqBody: StatusReqBodyDto,
+  ) {
+    return this.tasksService.updateIssueStatus(
+      user,
+      issueId,
+      statusReqBody.status,
+    );
+  }
+
+  @Patch('add-work-log/:issueId')
+  @UseGuards(JwtAuthGuard)
+  async addWorkLog(
+    @GetUser() user: User,
+    @Param('issueId') issueId: string,
+    @Body() timeSpentReqBody: TimeSpentReqBodyDto,
+  ) {
+    return this.tasksService.addWorkLog(user, issueId, timeSpentReqBody);
   }
 }

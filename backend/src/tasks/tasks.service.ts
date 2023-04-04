@@ -1,10 +1,16 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { IntegrationType, Task, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateTaskDto, GetTaskQuery, UpdateTaskDto } from './dto';
+import {
+  CreateTaskDto,
+  GetTaskQuery,
+  TimeSpentReqBodyDto,
+  UpdateTaskDto,
+} from './dto';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
 
 @Injectable()
 export class TasksService {
@@ -241,5 +247,72 @@ export class TasksService {
         status: status,
       },
     });
+  }
+
+  getTransitionId(status: string) {
+    switch (status) {
+      case 'DONE':
+        return '31';
+      case 'IN_PROGRESS':
+        return '21';
+      case 'TODO':
+        return '11';
+    }
+  }
+
+  async updateIssueStatus(user: User, issueId: string, status: string) {
+    try {
+      const integration = await this.prisma.integration.findFirst({
+        where: { userId: user.id, type: IntegrationType.JIRA },
+      });
+      const statusBody = JSON.stringify({
+        transition: {
+          id: this.getTransitionId(status),
+        },
+      });
+
+      const url = `https://api.atlassian.com/ex/jira/${integration?.siteId}/rest/api/3/issue/${issueId}/transitions`;
+      const config = {
+        method: 'post',
+        url,
+        headers: {
+          Authorization: `Bearer ${integration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        data: statusBody,
+      };
+      await axios(config);
+    } catch (err) {
+      console.log(err.message);
+    }
+  }
+
+  async addWorkLog(
+    user: User,
+    issueId: string,
+    timeSpentReqBody: TimeSpentReqBodyDto,
+  ) {
+    try {
+      const integration = await this.prisma.integration.findFirst({
+        where: { userId: user.id, type: IntegrationType.JIRA },
+      });
+
+      const url = `https://api.atlassian.com/ex/jira/${integration?.siteId}/rest/api/3/issue/${issueId}/worklog`;
+      const config = {
+        method: 'post',
+        url,
+        headers: {
+          Authorization: `Bearer ${integration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        data: timeSpentReqBody,
+      };
+
+      return await (
+        await axios(config)
+      ).data;
+    } catch (err) {
+      console.log(err.message);
+    }
   }
 }
