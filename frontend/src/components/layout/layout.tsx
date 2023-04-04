@@ -55,7 +55,6 @@ const CustomLayout = ({ children }: any) => {
 						})}
 					>
 						{!isPublicRoute && <GlobalClock />}
-						{/* <TopBar /> */}
 						{children}
 					</div>
 				</div>
