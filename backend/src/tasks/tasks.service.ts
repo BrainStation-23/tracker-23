@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { IntegrationType, Task, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
@@ -11,6 +11,7 @@ import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { Response } from 'express';
 
 @Injectable()
 export class TasksService {
@@ -79,10 +80,10 @@ export class TasksService {
     return await this.prisma.task.delete({ where: { id } });
   }
 
-  async syncTasks(user: User) {
+  async syncTasks(user: User, res: Response) {
     try {
       let syncStatus = 'IN_PROGRESS';
-      this.syncCall(syncStatus, user.id);
+      res.json(await this.syncCall(syncStatus, user.id));
       const tokenUrl = 'https://auth.atlassian.com/oauth/token';
       const headers: any = { 'Content-Type': 'application/json' };
       let taskPromises: Promise<any>[] = [];
@@ -126,7 +127,6 @@ export class TasksService {
             )
           ).data;
           if (respTasks.issues.length === 0) break;
-
           const map = new Map<number, any>();
           respTasks.issues.map((issue: any) => {
             map.set(Number(issue.id), issue);
@@ -192,11 +192,9 @@ export class TasksService {
         }
         syncStatus = 'DONE';
         this.syncCall(syncStatus, user.id);
-        return { message: `Newly ${count} Tasks Successfully synced` };
       }
     } catch (err) {
-      console.error('checking error', err);
-      throw new InternalServerErrorException('Something went wrong');
+      console.error('checking error', err.message);
     }
   }
 
@@ -223,30 +221,40 @@ export class TasksService {
   }
 
   async getCallSync(userId: number) {
-    return await this.prisma.callSync.findFirst({
-      where: {
-        userId: userId,
-      },
-    });
+    try {
+      return await this.prisma.callSync.findFirst({
+        where: {
+          userId: userId,
+        },
+      });
+    } catch (err) {
+      console.log(err.message);
+      return null;
+    }
   }
 
   async syncCall(status: string, userId: number) {
-    const doesExist = await this.getCallSync(userId);
-    if (!doesExist) {
-      return await this.prisma.callSync.create({
+    try {
+      const doesExist = await this.getCallSync(userId);
+      if (!doesExist) {
+        return await this.prisma.callSync.create({
+          data: {
+            status,
+            userId,
+          },
+        });
+      }
+
+      return await this.prisma.callSync.update({
+        where: { id: doesExist.id },
         data: {
-          status,
-          userId,
+          status: status,
         },
       });
+    } catch (err) {
+      console.log(err.message);
+      return null;
     }
-
-    return await this.prisma.callSync.update({
-      where: { id: doesExist.id },
-      data: {
-        status: status,
-      },
-    });
   }
 
   getTransitionId(status: string) {
