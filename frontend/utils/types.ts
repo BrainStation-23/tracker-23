@@ -12,6 +12,7 @@ export interface apiFunction {
   deleteTask: (data: any) => Promise<any | undefined>;
   getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   syncTasks: (token?: string) => Promise<any>;
+  syncStatus: (token?: string) => Promise<any>;
   getIntegrations: (token?: string) => Promise<any>;
   createSession: (taskID: string) => Promise<any>;
   stopSession: (taskID: string) => Promise<any>;

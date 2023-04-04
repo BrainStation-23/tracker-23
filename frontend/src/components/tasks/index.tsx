@@ -317,6 +317,17 @@ const TasksPage = () => {
             >
               <SyncOutlined spin={syncing} />
             </Button>
+            <Button
+              className={`flex items-center justify-center ${
+                syncing ? "border-green-500 text-green-500" : ""
+              }`}
+              onClick={async () => {
+                setSyncing(true);
+                console.log(await userAPI.syncStatus());
+              }}
+            >
+              <SyncOutlined spin={syncing} /> Status
+            </Button>
           </div>
         </div>
         <TopPanel

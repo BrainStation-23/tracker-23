@@ -13,6 +13,7 @@ import {
   registerRest,
   sendJiraCodeRest,
   stopSessionRest,
+  syncStatusRest,
   syncTasksRest,
 } from "./restApi";
 
@@ -23,6 +24,7 @@ const graphqlApi: apiFunction = {
   createTask: createTaskRest,
   getTasks: getTasksRest,
   syncTasks: syncTasksRest,
+  syncStatus: syncStatusRest,
   deleteTask: deleteTaskRest,
   createSession: createSessionRest,
   stopSession: stopSessionRest,
@@ -39,6 +41,7 @@ const restApi: apiFunction = {
   createTask: createTaskRest,
   getTasks: getTasksRest,
   syncTasks: syncTasksRest,
+  syncStatus: syncStatusRest,
   deleteTask: deleteTaskRest,
   createSession: createSessionRest,
   stopSession: stopSessionRest,

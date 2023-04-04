@@ -140,6 +140,22 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
   }
 }
 
+export async function syncStatusRest(token?: string) {
+  console.log("<><><>", getLocalStorage("access_token"));
+
+  try {
+    const res = await axios.get(`${apiEndPoints.syncStatus}`, {
+      headers: {
+        Authorization: `Bearer ${token ? token : GetCookie("access_token")}`,
+      },
+    });
+    return res.data;
+  } catch (error: any) {
+    toast.error("Failed to Get Sync Status : " + error.message);
+    return false;
+  }
+}
+
 export async function syncTasksRest(token?: string) {
   console.log("<><><>", getLocalStorage("access_token"));
 
@@ -151,7 +167,7 @@ export async function syncTasksRest(token?: string) {
     });
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Get Task : " + error.message);
+    toast.error("Failed to Sync : " + error.message);
     return false;
   }
 }
