@@ -10,9 +10,15 @@ import {
   Patch,
   Post,
   Query,
+  Response,
   UseGuards,
 } from '@nestjs/common';
-import { CreateTaskDto, GetTaskQuery } from './dto';
+import {
+  CreateTaskDto,
+  GetTaskQuery,
+  StatusReqBodyDto,
+  TimeSpentReqBodyDto,
+} from './dto';
 import { TasksService } from './tasks.service';
 import { Task, User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/guard';
@@ -58,14 +64,38 @@ export class TasksController {
 
   @Get('sync')
   @UseGuards(JwtAuthGuard)
-  async syncAndGetTasks(@GetUser() user: User) {
+  async syncAndGetTasks(@GetUser() user: User, @Response() res: any) {
     // From PARAMS get filters so that we can bring tasks that are reasonable, for now we only bring todo and inprogress and assigned to the user.
-    return await this.tasksService.syncTasks(user);
+    return await this.tasksService.syncTasks(user, res);
   }
 
   @Get('sync/status')
   @UseGuards(JwtAuthGuard)
   async callSync(@GetUser() user: User) {
     return await this.tasksService.getCallSync(user.id);
+  }
+
+  @Patch('update/status/:issueId')
+  @UseGuards(JwtAuthGuard)
+  async updateIssueStatus(
+    @GetUser() user: User,
+    @Param('issueId') issueId: string,
+    @Body() statusReqBody: StatusReqBodyDto,
+  ) {
+    return this.tasksService.updateIssueStatus(
+      user,
+      issueId,
+      statusReqBody.status,
+    );
+  }
+
+  @Patch('add-work-log/:issueId')
+  @UseGuards(JwtAuthGuard)
+  async addWorkLog(
+    @GetUser() user: User,
+    @Param('issueId') issueId: string,
+    @Body() timeSpentReqBody: TimeSpentReqBodyDto,
+  ) {
+    return this.tasksService.addWorkLog(user, issueId, timeSpentReqBody);
   }
 }
