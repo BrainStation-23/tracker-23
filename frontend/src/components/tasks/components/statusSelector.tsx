@@ -31,7 +31,7 @@ const StatusSelectorComponent = ({ status, setStatus }: Props) => {
           borderRadius: "36px",
         }}
         onClick={onClose}
-        className="flex w-max cursor-pointer m-1 items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
+        className="m-1 flex w-max cursor-pointer items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
       >
         <div
           className="flex h-2 w-2 items-center rounded-full"
@@ -61,6 +61,7 @@ const StatusSelectorComponent = ({ status, setStatus }: Props) => {
         value={status}
         // style={{ width: 120 }}
         className="w-full"
+        showArrow
         options={[
           { value: "TODO", label: "Todo" },
           { value: "IN_PROGRESS", label: "In Progress" },
