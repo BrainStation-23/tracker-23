@@ -203,8 +203,6 @@ const TasksPage = () => {
           priority: task.priority,
         };
       });
-      setTasks(tmpTasks || []);
-      console.log(">>>>>", tmpTasks, tmpTasks.length);
 
       setTableParamsAll({
         ...tableParamsAll,
@@ -295,7 +293,6 @@ const TasksPage = () => {
     } else message.error("Session Start Failed");
   };
   const startSession = async (task: TaskDto) => {
-    console.log(">>>>>>", runningTask);
 
     if (runningTask && runningTask?.id != task.id) {
       setWarningData(task);

@@ -276,7 +276,6 @@ const DashBoard = () => {
         pinnedTaskList
       );
       setTasks(pinnedTaskList || []);
-      // console.log(">>>>>", pinnedTaskList, pinnedTaskList.length);
 
       setTableParamsPinned({
         ...tableParamsPinned,
@@ -320,7 +319,6 @@ const DashBoard = () => {
     } else message.error("Session Start Failed");
   };
   const startSession = async (task: TaskDto) => {
-    // console.log(">>>>>>", runningTask);
 
     if (runningTask && runningTask?.id != task.id) {
       setWarningData(task);
