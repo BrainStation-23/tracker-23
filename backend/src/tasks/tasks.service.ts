@@ -1,5 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { IntegrationType, Priority, Status, Task, User } from '@prisma/client';
+import { IntegrationType, Task, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTaskDto, GetTaskQuery, UpdateTaskDto } from './dto';
 import { HttpService } from '@nestjs/axios';
@@ -75,6 +75,8 @@ export class TasksService {
 
   async syncTasks(user: User) {
     try {
+      let syncStatus = 'IN_PROGRESS';
+      this.syncCall(syncStatus, user.id);
       const tokenUrl = 'https://auth.atlassian.com/oauth/token';
       const headers: any = { 'Content-Type': 'application/json' };
       let taskPromises: Promise<any>[] = [];
@@ -182,6 +184,8 @@ export class TasksService {
           count += taskPromises.length;
           taskPromises = [];
         }
+        syncStatus = 'DONE';
+        this.syncCall(syncStatus, user.id);
         return { message: `Newly ${count} Tasks Successfully synced` };
       }
     } catch (err) {
@@ -210,5 +214,32 @@ export class TasksService {
       case 'Low':
         return 'LOW';
     }
+  }
+
+  async getCallSync(userId: number) {
+    return await this.prisma.callSync.findFirst({
+      where: {
+        userId: userId,
+      },
+    });
+  }
+
+  async syncCall(status: string, userId: number) {
+    const doesExist = await this.getCallSync(userId);
+    if (!doesExist) {
+      return await this.prisma.callSync.create({
+        data: {
+          status,
+          userId,
+        },
+      });
+    }
+
+    return await this.prisma.callSync.update({
+      where: { id: doesExist.id },
+      data: {
+        status: status,
+      },
+    });
   }
 }
