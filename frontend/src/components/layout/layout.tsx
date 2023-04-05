@@ -10,16 +10,19 @@ import { RootState } from "@/storage/redux/store";
 import { userAPI } from "APIs";
 import { setSyncStatus, setSyncRunning } from "@/storage/redux/syncSlice";
 import { message } from "antd";
+import { publicRoutes } from "utils/constants";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
   const path = router.asPath;
-  const publicRoutes = ["/login", "/registration"];
-  const isPublicRoute = publicRoutes.includes(router.pathname);
+  const loginRoutes = ["/login", "/registration"];
+  const isPublicRoute = loginRoutes.includes(router.pathname);
 
   const dispatch = useAppDispatch();
-
+  const syncRunning = useAppSelector(
+    (state: RootState) => state.syncStatus.syncRunning
+  );
   const [syncing, setSyncing] = useState(
     useAppSelector((state: RootState) => state.syncStatus.syncRunning)
   );
@@ -34,22 +37,23 @@ const CustomLayout = ({ children }: any) => {
         dispatch(setSyncRunning(true));
         myTimeout = setTimeout(getSyncStatus, 5000);
       } else {
+        syncing && message.success("Sync Completed");
         dispatch(setSyncRunning(false));
-        message.success("Sync Completed");
       }
     };
 
-    getSyncStatus();
+    if (!publicRoutes.includes(router.pathname)) {
+      console.log(router.pathname);
+
+      getSyncStatus();
+    }
 
     const cleanup = () => {
       clearTimeout(myTimeout);
     };
 
     return cleanup;
-  }, [dispatch, syncing]);
-  const syncRunning = useAppSelector(
-    (state: RootState) => state.syncStatus.syncRunning
-  );
+  }, [dispatch, syncing, router]);
   useEffect(() => {
     if (syncRunning !== syncing) setSyncing(syncRunning);
   }, [syncing, syncRunning]);
@@ -57,14 +61,14 @@ const CustomLayout = ({ children }: any) => {
   return (
     <>
       <div className="flex">
-        {!publicRoutes.some((route) => path.includes(route)) && (
+        {!loginRoutes.some((route) => path.includes(route)) && (
           <div className="w-[300px]">
             <div className="fixed">
               <SideMenu />
             </div>
           </div>
         )}
-        {/* {!publicRoutes.some((route) => path.includes(route)) && (
+        {/* {!loginRoutes.some((route) => path.includes(route)) && (
           <>
             <div
               className={`duration-500  ${showSideBar ? "pr-48" : "pr-0"} `}
