@@ -1,3 +1,5 @@
+import JiraLogoSvg from "@/assets/svg/JiraLogoSvg";
+import TrelloLogoSvg from "@/assets/svg/TrelloLogoSvg";
 import { Button, Image } from "antd";
 import { userAPI } from "APIs";
 import { useEffect } from "react";
@@ -14,27 +16,17 @@ const ImportCard = ({
 
   return (
     <div
-      className={`flex w-60 flex-col justify-between rounded-xl border-2 border-[#ECECED] p-4 grayscale hover:cursor-pointer ${
-        data.type === "JIRA" ? "grayscale-0" : "grayscale"
-      }`}
+      className={`flex w-60 flex-col justify-between rounded-xl border-2 border-[#ECECED] p-4 hover:cursor-pointer`}
     >
       <div>
         <div className="flex h-10 items-center gap-2">
-          <Image
-            height={data.full ? 60 : 15}
-            width={data.full ? 100 : 15}
-            preview={false}
-            src={`/assets/images/${data.logo}`}
-            alt="Error Loading Image"
-          />
-          {data.full ? "" : data.title}
+          {integrationIcons[data.type]}
         </div>
         <div className="text-sm font-normal">{data.description}</div>
       </div>
       <div className="flex w-full pt-3">
         <Button
           onClick={async () => {
-            // setSelected(data.title);
             if (data.type === "JIRA") {
               try {
                 const response = await userAPI.getJiraLink();
@@ -48,11 +40,7 @@ const ImportCard = ({
           }}
           type="default"
           disabled={installed || !supportedIntegrations.includes(data.type)}
-          className={`w-full 
-          cursor-pointer
-          bg-[#F1F1F1]
-          text-sm
-          font-semibold
+          className={`w-full cursor-pointer bg-[#F1F1F1] text-sm font-semibold
           ${
             installed || !supportedIntegrations.includes(data.type)
               ? ""
@@ -72,3 +60,8 @@ const ImportCard = ({
 };
 
 export default ImportCard;
+
+const integrationIcons: any = {
+  JIRA: <JiraLogoSvg />,
+  TRELLO: <TrelloLogoSvg />,
+};

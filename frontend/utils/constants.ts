@@ -85,7 +85,7 @@ export const importCardData = [
 
   {
     title: "Trello",
-    type: "Trello",
+    type: "TRELLO",
     logo: "trello.png",
     full: true,
     description: "Connect Trello to your Project",
