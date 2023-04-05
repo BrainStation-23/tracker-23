@@ -101,10 +101,6 @@ export async function deleteTaskRest(taskId: any) {
 }
 
 export async function getTasksRest(searchParams: SearchParamsModel) {
-  console.log(
-    "🚀 ~ file: restApi.ts:101 ~ getTasksRest ~ searchParams:",
-    searchParams
-  );
   const status = getStringFromArray(searchParams?.status);
   const priority = getStringFromArray(searchParams?.priority);
   try {
@@ -140,9 +136,21 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
   }
 }
 
-export async function syncTasksRest(token?: string) {
-  console.log("<><><>", getLocalStorage("access_token"));
+export async function syncStatusRest(token?: string) {
+  try {
+    const res = await axios.get(`${apiEndPoints.syncStatus}`, {
+      headers: {
+        Authorization: `Bearer ${token ? token : GetCookie("access_token")}`,
+      },
+    });
+    return res.data;
+  } catch (error: any) {
+    toast.error("Failed to Get Sync Status : " + error.message);
+    return false;
+  }
+}
 
+export async function syncTasksRest(token?: string) {
   try {
     const res = await axios.get(`${apiEndPoints.syncTasks}`, {
       headers: {
@@ -151,14 +159,13 @@ export async function syncTasksRest(token?: string) {
     });
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Get Task : " + error.message);
+    toast.error("Failed to Sync : " + error.message);
     return false;
   }
 }
 
 export async function createSessionRest(taskId: string) {
   console.log("🚀 ~ file: restApi.ts:91 ~ createSessionRest ~ taskID", taskId);
-  console.log("<><><>", getLocalStorage("access_token"));
 
   try {
     const res = await axios.post(
@@ -180,11 +187,6 @@ export async function createSessionRest(taskId: string) {
 
 export async function stopSessionRest(taskId: string) {
   console.log("🚀 ~ file: restApi.ts:91 ~ stopSessionRest ~ taskID", taskId);
-  console.log(
-    "<><><>",
-    getLocalStorage("access_token"),
-    GetCookie("access_token")
-  );
 
   try {
     const res = await axios.post(
@@ -258,7 +260,6 @@ export async function getIntegrationsRest(token?: string) {
     "🚀 ~ file: restApi.ts:215 ~ getIntegrationsRest ~ token:",
     token
   );
-  console.log("<><><>", getLocalStorage("access_token"));
 
   try {
     const res = await axios.get(`${apiEndPoints.integrations}`, {
