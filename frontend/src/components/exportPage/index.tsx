@@ -96,7 +96,7 @@ const columns: any = [
     key: "estimation",
     // defaultSortOrder: "descend",
     render: (_: any, { estimation }: TaskDto) => (
-      <>{estimation ? estimation+' hrs' : "---"}</>
+      <>{estimation ? estimation + " hrs" : "---"}</>
     ),
     sorter: (a: any, b: any) => a.estimation - b.estimation,
     align: "center",
@@ -249,7 +249,7 @@ const ExportPageComponent = () => {
   }, []);
   console.log("🚀 ~ file: index.tsx:106 ~ useEffect ~ tasks:", tasks);
   return (
-    <div className="pr-3">
+    <div>
       <TopPanelExportPage {...{ tasks, setSearchParams }} />
       <Spin spinning={loading}>
         {tasks.length ? (

@@ -62,7 +62,7 @@ const CustomLayout = ({ children }: any) => {
     <>
       <div className="flex">
         {!loginRoutes.some((route) => path.includes(route)) && (
-          <div className="w-[300px]">
+          <div className="mr-6 w-[300px]">
             <div className="fixed">
               <SideMenu />
             </div>
@@ -89,14 +89,14 @@ const CustomLayout = ({ children }: any) => {
             </div>
           </>
         )} */}
-        <div className="flex w-full flex-col overflow-y-auto pl-4">
+        <div
+          className={classNames("flex w-full flex-col overflow-y-auto", {
+            "px-8": !isPublicRoute,
+          })}
+        >
           {!isPublicRoute && <Navbar />}
 
-          <div
-            className={classNames("h-full w-full bg-white", {
-              "pl-8": !isPublicRoute,
-            })}
-          >
+          <div className="h-full w-full bg-white">
             {!isPublicRoute && <GlobalClock />}
             {children}
           </div>

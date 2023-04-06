@@ -180,7 +180,6 @@ const TasksPage = () => {
         dispatch(setSyncRunning(true));
       } else {
         dispatch(setSyncRunning(false));
-        message.success("Sync Completed");
       }
     } catch (error) {
       message.error("Error syncing tasks");
@@ -279,7 +278,7 @@ const TasksPage = () => {
       }}
     >
       <div
-        className="mr-8 overflow-y-auto"
+        className="overflow-y-auto"
         // style={{ height: "calc(100vh - 100px)" }}
       >
         <div className="mb-4 flex justify-between">

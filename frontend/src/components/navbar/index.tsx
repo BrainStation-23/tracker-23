@@ -102,14 +102,14 @@ function Navbar() {
     <div className="float-right">{menu}</div>
   );
   return (
-    <div className=" mb-2 flex h-16 w-full items-center justify-between px-5">
+    <div className=" mb-2 flex h-16 w-full items-center justify-between">
       <div className="py-6 text-xl text-blue-500  hover:text-green-500">
         {sideMenuOptions?.map(
           (option) =>
             router.asPath.includes(option.link) && (
               <div
                 key={Math.random()}
-                className={`flex items-center gap-2 rounded-lg px-1 text-black `}
+                className={`flex items-center gap-2 rounded-lg text-black `}
               >
                 <div className=" stroke-black">{option.icon}</div>
                 <div className={`text-base font-semibold`}>{option.title}</div>
@@ -118,7 +118,7 @@ function Navbar() {
         )}
         {pageInfo[0] && (
           <div
-            className={`flex items-center gap-2 rounded-lg px-1 text-black `}
+            className={`flex items-center gap-2 rounded-lg text-black `}
             onClick={() => {
               router.push(pageInfo[0].link);
             }}

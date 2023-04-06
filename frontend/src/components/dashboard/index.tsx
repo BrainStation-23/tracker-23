@@ -540,7 +540,7 @@ const DashBoard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <div className="flex flex-col gap-6 pr-3">
+    <div className="flex flex-col gap-6">
       <div className="grid grid-cols-2">
         <DashBoardSection title="Project wise Track hour">
           <DonutChart data={dataDonut} />
