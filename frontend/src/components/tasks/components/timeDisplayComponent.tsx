@@ -18,7 +18,7 @@ function TimeDisplayComponent(props: any) {
   return (
     <div className="flex w-max">
       {h > 0 ? h + "hrs " : ""}
-      {m >= 1 ? m : tm}m
+      {m === 0 && h === 0 ? tm + "m" : h > 0 && m === 0 ? "" : m + "m"}
     </div>
   );
 }
