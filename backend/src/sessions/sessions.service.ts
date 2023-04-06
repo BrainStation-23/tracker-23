@@ -12,10 +12,10 @@ import {
   Status,
   User,
 } from '@prisma/client';
-import { AxiosHeaders } from 'axios';
 import { lastValueFrom } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SessionDto } from './dto';
+import axios from 'axios';
 
 @Injectable()
 export class SessionsService {
@@ -56,7 +56,6 @@ export class SessionsService {
 
   async stopSession(user: User, taskId: number) {
     await this.validateTaskAccess(user, taskId);
-
     const activeSession = await this.prisma.session.findFirst({
       where: { taskId, endTime: null },
     });
@@ -64,9 +63,17 @@ export class SessionsService {
     if (!activeSession) {
       throw new BadRequestException('No active session');
     }
-
     const updated_session = await this.stopSessionUtil(activeSession.id);
-    await this.logToIntegrations(user.id, taskId, updated_session);
+    const session = await this.logToIntegrations(
+      user.id,
+      taskId,
+      updated_session,
+    );
+    if (!session) {
+      throw new BadRequestException({
+        message: 'Session canceled due to insufficient time',
+      });
+    }
     return updated_session;
   }
 
@@ -91,34 +98,38 @@ export class SessionsService {
 
   async logToIntegrations(userId: number, taskId: number, session: Session) {
     if (session.endTime == null) {
-      return;
+      return null;
     }
     const timeSpent =
       session.endTime.getSeconds() - session.startTime.getSeconds() + 60;
-
     if (timeSpent < 60) {
-      return;
+      return null;
     }
-
     const jiraIntegration = await this.prisma.integration.findFirst({
       where: {
         type: IntegrationType.JIRA,
         userId: userId,
       },
     });
-
     if (!jiraIntegration) {
-      return;
+      return null;
     }
 
-    const taskIntegrations = await this.prisma.taskIntegration.findMany({
+    const taskIntegration = await this.prisma.taskIntegration.findFirst({
       where: {
         taskId,
       },
     });
 
-    console.log(taskIntegrations);
+    this.addWorkLog(
+      taskIntegration?.integratedTaskId as unknown as string,
+      this.timeConverter(timeSpent),
+      await this.updatedIntegration(jiraIntegration),
+    );
+    return { success: true, msg: 'successfully updated to jira' };
+  }
 
+  async updatedIntegration(jiraIntegration: any) {
     const headers: any = { 'Content-Type': 'application/json' };
     const data = {
       grant_type: 'refresh_token',
@@ -132,65 +143,47 @@ export class SessionsService {
       await lastValueFrom(this.httpService.post(tokenUrl, data, headers))
     ).data;
 
-    const updated_integration = await this.prisma.integration.update({
+    return await this.prisma.integration.update({
       where: { id: jiraIntegration.id },
       data: {
         accessToken: tokenResp.access_token,
         refreshToken: tokenResp.refresh_token,
       },
     });
+  }
 
-    const worklogHeader = new AxiosHeaders();
-    worklogHeader.setContentType('application/json');
-    worklogHeader.setAuthorization('Bearer ' + updated_integration.accessToken);
-    worklogHeader.setAccept('application/json');
+  timeConverter(timeSpent: number) {
+    if (!timeSpent) {
+      return 0 + 'm';
+    }
+    timeSpent = Math.ceil(timeSpent / 60);
+    return timeSpent + 'm';
+  }
 
-    taskIntegrations.forEach(async (taskIntegration) => {
-      const worklogUrl = `https://api.atlassian.com/ex/jira/${jiraIntegration.siteId}/rest/api/3/issue/${taskIntegration.integratedTaskId}/worklog`;
-      // const worklogUrl =
-      // 'https://api.atlassian.com/ex/jira/0f06b500-1b44-4005-a147-5b2ebe38c710/rest/api/3/issue/10002/worklog';
-      const isoString = session.startTime.toISOString();
-      const formattedString = isoString.slice(0, -1) + '+0000';
-      const bodyData = {
-        comment: {
-          content: [
-            {
-              content: [
-                {
-                  text: 'I did some work here.',
-                  type: 'text',
-                },
-              ],
-              type: 'paragraph',
-            },
-          ],
-          type: 'doc',
-          version: 1,
+  async addWorkLog(
+    issueId: string,
+    timeSpentReqBody: string,
+    integration: any,
+  ) {
+    try {
+      const url = `https://api.atlassian.com/ex/jira/${integration.siteId}/rest/api/3/issue/${issueId}/worklog`;
+      const data = JSON.stringify({
+        timeSpent: timeSpentReqBody,
+      });
+      const config = {
+        method: 'post',
+        url,
+        headers: {
+          Authorization: `Bearer ${integration.accessToken}`,
+          'Content-Type': 'application/json',
         },
-        started: formattedString,
-        timeSpentSeconds: timeSpent,
+        data: data,
       };
-      console.log(jiraIntegration.accessToken);
-      console.log(worklogUrl);
-      console.log(JSON.stringify(bodyData));
-
-      try {
-        const worklogResp = (
-          await lastValueFrom(
-            this.httpService.post(worklogUrl, bodyData, { ...worklogHeader }),
-          )
-        ).data;
-        console.log('========================');
-
-        console.log(worklogResp);
-
-        if (worklogResp.status == 201) {
-          console.log('successfully updated');
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    });
-    return { success: true, msg: 'successfully updated to jira' };
+      return await (
+        await axios(config)
+      ).data;
+    } catch (err) {
+      console.log(err.message);
+    }
   }
 }
