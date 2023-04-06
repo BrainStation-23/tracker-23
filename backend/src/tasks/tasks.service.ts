@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IntegrationType, Task, User } from '@prisma/client';
+import { IntegrationType, SessionStatus, Task, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CreateTaskDto,
@@ -116,7 +116,7 @@ export class TasksService {
         const searchUrl = `https://api.atlassian.com/ex/jira/${integration.siteId}/rest/api/3/search?`;
         // currently status is not considered.
 
-        let count = 0;
+        // let count = 0;
         for (let startAt = 0; startAt < 50000; startAt += 100) {
           const respTasks = (
             await lastValueFrom(
@@ -133,7 +133,7 @@ export class TasksService {
           });
 
           // find task list from local database
-          const tasks = await this.prisma.taskIntegration.findMany({
+          const integratedTasks = await this.prisma.taskIntegration.findMany({
             where: {
               userId: user.id,
               integratedTaskId: { in: [...map.keys()] },
@@ -145,49 +145,75 @@ export class TasksService {
           });
 
           // keep the task list that doesn't exist in the database
-          for (let j = 0, len = tasks.length; j < len; j++) {
-            const key = tasks[j].integratedTaskId;
+          for (let j = 0, len = integratedTasks.length; j < len; j++) {
+            const key = integratedTasks[j].integratedTaskId;
             map.delete(key);
           }
 
-          for (const taskId of map.keys()) {
-            const jiraTask = map.get(taskId);
-            const taskStatus = this.formatStatus(jiraTask.fields.status.name);
-            const taskPriority = this.formatPriority(
-              jiraTask.fields.priority.name,
+          for (const integratedTaskId of map.keys()) {
+            const integratedTask = map.get(integratedTaskId);
+            const taskStatus = this.formatStatus(
+              integratedTask.fields.status.name,
             );
+            const taskPriority = this.formatPriority(
+              integratedTask.fields.priority.name,
+            );
+
+            // find all workLog
+            const url = `https://api.atlassian.com/ex/jira/${integration?.siteId}/rest/api/3/issue/${integratedTaskId}/worklog`;
+            const config = {
+              method: 'get',
+              url,
+              headers: {
+                Authorization: `Bearer ${integration?.accessToken}`,
+                'Content-Type': 'application/json',
+              },
+            };
+            const workLog = (await axios(config)).data;
 
             taskPromises.push(
               this.prisma.task
                 .create({
                   data: {
                     userId: user.id,
-                    title: jiraTask.fields.summary,
-                    assigneeId: jiraTask.fields.assignee?.accountId || null,
-                    estimation: jiraTask.fields.timeestimate
-                      ? jiraTask.fields.timeestimate / 3600
+                    title: integratedTask.fields.summary,
+                    assigneeId:
+                      integratedTask.fields.assignee?.accountId || null,
+                    estimation: integratedTask.fields.timeestimate
+                      ? integratedTask.fields.timeestimate / 3600
                       : null,
-                    projectName: jiraTask.fields.project.name,
+                    projectName: integratedTask.fields.project.name,
                     status: taskStatus,
                     priority: taskPriority,
-                    createdAt: new Date(jiraTask.fields.created),
+                    createdAt: new Date(integratedTask.fields.created),
                   },
                 })
-                .then((task) => {
+                .then(async (task) => {
+                  await this.prisma.session.createMany({
+                    data: workLog.worklogs.map((log: any) => {
+                      return {
+                        startTime: new Date(log.started),
+                        endTime: new Date(log.updated),
+                        status: SessionStatus.STOPPED,
+                        taskId: task.id,
+                        userId: user.id,
+                      };
+                    }),
+                  });
                   return this.prisma.taskIntegration.create({
                     data: {
                       userId: user.id,
                       taskId: task.id,
-                      integratedTaskId: Number(jiraTask.id),
+                      integratedTaskId: Number(integratedTask.id),
                       type: IntegrationType.JIRA,
-                      url: jiraTask.self,
+                      url: integratedTask.self,
                     },
                   });
                 }),
             );
           }
           await Promise.allSettled(taskPromises);
-          count += taskPromises.length;
+          // count += taskPromises.length;
           taskPromises = [];
         }
         syncStatus = 'DONE';
