@@ -7,6 +7,7 @@ body {
 }
 
 .ant-table-wrapper .ant-table,
+.ant-dropdown-menu-item .ant-dropdown-menu-title-content,
 .ant-btn {
   font-family: "Inter", sans-serif;
 }
@@ -33,4 +34,7 @@ body {
 .custom-spin {
   opacity: 2;
   background: white;
+}
+.custom-rangePicker-dropdown .ant-picker-panel-container {
+  box-shadow: none;
 }

@@ -220,17 +220,27 @@ const TasksPage = () => {
             getTotalSpentTime(task.sessions) / (task.estimation * 36000)
           )
         : -1),
-        setRunningTask(null);
+        setTasks(
+          tasks?.map((tmpTask) => {
+            if (tmpTask?.id === task?.id) return { ...task };
+            else return tmpTask;
+          })
+        );
+      session && message.success("Session Ended");
+    } else {
+      task.sessions = task.sessions?.filter(
+        (_session: any) => _session.endTime
+      );
       setTasks(
         tasks?.map((tmpTask) => {
           if (tmpTask?.id === task?.id) return { ...task };
           else return tmpTask;
         })
       );
-      session && message.success("Session Ended");
-      setReload(!reload);
-      // getTasks();
-    } else message.error("Session Ending Failed");
+      // message.error("Session Ending Failed");
+    }
+    setReload(!reload);
+    setRunningTask(null);
   };
   // useEffect(() => {
   //   getTasks();

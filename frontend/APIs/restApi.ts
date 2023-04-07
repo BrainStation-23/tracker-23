@@ -201,7 +201,7 @@ export async function stopSessionRest(taskId: string) {
     console.log("getTasksRest", res);
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Get Task : " + error.message);
+    message.error(error?.response?.data?.message);
     return false;
   }
 }

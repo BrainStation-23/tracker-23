@@ -52,9 +52,7 @@ function Navbar() {
         <div>
           <button
             // type="ghost"
-            className={`flex w-full items-center ${
-              syncing ? "border-green-500 text-green-500" : ""
-            }`}
+            className={`flex w-full items-center`}
             onClick={async () => {}}
           >
             <div className="ml-3 flex items-center gap-1">
@@ -72,7 +70,7 @@ function Navbar() {
           <Button
             type="ghost"
             className={`flex w-full items-center ${
-              syncing ? "border-green-500 text-green-500" : ""
+              syncing ? "text-green-500" : ""
             }`}
             onClick={async () => {
               syncFunction();
