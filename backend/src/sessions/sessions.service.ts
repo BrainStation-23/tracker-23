@@ -100,8 +100,9 @@ export class SessionsService {
     if (session.endTime == null) {
       return null;
     }
-    const timeSpent =
-      session.endTime.getSeconds() - session.startTime.getSeconds() + 60;
+    const timeSpent = Math.ceil(
+      (session.endTime.getTime() - session.startTime.getTime()) / 1000,
+    );
     if (timeSpent < 60) {
       return null;
     }
