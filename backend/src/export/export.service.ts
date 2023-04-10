@@ -19,17 +19,16 @@ export class ExportService {
     // fileName: string,
     res: Response,
   ): Promise<any> {
-    const data: any[] = await this.getTasks(user, query);
+    const data: Task[] = await this.getTasks(user, query);
     if (!(data.length > 0) || !data) {
       throw new NotFoundException('No data to download');
     }
 
-    const rows: any = [];
+    const rows = [];
     data.forEach((doc) => {
       rows.push(Object.values(doc));
     });
     const book = new Workbook();
-
     const sheet = book.addWorksheet(`Sheet 1`);
     rows.unshift(Object.keys(data[0]));
     sheet.addRows(rows);
