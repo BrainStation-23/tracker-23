@@ -13,11 +13,13 @@ import { Response } from 'express';
 export class ExportService {
   constructor(private prisma: PrismaService) {}
   async exportToExcel(
-    data: any[],
+    user: User,
+    query: GetTaskQuery,
     // sheetName: string,
     // fileName: string,
     res: Response,
   ): Promise<any> {
+    const data: any[] = await this.getTasks(user, query);
     if (!(data.length > 0) || !data) {
       throw new NotFoundException('No data to download');
     }

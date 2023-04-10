@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Res, UseGuards, Header } from '@nestjs/common';
+import { Controller, Get, Query, Res, UseGuards } from '@nestjs/common';
 import { ExportService } from './export.service';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
@@ -12,13 +12,12 @@ export class ExportController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  @Header('Content-Type', 'text/xlsx')
+  // @Header('Content-Type', 'text/xlsx')
   async exportDataToExcel(
     @Res() res: Response,
     @GetUser() user: User,
     @Query() query: GetTaskQuery,
   ): Promise<void> {
-    const data: any[] = await this.exportService.getTasks(user, query);
-    await this.exportService.exportToExcel(data, res);
+    await this.exportService.exportToExcel(user, query, res);
   }
 }
