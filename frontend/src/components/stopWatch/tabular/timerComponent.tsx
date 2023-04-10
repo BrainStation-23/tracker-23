@@ -14,9 +14,7 @@ function Stopwatch({ milliseconds }: Props) {
   }, []);
 
   const formatTime = (time: number) => {
-    const hours = Math.floor(time / 3600000)
-      .toString()
-      .padStart(2, "0");
+    const hours = Math.floor(time / 3600000).toString();
     const h = Math.floor(time / 3600000);
     const minutes = Math.floor((time % 3600000) / 60000).toString();
     const sm = ((time % 3600000) / 60000).toFixed(1);
@@ -26,7 +24,7 @@ function Stopwatch({ milliseconds }: Props) {
       .toString()
       .padStart(2, "0");
     return `${h > 0 ? hours + "hrs " : ""} ${
-      (time % 3600000) / 60000 < 1 ? sm : minutes
+      (time % 3600000) / 60000 < 1 && h === 0 ? sm : minutes
     }m`;
     return `${hours}:${minutes}:${seconds}`;
   };

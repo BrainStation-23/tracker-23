@@ -13,6 +13,9 @@ import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { DownloadOutlined } from "@ant-design/icons";
 import StatusSelectorComponent from "@/components/tasks/components/statusSelector";
 import PrioritySelectorComponent from "@/components/tasks/components/prioritySelector";
+import { userAPI } from "APIs";
+
+import { saveAs } from "file-saver";
 
 const { Search } = Input;
 
@@ -30,6 +33,29 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
   );
 
   // const handleOnClick = () => {};
+
+  const exelExport = async () => {
+    try {
+      const res = await userAPI.exportTasks({
+        searchText: searchText,
+        selectedDate: selectedDate,
+        priority: priority,
+        status: status,
+      });
+      const blob = new Blob([res], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "exportedData.xlsx"); // Specify the desired file name
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      // Use FileSaver.js to save the Blob as a file
+      // saveAs(blob, "exported_data.xlsx");
+    } catch (error) {}
+  };
 
   const sortOptions = [
     // {
@@ -130,7 +156,10 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
             </div>
           </div>
         </div>
-        <div className="flex w-[320px] cursor-pointer items-center gap-2 rounded-md bg-[#016C37] p-2 text-white hover:bg-[#1F9B60]">
+        <div
+          className="flex w-[320px] cursor-pointer items-center gap-2 rounded-md bg-[#016C37] p-2 text-white hover:bg-[#1F9B60]"
+          onClick={() => exelExport()}
+        >
           <DownloadOutlined />
           Export to Excel
         </div>
