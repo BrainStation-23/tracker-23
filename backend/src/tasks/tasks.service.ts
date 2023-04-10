@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { IntegrationType, SessionStatus, Task, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
@@ -13,6 +13,7 @@ import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { Response } from 'express';
+import { APIException } from 'src/internal/exception/api.exception';
 
 @Injectable()
 export class TasksService {
@@ -86,7 +87,7 @@ export class TasksService {
       where: { userId: user.id, type: IntegrationType.JIRA },
     });
     if (integrations.length === 0) {
-      throw new NotFoundException('You have no integration');
+      throw new APIException('You have no integration', HttpStatus.BAD_REQUEST);
     }
 
     const tokenUrl = 'https://auth.atlassian.com/oauth/token';
@@ -182,8 +183,8 @@ export class TasksService {
                     title: integratedTask.fields.summary,
                     assigneeId:
                       integratedTask.fields.assignee?.accountId || null,
-                    estimation: integratedTask.fields.timeestimate
-                      ? integratedTask.fields.timeestimate / 3600
+                    estimation: integratedTask.fields.timeoriginalestimate
+                      ? integratedTask.fields.timeoriginalestimate / 3600
                       : null,
                     projectName: integratedTask.fields.project.name,
                     status: taskStatus,
@@ -226,7 +227,10 @@ export class TasksService {
       }
     } catch (err) {
       console.log(err);
-      return { message: err.message || 'Something is wrong' };
+      throw new APIException(
+        err.message || 'Can not sync with jira',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
