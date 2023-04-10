@@ -26,7 +26,9 @@ const CustomLayout = ({ children }: any) => {
   const [syncing, setSyncing] = useState(
     useAppSelector((state: RootState) => state.syncStatus.syncRunning)
   );
-
+  const tmp = useAppSelector(
+    (state: RootState) => state.syncStatus.syncRunning
+  );
   useEffect(() => {
     let myTimeout: NodeJS.Timeout;
 
@@ -44,8 +46,9 @@ const CustomLayout = ({ children }: any) => {
 
     if (!publicRoutes.includes(router.pathname)) {
       console.log(router.pathname);
-
-      getSyncStatus();
+      if (tmp) {
+        myTimeout = setTimeout(getSyncStatus, 5000);
+      }
     }
 
     const cleanup = () => {
@@ -53,6 +56,7 @@ const CustomLayout = ({ children }: any) => {
     };
 
     return cleanup;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, syncing, router]);
   useEffect(() => {
     if (syncRunning !== syncing) setSyncing(syncRunning);
