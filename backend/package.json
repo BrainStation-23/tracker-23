@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@nestjs/axios": "^2.0.0",
+    "@nestjs/cli": "^9.0.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
@@ -38,17 +39,17 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "dotenv": "^16.0.3",
+    "exceljs": "^4.3.0",
     "jira.js": "^2.16.0",
     "node-fetch": "^3.3.0",
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "passport-oauth2": "^1.6.1",
+    "prisma": "^4.11.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "@nestjs/cli": "^9.0.0",
-    "prisma": "^4.11.0",
-    "rxjs": "^7.2.0"
+    "tmp": "^0.2.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
@@ -62,6 +63,7 @@
     "@types/passport-oauth2": "^1.4.12",
     "@types/request": "^2.48.8",
     "@types/supertest": "^2.0.11",
+    "@types/tmp": "^0.2.3",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^8.0.1",
