@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { IntegrationType, SessionStatus, Task, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CreateTaskDto,
   GetTaskQuery,
+  StatusEnum,
   TimeSpentReqBodyDto,
   UpdateTaskDto,
 } from './dto';
@@ -12,6 +13,7 @@ import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { Response } from 'express';
+import { APIException } from 'src/internal/exception/api.exception';
 
 @Injectable()
 export class TasksService {
@@ -81,16 +83,18 @@ export class TasksService {
   }
 
   async syncTasks(user: User, res: Response) {
-    try {
-      let syncStatus = 'IN_PROGRESS';
-      res.json(await this.syncCall(syncStatus, user.id));
-      const tokenUrl = 'https://auth.atlassian.com/oauth/token';
-      const headers: any = { 'Content-Type': 'application/json' };
-      let taskPromises: Promise<any>[] = [];
+    const integrations = await this.prisma.integration.findMany({
+      where: { userId: user.id, type: IntegrationType.JIRA },
+    });
+    if (integrations.length === 0) {
+      throw new APIException('You have no integration', HttpStatus.BAD_REQUEST);
+    }
 
-      const integrations = await this.prisma.integration.findMany({
-        where: { userId: user.id, type: IntegrationType.JIRA },
-      });
+    const tokenUrl = 'https://auth.atlassian.com/oauth/token';
+    const headers: any = { 'Content-Type': 'application/json' };
+    let taskPromises: Promise<any>[] = [];
+    try {
+      res.json(await this.syncCall(StatusEnum.IN_PROGRESS, user.id));
 
       for (const integration of integrations) {
         const data = {
@@ -179,8 +183,8 @@ export class TasksService {
                     title: integratedTask.fields.summary,
                     assigneeId:
                       integratedTask.fields.assignee?.accountId || null,
-                    estimation: integratedTask.fields.timeestimate
-                      ? integratedTask.fields.timeestimate / 3600
+                    estimation: integratedTask.fields.timeoriginalestimate
+                      ? integratedTask.fields.timeoriginalestimate / 3600
                       : null,
                     projectName: integratedTask.fields.project.name,
                     status: taskStatus,
@@ -191,9 +195,12 @@ export class TasksService {
                 .then(async (task) => {
                   await this.prisma.session.createMany({
                     data: workLog.worklogs.map((log: any) => {
+                      const lastTime =
+                        new Date(log.started).getTime() +
+                        Number(log.timeSpentSeconds * 1000);
                       return {
                         startTime: new Date(log.started),
-                        endTime: new Date(log.updated),
+                        endTime: new Date(lastTime),
                         status: SessionStatus.STOPPED,
                         taskId: task.id,
                         userId: user.id,
@@ -216,11 +223,14 @@ export class TasksService {
           // count += taskPromises.length;
           taskPromises = [];
         }
-        syncStatus = 'DONE';
-        this.syncCall(syncStatus, user.id);
+        await this.syncCall(StatusEnum.DONE, user.id);
       }
     } catch (err) {
-      console.error('checking error', err.message);
+      console.log(err);
+      throw new APIException(
+        err.message || 'Can not sync with jira',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
