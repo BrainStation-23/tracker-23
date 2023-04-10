@@ -45,9 +45,15 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
       const blob = new Blob([res], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "exportedData.xlsx"); // Specify the desired file name
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       // Use FileSaver.js to save the Blob as a file
-      saveAs(blob, "exported_data.xlsx");
+      // saveAs(blob, "exported_data.xlsx");
     } catch (error) {}
   };
 
