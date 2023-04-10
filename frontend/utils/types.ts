@@ -11,6 +11,7 @@ export interface apiFunction {
   createTask: (data: CreateTaskDto) => Promise<TaskDto>;
   deleteTask: (data: any) => Promise<any | undefined>;
   getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
+  exportTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   syncTasks: (token?: string) => Promise<any>;
   syncStatus: (token?: string) => Promise<any>;
   getIntegrations: (token?: string) => Promise<any>;

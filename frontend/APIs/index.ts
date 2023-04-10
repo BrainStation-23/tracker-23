@@ -5,6 +5,7 @@ import {
   createSessionRest,
   createTaskRest,
   deleteTaskRest,
+  exportTasksRest,
   getIntegrationsRest,
   getJiraLinkRest,
   getTasksRest,
@@ -31,6 +32,7 @@ const graphqlApi: apiFunction = {
   authJira: authJiraRest,
   getJiraLink: getJiraLinkRest,
   sendJiraCode: sendJiraCodeRest,
+  exportTasks: exportTasksRest,
   getIntegrations: getIntegrationsRest,
 };
 
@@ -40,6 +42,7 @@ const restApi: apiFunction = {
   logout: logoutRest,
   createTask: createTaskRest,
   getTasks: getTasksRest,
+  exportTasks: exportTasksRest,
   syncTasks: syncTasksRest,
   syncStatus: syncStatusRest,
   deleteTask: deleteTaskRest,

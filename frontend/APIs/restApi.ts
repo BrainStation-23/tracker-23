@@ -136,6 +136,43 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
   }
 }
 
+export async function exportTasksRest(searchParams: SearchParamsModel) {
+  const status = getStringFromArray(searchParams?.status);
+  const priority = getStringFromArray(searchParams?.priority);
+  try {
+    // const res = await axios.get(`${apiEndPoints.tasks}`, {
+    //   headers: {
+    //     Authorization: `Bearer ${GetCookie("access_token")}`,
+    //   },
+    // });
+    console.log("<><><>");
+
+    const res = await axios.get(
+      apiEndPoints.export +
+        "?" +
+        (searchParams?.selectedDate?.length === 2
+          ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
+          : "") +
+        (searchParams?.searchText && searchParams?.searchText.length > 0
+          ? `&text=${searchParams.searchText}`
+          : "") +
+        (priority && priority.length > 0 ? `&priority=${priority}` : "") +
+        (status && status.length > 0 ? `&status=${status}` : ""),
+      {
+        headers: {
+          Authorization: `Bearer ${GetCookie("access_token")}`,
+        },
+        responseType: "blob", // Set responseType to 'blob' to receive binary data
+      }
+    );
+    console.log("🚀 ~ file: restApi.ts:167 ~ exportTasksRest ~ res:", res);
+    return res.data;
+  } catch (error: any) {
+    toast.error("Failed to Get Task : " + error.message);
+    return false;
+  }
+}
+
 export async function syncStatusRest(token?: string) {
   try {
     const res = await axios.get(`${apiEndPoints.syncStatus}`, {
