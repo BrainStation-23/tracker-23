@@ -359,4 +359,35 @@ export class TasksService {
       console.log(err.message);
     }
   }
+
+  async weeklySpentTime(user: User, query: GetTaskQuery) {
+    let { startDate, endDate } = query as unknown as GetTaskQuery;
+    startDate = startDate && new Date(startDate);
+    endDate = endDate && new Date(endDate);
+
+    const taskList: any[] = await this.getTasks(user, query);
+
+    let totalTimeSpent = 0;
+    for (const task of taskList) {
+      task?.sessions?.forEach((session: any) => {
+        const start = new Date(session.startTime);
+        const end = new Date(session.endTime);
+
+        let taskTimeSpent = 0;
+        if (start >= startDate && end <= endDate) {
+          taskTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+        } else if (end >= startDate) {
+          taskTimeSpent =
+            Math.min(
+              Math.max(endDate.getTime() - start.getTime(), 0),
+              end.getTime() - startDate.getTime(),
+            ) /
+            (1000 * 60 * 60);
+        }
+        totalTimeSpent += taskTimeSpent;
+      });
+    }
+
+    return { TotalSpentTime: totalTimeSpent + 'hrs' };
+  }
 }
