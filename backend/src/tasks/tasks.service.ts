@@ -359,4 +359,58 @@ export class TasksService {
       console.log(err.message);
     }
   }
+
+  async weeklySpentTime(user: User, query: GetTaskQuery) {
+    let { startDate, endDate } = query as unknown as GetTaskQuery;
+    startDate = startDate && new Date(startDate);
+    endDate = endDate && new Date(endDate);
+
+    const taskList: any[] = await this.getTasks(user, query);
+
+    let totalTimeSpent = 0;
+    const map = new Map<string, number>();
+    for (const task of taskList) {
+      let taskTimeSpent = 0;
+      task?.sessions?.forEach((session: any) => {
+        const start = new Date(session.startTime);
+        const end = new Date(session.endTime);
+
+        let sessionTimeSpent = 0;
+        if (start >= startDate && end <= endDate) {
+          sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
+        } else if (end >= startDate) {
+          sessionTimeSpent =
+            Math.min(
+              Math.max(endDate.getTime() - start.getTime(), 0),
+              end.getTime() - startDate.getTime(),
+            ) /
+            (1000 * 60);
+        }
+        totalTimeSpent += sessionTimeSpent;
+        taskTimeSpent += sessionTimeSpent;
+      });
+
+      if (!task.projectName) task.projectName = 'T23';
+
+      if (!map.has(task.projectName)) {
+        map.set(task.projectName, taskTimeSpent);
+      } else {
+        let getValue = map.get(task.projectName);
+        if (!getValue) getValue = 0;
+        map.set(task.projectName, getValue + taskTimeSpent);
+      }
+    }
+    const ar = [];
+    const iterator = map[Symbol.iterator]();
+    for (const item of iterator) {
+      ar.push(item);
+    }
+
+    return [
+      { TotalSpentTime: totalTimeSpent },
+      {
+        value: ar,
+      },
+    ];
+  }
 }
