@@ -97,3 +97,9 @@ export const getTotalSpentTime = (sessions: any) => {
   if (!sessions || sessions?.length === 0) return 0;
   else return total;
 };
+
+export const getHourFromMinutes = (min: number) => {
+  if (!min) return 0;
+  const hour = Number((min / 60).toFixed(2));
+  return hour;
+};

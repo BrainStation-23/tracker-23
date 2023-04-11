@@ -9,4 +9,5 @@ export const apiEndPoints = {
   jira: `/integrations/jira`,
   integrations: `/integrations`,
   authJira: `/auth/jira`,
+  spentTime: `/tasks/spent-time/time-range`,
 };

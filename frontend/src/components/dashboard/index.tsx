@@ -7,6 +7,7 @@ import {
   formatDate,
   getFormattedTime,
   getFormattedTotalTime,
+  getHourFromMinutes,
   getTotalSpentTime,
 } from "@/services/timeActions";
 import { getLocalStorage } from "@/storage/storage";
@@ -58,11 +59,12 @@ const DashBoard = () => {
     { category: "UI", value: 10 },
     { category: "Backend", value: 30 },
   ];
-  const dataDonut = [
-    { category: "Tracker23", value: 19 },
-    { category: "TimeTackle", value: 16 },
-    { category: "BS Commerce", value: 5 },
-  ];
+  const [dataDonutTotal, setDataDonutTotal] = useState(0);
+  const [dataDonut, setDataDonut] = useState([
+    { projectName: "Tracker23", value: 19 },
+    { projectName: "TimeTackle", value: 16 },
+    { projectName: "BS Commerce", value: 5 },
+  ]);
 
   const lineChartData = [
     {
@@ -216,7 +218,6 @@ const DashBoard = () => {
     if (!pinnedTasks) pinnedTasks = [];
     try {
       const res = await userAPI.getTasks();
-      console.log("🚀 ~ file: index.tsx:112 ~ getTasks ~ res:", res);
       const tmpTasks = res.map((task: TaskDto) => {
         task.sessions = task.sessions.sort(function compareFn(a: any, b: any) {
           return a.id - b.id;
@@ -319,7 +320,6 @@ const DashBoard = () => {
     } else message.error("Session Start Failed");
   };
   const startSession = async (task: TaskDto) => {
-
     if (runningTask && runningTask?.id != task.id) {
       setWarningData(task);
       setWarningModalOpen(true);
@@ -535,15 +535,33 @@ const DashBoard = () => {
     //   ),
     // },
   ];
+
+  const getProjectWiseHour = async () => {
+    const res = await userAPI.getProjectWiseHour();
+    console.log("🚀 ~ file: index.tsx:540 ~ getProjectWiseHour ~ res:", res);
+    const { value } = res;
+    console.log(
+      "🚀 ~ file: index.tsx:541 ~ getProjectWiseHour ~ value:",
+      value
+    );
+    const tmp: any[] = [];
+    value.forEach((val: any) => {
+      tmp.push(val);
+    });
+    setDataDonut(tmp);
+    setDataDonutTotal(res.TotalSpentTime);
+  };
+
   useEffect(() => {
     getTasks();
+    getProjectWiseHour();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-2">
         <DashBoardSection title="Project wise Track hour">
-          <DonutChart data={dataDonut} />
+          <DonutChart data={dataDonut} total={dataDonutTotal} />
         </DashBoardSection>
         <DashBoardSection title="Actual VS Estimate">
           <Line data={lineChartData} />

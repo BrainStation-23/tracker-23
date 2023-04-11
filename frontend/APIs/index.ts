@@ -8,6 +8,7 @@ import {
   exportTasksRest,
   getIntegrationsRest,
   getJiraLinkRest,
+  getProjectWiseHourRest,
   getTasksRest,
   loginRest,
   logoutRest,
@@ -34,6 +35,7 @@ const graphqlApi: apiFunction = {
   sendJiraCode: sendJiraCodeRest,
   exportTasks: exportTasksRest,
   getIntegrations: getIntegrationsRest,
+  getProjectWiseHour: getProjectWiseHourRest,
 };
 
 const restApi: apiFunction = {
@@ -52,6 +54,7 @@ const restApi: apiFunction = {
   getJiraLink: getJiraLinkRest,
   sendJiraCode: sendJiraCodeRest,
   getIntegrations: getIntegrationsRest,
+  getProjectWiseHour: getProjectWiseHourRest,
 };
 
 export const userAPI: apiFunction =

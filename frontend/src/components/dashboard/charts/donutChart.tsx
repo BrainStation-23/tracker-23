@@ -3,7 +3,7 @@ import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 
-const DonutChart = ({ data }: any) => {
+const DonutChart = ({ data, total }: any) => {
   const chartRef = useRef(null);
 
   useEffect(() => {
@@ -23,11 +23,11 @@ const DonutChart = ({ data }: any) => {
       am4core.color("#8D99AE"),
     ];
     pieSeries.dataFields.value = "value";
-    pieSeries.dataFields.category = "category";
+    pieSeries.dataFields.category = "projectName";
     pieSeries.labels.template.disabled = true;
     pieSeries.ticks.template.disabled = true;
     const label = chart.seriesContainer.createChild(am4core.Label);
-    label.text = "Total 40 hours";
+    label.text = `Total ${total} hours`;
     label.horizontalCenter = "middle";
     label.verticalCenter = "middle";
     label.fontSize = 20;
@@ -35,7 +35,7 @@ const DonutChart = ({ data }: any) => {
     // chart.series.push(new am4charts.PieSeries());
     // const series2 = chart.series.push(new am4charts.PieSeries());
     // series2.dataFields.value = "value";
-    // series2.dataFields.category = "category";
+    // series2.dataFields.projectName = "projectName";
     // series2.slices.template.stroke = am4core.color("#fff");
     // series2.slices.template.strokeWidth = 2;
     // series2.slices.template.strokeOpacity = 1;
@@ -60,7 +60,7 @@ const DonutChart = ({ data }: any) => {
     return () => {
       chart.dispose();
     };
-  }, [data]);
+  }, [data, total]);
 
   return (
     <div ref={chartRef} className="w-3/4" style={{ height: "500px" }}></div>

@@ -110,7 +110,7 @@ const Line = ({ data }: any) => {
     }
     //  [id, data, chartData]
   );
-  console.log("🚀 ~ file: MultiValueAxesChart.tsx:96 ~ Line ~ data:", data);
+  // console.log("🚀 ~ file: MultiValueAxesChart.tsx:96 ~ Line ~ data:", data);
   return (
     <div
       // className="bg-red-500"
