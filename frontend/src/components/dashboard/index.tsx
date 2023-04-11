@@ -46,6 +46,7 @@ import MultiValueAxesChart from "./charts/lineChart";
 import { useRouter } from "next/router";
 import DashBoardSection from "./components/sections";
 import DashboardTableComponent from "./components/tableComponentDashboard";
+import { getDateRangeArray } from "../datePicker";
 const { Text } = Typography;
 
 const DashBoard = () => {
@@ -537,7 +538,14 @@ const DashBoard = () => {
   ];
 
   const getProjectWiseHour = async () => {
-    const res = await userAPI.getProjectWiseHour();
+    const dates = getDateRangeArray("this-month");
+    console.log(
+      "🚀 ~ file: index.tsx:542 ~ getProjectWiseHour ~ dates:",
+      dates
+    );
+    const res = await userAPI.getProjectWiseHour(
+      getDateRangeArray("this-month")
+    );
     console.log("🚀 ~ file: index.tsx:540 ~ getProjectWiseHour ~ res:", res);
     const { value } = res;
     console.log(

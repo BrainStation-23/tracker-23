@@ -312,13 +312,20 @@ export async function getIntegrationsRest(token?: string) {
   }
 }
 
-export async function getProjectWiseHourRest(params?: any) {
+export async function getProjectWiseHourRest(dates?: any) {
   try {
-    const res = await axios.get(`${apiEndPoints.spentTime}?startDate=Apr 01, 2022&endDate=Apr 09 , 2023`, {
-      headers: {
-        Authorization: `Bearer ${GetCookie("access_token")}`,
-      },
-    });
+    const res = await axios.get(
+      `${apiEndPoints.spentTime}?${
+        dates?.length > 0
+          ? `startDate=${dates[0]}&endDate=${dates[1]}`
+          : `startDate=Apr 01, 2022&endDate=Apr 09 , 2023`
+      }`,
+      {
+        headers: {
+          Authorization: `Bearer ${GetCookie("access_token")}`,
+        },
+      }
+    );
     return res.data;
   } catch (error: any) {
     toast.error("Failed to Get Task : " + error.message);
