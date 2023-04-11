@@ -93,6 +93,7 @@ export const importCardData = [
 ];
 export const whiteListEmails = [
   "seefathimel1@gmail.com",
+  "test@gmail.com",
   "himel.bs23@gmail.com",
   "dipubala.bs23@gmail.com",
   "dipubala466@gmail.com",
