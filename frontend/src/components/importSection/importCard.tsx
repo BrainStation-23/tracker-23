@@ -1,4 +1,4 @@
-import JiraLogoSvg from "@/assets/svg/JiraLogoSvg";
+import JiraLogoFullSvg from "@/assets/svg/JiraFullLogoSvg";
 import TrelloLogoSvg from "@/assets/svg/TrelloLogoSvg";
 import { Button, Image } from "antd";
 import { userAPI } from "APIs";
@@ -62,6 +62,6 @@ const ImportCard = ({
 export default ImportCard;
 
 const integrationIcons: any = {
-  JIRA: <JiraLogoSvg />,
+  JIRA: <JiraLogoFullSvg />,
   TRELLO: <TrelloLogoSvg />,
 };

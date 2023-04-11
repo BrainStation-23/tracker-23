@@ -19,6 +19,7 @@ import MoreFunctionComponent from "./moreFunction";
 import ProgressComponent from "./progressComponent";
 import StaticProgressComponent from "./progressComponentStatic";
 import TimeDisplayComponent from "./timeDisplayComponent";
+import JiraIconSvg from "@/assets/svg/JiraIconSvg";
 
 const { Text } = Typography;
 const TableComponent = ({
@@ -68,17 +69,20 @@ const TableComponent = ({
                 {/* <div>{task?.title}</div> */}
                 {task?.title}
               </Text>
-              {task.projectName && (
-                <div
-                  className="w-max bg-[#4D4E55] px-2 py-0.5 text-xs font-medium"
-                  style={{
-                    background: "#ECECED",
-                    borderRadius: "4px",
-                  }}
-                >
-                  {task.projectName}
-                </div>
-              )}
+              <div className="flex gap-2">
+                {task.projectName && (
+                  <div
+                    className="w-max bg-[#4D4E55] px-2 py-0.5 text-xs font-medium"
+                    style={{
+                      background: "#ECECED",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {task.projectName}
+                  </div>
+                )}
+                {task.projectName && <JiraIconSvg />}
+              </div>
             </div>
           </div>
         );
