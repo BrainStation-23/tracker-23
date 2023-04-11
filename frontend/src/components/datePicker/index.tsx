@@ -42,6 +42,8 @@ const DateRangePicker = ({ setSelectedDate }: any) => {
       console.log(val);
       setDropdownText(getDateRangeArray(val.key));
       setSelectedDate(getDateRangeArray(val.key));
+      setDropdownOpen(false);
+      customDateOpen && setCustomDateOpen(false);
     },
   };
   const dateFormat = "DD/MM/YYYY";
