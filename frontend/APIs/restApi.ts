@@ -238,7 +238,8 @@ export async function stopSessionRest(taskId: string) {
     console.log("getTasksRest", res);
     return res.data;
   } catch (error: any) {
-    message.error(error?.response?.data?.message);
+    console.log("🚀 ~ file: restApi.ts:241 ~ stopSessionRest ~ error:", error);
+    message.error(error?.response?.data?.error?.message);
     return false;
   }
 }
