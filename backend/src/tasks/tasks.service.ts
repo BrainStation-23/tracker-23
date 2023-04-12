@@ -364,7 +364,6 @@ export class TasksService {
     let { startDate, endDate } = query as unknown as GetTaskQuery;
     startDate = startDate && new Date(startDate);
     endDate = endDate && new Date(endDate);
-
     const taskList: any[] = await this.getTasks(user, query);
 
     let totalTimeSpent = 0;
@@ -377,14 +376,18 @@ export class TasksService {
 
         let sessionTimeSpent = 0;
         if (start >= startDate && end <= endDate) {
-          sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
+          sessionTimeSpent =
+            (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+        } else if (startDate >= start && end >= endDate) {
+          sessionTimeSpent =
+            (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
         } else if (end >= startDate) {
           sessionTimeSpent =
             Math.min(
               Math.max(endDate.getTime() - start.getTime(), 0),
               end.getTime() - startDate.getTime(),
             ) /
-            (1000 * 60);
+            (1000 * 60 * 60);
         }
         totalTimeSpent += sessionTimeSpent;
         taskTimeSpent += sessionTimeSpent;
@@ -403,74 +406,62 @@ export class TasksService {
     const ar = [];
     const iterator = map[Symbol.iterator]();
     for (const item of iterator) {
-      ar.push({ projectName: item[0], value: getHourFromMinutes(item[1]) });
+      ar.push({
+        projectName: item[0],
+        value: this.getHourFromMinutes(item[1]),
+      });
     }
 
-    return { TotalSpentTime: getHourFromMinutes(totalTimeSpent), value: ar };
+    return {
+      TotalSpentTime: this.getHourFromMinutes(totalTimeSpent),
+      value: ar,
+    };
   }
-  async trackerByDay(user: User, query: GetTaskQuery) {
+
+  async getSpentTimeByDay(user: User, query: GetTaskQuery) {
     let { startDate, endDate } = query as unknown as GetTaskQuery;
     startDate = startDate && new Date(startDate);
     endDate = endDate && new Date(endDate);
-    let tmpTime = 0;
-    let time = startDate;
-
-    const nArray = [];
-    while (time != endDate) {
-      nArray.push({
-        date: time,
-        total: 0,
-      });
-      tmpTime = time.getTime() + 3600 * 24 * 1000;
-      time = new Date(tmpTime);
-    }
-
     const taskList: any[] = await this.getTasks(user, query);
+    const map = new Map<Date, number>();
 
     let totalTimeSpent = 0;
-    const map = new Map<string, number>();
-    for (const task of taskList) {
-      let taskTimeSpent = 0;
-      task?.sessions?.forEach((session: any) => {
-        const start = new Date(session.startTime);
-        const end = new Date(session.endTime);
+    const oneDay = 3600 * 24 * 1000;
+    for (
+      let endDay = startDate.getTime() + oneDay, startDay = startDate.getTime();
+      endDay <= endDate.getTime() + oneDay;
+      endDay += oneDay, startDay += oneDay
+    ) {
+      for (const task of taskList) {
+        task?.sessions?.forEach((session: any) => {
+          const start = new Date(session.startTime);
+          const end = new Date(session.endTime);
 
-        let sessionTimeSpent = 0;
-        if (start >= startDate && end <= endDate) {
-          sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
-        } else if (end >= startDate) {
-          sessionTimeSpent =
-            Math.min(
-              Math.max(endDate.getTime() - start.getTime(), 0),
-              end.getTime() - startDate.getTime(),
-            ) /
-            (1000 * 60);
-        }
-        totalTimeSpent += sessionTimeSpent;
-        taskTimeSpent += sessionTimeSpent;
-      });
-
-      if (!task.projectName) task.projectName = 'T23';
-
-      if (!map.has(task.projectName)) {
-        map.set(task.projectName, taskTimeSpent);
-      } else {
-        let getValue = map.get(task.projectName);
-        if (!getValue) getValue = 0;
-        map.set(task.projectName, getValue + taskTimeSpent);
+          let sessionTimeSpent = 0;
+          if (start.getTime() >= startDay && end.getTime() <= endDay) {
+            sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
+          } else if (startDay >= start.getTime() && end.getTime() >= endDay) {
+            sessionTimeSpent = (endDay - startDay) / (1000 * 60);
+          } else if (end.getTime() >= startDay) {
+            sessionTimeSpent =
+              Math.min(
+                Math.max(endDay - start.getTime(), 0),
+                end.getTime() - startDay,
+              ) /
+              (1000 * 60);
+          }
+          totalTimeSpent += sessionTimeSpent;
+        });
       }
-    }
-    const ar = [];
-    const iterator = map[Symbol.iterator]();
-    for (const item of iterator) {
-      ar.push({ projectName: item[0], value: getHourFromMinutes(item[1]) });
+      map.set(new Date(startDay), this.getHourFromMinutes(totalTimeSpent));
+      totalTimeSpent = 0;
     }
 
-    return { TotalSpentTime: getHourFromMinutes(totalTimeSpent), value: ar };
+    return new Array(...map);
+  }
+  getHourFromMinutes(min: number) {
+    if (!min) return 0;
+    const hour = Number((min / 60).toFixed(2));
+    return hour;
   }
 }
-const getHourFromMinutes = (min: number) => {
-  if (!min) return 0;
-  const hour = Number((min / 60).toFixed(2));
-  return hour;
-};

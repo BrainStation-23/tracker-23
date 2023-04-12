@@ -104,4 +104,10 @@ export class TasksController {
   async weeklySpentTime(@GetUser() user: User, @Query() query: GetTaskQuery) {
     return this.tasksService.weeklySpentTime(user, query);
   }
+
+  @Get('spent-time/per-day')
+  @UseGuards(JwtAuthGuard)
+  async getSpentTimeByDay(@GetUser() user: User, @Query() query: GetTaskQuery) {
+    return this.tasksService.getSpentTimeByDay(user, query);
+  }
 }
