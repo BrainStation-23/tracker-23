@@ -263,7 +263,6 @@ const DashBoard = () => {
           // priority: task?.priority,
         };
       });
-      console.log("****************************************");
       const tmpPinnedTaskList = tmpTasks?.filter(
         (task: TaskDto) => task?.pinned
       );
@@ -272,11 +271,6 @@ const DashBoard = () => {
       // const pinnedTaskList = tmpPinnedTaskList?.filter(
       //   (task: TaskDto, index: any) => index < 5
       // );
-      console.log(
-        "🚀 ~ file: index.tsx:154 ~ getTasks ~ tmpTasks:",
-        tmpTasks,
-        pinnedTaskList
-      );
       setTasks(pinnedTaskList || []);
 
       setTableParamsPinned({

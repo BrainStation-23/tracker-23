@@ -127,7 +127,6 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
         },
       }
     );
-    console.log("getTasksRest", res);
     const sortedTasks = sortByStatus(res.data);
     return sortedTasks;
   } catch (error: any) {
@@ -214,7 +213,6 @@ export async function createSessionRest(taskId: string) {
         },
       }
     );
-    console.log("getTasksRest", res);
     return res.data;
   } catch (error: any) {
     toast.error("Failed to Get Task : " + error.message);
@@ -235,7 +233,6 @@ export async function stopSessionRest(taskId: string) {
         },
       }
     );
-    console.log("getTasksRest", res);
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:241 ~ stopSessionRest ~ error:", error);
