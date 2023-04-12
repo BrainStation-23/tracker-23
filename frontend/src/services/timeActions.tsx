@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { monthsList } from "utils/constants";
 
 export const getFormattedTotalTime = (time: number) => {
@@ -102,4 +103,8 @@ export const getHourFromMinutes = (min: number) => {
   if (!min) return 0;
   const hour = Number((min / 60).toFixed(2));
   return hour;
+};
+
+export const getDayWithMonth = (date: any) => {
+  return dayjs(date).format("D MMMM");
 };

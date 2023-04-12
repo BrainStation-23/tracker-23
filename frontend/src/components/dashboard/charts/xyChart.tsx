@@ -56,8 +56,7 @@ export default function XYChart({ data }: any) {
     return () => {
       chart.dispose();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [data]);
 
   return <div id="chartDiv" style={{ width: "90%", height: "500px" }}></div>;
 }

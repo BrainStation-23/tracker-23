@@ -1,22 +1,16 @@
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
-import PieChart from "@/components/dashboard/charts/pieChart";
 import XYChart from "@/components/dashboard/charts/xyChart";
-import MyTasks from "@/components/dashboard/myTasks";
 import {
   formatDate,
+  getDayWithMonth,
   getFormattedTime,
   getFormattedTotalTime,
-  getHourFromMinutes,
   getTotalSpentTime,
 } from "@/services/timeActions";
 import { getLocalStorage } from "@/storage/storage";
 import {
-  Badge,
-  Button,
   message,
-  Progress,
-  Table,
   TablePaginationConfig,
   Typography,
 } from "antd";
@@ -27,14 +21,12 @@ import { useEffect, useState } from "react";
 import {
   PriorityBGColorEnum,
   PriorityBorderColorEnum,
-  progressColorEnum,
   statusBGColorEnum,
   statusBorderColorEnum,
   taskPriorityEnum,
   taskStatusEnum,
 } from "utils/constants";
 import GlobalMOdal from "../modals/globalModal";
-import StopWatchTabular from "../stopWatch/tabular/reactStopWatchTabular";
 import Stopwatch from "../stopWatch/tabular/timerComponent";
 import ProgressComponent from "../tasks/components/progressComponent";
 import StaticProgressComponent from "../tasks/components/progressComponentStatic";
@@ -42,7 +34,6 @@ import TimeDisplayComponent from "../tasks/components/timeDisplayComponent";
 import SessionStartWarning from "../tasks/components/warning";
 import DonutChart from "./charts/donutChart";
 import Line from "./charts/lineChart";
-import MultiValueAxesChart from "./charts/lineChart";
 import { useRouter } from "next/router";
 import DashBoardSection from "./components/sections";
 import DashboardTableComponent from "./components/tableComponentDashboard";
@@ -136,7 +127,7 @@ const DashBoard = () => {
     { day: 29, hours: 1 },
     { day: 30, hours: 5 },
   ];
-  const weekData = [
+  const [weekData, setWeekData] = useState([
     { day: "25 March", hours: 6 },
     { day: "26 March", hours: 7 },
     { day: "27 March", hours: 4 },
@@ -144,7 +135,7 @@ const DashBoard = () => {
     { day: "29 March", hours: 6 },
     { day: "30 March", hours: 5 },
     { day: "31 March", hours: 9 },
-  ];
+  ]);
 
   const data3 = [
     {
@@ -532,11 +523,6 @@ const DashBoard = () => {
   ];
 
   const getProjectWiseHour = async () => {
-    const dates = getDateRangeArray("this-month");
-    console.log(
-      "🚀 ~ file: index.tsx:542 ~ getProjectWiseHour ~ dates:",
-      dates
-    );
     const res = await userAPI.getProjectWiseHour(
       getDateRangeArray("this-month")
     );
@@ -555,26 +541,14 @@ const DashBoard = () => {
   };
 
   const getSpentTimePerDay = async () => {
-    const dates = getDateRangeArray("this-week");
-    console.log(
-      "🚀 ~ file: index.tsx:542 ~ getProjectWiseHour ~ dates:",
-      dates
-    );
     const res = await userAPI.getSpentTimePerDay(
       getDateRangeArray("this-week")
     );
-    console.log("🚀 ~ file: index.tsx:566 ~ getSpentTimePerDay ~ res:", res);
-    // const { value } = res;
-    // console.log(
-    //   "🚀 ~ file: index.tsx:541 ~ getProjectWiseHour ~ value:",
-    //   value
-    // );
-    // const tmp: any[] = [];
-    // value.forEach((val: any) => {
-    //   tmp.push(val);
-    // });
-    // setDataDonut(tmp);
-    // setDataDonutTotal(res.TotalSpentTime);
+    const tmp: any[] = [];
+    res.forEach((val: any) => {
+      tmp.push({ day: getDayWithMonth(val.day), hours: val.hour });
+    });
+    setWeekData(tmp);
   };
 
   useEffect(() => {
