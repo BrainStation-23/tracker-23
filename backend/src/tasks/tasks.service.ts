@@ -462,7 +462,15 @@ export class TasksService {
       map.set(new Date(endDay), tmp + this.getHourFromMinutes(totalTimeSpent));
       totalTimeSpent = 0;
     }
-
+    const ar = [];
+    const iterator = map[Symbol.iterator]();
+    for (const item of iterator) {
+      ar.push({
+        day: item[0],
+        hour: item[1],
+      });
+    }
+    return ar;
     return new Array(...map);
   }
   getHourFromMinutes(min: number) {
