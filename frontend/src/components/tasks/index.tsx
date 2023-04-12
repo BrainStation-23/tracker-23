@@ -305,14 +305,14 @@ const TasksPage = () => {
             >
               <SyncOutlined spin={syncRunning} />
             </Button>
-            <Button
+            {/* <Button
               className={`flex items-center justify-center ${
                 syncRunning ? "border-green-500 text-green-500" : ""
               }`}
               onClick={syncFunction}
             >
               <SyncOutlined spin={syncRunning} /> Status
-            </Button>
+            </Button> */}
           </div>
         </div>
         <TopPanel
