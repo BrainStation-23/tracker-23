@@ -372,22 +372,23 @@ export class TasksService {
       let taskTimeSpent = 0;
       task?.sessions?.forEach((session: any) => {
         const start = new Date(session.startTime);
-        const end = new Date(session.endTime);
-
+        let end = new Date(session.endTime);
+        if (end.getTime() === 0) {
+          end = new Date();
+        }
         let sessionTimeSpent = 0;
         if (start >= startDate && end <= endDate) {
-          sessionTimeSpent =
-            (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+          sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
         } else if (startDate >= start && end >= endDate) {
           sessionTimeSpent =
-            (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+            (endDate.getTime() - startDate.getTime()) / (1000 * 60);
         } else if (end >= startDate) {
           sessionTimeSpent =
             Math.min(
               Math.max(endDate.getTime() - start.getTime(), 0),
               end.getTime() - startDate.getTime(),
             ) /
-            (1000 * 60 * 60);
+            (1000 * 60);
         }
         totalTimeSpent += sessionTimeSpent;
         taskTimeSpent += sessionTimeSpent;
