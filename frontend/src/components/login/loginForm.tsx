@@ -6,7 +6,11 @@ import { userAPI } from "APIs";
 import { GetCookie } from "@/services/cookie.service";
 import Line from "../dashboard/charts/lineChart";
 
-const LoginForm: React.FC = () => {
+type Props = {
+  setIsModalOpen: Function;
+};
+
+const LoginForm = ({ setIsModalOpen }: Props) => {
   const router = useRouter();
   const signIn = async (values: any) => {
     console.log(values);
@@ -22,7 +26,11 @@ const LoginForm: React.FC = () => {
 
   const onFinish = async (values: any) => {
     console.log("Success:", values);
-    await signIn(values);
+    setIsModalOpen(true);
+    try {
+      await signIn(values);
+    } catch (error) {}
+    setIsModalOpen(false);
     // router.push("/taskList");
   };
 

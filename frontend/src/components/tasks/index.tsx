@@ -91,7 +91,7 @@ const TasksPage = () => {
         await handleSessionStart(warningData);
         setWarningData(null);
       } catch (error) {
-        toast.error("Something went wrong.");
+        message.error("Something went wrong.");
       }
     }
     setWarningModalOpen(false);

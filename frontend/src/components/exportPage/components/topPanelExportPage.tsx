@@ -1,23 +1,14 @@
 import FilterIconSvg from "@/assets/svg/filterIconSvg";
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
-import ClockIconSvg from "@/assets/svg/sortIcons/ClockIconSvg";
-import SortPriorityIconSvg from "@/assets/svg/sortIcons/SortPriorityIconSvg";
 import SortIconSvg from "@/assets/svg/sortIconSvg";
-import { Input, Select } from "antd";
+import { Button, Input, message } from "antd";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
-import SortNameIconSvg from "../../../assets/svg/sortIcons/SortNameIconSvg";
-import SortStatusIconSvg from "../../../assets/svg/sortIcons/SortStatusIconSvg";
-import SortProgressIconSvg from "../../../assets/svg/sortIcons/SortProgressIconSvg";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { DownloadOutlined } from "@ant-design/icons";
 import StatusSelectorComponent from "@/components/tasks/components/statusSelector";
 import PrioritySelectorComponent from "@/components/tasks/components/prioritySelector";
 import { userAPI } from "APIs";
-
-import { saveAs } from "file-saver";
-
-const { Search } = Input;
 
 type Props = {
   tasks: TaskDto[];
@@ -25,6 +16,7 @@ type Props = {
 };
 const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
   const [searchText, setSearchText] = useState("");
+  const [downloading, setDownloading] = useState<boolean>(false);
   const [status, setStatus] = useState([]);
   const [priority, setPriority] = useState([]);
   const [active, setActive] = useState("");
@@ -34,7 +26,8 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
 
   // const handleOnClick = () => {};
 
-  const exelExport = async () => {
+  const excelExport = async () => {
+    setDownloading(true);
     try {
       const res = await userAPI.exportTasks({
         searchText: searchText,
@@ -48,13 +41,18 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "exportedData.xlsx"); // Specify the desired file name
+      const fileName = "exportedData.xlsx";
+      link.setAttribute("download", fileName); // Specify the desired file name
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      message.success("Exported to " + fileName);
       // Use FileSaver.js to save the Blob as a file
       // saveAs(blob, "exported_data.xlsx");
-    } catch (error) {}
+    } catch (error) {
+      message.error("Export Failed");
+    }
+    setDownloading(false);
   };
 
   const sortOptions = [
@@ -156,13 +154,22 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
             </div>
           </div>
         </div>
-        <div
+        {/* <div
           className="flex w-[320px] cursor-pointer items-center gap-2 rounded-md bg-[#016C37] p-2 text-white hover:bg-[#1F9B60]"
-          onClick={() => exelExport()}
+          onClick={() => excelExport()}
         >
           <DownloadOutlined />
           Export to Excel
-        </div>
+        </div> */}
+        <Button
+          type="default"
+          className="rounded-md bg-[#016C37] text-white hover:bg-[#1F9B60]"
+          icon={<DownloadOutlined />}
+          loading={downloading}
+          onClick={() => excelExport()}
+        >
+          Export to Excel
+        </Button>
       </div>
     </div>
   );

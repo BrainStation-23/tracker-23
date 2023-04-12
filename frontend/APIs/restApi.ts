@@ -30,9 +30,9 @@ export async function loginRest(
     }
     return res.data;
   } catch (error: any) {
-    toast.error(
-      error.response?.data?.message
-        ? error.response?.data?.message
+    message.error(
+      error.response?.data?.error?.message
+        ? error.response?.data?.error?.message
         : "Login Failed"
     );
     return error;
@@ -47,7 +47,7 @@ export async function registerRest(
     const res = await axios.post(`${apiEndPoints.register}`, data);
     return res.data;
   } catch (error: any) {
-    toast.error(
+    message.error(
       error.response?.data?.message
         ? error.response?.data?.message
         : "Registration Failed"
@@ -63,7 +63,7 @@ export async function logoutRest() {
     message.success("Logged Out");
     return true;
   } catch (error: any) {
-    toast.error("Failed to Log Out");
+    message.error("Failed to Log Out");
     return false;
   }
 }
@@ -79,7 +79,7 @@ export async function createTaskRest(data: CreateTaskDto) {
 
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Create Task : " + error.message);
+    message.error("Failed to Create Task : " + error.message);
     return false;
   }
 }
@@ -92,10 +92,10 @@ export async function deleteTaskRest(taskId: any) {
       },
     });
     // console.log(res);
-    toast.success("Task Deleted");
+    message.success("Task Deleted");
     return true;
   } catch (error: any) {
-    toast.error("Failed to Delete Task : " + error.message);
+    message.error("Failed to Delete Task : " + error.message);
     return false;
   }
 }
@@ -130,7 +130,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
     const sortedTasks = sortByStatus(res.data);
     return sortedTasks;
   } catch (error: any) {
-    toast.error("Failed to Get Task : " + error.message);
+    message.error("Failed to Get Task : " + error.message);
     return false;
   }
 }
@@ -167,7 +167,7 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
     console.log("🚀 ~ file: restApi.ts:167 ~ exportTasksRest ~ res:", res);
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Get Task : " + error.message);
+    message.error("Failed to Get Task : " + error.message);
     return false;
   }
 }
@@ -181,7 +181,7 @@ export async function syncStatusRest(token?: string) {
     });
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Get Sync Status : " + error.message);
+    message.error("Failed to Get Sync Status : " + error.message);
     return false;
   }
 }
@@ -195,7 +195,7 @@ export async function syncTasksRest(token?: string) {
     });
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Sync : " + error.message);
+    message.error("Failed to Sync : " + error.message);
     return false;
   }
 }
@@ -215,7 +215,7 @@ export async function createSessionRest(taskId: string) {
     );
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Get Task : " + error.message);
+    message.error("Failed to Get Task : " + error.message);
     return false;
   }
 }
@@ -251,7 +251,7 @@ export async function authJiraRest() {
     console.log("🚀 ~ file: restApi.ts:160 ~ authJiraRest ~ res:", res);
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Jira Auth : " + error.message);
+    message.error("Failed to Jira Auth : " + error.message);
     return false;
   }
 }
@@ -266,7 +266,7 @@ export async function getJiraLinkRest() {
     console.log("🚀 ~ file: restApi.ts:160 ~ authJiraRest ~ res:", res);
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Jira Auth : " + error.message);
+    message.error("Failed to Jira Auth : " + error.message);
     return false;
   }
 }
@@ -285,7 +285,7 @@ export async function sendJiraCodeRest(code: string) {
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:210 ~ sendJiraCodeRest ~ error:", error);
-    toast.error("Failed to Jira Auth : " + error.response?.data?.message);
+    message.error("Failed to Jira Auth : " + error.response?.data?.message);
     return false;
   }
 }
@@ -305,7 +305,7 @@ export async function getIntegrationsRest(token?: string) {
     console.log("getIntegrationsRest", res);
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Get Task : " + error.message);
+    message.error("Failed to Get Task : " + error.message);
     return false;
   }
 }
@@ -326,7 +326,7 @@ export async function getProjectWiseHourRest(dates?: any) {
     );
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Get ProjectWiseHour : " + error.message);
+    message.error("Failed to Get ProjectWiseHour : " + error.message);
     return false;
   }
 }
@@ -347,7 +347,7 @@ export async function getSpentTimePerDayRest(dates?: any) {
     );
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Get SpentTimePerDay : " + error.message);
+    message.error("Failed to Get SpentTimePerDay : " + error.message);
     return false;
   }
 }

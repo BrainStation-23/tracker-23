@@ -3,9 +3,8 @@ import {
   getLocalStorage,
   setLocalStorage,
 } from "@/storage/storage";
-import { log } from "console";
+import { message } from "antd";
 import { TaskDto } from "models/tasks";
-import { toast } from "react-toastify";
 
 export const updateTask = (task: any, taskName: string) => {
   console.log(task, taskName);
@@ -20,7 +19,7 @@ export const updateTask = (task: any, taskName: string) => {
     );
     if (taskList.includes(task.name)) {
       console.log("Name exists");
-      toast.error("TaskName Exists");
+      message.error("TaskName Exists");
       return false;
     } else {
       taskList.push(task.name);

@@ -12,7 +12,7 @@ const CallbackPage = () => {
     const res = await userAPI.sendJiraCode(code);
     console.log("🚀 ~ file: callback.tsx:12 ~ codeFound ~ res:", res);
     if (res) {
-      toast.success(res.message ? res.message : "Integration Successful");
+      message.success(res.message ? res.message : "Integration Successful");
       router.push("/taskList");
     } else router.push("/integrations");
   };
@@ -31,7 +31,7 @@ const CallbackPage = () => {
   }, [router, status]);
   return (
     <>
-      <div className="flex justify-center w-full p-40">
+      <div className="flex w-full justify-center p-40">
         <Spin tip="Integrating Jira" size="large" className="scale-150"></Spin>
       </div>
     </>

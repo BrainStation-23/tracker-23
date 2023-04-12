@@ -1,7 +1,6 @@
 import React from "react";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, message } from "antd";
 import { useState } from "react";
-import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import { userAPI } from "../../../../APIs/index";
 
@@ -25,9 +24,7 @@ const RegistrationForm: React.FC = () => {
     const userRegistered = await userAPI.registerUser(temp);
     if (userRegistered) router.push("/login");
     else {
-      toast.error("email already Used", {
-        containerId: "top-right",
-      });
+      message.error("email already Used");
     }
   };
 
@@ -35,9 +32,7 @@ const RegistrationForm: React.FC = () => {
     console.log("Failed:", errorInfo);
     errorInfo &&
       errorInfo.errorFields.forEach((ef: any) => {
-        toast.error(ef.errors[0], {
-          containerId: "top-right",
-        });
+        message.error(ef.errors[0]);
       });
   };
 

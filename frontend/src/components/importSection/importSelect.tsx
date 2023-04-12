@@ -31,7 +31,7 @@ const ImportSelect = ({ importCardData, integratedTypes }: Props) => {
           if (selected === "Jira Software") {
             const res = await userAPI.authJira();
             console.log("🚀 ~ file: index.tsx:41 ~ onClick={ ~ res:", res);
-          } else toast.error(`Sorry ${selected} import is not supported`);
+          } else message.error(`Sorry ${selected} import is not supported`);
         }}
       >
         {selected.length > 0 ? "Import from " + selected : "Select"}{" "}
