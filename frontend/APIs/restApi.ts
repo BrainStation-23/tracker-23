@@ -326,7 +326,28 @@ export async function getProjectWiseHourRest(dates?: any) {
     );
     return res.data;
   } catch (error: any) {
-    toast.error("Failed to Get Task : " + error.message);
+    toast.error("Failed to Get ProjectWiseHour : " + error.message);
+    return false;
+  }
+}
+
+export async function getSpentTimePerDayRest(dates?: any) {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.spentTimePerDay}?${
+        dates?.length > 0
+          ? `startDate=${dates[0]}&endDate=${dates[1]}`
+          : `startDate=Apr 01, 2022&endDate=Apr 09 , 2023`
+      }`,
+      {
+        headers: {
+          Authorization: `Bearer ${GetCookie("access_token")}`,
+        },
+      }
+    );
+    return res.data;
+  } catch (error: any) {
+    toast.error("Failed to Get SpentTimePerDay : " + error.message);
     return false;
   }
 }

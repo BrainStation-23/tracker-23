@@ -20,5 +20,6 @@ export interface apiFunction {
   authJira: () => Promise<any>;
   getJiraLink: () => Promise<any>;
   sendJiraCode: (code: string) => Promise<any>;
-  getProjectWiseHour: (params?: any) => Promise<any>;
+  getProjectWiseHour: (dates?: any) => Promise<any>;
+  getSpentTimePerDay: (dates?: any) => Promise<any>;
 }

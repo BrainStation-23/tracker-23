@@ -554,9 +554,33 @@ const DashBoard = () => {
     setDataDonutTotal(res.TotalSpentTime);
   };
 
+  const getSpentTimePerDay = async () => {
+    const dates = getDateRangeArray("this-week");
+    console.log(
+      "🚀 ~ file: index.tsx:542 ~ getProjectWiseHour ~ dates:",
+      dates
+    );
+    const res = await userAPI.getSpentTimePerDay(
+      getDateRangeArray("this-week")
+    );
+    console.log("🚀 ~ file: index.tsx:566 ~ getSpentTimePerDay ~ res:", res);
+    // const { value } = res;
+    // console.log(
+    //   "🚀 ~ file: index.tsx:541 ~ getProjectWiseHour ~ value:",
+    //   value
+    // );
+    // const tmp: any[] = [];
+    // value.forEach((val: any) => {
+    //   tmp.push(val);
+    // });
+    // setDataDonut(tmp);
+    // setDataDonutTotal(res.TotalSpentTime);
+  };
+
   useEffect(() => {
     getTasks();
     getProjectWiseHour();
+    getSpentTimePerDay();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
