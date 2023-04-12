@@ -436,7 +436,10 @@ export class TasksService {
       for (const task of taskList) {
         task?.sessions?.forEach((session: any) => {
           const start = new Date(session.startTime);
-          const end = new Date(session.endTime);
+          let end = new Date(session.endTime);
+          if (end.getTime() === 0) {
+            end = new Date();
+          }
 
           let sessionTimeSpent = 0;
           if (start.getTime() >= startDay && end.getTime() <= endDay) {
@@ -454,7 +457,9 @@ export class TasksService {
           totalTimeSpent += sessionTimeSpent;
         });
       }
-      map.set(new Date(startDay), this.getHourFromMinutes(totalTimeSpent));
+      let tmp = map.get(new Date(endDay));
+      if (!tmp) tmp = 0;
+      map.set(new Date(endDay), tmp + this.getHourFromMinutes(totalTimeSpent));
       totalTimeSpent = 0;
     }
 
