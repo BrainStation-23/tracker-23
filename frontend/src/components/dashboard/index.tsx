@@ -9,11 +9,7 @@ import {
   getTotalSpentTime,
 } from "@/services/timeActions";
 import { getLocalStorage } from "@/storage/storage";
-import {
-  message,
-  TablePaginationConfig,
-  Typography,
-} from "antd";
+import { Empty, message, TablePaginationConfig, Typography } from "antd";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { userAPI } from "APIs";
 import { TableParams, TaskDto } from "models/tasks";
@@ -44,19 +40,8 @@ const DashBoard = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
-  const data = [
-    { category: "Frontend", value: 20 },
-    { category: "Misc", value: 25 },
-    { category: "Testing", value: 15 },
-    { category: "UI", value: 10 },
-    { category: "Backend", value: 30 },
-  ];
   const [dataDonutTotal, setDataDonutTotal] = useState(0);
-  const [dataDonut, setDataDonut] = useState([
-    { projectName: "Tracker23", value: 19 },
-    { projectName: "TimeTackle", value: 16 },
-    { projectName: "BS Commerce", value: 5 },
-  ]);
+  const [dataDonut, setDataDonut] = useState(null);
 
   const lineChartData = [
     {
@@ -127,15 +112,7 @@ const DashBoard = () => {
     { day: 29, hours: 1 },
     { day: 30, hours: 5 },
   ];
-  const [weekData, setWeekData] = useState([
-    { day: "25 March", hours: 6 },
-    { day: "26 March", hours: 7 },
-    { day: "27 March", hours: 4 },
-    { day: "28 March", hours: 5 },
-    { day: "29 March", hours: 6 },
-    { day: "30 March", hours: 5 },
-    { day: "31 March", hours: 9 },
-  ]);
+  const [weekData, setWeekData] = useState(null);
 
   const data3 = [
     {
@@ -561,7 +538,11 @@ const DashBoard = () => {
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-2">
         <DashBoardSection title="Project wise Track hour">
-          <DonutChart data={dataDonut} total={dataDonutTotal} />
+          {dataDonut ? (
+            <DonutChart data={dataDonut} total={dataDonutTotal} />
+          ) : (
+            <Empty description="No Data" />
+          )}
         </DashBoardSection>
         <DashBoardSection title="Actual VS Estimate">
           <Line data={lineChartData} />
@@ -608,7 +589,11 @@ const DashBoard = () => {
         />
       </DashBoardSection>
       <DashBoardSection title="Tracker By Day">
-        <XYChart data={weekData} />
+        {weekData ? (
+          <XYChart data={weekData} />
+        ) : (
+          <Empty description="No Data" />
+        )}
       </DashBoardSection>
 
       {/* <div>
