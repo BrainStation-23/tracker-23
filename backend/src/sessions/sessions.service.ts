@@ -16,7 +16,7 @@ import { lastValueFrom } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SessionDto } from './dto';
 import axios from 'axios';
-
+import * as moment from 'moment';
 @Injectable()
 export class SessionsService {
   constructor(
@@ -123,6 +123,7 @@ export class SessionsService {
     });
 
     this.addWorkLog(
+      session.startTime,
       taskIntegration?.integratedTaskId as unknown as string,
       this.timeConverter(timeSpent),
       await this.updatedIntegration(jiraIntegration),
@@ -162,6 +163,7 @@ export class SessionsService {
   }
 
   async addWorkLog(
+    startTime: any,
     issueId: string,
     timeSpentReqBody: string,
     integration: any,
@@ -169,6 +171,7 @@ export class SessionsService {
     try {
       const url = `https://api.atlassian.com/ex/jira/${integration.siteId}/rest/api/3/issue/${issueId}/worklog`;
       const data = JSON.stringify({
+        started: this.getUtcTime(startTime),
         timeSpent: timeSpentReqBody,
       });
       const config = {
@@ -186,5 +189,21 @@ export class SessionsService {
     } catch (err) {
       console.log(err.message);
     }
+  }
+  getUtcTime(date: any) {
+    const targetTimezoneOffset = '';
+    // Create a moment object with the original timestamp
+    const originalMoment = moment(date);
+
+    // Convert to the target timezone
+    const targetMoment = originalMoment.utcOffset(targetTimezoneOffset);
+
+    // Format the target moment object
+    const formattedString = targetMoment.format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+    const tmp =
+      formattedString.substr(0, formattedString.length - 3) +
+      formattedString[formattedString.length - 2] +
+      formattedString[formattedString.length - 1];
+    return `${tmp}`;
   }
 }
