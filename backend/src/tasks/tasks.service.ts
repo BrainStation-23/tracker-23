@@ -43,7 +43,8 @@ export class TasksService {
         assigneeId: integrations[0].accountId,
         ...(startDate &&
           endDate && {
-            createdAt: { gte: startDate, lte: endDate },
+            createdAt: { lte: endDate },
+            updateAt: { gte: startDate },
           }),
         ...(priority1 && { priority: { in: priority1 } }),
         ...(status1 && { status: { in: status1 } }),
@@ -190,6 +191,7 @@ export class TasksService {
                     status: taskStatus,
                     priority: taskPriority,
                     createdAt: new Date(integratedTask.fields.created),
+                    updatedAt: new Date(integratedTask.fields.updated),
                   },
                 })
                 .then(async (task) => {
@@ -258,14 +260,22 @@ export class TasksService {
 
   async getCallSync(userId: number) {
     try {
-      return await this.prisma.callSync.findFirst({
+      const getData = await this.prisma.callSync.findFirst({
         where: {
           userId: userId,
         },
       });
+      if (!getData) {
+        return {
+          id: -1,
+          status: 'Not yet synced',
+          userId: userId,
+        };
+      }
+      return getData;
     } catch (err) {
       console.log(err.message);
-      return null;
+      throw new APIException('Not found', HttpStatus.BAD_REQUEST);
     }
   }
 
