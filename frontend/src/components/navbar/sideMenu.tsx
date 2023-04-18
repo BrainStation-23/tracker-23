@@ -1,9 +1,4 @@
-import { AiOutlineLogout } from "react-icons/ai";
-import { BiImport } from "react-icons/bi";
-import { TiExport } from "react-icons/ti";
-import { UnorderedListOutlined } from "@ant-design/icons";
 import { useRouter } from "next/router";
-import { userAPI } from "APIs";
 import BSLogoSvg from "@/assets/svg/BSLogoSvg";
 import TasksIconSvg from "@/assets/svg/tasksIconSvg";
 import DashboardIconSvg from "@/assets/svg/dashboardIconSvg";
@@ -12,11 +7,6 @@ import IntegrationIconSvg from "@/assets/svg/IntegrationIconSvg";
 
 const SideMenu = () => {
   const router = useRouter();
-  const handleLogOut = async () => {
-    console.log("logging out");
-    const loggedOut = await userAPI.logout();
-    if (loggedOut) router.push("/login");
-  };
   const SideMenuOption = ({ option, active }: any) => {
     const router = useRouter();
     return (
@@ -71,14 +61,6 @@ const SideMenu = () => {
                 />
               ))}
             </div>
-          </div>
-        </div>
-        <div className="flex items-center justify-center pb-5 text-white">
-          <div
-            className="scale-110 rounded-full  p-1 hover:cursor-pointer hover:bg-indigo-500"
-            onClick={handleLogOut}
-          >
-            <AiOutlineLogout />
           </div>
         </div>
       </div>

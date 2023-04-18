@@ -21,7 +21,7 @@ const InvalidUserPage = () => {
       <div className=" m-auto mt-[10%] flex w-[540px] flex-col gap-4 rounded-md border-2 border-[#5670f2] bg-[#16dede0f] p-4">
         <ALertCircleIconSvg />
         <div className="flex flex-col gap-4 text-base font-medium">
-          <span>Dear {userDetails.firstName},</span>
+          <span>Dear {userDetails?.firstName},</span>
           <span>
             Thank you for joining the Tracker23 waitlist! Our team is working
             hard to bring our product to life and we will keep you updated on

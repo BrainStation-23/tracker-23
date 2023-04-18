@@ -26,3 +26,7 @@ export const deleteFromLocalStorage = (key) => {
     // logout();
   }
 };
+const localStorageItems = ["userDetails", "access_token"];
+export const clearLocalStorage = () => {
+  localStorageItems.forEach((item) => deleteFromLocalStorage(item));
+};
