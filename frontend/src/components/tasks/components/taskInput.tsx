@@ -1,30 +1,34 @@
 import {
   Button,
+  Checkbox,
   Form,
   Input,
   RadioChangeEvent,
   Select,
   SelectProps,
+  TimePicker,
 } from "antd";
 import React, { useState } from "react";
 
 import { SizeType } from "antd/es/config-provider/SizeContext";
+import { CheckboxChangeEvent } from "antd/es/checkbox";
 
 const TaskInput = ({ taskList, createTask }: any) => {
   const [form] = Form.useForm();
   const onFinish = async (values: any) => {
     console.log(values);
-    if (typeof values.estimation !== "number")
-      values.estimation = +values.estimation;
+    // if (typeof values.estimation !== "number")
+    //   values.estimation = +values.estimation;
 
-    const res = createTask(values);
-    console.log("🚀 ~ file: taskInput copy.tsx:23 ~ onFinish ~ res", res);
+    // const res = createTask(values);
+    // console.log("🚀 ~ file: taskInput copy.tsx:23 ~ onFinish ~ res", res);
   };
 
   const onReset = () => {
     form.resetFields();
   };
   const [size, setSize] = useState<SizeType>("middle");
+  const [recurrentTask, setRecurrentTask] = useState<boolean>(false);
   const handleSizeChange = (e: RadioChangeEvent) => {
     setSize(e.target.value);
   };
@@ -38,7 +42,9 @@ const TaskInput = ({ taskList, createTask }: any) => {
   const initialValues = {
     priority: "MEDIUM",
   };
-
+  const onCheckBoxChange = (e: CheckboxChangeEvent) => {
+    setRecurrentTask(e.target.checked);
+  };
   return (
     <Form
       form={form}
@@ -106,6 +112,39 @@ const TaskInput = ({ taskList, createTask }: any) => {
           options={options}
         />
       </Form.Item>
+
+      <Form.Item>
+        <Checkbox onChange={onCheckBoxChange}>Recurrent Task</Checkbox>
+      </Form.Item>
+      {recurrentTask && (
+        <div className="grid w-full grid-cols-2 gap-3">
+          <Form.Item
+            name="frequency"
+            label="Frequency"
+            labelCol={{ span: 24 }}
+            rules={[{ required: true }]}
+          >
+            {/* <Input /> */}
+            <Select
+              placeholder="Select Frequency"
+              onChange={handlePriorityChange}
+              options={[
+                { value: "Daily", label: "Daily" },
+                { value: "Weekly", label: "Weekly" },
+                { value: "Bi-Weekly", label: "Bi-Weekly" },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item
+            name="time"
+            label="Time"
+            labelCol={{ span: 24 }}
+            rules={[{ required: true }]}
+          >
+            <TimePicker.RangePicker />
+          </Form.Item>
+        </div>
+      )}
 
       <Form.Item>
         <div className="flex flex-row-reverse gap-3">
