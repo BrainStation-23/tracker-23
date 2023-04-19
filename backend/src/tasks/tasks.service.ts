@@ -40,9 +40,15 @@ export class TasksService {
 
       const databaseQuery = {
         userId: user.id,
-        ...(integrations[0]
-          ? { assigneeId: integrations[0].accountId }
-          : { source: IntegrationType.T23 }),
+        OR: [
+          {
+            assigneeId: integrations[0]?.accountId,
+            source: IntegrationType.JIRA,
+          },
+          {
+            source: 'Tracker23',
+          },
+        ],
         ...(startDate &&
           endDate && {
             createdAt: { lte: endDate },
