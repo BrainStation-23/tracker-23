@@ -40,7 +40,9 @@ export class TasksService {
 
       const databaseQuery = {
         userId: user.id,
-        assigneeId: integrations[0].accountId,
+        ...(integrations[0]
+          ? { assigneeId: integrations[0].accountId }
+          : { source: IntegrationType.T23 }),
         ...(startDate &&
           endDate && {
             createdAt: { lte: endDate },
@@ -55,6 +57,10 @@ export class TasksService {
           },
         }),
       };
+      console.log(
+        '🚀 ~ file: tasks.service.ts:60 ~ TasksService ~ getTasks ~ databaseQuery:',
+        databaseQuery,
+      );
 
       const task = await this.prisma.task.findMany({
         where: databaseQuery,
@@ -201,6 +207,7 @@ export class TasksService {
                     priority: taskPriority,
                     createdAt: new Date(integratedTask.fields.created),
                     updatedAt: new Date(integratedTask.fields.updated),
+                    source: IntegrationType.JIRA,
                   },
                 })
                 .then(async (task) => {

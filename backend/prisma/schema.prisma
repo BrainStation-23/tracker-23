@@ -60,6 +60,7 @@ model Task {
   userId Int
 
   taskIntegrations TaskIntegration[]
+  source           String            @default("Tracker23")
   sessions         Session[]
   pinned           Boolean?          @default(false)
 }
