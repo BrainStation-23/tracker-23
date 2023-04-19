@@ -71,7 +71,16 @@ export class TasksService {
 
   async createTask(user: User, dto: CreateTaskDto) {
     return await this.prisma.task.create({
-      data: { userId: user.id, ...dto },
+      data: {
+        userId: user.id,
+        title: dto.title,
+        description: dto.description,
+        estimation: dto.estimation,
+        due: dto.due,
+        priority: dto.priority,
+        status: dto.status,
+        labels: dto.labels,
+      },
     });
   }
 

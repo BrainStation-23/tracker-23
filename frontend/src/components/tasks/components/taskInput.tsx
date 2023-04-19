@@ -17,11 +17,11 @@ const TaskInput = ({ taskList, createTask }: any) => {
   const [form] = Form.useForm();
   const onFinish = async (values: any) => {
     console.log(values);
-    // if (typeof values.estimation !== "number")
-    //   values.estimation = +values.estimation;
+    if (typeof values.estimation !== "number")
+      values.estimation = +values.estimation;
 
-    // const res = createTask(values);
-    // console.log("🚀 ~ file: taskInput copy.tsx:23 ~ onFinish ~ res", res);
+    const res = createTask(values);
+    console.log("🚀 ~ file: taskInput copy.tsx:23 ~ onFinish ~ res", res);
   };
 
   const onReset = () => {
