@@ -44,7 +44,7 @@ export class TasksService {
         ...(startDate &&
           endDate && {
             createdAt: { lte: endDate },
-            updateAt: { gte: startDate },
+            updatedAt: { gte: startDate },
           }),
         ...(priority1 && { priority: { in: priority1 } }),
         ...(status1 && { status: { in: status1 } }),
@@ -282,7 +282,7 @@ export class TasksService {
   async syncCall(status: string, userId: number) {
     try {
       const doesExist = await this.getCallSync(userId);
-      if (!doesExist) {
+      if (!doesExist || doesExist.id === -1) {
         return await this.prisma.callSync.create({
           data: {
             status,
