@@ -1,6 +1,7 @@
 import {
   Button,
   Checkbox,
+  DatePicker,
   Form,
   Input,
   RadioChangeEvent,
@@ -9,11 +10,18 @@ import {
   TimePicker,
 } from "antd";
 import React, { useState } from "react";
+const { RangePicker } = DatePicker;
 
 import { SizeType } from "antd/es/config-provider/SizeContext";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
+import dayjs, { Dayjs } from "dayjs";
 
 const TaskInput = ({ taskList, createTask }: any) => {
+  const [customDateValue, setCustomDateValue] = useState<any>([
+    dayjs(),
+    dayjs(),
+  ]);
+  const dateFormat = "DD/MM/YYYY";
   const [form] = Form.useForm();
   const onFinish = async (values: any) => {
     console.log(values);
@@ -29,9 +37,7 @@ const TaskInput = ({ taskList, createTask }: any) => {
   };
   const [size, setSize] = useState<SizeType>("middle");
   const [recurrentTask, setRecurrentTask] = useState<boolean>(false);
-  const handleSizeChange = (e: RadioChangeEvent) => {
-    setSize(e.target.value);
-  };
+
   const handlePriorityChange = (value: string) => {
     console.log(`Selected: ${value}`);
   };
@@ -117,12 +123,13 @@ const TaskInput = ({ taskList, createTask }: any) => {
         <Checkbox onChange={onCheckBoxChange}>Recurrent Task</Checkbox>
       </Form.Item>
       {recurrentTask && (
-        <div className="grid w-full grid-cols-2 gap-3">
+        <div className="grid w-full grid-cols-12 gap-3">
           <Form.Item
             name="frequency"
             label="Frequency"
             labelCol={{ span: 24 }}
             rules={[{ required: true }]}
+            className="col-span-3"
           >
             {/* <Input /> */}
             <Select
@@ -139,9 +146,35 @@ const TaskInput = ({ taskList, createTask }: any) => {
             name="time"
             label="Time"
             labelCol={{ span: 24 }}
+            className="col-span-4"
             rules={[{ required: true }]}
           >
             <TimePicker.RangePicker />
+          </Form.Item>
+          <Form.Item
+            name="dateRange"
+            label="DateRange"
+            labelCol={{ span: 24 }}
+            rules={[{ required: true }]}
+            className="col-span-5"
+          >
+            <RangePicker              
+              value={customDateValue}
+              format={dateFormat}
+              clearIcon={false}
+              bordered={true}
+              inputReadOnly={true}
+              autoFocus={true}
+              className="w-[250px]"
+              popupClassName=""
+              placement="topRight"
+              disabledDate={(current: Dayjs) => {
+                return current.valueOf() < dayjs().subtract(1, "day").valueOf();
+              }}
+              onChange={(values) => {
+                setCustomDateValue(values);
+              }}
+            />
           </Form.Item>
         </div>
       )}

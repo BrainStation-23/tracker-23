@@ -369,6 +369,7 @@ const TasksPage = () => {
           isModalOpen={viewModalOpen}
           setIsModalOpen={setViewModalOpen}
           title="Add Task"
+          className="top-0 my-auto flex h-full items-center"
         >
           <TaskInput taskList={tasks} createTask={createTask} />
         </GlobalModal>
