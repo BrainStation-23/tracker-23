@@ -3,12 +3,7 @@ export const publicRoutes = [
   "/registration",
   "/socialLogin/redirect",
 ];
-export const ignoreRoutes = [
-  "/_next",
-  "/assets",
-  "/socialLogin/redirect",
-  "/integrations",
-];
+export const ignoreRoutes = ["/_next", "/assets", "/integrations"];
 export const menuOptions = [
   { link: "/taskList", title: "Tasks Page" },
   // { link: "/dashboard", title: "DashBoard Page" },
@@ -105,5 +100,4 @@ export const whiteListEmails = [
   "dinar@timetackle.com",
   "shakil@timetackle.com",
   "shamsul.tahsin@brainstation-23.com",
-  "dumyshala420@gmail.com",
 ];

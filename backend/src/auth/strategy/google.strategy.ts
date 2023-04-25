@@ -30,4 +30,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     };
     done(null, user);
   }
+  async authenticate(request: any, options?: any) {
+    const code = request.body.code;
+    const result = await super.authenticate(request, { ...options, code });
+    return result;
+  }
 }

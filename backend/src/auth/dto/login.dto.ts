@@ -9,3 +9,10 @@ export class LoginDto {
   @MinLength(6)
   password: string;
 }
+export type userDto = {
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  id: number;
+  picture: string | null;
+};
