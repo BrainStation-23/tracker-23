@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { LoginDto, RegisterDto } from './dto';
+import { LoginDto, RegisterDto, userDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -75,9 +75,8 @@ export class AuthService {
       return 'No user from google';
     }
     console.log(req.user);
-    const referer: any = this.config.get('HOST_URL');
     console.log('User information from google');
-    const data = {
+    const queryData = {
       email: req.user.email,
       firstName: req.user.firstName,
       lastName: req.user.lastName,
@@ -88,24 +87,10 @@ export class AuthService {
     });
     if (oldUser) {
       console.log('Old User Found');
-      const token = await this.createToken(oldUser);
-      const { id, firstName, lastName, email, picture } = oldUser;
-      const data = `${JSON.stringify({
-        id,
-        firstName,
-        lastName,
-        email,
-        picture,
-        ...token,
-      })}`;
-      const encodedData = Buffer.from(data).toString('base64');
-      return {
-        url: `${referer}socialLogin/redirect?data=${encodedData}`,
-        statusCode: 302,
-      };
+      return await this.getFormattedUserData(oldUser);
     }
     const user = await this.prisma.user.create({
-      data,
+      data: queryData,
       select: {
         id: true,
         email: true,
@@ -114,20 +99,19 @@ export class AuthService {
         picture: true,
       },
     });
+    return await this.getFormattedUserData(user);
+  }
+
+  async getFormattedUserData(user: userDto) {
     const token = await this.createToken(user);
     const { id, firstName, lastName, email, picture } = user;
-    const useData = `${JSON.stringify({
+    return {
       id,
       firstName,
       lastName,
       email,
       picture,
       ...token,
-    })}`;
-    const encodedData = Buffer.from(useData).toString('base64');
-    return {
-      url: `${referer}socialLogin/redirect?data=${encodedData}`,
-      statusCode: 302,
     };
   }
 }

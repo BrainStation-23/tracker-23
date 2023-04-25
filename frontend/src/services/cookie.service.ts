@@ -26,10 +26,6 @@ const GetCookie = (cookieName: string) => {
 
 const RemoveAllCookies = () => {
   CookieNames.map((cookieName: string) => RemoveCookie(cookieName));
-  // RemoveCookie("accessToken");
-  // RemoveCookie("refreshToken");
-  // RemoveCookie("user");
-
   console.log("Cookies Removed");
 };
 

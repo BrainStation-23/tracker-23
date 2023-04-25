@@ -1,5 +1,6 @@
 export const apiEndPoints = {
   login: `/auth/login`,
+  googleLogin: `/auth/google/google-redirect`,
   register: `/auth/register`,
   tasks: `/tasks`,
   export: `/export`,

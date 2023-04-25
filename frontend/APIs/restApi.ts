@@ -35,6 +35,25 @@ export async function loginRest(
   }
 }
 
+export async function googleLoginRest(
+  code: string
+): Promise<LoginResponseDto | undefined> {
+  try {
+    console.log(">>", axios.defaults.baseURL);
+
+    const res = await axios.post(`${apiEndPoints.googleLogin}?code=${code}`);
+    console.log("🚀 ~ file: restApi.ts:45 ~ res:", res);
+    return res.data;
+  } catch (error: any) {
+    message.error(
+      error.response?.data?.error?.message
+        ? error.response?.data?.error?.message
+        : "Login Failed"
+    );
+    return error;
+  }
+}
+
 export async function registerRest(
   data: RegisterDto
 ): Promise<RegisterDto | undefined> {
