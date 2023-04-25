@@ -14,7 +14,6 @@ import {
   getTotalSpentTime,
 } from "@/services/timeActions";
 import TopPanel from "./components/topPanel";
-import { toast } from "react-toastify";
 import TaskDetailsModal from "../modals/taskDetails.modal";
 import { getLocalStorage, setLocalStorage } from "@/storage/storage";
 import { useRouter } from "next/router";
@@ -242,16 +241,13 @@ const TasksPage = () => {
     setReload(!reload);
     setRunningTask(null);
   };
-  // useEffect(() => {
-  //   getTasks();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
+
   useEffect(() => {
-    getTasks();
+    !loading && getTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
   useEffect(() => {
-    !syncRunning && getTasks();
+    !loading && !syncRunning && getTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncRunning]);
 
@@ -265,7 +261,7 @@ const TasksPage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  console.log("runningTask", runningTask);
+
   const syncFunction = async () => {
     dispatch(setSyncRunning(true));
     const res = await userAPI.syncStatus();
