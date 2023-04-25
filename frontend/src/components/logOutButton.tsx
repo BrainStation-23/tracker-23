@@ -7,7 +7,10 @@ const LogOutButton = () => {
     userAPI.logout();
   };
   return (
-    <button className="flex items-center gap-1" onClick={() => handleLogOut()}>
+    <button
+      className="flex items-center gap-1 w-full"
+      onClick={() => handleLogOut()}
+    >
       <LogoutIconSvg />
       <span className="text-[15px] font-semibold">Log out</span>
     </button>
