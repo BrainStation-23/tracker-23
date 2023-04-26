@@ -423,7 +423,7 @@ export async function getSpentTimePerDayRest(dates?: any) {
 
 export async function addManualWorkLogRest(data: AddWorkLogParams) {
   try {
-    const res = await axios.post(`${apiEndPoints.addWorkLog}`, data, {
+    const res = await axios.patch(`${apiEndPoints.addWorkLog}`, data, {
       headers: {
         Authorization: `Bearer ${GetCookie("access_token")}`,
       },

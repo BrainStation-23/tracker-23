@@ -1,3 +1,6 @@
+import { GetUser } from 'src/decorator';
+import { JwtAuthGuard } from 'src/guard';
+
 import {
   Body,
   Controller,
@@ -9,8 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { GetUser } from 'src/decorator';
-import { JwtAuthGuard } from 'src/guard';
+
 import { ManualTimeEntryReqBody, SessionDto } from './dto';
 import { SessionsService } from './sessions.service';
 
@@ -42,8 +44,8 @@ export class SessionsController {
     return await this.sessionsService.stopSession(user, taskId);
   }
 
-  @Patch('add-work-log')
   @UseGuards(JwtAuthGuard)
+  @Patch('add-work-log')
   async manualTimeEntry(
     @GetUser() user: User,
     @Body() manualTimeEntryReqBody: ManualTimeEntryReqBody,
