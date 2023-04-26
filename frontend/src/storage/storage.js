@@ -23,6 +23,7 @@ export const deleteFromLocalStorage = (key) => {
   try {
     localStorage.removeItem(key);
   } catch (e) {
+    console.log(e);
     // logout();
   }
 };
