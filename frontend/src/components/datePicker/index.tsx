@@ -8,10 +8,12 @@ import {
   Popover,
   theme,
 } from "antd";
-import React, { useState } from "react";
 import dayjs from "dayjs";
-import { CalendarOutlined, EditOutlined } from "@ant-design/icons";
+import React, { useState } from "react";
+
 import DownArrowIconSvg from "@/assets/svg/DownArrowIconSvg";
+import { CalendarOutlined, EditOutlined } from "@ant-design/icons";
+
 const { useToken } = theme;
 const { RangePicker } = DatePicker;
 const DateRangePicker = ({ setSelectedDate }: any) => {
@@ -217,6 +219,9 @@ export const getDateRangeArray = (key: string) => {
 };
 export const localFormat = (value: any) => {
   return value?.format("MMM DD , YYYY").toString();
+};
+export const timeFormat = (value: any) => {
+  return value?.format("HH:mm:ss").toString();
 };
 export const dateRangeOptions = {
   today: "Today",

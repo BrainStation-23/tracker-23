@@ -1,27 +1,30 @@
-import { Button, Empty, Spin, message } from "antd";
+import { Button, Empty, message, Spin } from "antd";
+import { userAPI } from "APIs";
+import { TaskDto } from "models/tasks";
+import { useRouter } from "next/router";
 import { createContext, useEffect, useState } from "react";
 
-import GlobalModal from "../modals/globalModal";
-import SessionStartWarning from "./components/warning";
-import { SyncOutlined } from "@ant-design/icons";
-import { TaskDto } from "models/tasks";
-import TaskInput from "./components/taskInput";
-import { userAPI } from "APIs";
 import {
   formatDate,
   getFormattedTime,
   getFormattedTotalTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
-import TopPanel from "./components/topPanel";
-import TaskDetailsModal from "../modals/taskDetails.modal";
-import { getLocalStorage, setLocalStorage } from "@/storage/storage";
-import { useRouter } from "next/router";
-import { getDateRangeArray } from "../datePicker";
-import TableComponent from "./components/tableComponent";
-import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
+import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
+import { getLocalStorage, setLocalStorage } from "@/storage/storage";
+import { SyncOutlined } from "@ant-design/icons";
+
+import { getDateRangeArray } from "../datePicker";
+import GlobalModal from "../modals/globalModal";
+import TaskDetailsModal from "../modals/taskDetails.modal";
+import ManualTimeEntry from "./components/manualTimeEntry";
+import TableComponent from "./components/tableComponent";
+import TaskInput from "./components/taskInput";
+import TopPanel from "./components/topPanel";
+import SessionStartWarning from "./components/warning";
+
 export const TaskContext = createContext<any>({
   taskList: [],
   runningTask: null,
@@ -33,6 +36,8 @@ export const TaskContext = createContext<any>({
 const TasksPage = () => {
   const router = useRouter();
   const [viewModalOpen, setViewModalOpen] = useState<boolean>(false);
+  const [manualTimeEntryModalOpen, setManualTimeEntryModalOpen] =
+    useState<boolean>(false);
   const [taskViewModalOpen, setTaskViewModalOpen] = useState<boolean>(false);
   const [warningModalOpen, setWarningModalOpen] = useState<boolean>(false);
   const [warningData, setWarningData] = useState<any>([]);
@@ -290,6 +295,13 @@ const TasksPage = () => {
         <div className="mb-4 flex justify-between">
           <h2 className="text-2xl font-bold">Tasks</h2>
           <div className="flex gap-1">
+            <Button
+              onClick={() =>
+                setManualTimeEntryModalOpen(!manualTimeEntryModalOpen)
+              }
+            >
+              Manual Time
+            </Button>
             <Button onClick={() => setViewModalOpen(true)}>Add Task</Button>
             <Button
               className={`flex items-center justify-center ${
@@ -368,6 +380,14 @@ const TasksPage = () => {
           className="top-0 my-auto flex h-full items-center"
         >
           <TaskInput taskList={tasks} createTask={createTask} />
+        </GlobalModal>
+        <GlobalModal
+          isModalOpen={manualTimeEntryModalOpen}
+          setIsModalOpen={setManualTimeEntryModalOpen}
+          title="Manual Time Entry"
+          className="top-0 my-auto flex h-full items-center"
+        >
+          <ManualTimeEntry />
         </GlobalModal>
         <GlobalModal
           isModalOpen={warningModalOpen}
