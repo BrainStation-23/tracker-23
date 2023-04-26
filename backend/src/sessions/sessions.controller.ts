@@ -42,7 +42,7 @@ export class SessionsController {
     return await this.sessionsService.stopSession(user, taskId);
   }
 
-  @Patch('add-work-log')
+  @Post('add-work-log')
   @UseGuards(JwtAuthGuard)
   async manualTimeEntry(
     @GetUser() user: User,
