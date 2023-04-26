@@ -9,12 +9,12 @@ import {
   SelectProps,
   TimePicker,
 } from "antd";
-import React, { useState } from "react";
-const { RangePicker } = DatePicker;
-
-import { SizeType } from "antd/es/config-provider/SizeContext";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
+import { SizeType } from "antd/es/config-provider/SizeContext";
 import dayjs, { Dayjs } from "dayjs";
+import React, { useState } from "react";
+
+const { RangePicker } = DatePicker;
 
 const TaskInput = ({ taskList, createTask }: any) => {
   const [customDateValue, setCustomDateValue] = useState<any>([
@@ -149,7 +149,7 @@ const TaskInput = ({ taskList, createTask }: any) => {
             className="col-span-4"
             rules={[{ required: true }]}
           >
-            <TimePicker.RangePicker />
+            <TimePicker.RangePicker format={"HH:mm"} />
           </Form.Item>
           <Form.Item
             name="dateRange"
@@ -158,7 +158,7 @@ const TaskInput = ({ taskList, createTask }: any) => {
             rules={[{ required: true }]}
             className="col-span-5"
           >
-            <RangePicker              
+            <RangePicker
               value={customDateValue}
               format={dateFormat}
               clearIcon={false}
