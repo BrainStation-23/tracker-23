@@ -48,7 +48,6 @@ export class SessionsController {
     @GetUser() user: User,
     @Body() manualTimeEntryReqBody: ManualTimeEntryReqBody,
   ) {
-    console.log('hello');
     return this.sessionsService.manualTimeEntry(user, manualTimeEntryReqBody);
   }
 }
