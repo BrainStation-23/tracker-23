@@ -510,4 +510,27 @@ export class TasksService {
     const hour = Number((min / 60).toFixed(2));
     return hour;
   }
+
+  async getAllStatus(user: User) {
+    try {
+      const integration = await this.prisma.integration.findFirst({
+        where: { userId: user.id, type: IntegrationType.JIRA },
+      });
+      const url = `https://api.atlassian.com/ex/jira/${integration?.siteId}//rest/api/3/statuscategory`;
+      const config = {
+        method: 'get',
+        url,
+        headers: {
+          Authorization: `Bearer ${integration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      };
+
+      return await (
+        await axios(config)
+      ).data;
+    } catch (err) {
+      console.log(err.message);
+    }
+  }
 }

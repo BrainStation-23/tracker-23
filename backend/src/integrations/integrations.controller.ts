@@ -1,4 +1,4 @@
-import { Body, Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, UseGuards } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/decorator';
 import { JwtAuthGuard } from 'src/guard';
@@ -14,7 +14,13 @@ export class IntegrationsController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async getIntegrations(@GetUser() user: User, @Body() dto: any) {
+  async getIntegrations(@GetUser() user: User) {
     return this.integrationsService.getIntegrations(user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete()
+  async deleteIntegration(@GetUser() user: User) {
+    return this.integrationsService.deleteIntegration(user);
   }
 }

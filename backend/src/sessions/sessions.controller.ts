@@ -4,13 +4,14 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/decorator';
 import { JwtAuthGuard } from 'src/guard';
-import { SessionDto } from './dto';
+import { ManualTimeEntryReqBody, SessionDto } from './dto';
 import { SessionsService } from './sessions.service';
 
 @Controller('sessions')
@@ -39,5 +40,15 @@ export class SessionsController {
     @Param('taskId', ParseIntPipe) taskId: number,
   ) {
     return await this.sessionsService.stopSession(user, taskId);
+  }
+
+  @Patch('add-work-log')
+  @UseGuards(JwtAuthGuard)
+  async manualTimeEntry(
+    @GetUser() user: User,
+    @Body() manualTimeEntryReqBody: ManualTimeEntryReqBody,
+  ) {
+    console.log('hello');
+    return this.sessionsService.manualTimeEntry(user, manualTimeEntryReqBody);
   }
 }
