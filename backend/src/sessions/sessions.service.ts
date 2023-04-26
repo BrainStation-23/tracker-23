@@ -259,9 +259,9 @@ export class SessionsService {
         },
       });
     } catch (err) {
-      console.log(err.message);
+      console.log(err);
       throw new APIException(
-        'Some thing is wrong in manual time entry',
+        'Something is wrong in manual time entry',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
