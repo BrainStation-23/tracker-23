@@ -11,6 +11,7 @@ import {
   getProjectWiseHourRest,
   getSpentTimePerDayRest,
   getTasksRest,
+  googleLoginRest,
   loginRest,
   logoutRest,
   registerRest,
@@ -22,6 +23,7 @@ import {
 
 const graphqlApi: apiFunction = {
   login: loginRest,
+  googleLogin: googleLoginRest,
   registerUser: registerRest,
   logout: logoutRest,
   createTask: createTaskRest,
@@ -42,6 +44,7 @@ const graphqlApi: apiFunction = {
 
 const restApi: apiFunction = {
   login: loginRest,
+  googleLogin: googleLoginRest,
   registerUser: registerRest,
   logout: logoutRest,
   createTask: createTaskRest,

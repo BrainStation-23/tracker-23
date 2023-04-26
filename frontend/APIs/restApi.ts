@@ -1,15 +1,16 @@
-import { GetCookie, RemoveCookie, SetCookie } from "@/services/cookie.service";
+import { message } from "antd";
+import axios from "axios";
+import { SearchParamsModel } from "models/apiParams";
 import { LoginDto, LoginResponseDto, RegisterDto } from "models/auth";
+import { CreateTaskDto } from "models/tasks";
+import Router from "next/router";
+import { apiEndPoints } from "utils/apiEndPoints";
+
+import { GetCookie, RemoveCookie, SetCookie } from "@/services/cookie.service";
+import { getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
-import axios from "axios";
-import { CreateTaskDto } from "models/tasks";
-import { apiEndPoints } from "utils/apiEndPoints";
-import { message } from "antd";
-import { SearchParamsModel } from "models/apiParams";
-import { getStringFromArray } from "@/services/taskActions";
 import { sortByStatus } from "../src/services/taskActions";
-import Router from "next/router";
 
 export async function loginRest(
   data: LoginDto
@@ -24,6 +25,25 @@ export async function loginRest(
       setLocalStorage("access_token", res?.data?.access_token);
       setLocalStorage("userDetails", res.data);
     }
+    return res.data;
+  } catch (error: any) {
+    message.error(
+      error.response?.data?.error?.message
+        ? error.response?.data?.error?.message
+        : "Login Failed"
+    );
+    return error;
+  }
+}
+
+export async function googleLoginRest(
+  code: string
+): Promise<LoginResponseDto | undefined> {
+  try {
+    console.log(">>", axios.defaults.baseURL);
+
+    const res = await axios.post(`${apiEndPoints.googleLogin}?code=${code}`);
+    console.log("🚀 ~ file: restApi.ts:45 ~ res:", res);
     return res.data;
   } catch (error: any) {
     message.error(
@@ -181,7 +201,7 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
     return res.data;
   } catch (error: any) {
     message.error(
-      "Failed to Get Task : " + error?.response?.data?.error?.message
+      "Failed to Get export Tasks : " + error?.response?.data?.error?.message
         ? error?.response?.data?.error?.message
         : error.message
     );
@@ -241,7 +261,7 @@ export async function createSessionRest(taskId: string) {
     return res.data;
   } catch (error: any) {
     message.error(
-      "Failed to Get Task : " + error?.response?.data?.error?.message
+      "Failed to Create Session : " + error?.response?.data?.error?.message
         ? error?.response?.data?.error?.message
         : error.message
     );
@@ -343,7 +363,7 @@ export async function getIntegrationsRest(token?: string) {
     return res.data;
   } catch (error: any) {
     message.error(
-      "Failed to Get Task : " + error?.response?.data?.error?.message
+      "Failed to Get Integrations : " + error?.response?.data?.error?.message
         ? error?.response?.data?.error?.message
         : error.message
     );
