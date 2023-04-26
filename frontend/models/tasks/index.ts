@@ -12,7 +12,7 @@ export type TaskDto = {
   estimation: number;
   status: "IN_PROGRESS" | "TODO" | "DONE";
   due: any;
-  priority: "MEDIUM" | "HIGH" | "LOW" ;
+  priority: "MEDIUM" | "HIGH" | "LOW";
   labels: string[];
   createdAt: string;
   sessions: any;
@@ -27,4 +27,11 @@ export interface TableParams {
   sortField?: string;
   sortOrder?: string;
   filters?: Record<string, FilterValue>;
+}
+
+export interface AddWorkLogParams {
+  startTime: string;
+  endTime: string;
+  day: string;
+  taskId: number;
 }

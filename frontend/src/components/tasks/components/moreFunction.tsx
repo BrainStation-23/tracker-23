@@ -1,21 +1,49 @@
-import { DeleteFilled, DeleteOutlined, MoreOutlined } from "@ant-design/icons";
 import { Button, Dropdown, MenuProps, Tooltip } from "antd";
 import { TaskDto } from "models/tasks";
-import { BsPinAngle, BsPinAngleFill } from "react-icons/bs";
 import { useState } from "react";
+import { BsPinAngle, BsPinAngleFill } from "react-icons/bs";
+
 import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
-import PinIconSvg from "@/assets/svg/PinIconSvg";
 import PinFilledIconSvg from "@/assets/svg/PinFilledIconSvg";
+import PinIconSvg from "@/assets/svg/PinIconSvg";
+import {
+  DeleteFilled,
+  DeleteOutlined,
+  EditOutlined,
+  MoreOutlined,
+} from "@ant-design/icons";
+
 type Props = {
   deleteTask: Function;
   task: TaskDto;
   handlePin: Function;
+  handleAddManualWorkLog: Function;
 };
 
-const MoreFunctionComponent = ({ deleteTask, task, handlePin }: Props) => {
+const MoreFunctionComponent = ({
+  deleteTask,
+  task,
+  handlePin,
+  handleAddManualWorkLog,
+}: Props) => {
   const [dropDownOpen, setDropdownOpen] = useState(false);
 
   const items: MenuProps["items"] = [
+    {
+      key: "entry",
+      label: (
+        <Button
+          className="-2 flex items-center gap-2 p-1 hover:bg-white"
+          onClick={() => {
+            handleAddManualWorkLog(task);
+          }}
+          type="ghost"
+        >
+          <EditOutlined />
+          Add Work Log
+        </Button>
+      ),
+    },
     {
       key: "1",
       label: (

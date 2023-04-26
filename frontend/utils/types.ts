@@ -1,6 +1,7 @@
 import { SearchParamsModel } from "models/apiParams";
 import { LoginDto, LoginResponseDto } from "models/auth";
-import { CreateTaskDto } from "models/tasks";
+import { AddWorkLogParams, CreateTaskDto } from "models/tasks";
+
 import { RegisterDto } from "../models/auth/index";
 import { TaskDto } from "../models/tasks/index";
 
@@ -23,4 +24,5 @@ export interface apiFunction {
   sendJiraCode: (code: string) => Promise<any>;
   getProjectWiseHour: (dates?: any) => Promise<any>;
   getSpentTimePerDay: (dates?: any) => Promise<any>;
+  addManualWorkLog: (data: AddWorkLogParams) => Promise<any>;
 }

@@ -1,6 +1,8 @@
 import { config } from "config";
 import { apiFunction } from "utils/types";
+
 import {
+  addManualWorkLogRest,
   authJiraRest,
   createSessionRest,
   createTaskRest,
@@ -40,6 +42,7 @@ const graphqlApi: apiFunction = {
   getIntegrations: getIntegrationsRest,
   getProjectWiseHour: getProjectWiseHourRest,
   getSpentTimePerDay: getSpentTimePerDayRest,
+  addManualWorkLog: addManualWorkLogRest,
 };
 
 const restApi: apiFunction = {
@@ -61,6 +64,7 @@ const restApi: apiFunction = {
   getIntegrations: getIntegrationsRest,
   getProjectWiseHour: getProjectWiseHourRest,
   getSpentTimePerDay: getSpentTimePerDayRest,
+  addManualWorkLog: addManualWorkLogRest,
 };
 
 export const userAPI: apiFunction =

@@ -1,25 +1,23 @@
-import PauseIconSvg from "@/assets/svg/pauseIconSvg";
-import PlayIconSvg from "@/assets/svg/playIconSvg";
-import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
-import { getTotalSpentTime } from "@/services/timeActions";
-import { getLocalStorage, setLocalStorage } from "@/storage/storage";
 import { Button, Table, TablePaginationConfig, Typography } from "antd";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { TableParams, TaskDto } from "models/tasks";
 import { useState } from "react";
 import {
-  PriorityBGColorEnum,
-  PriorityBorderColorEnum,
-  statusBGColorEnum,
-  statusBorderColorEnum,
-  taskPriorityEnum,
-  taskStatusEnum,
+    PriorityBGColorEnum, PriorityBorderColorEnum, statusBGColorEnum, statusBorderColorEnum,
+    taskPriorityEnum, taskStatusEnum,
 } from "utils/constants";
+
+import JiraIconSvg from "@/assets/svg/JiraIconSvg";
+import PauseIconSvg from "@/assets/svg/pauseIconSvg";
+import PlayIconSvg from "@/assets/svg/playIconSvg";
+import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
+import { getTotalSpentTime } from "@/services/timeActions";
+import { getLocalStorage, setLocalStorage } from "@/storage/storage";
+
 import MoreFunctionComponent from "./moreFunction";
 import ProgressComponent from "./progressComponent";
 import StaticProgressComponent from "./progressComponentStatic";
 import TimeDisplayComponent from "./timeDisplayComponent";
-import JiraIconSvg from "@/assets/svg/JiraIconSvg";
 
 const { Text } = Typography;
 const TableComponent = ({
@@ -32,6 +30,7 @@ const TableComponent = ({
   stopSession,
   setReload,
   reload,
+  setManualTimeEntryModalOpen,
 }: any) => {
   const columns: any = [
     {
@@ -195,7 +194,9 @@ const TableComponent = ({
           >
             View
           </Button>
-          <MoreFunctionComponent {...{ task, deleteTask, handlePin }} />
+          <MoreFunctionComponent
+            {...{ task, deleteTask, handlePin, handleAddManualWorkLog }}
+          />
         </div>
       ),
     },
@@ -241,6 +242,10 @@ const TableComponent = ({
       // total: 100,
     },
   });
+  const handleAddManualWorkLog = (task: TaskDto) => {
+    setManualTimeEntryModalOpen(true);
+    setSelectedTask(task);
+  };
   const handlePin = (task: TaskDto) => {
     task.pinned
       ? (tableParams.pagination.total = tableParams.pagination.total - 1)

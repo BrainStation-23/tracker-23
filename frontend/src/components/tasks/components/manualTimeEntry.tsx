@@ -1,18 +1,36 @@
 import { Button, DatePicker, Form, TimePicker } from "antd";
+import { userAPI } from "APIs";
+import { AddWorkLogParams, TaskDto } from "models/tasks";
 
 import { localFormat } from "@/components/datePicker";
 
 import { timeFormat } from "../../datePicker/index";
 
-const ManualTimeEntry = () => {
+type Props = {
+  task: TaskDto;
+  handleAddManualSession: Function;
+};
+const ManualTimeEntry = ({ task, handleAddManualSession }: Props) => {
+  console.log(
+    "🚀 ~ file: manualTimeEntry.tsx:12 ~ ManualTimeEntry ~ task:",
+    task
+  );
   const [form] = Form.useForm();
   const initialValues = {};
   const onFinish = async (values: any) => {
     console.log(values);
     console.log(values.time);
-    console.log(timeFormat(values.time[0]));
-    console.log(timeFormat(values.time[1]));
-    console.log(localFormat(values.date));
+    const tmp: AddWorkLogParams = {
+      startTime: timeFormat(values.time[0]),
+      endTime: timeFormat(values.time[0]),
+      day: localFormat(values.date),
+      taskId: task.id,
+    };
+    const session = await userAPI.addManualWorkLog(tmp);
+    if (session) {
+      handleAddManualSession(task, session);
+    }
+    console.log(tmp);
   };
 
   const onReset = () => {

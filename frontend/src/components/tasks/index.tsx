@@ -5,10 +5,7 @@ import { useRouter } from "next/router";
 import { createContext, useEffect, useState } from "react";
 
 import {
-  formatDate,
-  getFormattedTime,
-  getFormattedTotalTime,
-  getTotalSpentTime,
+    formatDate, getFormattedTime, getFormattedTotalTime, getTotalSpentTime,
 } from "@/services/timeActions";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
@@ -200,6 +197,15 @@ const TasksPage = () => {
       setReload(!reload);
     } else message.error("Session Start Failed");
   };
+  const handleAddManualSession = (task: TaskDto, session: any) => {
+    if (session) {
+      if (!task.sessions) task.sessions = [];
+      task.sessions?.push(session);
+      session && message.success("Work log added");
+      setReload(!reload);
+    } else message.error("Work log add Failed");
+    setManualTimeEntryModalOpen(false)
+  };
   const startSession = async (task: TaskDto) => {
     if (runningTask && runningTask?.id != task.id) {
       setWarningData(task);
@@ -337,6 +343,7 @@ const TasksPage = () => {
                     runningTask,
                     setSelectedTask,
                     setTaskViewModalOpen,
+                    setManualTimeEntryModalOpen,
                     deleteTask,
                     startSession,
                     stopSession,
@@ -358,6 +365,7 @@ const TasksPage = () => {
                   runningTask,
                   setSelectedTask,
                   setTaskViewModalOpen,
+                  setManualTimeEntryModalOpen,
                   deleteTask,
                   startSession,
                   stopSession,
@@ -387,7 +395,10 @@ const TasksPage = () => {
           title="Manual Time Entry"
           className="top-0 my-auto flex h-full items-center"
         >
-          <ManualTimeEntry />
+          <ManualTimeEntry
+            task={selectedTask}
+            {...{ handleAddManualSession }}
+          />
         </GlobalModal>
         <GlobalModal
           isModalOpen={warningModalOpen}

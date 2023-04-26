@@ -2,7 +2,7 @@ import { message } from "antd";
 import axios from "axios";
 import { SearchParamsModel } from "models/apiParams";
 import { LoginDto, LoginResponseDto, RegisterDto } from "models/auth";
-import { CreateTaskDto } from "models/tasks";
+import { AddWorkLogParams, CreateTaskDto } from "models/tasks";
 import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
@@ -414,6 +414,20 @@ export async function getSpentTimePerDayRest(dates?: any) {
   } catch (error: any) {
     message.error(
       "Failed to Get SpentTimePerDay : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
+    return false;
+  }
+}
+
+export async function addManualWorkLogRest(data: AddWorkLogParams) {
+  try {
+    const res = await axios.post(`${apiEndPoints.addWorkLog}`, data);
+    return res.data;
+  } catch (error: any) {
+    message.error(
+      "Failed to add Manual WorkLog : " + error?.response?.data?.error?.message
         ? error?.response?.data?.error?.message
         : error.message
     );

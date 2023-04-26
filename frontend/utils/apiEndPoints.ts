@@ -12,4 +12,5 @@ export const apiEndPoints = {
   authJira: `/auth/jira`,
   spentTime: `/tasks/spent-time/time-range`,
   spentTimePerDay: `/tasks/spent-time/per-day`,
+  addWorkLog: `/sessions/add-work-log`
 };
