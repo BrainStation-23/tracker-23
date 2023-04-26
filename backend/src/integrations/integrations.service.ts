@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { IntegrationType, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -16,6 +16,12 @@ export class IntegrationsService {
         type: true,
         accessToken: true,
       },
+    });
+  }
+
+  async deleteIntegration(user: User) {
+    return await this.prisma.integration.deleteMany({
+      where: { userId: user.id, type: IntegrationType.JIRA },
     });
   }
 }

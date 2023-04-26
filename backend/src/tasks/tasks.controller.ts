@@ -110,4 +110,11 @@ export class TasksController {
   async getSpentTimeByDay(@GetUser() user: User, @Query() query: GetTaskQuery) {
     return this.tasksService.getSpentTimeByDay(user, query);
   }
+
+  @Get('all/status')
+  @UseGuards(JwtAuthGuard)
+  async getAllStatus(@GetUser() user: User) {
+    console.log(user);
+    return this.tasksService.getAllStatus(user);
+  }
 }

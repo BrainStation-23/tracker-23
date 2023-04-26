@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import {
   BadRequestException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -14,9 +15,10 @@ import {
 } from '@prisma/client';
 import { lastValueFrom } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { SessionDto } from './dto';
+import { ManualTimeEntryReqBody, SessionDto } from './dto';
 import axios from 'axios';
 import * as moment from 'moment';
+import { APIException } from 'src/internal/exception/api.exception';
 @Injectable()
 export class SessionsService {
   constructor(
@@ -205,5 +207,63 @@ export class SessionsService {
       formattedString[formattedString.length - 2] +
       formattedString[formattedString.length - 1];
     return `${tmp}`;
+  }
+
+  async manualTimeEntry(user: User, dto: ManualTimeEntryReqBody) {
+    try {
+      const startTime = new Date(`${dto.day}  ${dto.startTime}`);
+      const endTime = new Date(`${dto.day}  ${dto.endTime}`);
+      await this.validateTaskAccess(user, dto.taskId);
+      const jiraIntegration = await this.prisma.integration.findFirst({
+        where: {
+          type: IntegrationType.JIRA,
+          userId: user.id,
+        },
+      });
+      if (!jiraIntegration) {
+        throw new APIException(
+          'You have no integration',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const taskIntegration = await this.prisma.taskIntegration.findFirst({
+        where: {
+          taskId: dto.taskId,
+        },
+      });
+
+      const timeSpent = Math.ceil(
+        (endTime.getTime() - startTime.getTime()) / 1000,
+      );
+      if (timeSpent < 60) {
+        throw new APIException(
+          'Insufficient TimeSpent',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      this.addWorkLog(
+        startTime,
+        taskIntegration?.integratedTaskId as unknown as string,
+        this.timeConverter(Number(timeSpent)),
+        await this.updatedIntegration(jiraIntegration),
+      );
+
+      return await this.prisma.session.create({
+        data: {
+          startTime: startTime,
+          endTime: endTime,
+          status: SessionStatus.STOPPED,
+          taskId: dto.taskId,
+          userId: user.id,
+        },
+      });
+    } catch (err) {
+      console.log(err.message);
+      throw new APIException(
+        'Some thing is wrong in manual time entry',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
