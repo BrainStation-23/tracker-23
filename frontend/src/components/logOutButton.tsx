@@ -1,21 +1,14 @@
-import { RemoveAllCookies, RemoveCookie } from "@/services/cookie.service";
-import { LogoutOutlined } from "@ant-design/icons";
-import { Button } from "antd";
-import { useRouter } from "next/router";
-// import { LogOut } from "../APIs";
 import { userAPI } from "../../APIs/index";
 import LogoutIconSvg from "@/assets/svg/LogoutIconSvg";
 
 const LogOutButton = () => {
-  const router = useRouter();
   const handleLogOut = async () => {
     console.log("logging out");
-    const loggedOut = await userAPI.logout();
-    if (loggedOut) router.push("/login");
+    userAPI.logout();
   };
   return (
     <button
-      className="flex items-center gap-1"
+      className="flex items-center gap-1 w-full"
       onClick={() => handleLogOut()}
     >
       <LogoutIconSvg />

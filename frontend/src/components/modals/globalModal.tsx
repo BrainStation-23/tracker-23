@@ -5,12 +5,14 @@ type Props = {
   isModalOpen: boolean;
   setIsModalOpen: Function;
   title?: string;
+  className?: string;
 };
 const GlobalMOdal = ({
   children,
   isModalOpen,
   setIsModalOpen,
   title,
+  className,
 }: Props) => {
   const handleOk = () => {
     setIsModalOpen(false);
@@ -25,6 +27,7 @@ const GlobalMOdal = ({
       onOk={handleOk}
       onCancel={handleCancel}
       width={"720px"}
+      className={className}
       footer={null}
     >
       {children}

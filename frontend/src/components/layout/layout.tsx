@@ -16,8 +16,7 @@ const CustomLayout = ({ children }: any) => {
   const router = useRouter();
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
   const path = router.asPath;
-  const loginRoutes = ["/login", "/registration"];
-  const isPublicRoute = loginRoutes.includes(router.pathname);
+  const isPublicRoute = publicRoutes.includes(router.pathname);
 
   const dispatch = useAppDispatch();
   const syncRunning = useAppSelector(
@@ -65,14 +64,14 @@ const CustomLayout = ({ children }: any) => {
   return (
     <>
       <div className="flex">
-        {!loginRoutes.some((route) => path.includes(route)) && (
+        {!publicRoutes.some((route) => path.includes(route)) && (
           <div className="mr-6 w-[300px]">
             <div className="fixed">
               <SideMenu />
             </div>
           </div>
         )}
-        {/* {!loginRoutes.some((route) => path.includes(route)) && (
+        {/* {!publicRoutes.some((route) => path.includes(route)) && (
           <>
             <div
               className={`duration-500  ${showSideBar ? "pr-48" : "pr-0"} `}

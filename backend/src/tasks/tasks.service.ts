@@ -40,11 +40,19 @@ export class TasksService {
 
       const databaseQuery = {
         userId: user.id,
-        assigneeId: integrations[0].accountId,
+        OR: [
+          {
+            assigneeId: integrations[0]?.accountId,
+            source: IntegrationType.JIRA,
+          },
+          {
+            source: 'Tracker23',
+          },
+        ],
         ...(startDate &&
           endDate && {
             createdAt: { lte: endDate },
-            updateAt: { gte: startDate },
+            updatedAt: { gte: startDate },
           }),
         ...(priority1 && { priority: { in: priority1 } }),
         ...(status1 && { status: { in: status1 } }),
@@ -55,6 +63,10 @@ export class TasksService {
           },
         }),
       };
+      console.log(
+        '🚀 ~ file: tasks.service.ts:60 ~ TasksService ~ getTasks ~ databaseQuery:',
+        databaseQuery,
+      );
 
       const task = await this.prisma.task.findMany({
         where: databaseQuery,
@@ -71,7 +83,16 @@ export class TasksService {
 
   async createTask(user: User, dto: CreateTaskDto) {
     return await this.prisma.task.create({
-      data: { userId: user.id, ...dto },
+      data: {
+        userId: user.id,
+        title: dto.title,
+        description: dto.description,
+        estimation: dto.estimation,
+        due: dto.due,
+        priority: dto.priority,
+        status: dto.status,
+        labels: dto.labels,
+      },
     });
   }
 
@@ -192,6 +213,7 @@ export class TasksService {
                     priority: taskPriority,
                     createdAt: new Date(integratedTask.fields.created),
                     updatedAt: new Date(integratedTask.fields.updated),
+                    source: IntegrationType.JIRA,
                   },
                 })
                 .then(async (task) => {
@@ -282,7 +304,7 @@ export class TasksService {
   async syncCall(status: string, userId: number) {
     try {
       const doesExist = await this.getCallSync(userId);
-      if (!doesExist) {
+      if (!doesExist || doesExist.id === -1) {
         return await this.prisma.callSync.create({
           data: {
             status,

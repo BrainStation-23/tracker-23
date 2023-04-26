@@ -1,19 +1,15 @@
 import { GetCookie, RemoveCookie, SetCookie } from "@/services/cookie.service";
 import { LoginDto, LoginResponseDto, RegisterDto } from "models/auth";
-import {
-  deleteFromLocalStorage,
-  getLocalStorage,
-  setLocalStorage,
-} from "@/storage/storage";
+import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
+import axios from "axios";
 import { CreateTaskDto } from "models/tasks";
 import { apiEndPoints } from "utils/apiEndPoints";
-import axios from "axios";
-import { toast } from "react-toastify";
 import { message } from "antd";
 import { SearchParamsModel } from "models/apiParams";
 import { getStringFromArray } from "@/services/taskActions";
 import { sortByStatus } from "../src/services/taskActions";
+import Router from "next/router";
 
 export async function loginRest(
   data: LoginDto
@@ -28,6 +24,25 @@ export async function loginRest(
       setLocalStorage("access_token", res?.data?.access_token);
       setLocalStorage("userDetails", res.data);
     }
+    return res.data;
+  } catch (error: any) {
+    message.error(
+      error.response?.data?.error?.message
+        ? error.response?.data?.error?.message
+        : "Login Failed"
+    );
+    return error;
+  }
+}
+
+export async function googleLoginRest(
+  code: string
+): Promise<LoginResponseDto | undefined> {
+  try {
+    console.log(">>", axios.defaults.baseURL);
+
+    const res = await axios.post(`${apiEndPoints.googleLogin}?code=${code}`);
+    console.log("🚀 ~ file: restApi.ts:45 ~ res:", res);
     return res.data;
   } catch (error: any) {
     message.error(
@@ -59,8 +74,10 @@ export async function registerRest(
 export async function logoutRest() {
   try {
     RemoveCookie("access_token");
-    deleteFromLocalStorage("userDetails");
+    clearLocalStorage();
+    // deleteFromLocalStorage("userDetails");
     message.success("Logged Out");
+    Router.push("/login");
     return true;
   } catch (error: any) {
     message.error("Failed to Log Out");
@@ -79,7 +96,11 @@ export async function createTaskRest(data: CreateTaskDto) {
 
     return res.data;
   } catch (error: any) {
-    message.error("Failed to Create Task : " + error.message);
+    message.error(
+      "Failed to Create Task : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
     return false;
   }
 }
@@ -95,7 +116,11 @@ export async function deleteTaskRest(taskId: any) {
     message.success("Task Deleted");
     return true;
   } catch (error: any) {
-    message.error("Failed to Delete Task : " + error.message);
+    message.error(
+      "Failed to Delete Task : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
     return false;
   }
 }
@@ -130,7 +155,14 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
     const sortedTasks = sortByStatus(res.data);
     return sortedTasks;
   } catch (error: any) {
-    message.error("Failed to Get Task : " + error.message);
+    if (error?.response?.status === 401) {
+      await logoutRest();
+    }
+    message.error(
+      "Failed to Get Task : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
     return false;
   }
 }
@@ -167,7 +199,11 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
     console.log("🚀 ~ file: restApi.ts:167 ~ exportTasksRest ~ res:", res);
     return res.data;
   } catch (error: any) {
-    message.error("Failed to Get Task : " + error.message);
+    message.error(
+      "Failed to Get Task : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
     return false;
   }
 }
@@ -181,7 +217,11 @@ export async function syncStatusRest(token?: string) {
     });
     return res.data;
   } catch (error: any) {
-    message.error("Failed to Get Sync Status : " + error.message);
+    message.error(
+      "Failed to Get Sync Status : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
     return false;
   }
 }
@@ -195,7 +235,11 @@ export async function syncTasksRest(token?: string) {
     });
     return res.data;
   } catch (error: any) {
-    message.error("Failed to Sync : " + error.message);
+    message.error(
+      "Failed to Sync : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
     return false;
   }
 }
@@ -215,7 +259,11 @@ export async function createSessionRest(taskId: string) {
     );
     return res.data;
   } catch (error: any) {
-    message.error("Failed to Get Task : " + error.message);
+    message.error(
+      "Failed to Get Task : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
     return false;
   }
 }
@@ -251,7 +299,11 @@ export async function authJiraRest() {
     console.log("🚀 ~ file: restApi.ts:160 ~ authJiraRest ~ res:", res);
     return res.data;
   } catch (error: any) {
-    message.error("Failed to Jira Auth : " + error.message);
+    message.error(
+      "Failed to Jira Auth : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
     return false;
   }
 }
@@ -266,7 +318,11 @@ export async function getJiraLinkRest() {
     console.log("🚀 ~ file: restApi.ts:160 ~ authJiraRest ~ res:", res);
     return res.data;
   } catch (error: any) {
-    message.error("Failed to Jira Auth : " + error.message);
+    message.error(
+      "Failed to Jira Auth : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
     return false;
   }
 }
@@ -305,7 +361,11 @@ export async function getIntegrationsRest(token?: string) {
     console.log("getIntegrationsRest", res);
     return res.data;
   } catch (error: any) {
-    message.error("Failed to Get Task : " + error.message);
+    message.error(
+      "Failed to Get Task : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
     return false;
   }
 }
@@ -326,7 +386,11 @@ export async function getProjectWiseHourRest(dates?: any) {
     );
     return res.data;
   } catch (error: any) {
-    message.error("Failed to Get ProjectWiseHour : " + error.message);
+    message.error(
+      "Failed to Get ProjectWiseHour : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
     return false;
   }
 }
@@ -347,7 +411,11 @@ export async function getSpentTimePerDayRest(dates?: any) {
     );
     return res.data;
   } catch (error: any) {
-    message.error("Failed to Get SpentTimePerDay : " + error.message);
+    message.error(
+      "Failed to Get SpentTimePerDay : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
     return false;
   }
 }

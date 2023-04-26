@@ -54,12 +54,13 @@ model Task {
   labels      Labels[]  @default([])
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
 
   taskIntegrations TaskIntegration[]
+  source           String            @default("Tracker23")
   sessions         Session[]
   pinned           Boolean?          @default(false)
 }

@@ -187,69 +187,74 @@ const DashBoard = () => {
     if (!pinnedTasks) pinnedTasks = [];
     try {
       const res = await userAPI.getTasks();
-      const tmpTasks = res.map((task: TaskDto) => {
-        task.sessions = task.sessions.sort(function compareFn(a: any, b: any) {
-          return a.id - b.id;
+      if (res) {
+        const tmpTasks = res.map((task: TaskDto) => {
+          task.sessions = task.sessions.sort(function compareFn(
+            a: any,
+            b: any
+          ) {
+            return a.id - b.id;
+          });
+
+          const started =
+            task.sessions && task.sessions[0]
+              ? getFormattedTime(formatDate(task.sessions[0].startTime))
+              : "Not Started";
+          const ended =
+            task.sessions && task.sessions[task.sessions?.length - 1]?.endTime
+              ? getFormattedTime(
+                  formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
+                )
+              : task.sessions[0]
+              ? "Running"
+              : "Not Started";
+
+          if (ended === "Running") setRunningTask(task);
+          const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
+          return {
+            ...task,
+            pinned: pinnedTasks?.includes(task?.id),
+            id: task?.id,
+            title: task?.title,
+            // description: task?.description,
+            // estimation: task?.estimation,
+            // startTime: formatDate(task?.sessions[0]?.startTime),
+            // endTime: formatDate(
+            //   task?.sessions[task?.sessions?.length - 1]?.endTime
+            // ),
+            started: started,
+            ended: ended,
+            total: total,
+            created: getFormattedTime(formatDate(task.createdAt)),
+            // percentage: task?.estimation
+            //   ? Math.round(
+            //       getTotalSpentTime(task?.sessions) / (task?.estimation * 36000)
+            //     )
+            //   : -1,
+            // totalSpent: getTotalSpentTime(task?.sessions),
+            // priority: task?.priority,
+          };
         });
+        const tmpPinnedTaskList = tmpTasks?.filter(
+          (task: TaskDto) => task?.pinned
+        );
+        if (tmpPinnedTaskList?.length > 5) setMorePin(true);
+        const pinnedTaskList = tmpPinnedTaskList;
+        // const pinnedTaskList = tmpPinnedTaskList?.filter(
+        //   (task: TaskDto, index: any) => index < 5
+        // );
+        setTasks(pinnedTaskList || []);
 
-        const started =
-          task.sessions && task.sessions[0]
-            ? getFormattedTime(formatDate(task.sessions[0].startTime))
-            : "Not Started";
-        const ended =
-          task.sessions && task.sessions[task.sessions?.length - 1]?.endTime
-            ? getFormattedTime(
-                formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
-              )
-            : task.sessions[0]
-            ? "Running"
-            : "Not Started";
-
-        if (ended === "Running") setRunningTask(task);
-        const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
-        return {
-          ...task,
-          pinned: pinnedTasks?.includes(task?.id),
-          id: task?.id,
-          title: task?.title,
-          // description: task?.description,
-          // estimation: task?.estimation,
-          // startTime: formatDate(task?.sessions[0]?.startTime),
-          // endTime: formatDate(
-          //   task?.sessions[task?.sessions?.length - 1]?.endTime
-          // ),
-          started: started,
-          ended: ended,
-          total: total,
-          created: getFormattedTime(formatDate(task.createdAt)),
-          // percentage: task?.estimation
-          //   ? Math.round(
-          //       getTotalSpentTime(task?.sessions) / (task?.estimation * 36000)
-          //     )
-          //   : -1,
-          // totalSpent: getTotalSpentTime(task?.sessions),
-          // priority: task?.priority,
-        };
-      });
-      const tmpPinnedTaskList = tmpTasks?.filter(
-        (task: TaskDto) => task?.pinned
-      );
-      if (tmpPinnedTaskList?.length > 5) setMorePin(true);
-      const pinnedTaskList = tmpPinnedTaskList;
-      // const pinnedTaskList = tmpPinnedTaskList?.filter(
-      //   (task: TaskDto, index: any) => index < 5
-      // );
-      setTasks(pinnedTaskList || []);
-
-      setTableParamsPinned({
-        ...tableParamsPinned,
-        pagination: {
-          ...tableParamsPinned.pagination,
-          total: pinnedTaskList.length,
-          // 200 is mock data, you should read it from server
-          // total: data.totalCount,
-        },
-      });
+        setTableParamsPinned({
+          ...tableParamsPinned,
+          pagination: {
+            ...tableParamsPinned.pagination,
+            total: pinnedTaskList.length,
+            // 200 is mock data, you should read it from server
+            // total: data.totalCount,
+          },
+        });
+      }
     } catch (error) {
       message.error("Error getting tasks");
     } finally {
@@ -503,14 +508,9 @@ const DashBoard = () => {
     const res = await userAPI.getProjectWiseHour(
       getDateRangeArray("this-month")
     );
-    console.log("🚀 ~ file: index.tsx:540 ~ getProjectWiseHour ~ res:", res);
     const { value } = res;
-    console.log(
-      "🚀 ~ file: index.tsx:541 ~ getProjectWiseHour ~ value:",
-      value
-    );
     const tmp: any[] = [];
-    value.forEach((val: any) => {
+    value?.forEach((val: any) => {
       tmp.push(val);
     });
     setDataDonut(tmp);
@@ -522,9 +522,10 @@ const DashBoard = () => {
       getDateRangeArray("this-week")
     );
     const tmp: any[] = [];
-    res.forEach((val: any) => {
-      tmp.push({ day: getDayWithMonth(val.day), hours: val.hour });
-    });
+    typeof res === "object" &&
+      res?.forEach((val: any) => {
+        tmp.push({ day: getDayWithMonth(val.day), hours: val.hour });
+      });
     setWeekData(tmp);
   };
 
@@ -538,10 +539,10 @@ const DashBoard = () => {
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-2">
         <DashBoardSection title="Project wise Track hour">
-          {dataDonut ? (
+          {dataDonut?.length > 0 ? (
             <DonutChart data={dataDonut} total={dataDonutTotal} />
           ) : (
-            <Empty description="No Data" />
+            <Empty className="pt-20" description="No Data" />
           )}
         </DashBoardSection>
         <DashBoardSection title="Actual VS Estimate">
@@ -589,10 +590,10 @@ const DashBoard = () => {
         />
       </DashBoardSection>
       <DashBoardSection title="Tracker By Day">
-        {weekData ? (
+        {weekData?.length > 0 ? (
           <XYChart data={weekData} />
         ) : (
-          <Empty description="No Data" />
+          <Empty className="py-20" description="No Data" />
         )}
       </DashBoardSection>
 
