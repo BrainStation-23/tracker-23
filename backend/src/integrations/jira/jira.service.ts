@@ -1,10 +1,11 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IntegrationType, User } from '@prisma/client';
 import { lastValueFrom } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthorizeJiraDto } from './dto';
+import { APIException } from 'src/internal/exception/api.exception';
 
 @Injectable()
 export class JiraService {
@@ -28,6 +29,16 @@ export class JiraService {
       '🚀 ~ file: jira.service.ts:21 ~ JiraService ~ createIntegration ~ user:',
       user,
     );
+    const doesExistIntegration = await this.prisma.integration.findFirst({
+      where: { userId: user.id, type: IntegrationType.JIRA },
+    });
+    if (doesExistIntegration) {
+      throw new APIException(
+        'Already you have an integration',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     // get access token and refresh tokens and store those on integrations table.
     const url = 'https://auth.atlassian.com/oauth/token';
     const urlResources =
@@ -55,6 +66,7 @@ export class JiraService {
     const respResources = (
       await lastValueFrom(this.httpService.get(urlResources, { headers }))
     ).data;
+    // console.log(respResources);
 
     // add all available resources in our database if doesn't exist
     respResources.forEach(async (element: any) => {

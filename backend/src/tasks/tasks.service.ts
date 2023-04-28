@@ -152,7 +152,10 @@ export class TasksService {
               }),
             )
           ).data;
-          if (respTasks.issues.length === 0) break;
+          if (respTasks.issues.length === 0) {
+            await this.syncCall(StatusEnum.DONE, user.id);
+            break;
+          }
           const map = new Map<number, any>();
           respTasks.issues.map((issue: any) => {
             map.set(Number(issue.id), issue);
@@ -247,14 +250,10 @@ export class TasksService {
           // count += taskPromises.length;
           taskPromises = [];
         }
-        await this.syncCall(StatusEnum.DONE, user.id);
       }
     } catch (err) {
       console.log(err);
-      throw new APIException(
-        err.message || 'Can not sync with jira',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
     }
   }
 
