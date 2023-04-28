@@ -3,8 +3,12 @@ import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { TableParams, TaskDto } from "models/tasks";
 import { useState } from "react";
 import {
-    PriorityBGColorEnum, PriorityBorderColorEnum, statusBGColorEnum, statusBorderColorEnum,
-    taskPriorityEnum, taskStatusEnum,
+  PriorityBGColorEnum,
+  PriorityBorderColorEnum,
+  statusBGColorEnum,
+  statusBorderColorEnum,
+  taskPriorityEnum,
+  taskStatusEnum,
 } from "utils/constants";
 
 import JiraIconSvg from "@/assets/svg/JiraIconSvg";
@@ -31,6 +35,7 @@ const TableComponent = ({
   setReload,
   reload,
   setManualTimeEntryModalOpen,
+  sessionActionLoading,
 }: any) => {
   const columns: any = [
     {
@@ -39,14 +44,14 @@ const TableComponent = ({
       key: "title",
       render: (_: any, task: TaskDto) => {
         return (
-          <div className=" flex items-center gap-2">
+          <div className="flex items-center gap-2" aria-disabled="true">
             {
               // task.status !== "DONE" &&
               <>
                 {runningTask?.id != task.id ? (
                   <div
                     onClick={() => {
-                      startSession(task);
+                      !sessionActionLoading && startSession(task);
                     }}
                   >
                     <PlayIconSvg />
@@ -54,7 +59,7 @@ const TableComponent = ({
                 ) : (
                   <div
                     onClick={() => {
-                      stopSession(task);
+                      !sessionActionLoading && stopSession(task);
                     }}
                   >
                     <PauseIconSvg />

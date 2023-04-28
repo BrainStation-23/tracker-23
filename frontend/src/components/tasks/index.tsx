@@ -32,6 +32,8 @@ export const TaskContext = createContext<any>({
 const TasksPage = () => {
   const router = useRouter();
   const [viewModalOpen, setViewModalOpen] = useState<boolean>(false);
+  const [sessionActionLoading, setSessionActionLoading] =
+    useState<boolean>(false);
   const [manualTimeEntryModalOpen, setManualTimeEntryModalOpen] =
     useState<boolean>(false);
   const [taskViewModalOpen, setTaskViewModalOpen] = useState<boolean>(false);
@@ -206,14 +208,18 @@ const TasksPage = () => {
     setManualTimeEntryModalOpen(false);
   };
   const startSession = async (task: TaskDto) => {
+    setSessionActionLoading(true);
+
     if (runningTask && runningTask?.id != task.id) {
       setWarningData(task);
       setWarningModalOpen(true);
     } else {
       await handleSessionStart(task);
     }
+    setSessionActionLoading(false);
   };
   const stopSession = async (task: TaskDto) => {
+    setSessionActionLoading(true);
     const session = await userAPI.stopSession(task.id);
     if (session) {
       task.sessions = task.sessions?.map((_session: any) => {
@@ -250,6 +256,7 @@ const TasksPage = () => {
     }
     setReload(!reload);
     setRunningTask(null);
+    setSessionActionLoading(false);
   };
 
   useEffect(() => {
@@ -348,6 +355,7 @@ const TasksPage = () => {
                     stopSession,
                     setReload,
                     reload,
+                    sessionActionLoading,
                   }}
                 />
               </div>
@@ -370,6 +378,7 @@ const TasksPage = () => {
                   stopSession,
                   setReload,
                   reload,
+                  sessionActionLoading,
                 }}
               />
             </div>
