@@ -20,16 +20,15 @@ export class IntegrationsService {
     });
   }
 
-  async deleteIntegration(user: User) {
+  async deleteIntegration(user: User, integrationId: number) {
     try {
-      await Promise.all([
-        await this.prisma.task.deleteMany({
-          where: { userId: user.id, source: IntegrationType.JIRA },
-        }),
-        await this.prisma.integration.deleteMany({
-          where: { userId: user.id, type: IntegrationType.JIRA },
-        }),
-      ]);
+      const id = Number(integrationId);
+      const deletedIntgration = await this.prisma.integration.delete({
+        where: { id },
+      });
+      await this.prisma.task.deleteMany({
+        where: { userId: user.id, source: deletedIntgration.type },
+      });
       return { message: 'Successfully user integration deleted' };
     } catch (err) {
       console.log(err.message);

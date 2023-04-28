@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/decorator';
 import { JwtAuthGuard } from 'src/guard';
@@ -19,8 +19,8 @@ export class IntegrationsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete()
-  async deleteIntegration(@GetUser() user: User) {
-    return this.integrationsService.deleteIntegration(user);
+  @Delete(':id')
+  async deleteIntegration(@GetUser() user: User, @Param('id') id: number) {
+    return this.integrationsService.deleteIntegration(user, id);
   }
 }
