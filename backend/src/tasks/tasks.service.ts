@@ -42,7 +42,9 @@ export class TasksService {
         userId: user.id,
         OR: [
           {
-            assigneeId: integrations[0]?.accountId,
+            assigneeId: integrations[0]?.accountId
+              ? integrations[0]?.accountId
+              : -1,
             source: IntegrationType.JIRA,
           },
           {
