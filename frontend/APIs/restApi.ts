@@ -347,6 +347,26 @@ export async function sendJiraCodeRest(code: string) {
   }
 }
 
+export async function deleteIntegrationRest(id: number) {
+  try {
+    const res = await axios.delete(`${apiEndPoints.integrations}/${id}`, {
+      headers: {
+        Authorization: `Bearer ${GetCookie("access_token")}`,
+      },
+    });
+    console.log("deleteIntegrationRest", res);
+    message.success("Integration Deleted");
+    return res.data;
+  } catch (error: any) {
+    message.error(
+      "Failed to Get Integrations : " + error?.response?.data?.error?.message
+        ? error?.response?.data?.error?.message
+        : error.message
+    );
+    return false;
+  }
+}
+
 export async function getIntegrationsRest(token?: string) {
   console.log(
     "🚀 ~ file: restApi.ts:215 ~ getIntegrationsRest ~ token:",
@@ -370,7 +390,6 @@ export async function getIntegrationsRest(token?: string) {
     return false;
   }
 }
-
 export async function getProjectWiseHourRest(dates?: any) {
   try {
     const res = await axios.get(

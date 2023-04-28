@@ -1,37 +1,40 @@
+import { Spin } from "antd";
+import { userAPI } from "APIs";
+import { Integration } from "models/integration";
 import { useEffect, useState } from "react";
 
-import { Button } from "antd";
 import ImportSelect from "./importSelect";
-import { userAPI } from "APIs";
-import { importCardData } from "utils/constants";
-import { Spin } from "antd";
 
 const ImportSection = () => {
-  const [integratedTypes, setIntegratedTypes] = useState(null);
+  const [integratedTypes, setIntegratedTypes] = useState<string[] | null>(null);
+  const [integrations, setIntegrations] = useState<Integration[] | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const handleOnclick = async () => {
-    try {
-      const response = await userAPI.getJiraLink();
-      console.log(
-        "🚀 ~ file: index.tsx:26 ~ handleOnclick ~ response:",
-        response
-      );
-      window.open(response, "_self");
-    } catch (error) {}
-  };
+  const [loadingTip, setLoadingTip] = useState("");
 
   const getIntegrations = async () => {
-    if (integratedTypes?.length <= 0 || !integratedTypes) {
-      setLoading(true);
-      const tmp: string[] = [];
-      const integrations = await userAPI.getIntegrations();
-      if (integrations) {
-        integrations.forEach((i: any) => tmp.push(i.type));
-        setIntegratedTypes(tmp);
-      }
-      setLoading(false);
+    setLoading(true);
+    const tmp: string[] = [];
+    const integrations = await userAPI.getIntegrations();
+    console.log(
+      "🚀 ~ file: index.tsx:29 ~ getIntegrations ~ integrations:",
+      integrations
+    );
+    if (integrations) {
+      setIntegrations(integrations);
+      integrations.forEach((i: any) => {
+        tmp.push(i.type);
+      });
+      setIntegratedTypes(tmp);
     }
+    setLoading(false);
+  };
+  const handleDeleteIntegration = async (id: number) => {
+    setLoadingTip("Deleting Integration");
+    setLoading(true);
+    const res = await userAPI.deleteIntegration(id);
+    getIntegrations();
+    setLoading(false);
+    setLoadingTip("");
   };
 
   useEffect(() => {
@@ -41,11 +44,13 @@ const ImportSection = () => {
   console.log(integratedTypes);
 
   return (
-    <Spin spinning={loading}>
+    <Spin spinning={loading} tip={loadingTip}>
       <div className="flex w-full flex-col gap-2">
         <div className="flex w-full flex-col gap-2">
           {integratedTypes && (
-            <ImportSelect {...{ importCardData, integratedTypes }} />
+            <ImportSelect
+              {...{ integratedTypes, integrations, handleDeleteIntegration }}
+            />
           )}
         </div>
         {/* <IntegratedServices {...{ data }} /> */}

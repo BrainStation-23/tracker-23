@@ -1,16 +1,31 @@
+import { Button } from "antd";
+import { userAPI } from "APIs";
+import { Integration } from "models/integration";
+import { useEffect } from "react";
+import {
+  IntegrationDescriptionsEnum,
+  supportedIntegrations,
+} from "utils/constants";
+
 import JiraLogoFullSvg from "@/assets/svg/JiraFullLogoSvg";
 import TrelloLogoSvg from "@/assets/svg/TrelloLogoSvg";
-import { Button, Image } from "antd";
-import { userAPI } from "APIs";
-import { useEffect } from "react";
-import { supportedIntegrations } from "utils/constants";
+
+type Props = {
+  data: Integration;
+  selected: string;
+  setSelected: Function;
+  handleDeleteIntegration: Function;
+  installed: boolean;
+};
 
 const ImportCard = ({
   data,
   selected,
   setSelected,
+  handleDeleteIntegration,
   installed = false,
-}: any) => {
+}: Props) => {
+  console.log("🚀 ~ file: importCard.tsx:19 ~ data:", data);
   console.log("🚀 ~ file: importCard.tsx:5 ~ ImportCard ~ selected:", selected);
   useEffect(() => {}, []);
 
@@ -22,24 +37,45 @@ const ImportCard = ({
         <div className="flex h-10 items-center gap-2">
           {integrationIcons[data.type]}
         </div>
-        <div className="text-sm font-normal">{data.description}</div>
+        {data.site ? (
+          <div className="text-sm font-normal">
+            Connected to
+            <div
+              className="text-sm font-normal text-blue-500"
+              onClick={() => {
+                window.open(data.site);
+              }}
+            >
+              {data.site}
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm font-normal">
+            {IntegrationDescriptionsEnum[data.type as "JIRA"]}
+          </div>
+        )}
       </div>
       <div className="flex w-full pt-3">
         <Button
           onClick={async () => {
             if (data.type === "JIRA") {
-              try {
-                const response = await userAPI.getJiraLink();
-                console.log(
-                  "🚀 ~ file: index.tsx:26 ~ handleOnclick ~ response:",
-                  response
-                );
-                window.open(response, "_self");
-              } catch (error) {}
+              if (installed) {
+                await handleDeleteIntegration(data.id);
+              } else {
+                try {
+                  const response = await userAPI.getJiraLink();
+                  console.log(
+                    "🚀 ~ file: index.tsx:26 ~ handleOnclick ~ response:",
+                    response
+                  );
+                  window.open(response, "_self");
+                } catch (error) {}
+              }
             }
           }}
           type="default"
-          disabled={installed || !supportedIntegrations.includes(data.type)}
+          disabled={!supportedIntegrations.includes(data.type)}
+          // disabled={installed || !supportedIntegrations.includes(data.type)}
           className={`w-full cursor-pointer bg-[#F1F1F1] text-sm font-semibold
           ${
             installed || !supportedIntegrations.includes(data.type)
@@ -49,8 +85,9 @@ const ImportCard = ({
           `}
         >
           {installed
-            ? "Installed"
-            : supportedIntegrations.includes(data.type)
+            ? "Uninstall"
+            : // ? "Installed"
+            supportedIntegrations.includes(data.type)
             ? "Install"
             : "Coming Soon"}
         </Button>
