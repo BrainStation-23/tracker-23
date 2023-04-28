@@ -70,22 +70,18 @@ export const monthsList = [
 ];
 
 export const supportedIntegrations = ["JIRA"];
-export const importCardData = [
-  {
-    title: "Jira Software",
-    type: "JIRA",
-    logo: "jira.png",
-    description: "Connect JIRA tickets to your Project",
-  },
+export const allIntegrations = ["JIRA", "TRELLO"];
 
-  {
-    title: "Trello",
-    type: "TRELLO",
-    logo: "trello.png",
-    full: true,
-    description: "Connect Trello to your Project",
-  },
-];
+export enum IntegrationTitlesEnum {
+  JIRA = "Jira Software",
+  TRELLO = "Trello",
+}
+
+export enum IntegrationDescriptionsEnum {
+  JIRA = "Connect JIRA tickets to your Project",
+  TRELLO = "Connect Trello to your Project",
+}
+
 export const whiteListEmails = [
   "seefathimel1@gmail.com",
   "test@gmail.com",
@@ -99,5 +95,4 @@ export const whiteListEmails = [
   "belal.cseai@gmail.com",
   "dinar@timetackle.com",
   "shakil@timetackle.com",
-  "shamsul.tahsin@brainstation-23.com",
 ];
