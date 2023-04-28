@@ -11,7 +11,6 @@ import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 import { getLocalStorage, setLocalStorage } from "@/storage/storage";
-import { SyncOutlined } from "@ant-design/icons";
 
 import { getDateRangeArray } from "../datePicker";
 import GlobalModal from "../modals/globalModal";
@@ -204,7 +203,7 @@ const TasksPage = () => {
       session && message.success("Work log added");
       setReload(!reload);
     } else message.error("Work log add Failed");
-    setManualTimeEntryModalOpen(false)
+    setManualTimeEntryModalOpen(false);
   };
   const startSession = async (task: TaskDto) => {
     if (runningTask && runningTask?.id != task.id) {
@@ -301,15 +300,15 @@ const TasksPage = () => {
         <div className="mb-4 flex justify-between">
           <h2 className="text-2xl font-bold">Tasks</h2>
           <div className="flex gap-1">
-            <Button
+            {/* <Button
               onClick={() =>
                 setManualTimeEntryModalOpen(!manualTimeEntryModalOpen)
               }
             >
               Manual Time
-            </Button>
+            </Button> */}
             <Button onClick={() => setViewModalOpen(true)}>Add Task</Button>
-            <Button
+            {/* <Button
               className={`flex items-center justify-center ${
                 syncRunning ? "border-green-500 text-green-500" : ""
               }`}
@@ -318,7 +317,7 @@ const TasksPage = () => {
               }}
             >
               <SyncOutlined spin={syncRunning} />
-            </Button>
+            </Button> */}
             {/* <Button
               className={`flex items-center justify-center ${
                 syncRunning ? "border-green-500 text-green-500" : ""
