@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { IntegrationType, User } from '@prisma/client';
+import { APIException } from 'src/internal/exception/api.exception';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -20,8 +21,22 @@ export class IntegrationsService {
   }
 
   async deleteIntegration(user: User) {
-    return await this.prisma.integration.deleteMany({
-      where: { userId: user.id, type: IntegrationType.JIRA },
-    });
+    try {
+      await Promise.all([
+        await this.prisma.task.deleteMany({
+          where: { userId: user.id, source: IntegrationType.JIRA },
+        }),
+        await this.prisma.integration.deleteMany({
+          where: { userId: user.id, type: IntegrationType.JIRA },
+        }),
+      ]);
+      return { message: 'Successfully user integration deleted' };
+    } catch (err) {
+      console.log(err.message);
+      throw new APIException(
+        'Can not delete user integration',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }
