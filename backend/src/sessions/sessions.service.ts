@@ -206,6 +206,10 @@ export class SessionsService {
       formattedString.substr(0, formattedString.length - 3) +
       formattedString[formattedString.length - 2] +
       formattedString[formattedString.length - 1];
+    console.log(
+      '🚀 ~ file: sessions.service.ts:211 ~ SessionsService ~ getUtcTime ~ tmp:',
+      tmp,
+    );
     return `${tmp}`;
   }
 

@@ -65,10 +65,6 @@ export class TasksService {
           },
         }),
       };
-      console.log(
-        '🚀 ~ file: tasks.service.ts:60 ~ TasksService ~ getTasks ~ databaseQuery:',
-        databaseQuery,
-      );
 
       const task = await this.prisma.task.findMany({
         where: databaseQuery,
