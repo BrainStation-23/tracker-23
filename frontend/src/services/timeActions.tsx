@@ -64,11 +64,11 @@ export const getFormattedShortTime = (timestamp: any) => {
   let time = "am";
   let zeroM = "";
   let zeroH = "";
-  if (hours === 0) hours = 12;
-  else if (hours > 12) {
-    hours -= 12;
+  if (hours >= 12) {
+    if (hours > 12) hours -= 12;
     time = "pm";
   }
+  if (hours === 0) hours = 12;
   if (minutes < 10) zeroM = "0";
   if (hours < 10) zeroH = "0";
   return (
