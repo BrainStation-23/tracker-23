@@ -215,8 +215,8 @@ export class SessionsService {
 
   async manualTimeEntry(user: User, dto: ManualTimeEntryReqBody) {
     try {
-      const startTime = new Date(`${dto.day}  ${dto.startTime}`);
-      const endTime = new Date(`${dto.day}  ${dto.endTime}`);
+      const startTime = new Date(`${dto.startTime}`);
+      const endTime = new Date(`${dto.endTime}`);
       await this.validateTaskAccess(user, dto.taskId);
       const jiraIntegration = await this.prisma.integration.findFirst({
         where: {
