@@ -14,8 +14,8 @@ type Props = {
   data: Integration;
   selected: string;
   setSelected: Function;
-  handleDeleteIntegration: Function;
-  installed: boolean;
+  handleDeleteIntegration?: Function;
+  installed?: boolean;
 };
 
 const ImportCard = ({
