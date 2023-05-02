@@ -30,8 +30,7 @@ export interface TableParams {
 }
 
 export interface AddWorkLogParams {
-  startTime: string;
-  endTime: string;
-  day: string;
+  startTime: Date;
+  endTime: Date;
   taskId: number;
 }

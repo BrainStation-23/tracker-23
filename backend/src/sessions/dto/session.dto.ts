@@ -16,10 +16,6 @@ export class ManualTimeEntryReqBody {
   @IsNotEmpty()
   endTime: Date;
 
-  @IsString()
-  @IsNotEmpty()
-  day: string;
-
   @Min(1)
   @IsNotEmpty()
   @IsNumber()

@@ -21,9 +21,12 @@ const ManualTimeEntry = ({ task, handleAddManualSession }: Props) => {
     console.log(values);
     console.log(values.time);
     const tmp: AddWorkLogParams = {
-      startTime: timeFormat(values.time[0]),
-      endTime: timeFormat(values.time[1]),
-      day: localFormat(values.date),
+      startTime: new Date(
+        `${localFormat(values.date)} ${timeFormat(values.time[0])}`
+      ),
+      endTime: new Date(
+        `${localFormat(values.date)} ${timeFormat(values.time[1])}`
+      ),
       taskId: task.id,
     };
     const session = await userAPI.addManualWorkLog(tmp);
