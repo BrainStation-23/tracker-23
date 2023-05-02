@@ -29,6 +29,19 @@ const CustomLayout = ({ children }: any) => {
     (state: RootState) => state.syncStatus.syncRunning
   );
   useEffect(() => {
+    const getSyncStatus = async () => {
+      const res = await userAPI.syncStatus();
+      res && dispatch(setSyncStatus(res));
+      if (res.status === "IN_PROGRESS") {
+        dispatch(setSyncRunning(true));
+      } else {
+        syncing && message.success("Sync Completed");
+        dispatch(setSyncRunning(false));
+      }
+    };
+    getSyncStatus();
+  }, []);
+  useEffect(() => {
     let myTimeout: NodeJS.Timeout;
 
     const getSyncStatus = async () => {
