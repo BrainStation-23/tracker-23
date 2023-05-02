@@ -9,7 +9,7 @@ const SideMenu = () => {
   const router = useRouter();
   const handleLogOut = async () => {
     console.log("logging out");
-    const loggedOut = await userAPI.logout();
+    const loggedOut = userAPI.logout();
     if (loggedOut) router.push("/login");
   };
   const SideMenuOption = ({ option, active }: any) => {

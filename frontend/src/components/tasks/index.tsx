@@ -180,7 +180,7 @@ const TasksPage = () => {
       res && dispatch(setSyncStatus(res));
       if (res.status === "IN_PROGRESS") {
         dispatch(setSyncRunning(true));
-      } else {
+      } else if (res.status === "DONE") {
         dispatch(setSyncRunning(false));
       }
     } catch (error) {

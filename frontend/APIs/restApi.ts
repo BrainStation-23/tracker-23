@@ -27,11 +27,6 @@ export async function loginRest(
     }
     return res.data;
   } catch (error: any) {
-    message.error(
-      error.response?.data?.error?.message
-        ? error.response?.data?.error?.message
-        : "Login Failed"
-    );
     return error;
   }
 }
@@ -46,11 +41,6 @@ export async function googleLoginRest(
     console.log("🚀 ~ file: restApi.ts:45 ~ res:", res);
     return res.data;
   } catch (error: any) {
-    message.error(
-      error.response?.data?.error?.message
-        ? error.response?.data?.error?.message
-        : "Login Failed"
-    );
     return error;
   }
 }
@@ -63,11 +53,6 @@ export async function registerRest(
     const res = await axios.post(`${apiEndPoints.register}`, data);
     return res.data;
   } catch (error: any) {
-    message.error(
-      error.response?.data?.message
-        ? error.response?.data?.message
-        : "Registration Failed"
-    );
     return error;
   }
 }
@@ -88,40 +73,22 @@ export async function logoutRest() {
 
 export async function createTaskRest(data: CreateTaskDto) {
   try {
-    const res = await axios.post(`${apiEndPoints.tasks}`, data, {
-      headers: {
-        Authorization: `Bearer ${GetCookie("access_token")}`,
-      },
-    });
+    const res = await axios.post(`${apiEndPoints.tasks}`, data);
     // console.log(res);
 
     return res.data;
   } catch (error: any) {
-    message.error(
-      "Failed to Create Task : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
     return false;
   }
 }
 
 export async function deleteTaskRest(taskId: any) {
   try {
-    const res = await axios.delete(`${apiEndPoints.tasks}/${taskId}`, {
-      headers: {
-        Authorization: `Bearer ${GetCookie("access_token")}`,
-      },
-    });
+    const res = await axios.delete(`${apiEndPoints.tasks}/${taskId}`);
     // console.log(res);
     message.success("Task Deleted");
     return true;
   } catch (error: any) {
-    message.error(
-      "Failed to Delete Task : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
     return false;
   }
 }
@@ -130,12 +97,6 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
   const status = getStringFromArray(searchParams?.status);
   const priority = getStringFromArray(searchParams?.priority);
   try {
-    // const res = await axios.get(`${apiEndPoints.tasks}`, {
-    //   headers: {
-    //     Authorization: `Bearer ${GetCookie("access_token")}`,
-    //   },
-    // });
-
     const res = await axios.get(
       apiEndPoints.tasks +
         "?" +
@@ -146,24 +107,15 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
           ? `&text=${searchParams.searchText}`
           : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
-        (status && status.length > 0 ? `&status=${status}` : ""),
-      {
-        headers: {
-          Authorization: `Bearer ${GetCookie("access_token")}`,
-        },
-      }
+        (status && status.length > 0 ? `&status=${status}` : "")
     );
     const sortedTasks = sortByStatus(res.data);
     return sortedTasks;
   } catch (error: any) {
-    if (error?.response?.status === 401) {
-      await logoutRest();
-    }
-    message.error(
-      "Failed to Get Task : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
+    // if (error?.response?.status === 401) {
+    //   await logoutRest();
+    // }
+
     return false;
   }
 }
@@ -172,13 +124,6 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
   const status = getStringFromArray(searchParams?.status);
   const priority = getStringFromArray(searchParams?.priority);
   try {
-    // const res = await axios.get(`${apiEndPoints.tasks}`, {
-    //   headers: {
-    //     Authorization: `Bearer ${GetCookie("access_token")}`,
-    //   },
-    // });
-    console.log("<><><>");
-
     const res = await axios.get(
       apiEndPoints.export +
         "?" +
@@ -191,56 +136,30 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (status && status.length > 0 ? `&status=${status}` : ""),
       {
-        headers: {
-          Authorization: `Bearer ${GetCookie("access_token")}`,
-        },
         responseType: "blob", // Set responseType to 'blob' to receive binary data
       }
     );
     console.log("🚀 ~ file: restApi.ts:167 ~ exportTasksRest ~ res:", res);
     return res.data;
   } catch (error: any) {
-    message.error(
-      "Failed to Get export Tasks : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
     return false;
   }
 }
 
-export async function syncStatusRest(token?: string) {
+export async function syncStatusRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.syncStatus}`, {
-      headers: {
-        Authorization: `Bearer ${token ? token : GetCookie("access_token")}`,
-      },
-    });
+    const res = await axios.get(`${apiEndPoints.syncStatus}`);
     return res.data;
   } catch (error: any) {
-    message.error(
-      "Failed to Get Sync Status : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
     return false;
   }
 }
 
-export async function syncTasksRest(token?: string) {
+export async function syncTasksRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.syncTasks}`, {
-      headers: {
-        Authorization: `Bearer ${token ? token : GetCookie("access_token")}`,
-      },
-    });
+    const res = await axios.get(`${apiEndPoints.syncTasks}`);
     return res.data;
   } catch (error: any) {
-    message.error(
-      "Failed to Sync : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
     return false;
   }
 }
@@ -249,22 +168,11 @@ export async function createSessionRest(taskId: string) {
   console.log("🚀 ~ file: restApi.ts:91 ~ createSessionRest ~ taskID", taskId);
 
   try {
-    const res = await axios.post(
-      `${apiEndPoints.sessions}`,
-      { taskId: taskId },
-      {
-        headers: {
-          Authorization: `Bearer ${GetCookie("access_token")}`,
-        },
-      }
-    );
+    const res = await axios.post(`${apiEndPoints.sessions}`, {
+      taskId: taskId,
+    });
     return res.data;
   } catch (error: any) {
-    message.error(
-      "Failed to Create Session : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
     return false;
   }
 }
@@ -273,120 +181,61 @@ export async function stopSessionRest(taskId: string) {
   console.log("🚀 ~ file: restApi.ts:91 ~ stopSessionRest ~ taskID", taskId);
 
   try {
-    const res = await axios.post(
-      `${apiEndPoints.sessions}/${taskId}`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${GetCookie("access_token")}`,
-        },
-      }
-    );
+    const res = await axios.post(`${apiEndPoints.sessions}/${taskId}`, {});
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:241 ~ stopSessionRest ~ error:", error);
-    message.error(error?.response?.data?.error?.message);
+
     return false;
   }
 }
 
 export async function authJiraRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.jira}`, {
-      headers: {
-        Authorization: `Bearer ${GetCookie("access_token")}`,
-      },
-    });
+    const res = await axios.get(`${apiEndPoints.jira}`);
     console.log("🚀 ~ file: restApi.ts:160 ~ authJiraRest ~ res:", res);
     return res.data;
   } catch (error: any) {
-    message.error(
-      "Failed to Jira Auth : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
     return false;
   }
 }
 
 export async function getJiraLinkRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.jira}`, {
-      headers: {
-        Authorization: `Bearer ${GetCookie("access_token")}`,
-      },
-    });
+    const res = await axios.get(`${apiEndPoints.jira}`);
     console.log("🚀 ~ file: restApi.ts:160 ~ authJiraRest ~ res:", res);
     return res.data;
   } catch (error: any) {
-    message.error(
-      "Failed to Jira Auth : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
     return false;
   }
 }
 
 export async function sendJiraCodeRest(code: string) {
   try {
-    const res = await axios.post(
-      `${apiEndPoints.jira}`,
-      { code: code },
-      {
-        headers: {
-          Authorization: `Bearer ${GetCookie("access_token")}`,
-        },
-      }
-    );
+    const res = await axios.post(`${apiEndPoints.jira}`, { code: code });
     return res.data;
   } catch (error: any) {
-    console.log("🚀 ~ file: restApi.ts:210 ~ sendJiraCodeRest ~ error:", error);
-    message.error("Failed to Jira Auth : " + error.response?.data?.message);
     return false;
   }
 }
 
 export async function deleteIntegrationRest(id: number) {
   try {
-    const res = await axios.delete(`${apiEndPoints.integrations}/${id}`, {
-      headers: {
-        Authorization: `Bearer ${GetCookie("access_token")}`,
-      },
-    });
+    const res = await axios.delete(`${apiEndPoints.integrations}/${id}`);
     console.log("deleteIntegrationRest", res);
     message.success("Integration Deleted");
     return res.data;
   } catch (error: any) {
-    message.error(
-      "Failed to Get Integrations : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
     return false;
   }
 }
 
-export async function getIntegrationsRest(token?: string) {
-  console.log(
-    "🚀 ~ file: restApi.ts:215 ~ getIntegrationsRest ~ token:",
-    token
-  );
-
+export async function getIntegrationsRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.integrations}`, {
-      headers: {
-        Authorization: `Bearer ${token ? token : GetCookie("access_token")}`,
-      },
-    });
+    const res = await axios.get(`${apiEndPoints.integrations}`);
     console.log("getIntegrationsRest", res);
     return res.data;
   } catch (error: any) {
-    message.error(
-      "Failed to Get Integrations : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
     return false;
   }
 }
@@ -397,20 +246,10 @@ export async function getProjectWiseHourRest(dates?: any) {
         dates?.length > 0
           ? `startDate=${dates[0]}&endDate=${dates[1]}`
           : `startDate=Apr 01, 2022&endDate=Apr 09 , 2023`
-      }`,
-      {
-        headers: {
-          Authorization: `Bearer ${GetCookie("access_token")}`,
-        },
-      }
+      }`
     );
     return res.data;
   } catch (error: any) {
-    message.error(
-      "Failed to Get ProjectWiseHour : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
     return false;
   }
 }
@@ -422,38 +261,19 @@ export async function getSpentTimePerDayRest(dates?: any) {
         dates?.length > 0
           ? `startDate=${dates[0]}&endDate=${dates[1]}`
           : `startDate=Apr 01, 2022&endDate=Apr 09 , 2023`
-      }`,
-      {
-        headers: {
-          Authorization: `Bearer ${GetCookie("access_token")}`,
-        },
-      }
+      }`
     );
     return res.data;
   } catch (error: any) {
-    message.error(
-      "Failed to Get SpentTimePerDay : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
     return false;
   }
 }
 
 export async function addManualWorkLogRest(data: AddWorkLogParams) {
   try {
-    const res = await axios.patch(`${apiEndPoints.addWorkLog}`, data, {
-      headers: {
-        Authorization: `Bearer ${GetCookie("access_token")}`,
-      },
-    });
+    const res = await axios.patch(`${apiEndPoints.addWorkLog}`, data);
     return res.data;
   } catch (error: any) {
-    message.error(
-      "Failed to add Manual WorkLog : " + error?.response?.data?.error?.message
-        ? error?.response?.data?.error?.message
-        : error.message
-    );
     return false;
   }
 }

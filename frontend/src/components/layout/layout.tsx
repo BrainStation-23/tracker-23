@@ -34,12 +34,18 @@ const CustomLayout = ({ children }: any) => {
       res && dispatch(setSyncStatus(res));
       if (res.status === "IN_PROGRESS") {
         dispatch(setSyncRunning(true));
-      } else {
+      } else if (res.status === "DONE") {
         syncing && message.success("Sync Completed");
         dispatch(setSyncRunning(false));
       }
     };
-    getSyncStatus();
+    let timeout: NodeJS.Timeout;
+    timeout = setTimeout(getSyncStatus, 2000);
+    const cleanup = () => {
+      clearTimeout(timeout);
+    };
+
+    return cleanup;
   }, []);
   useEffect(() => {
     let myTimeout: NodeJS.Timeout;
@@ -50,7 +56,7 @@ const CustomLayout = ({ children }: any) => {
       if (res.status === "IN_PROGRESS") {
         dispatch(setSyncRunning(true));
         myTimeout = setTimeout(getSyncStatus, 5000);
-      } else {
+      } else if (res.status === "DONE") {
         syncing && message.success("Sync Completed");
         dispatch(setSyncRunning(false));
       }

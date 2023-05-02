@@ -1,23 +1,53 @@
-import CustomLayout from "@/components/layout/layout";
 import "@/styles/globals.css";
-import { Spin } from "antd";
+import "react-toastify/dist/ReactToastify.css";
+
+import { message, Spin } from "antd";
+import { userAPI } from "APIs";
 import Axios from "axios";
 import { config } from "config";
-import type { AppProps } from "next/app";
 import Head from "next/head";
-import { useState } from "react";
-import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { publicRoutes, whiteListEmails } from "utils/constants";
-import { getLocalStorage } from "@/storage/storage";
-import { useEffect } from "react";
-import InvalidUserPage from "@/components/invalidUser";
-import { Providers } from "@/storage/redux/provider";
 
+import InvalidUserPage from "@/components/invalidUser";
+import CustomLayout from "@/components/layout/layout";
+import { Providers } from "@/storage/redux/provider";
+import { getLocalStorage } from "@/storage/storage";
+
+import type { AppProps } from "next/app";
 // Axios.defaults.baseURL = process?.env?.NEXT_PUBLIC_API_PREFIX_REST;
 // Axios.defaults.baseURL =
 //   "http://ec2-54-172-94-212.compute-1.amazonaws.com:3000";
 Axios.defaults.baseURL = config?.baseUrl;
+Axios.interceptors.request.use(
+  (config) => {
+    const token = getLocalStorage("access_token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+Axios.interceptors.response.use(undefined, async (error) => {
+  const { status, data } = error.response;
+  console.log(
+    "🚀 ~ file: _app.tsx:38 ~ axios.interceptors.response.use ~ error:",
+    error.config.url
+  );
+  if (!error.response) {
+    message.error("Backend Crashed");
+  }
+  if (data?.error?.message)
+    message.error(
+      data?.error?.message ? data?.error?.message : "Something Went Wrong"
+    );
+  if (status === 401) userAPI.logout();
+
+  throw error.response;
+});
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const [validUser, setValidUser] = useState(true);
@@ -25,10 +55,8 @@ export default function App({ Component, pageProps }: AppProps) {
   const url = router.asPath;
   const userDetails = getLocalStorage("userDetails");
 
-
   useEffect(() => {
     if (!publicRoutes.some((route) => url.includes(route))) {
-    
       whiteListEmails.includes(userDetails?.email) ? "" : setValidUser(false);
     } else if (!validUser) {
       setValidUser(true);

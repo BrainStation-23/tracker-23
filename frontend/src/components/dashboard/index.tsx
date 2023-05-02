@@ -250,7 +250,6 @@ const DashBoard = () => {
           pagination: {
             ...tableParamsPinned.pagination,
             total: pinnedTaskList.length,
-            // 200 is mock data, you should read it from server
             // total: data.totalCount,
           },
         });
