@@ -37,6 +37,10 @@ export class TasksService {
 
       startDate = startDate && new Date(startDate);
       endDate = endDate && new Date(endDate);
+      if (startDate && startDate?.getTime() === endDate?.getTime()) {
+        const oneDay = 3600 * 24 * 1000;
+        endDate = new Date(endDate.getTime() + oneDay);
+      }
 
       const databaseQuery = {
         userId: user.id,
