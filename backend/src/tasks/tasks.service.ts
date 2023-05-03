@@ -192,7 +192,7 @@ export class TasksService {
               method: 'get',
               url,
               headers: {
-                Authorization: `Bearer ${integration?.accessToken}`,
+                Authorization: `Bearer ${updated_integration?.accessToken}`,
                 'Content-Type': 'application/json',
               },
             };
