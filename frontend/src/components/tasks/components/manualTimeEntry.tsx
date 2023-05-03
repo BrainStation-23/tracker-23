@@ -1,10 +1,11 @@
-import { Button, DatePicker, Form, TimePicker } from "antd";
+import { Button, DatePicker, Form, Spin, TimePicker } from "antd";
 import { userAPI } from "APIs";
 import { AddWorkLogParams, TaskDto } from "models/tasks";
 
 import { localFormat } from "@/components/datePicker";
 
 import { timeFormat } from "../../datePicker/index";
+import { useState } from "react";
 
 type Props = {
   task: TaskDto;
@@ -15,6 +16,7 @@ const ManualTimeEntry = ({ task, handleAddManualSession }: Props) => {
     "🚀 ~ file: manualTimeEntry.tsx:12 ~ ManualTimeEntry ~ task:",
     task
   );
+  const [spinning, setSpinning] = useState(false);
   const [form] = Form.useForm();
   const initialValues = {};
   const onFinish = async (values: any) => {
@@ -29,18 +31,20 @@ const ManualTimeEntry = ({ task, handleAddManualSession }: Props) => {
       ),
       taskId: task.id,
     };
+    setSpinning(true);
     const session = await userAPI.addManualWorkLog(tmp);
     if (session) {
       handleAddManualSession(task, session);
     }
     console.log(tmp);
+    setSpinning(false);
   };
 
   const onReset = () => {
     form.resetFields();
   };
   return (
-    <div>
+    <Spin spinning={spinning}>
       <Form
         form={form}
         name="control-hooks"
@@ -81,7 +85,7 @@ const ManualTimeEntry = ({ task, handleAddManualSession }: Props) => {
           </div>
         </Form.Item>
       </Form>
-    </div>
+    </Spin>
   );
 };
 
