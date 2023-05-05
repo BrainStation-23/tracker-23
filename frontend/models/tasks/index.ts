@@ -3,6 +3,26 @@ import { FilterValue } from "antd/es/table/interface";
 
 export type CreateTaskDto = {
   title: string;
+  estimation: number;
+  priority: "MEDIUM" | "HIGH" | "LOW";
+  label: string[];
+  isRecurrent: boolean;
+  frequency?: "Daily" | "WEEKLY" | "BI-WEEKLY";
+  startTime?: Date;
+  endTime?: Date;
+  startDate?: Date;
+  endDate?: Date;
+};
+
+export type CreateTaskValues = {
+  title: string;
+  estimation: number;
+  priority: "MEDIUM" | "HIGH" | "LOW";
+  label: string[];
+  isRecurrent: boolean;
+  frequency?: "Daily" | "WEEKLY" | "BI-WEEKLY";
+  timeRange?: Date[];
+  dateRange?: Date[];
 };
 
 export type TaskDto = {

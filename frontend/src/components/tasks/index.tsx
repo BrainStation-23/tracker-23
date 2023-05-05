@@ -5,7 +5,10 @@ import { useRouter } from "next/router";
 import { createContext, useEffect, useState } from "react";
 
 import {
-    formatDate, getFormattedTime, getFormattedTotalTime, getTotalSpentTime,
+  formatDate,
+  getFormattedTime,
+  getFormattedTotalTime,
+  getTotalSpentTime,
 } from "@/services/timeActions";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
@@ -17,7 +20,7 @@ import GlobalModal from "../modals/globalModal";
 import TaskDetailsModal from "../modals/taskDetails.modal";
 import ManualTimeEntry from "./components/manualTimeEntry";
 import TableComponent from "./components/tableComponent";
-import TaskInput from "./components/taskInput";
+import CreateTaskComponent from "./components/createTaskComponent";
 import TopPanel from "./components/topPanel";
 import SessionStartWarning from "./components/warning";
 
@@ -395,7 +398,7 @@ const TasksPage = () => {
           title="Add Task"
           className="top-0 my-auto flex h-full items-center"
         >
-          <TaskInput taskList={tasks} createTask={createTask} />
+          <CreateTaskComponent taskList={tasks} createTask={createTask} />
         </GlobalModal>
         <GlobalModal
           isModalOpen={manualTimeEntryModalOpen}
