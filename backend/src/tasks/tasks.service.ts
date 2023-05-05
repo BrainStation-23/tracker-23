@@ -37,7 +37,7 @@ export class TasksService {
 
       startDate = startDate && new Date(startDate);
       endDate = endDate && new Date(endDate);
-      if (startDate && startDate?.getTime() === endDate?.getTime()) {
+      if (endDate) {
         const oneDay = 3600 * 24 * 1000;
         endDate = new Date(endDate.getTime() + oneDay);
       }
@@ -84,7 +84,7 @@ export class TasksService {
   }
 
   async createTask(user: User, dto: CreateTaskDto) {
-    return await this.prisma.task.create({
+    const task: Task = await this.prisma.task.create({
       data: {
         userId: user.id,
         title: dto.title,
@@ -96,6 +96,40 @@ export class TasksService {
         labels: dto.labels,
       },
     });
+
+    const sessions = [];
+    if (dto.isRecurrent) {
+      const endDate = new Date(dto.endDate);
+      const timeMultiplier =
+        dto.frequency === 'DAILY' ? 1 : dto.frequency === 'WEEKLY' ? 7 : 14;
+      const timeInterval = timeMultiplier * 3600 * 24 * 1000;
+      const oneDay = 3600 * 24 * 1000;
+      try {
+        for (
+          let startTime = new Date(dto.startTime).getTime(),
+            endTime = new Date(dto.endTime).getTime();
+          endTime <= endDate.getTime() + oneDay;
+          startTime += timeInterval, endTime += timeInterval
+        ) {
+          const session = await this.prisma.session.create({
+            data: {
+              startTime: new Date(startTime),
+              endTime: new Date(endTime),
+              status: SessionStatus.STOPPED,
+              taskId: task.id,
+              userId: user.id,
+            },
+          });
+          if (session) sessions.push(session);
+        }
+      } catch (error) {
+        throw new APIException(
+          'Session creation Failed',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+    return { ...task, sessions };
   }
 
   async updateTask(id: number, dto: UpdateTaskDto): Promise<Task> {
