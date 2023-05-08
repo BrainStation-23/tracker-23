@@ -13,9 +13,8 @@ export class AuthService {
     private jwt: JwtService,
   ) {}
 
-  async register(dto: RegisterDto) {
+  async createUser(dto: RegisterDto) {
     const hashedPassword = await argon.hash(dto.password);
-
     const data = {
       email: dto.email,
       firstName: dto.firstName,
@@ -31,7 +30,42 @@ export class AuthService {
         lastName: true,
       },
     });
+    return user;
+  }
+
+  async getUser(dto: RegisterDto) {
+    return await this.prisma.user.findUnique({
+      where: { email: dto.email },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+  }
+
+  async register(dto: RegisterDto) {
+    const doesExistUser = await this.getUser(dto);
+
+    if (doesExistUser) {
+      const token = await this.createToken(doesExistUser);
+      return { ...doesExistUser, ...token };
+    }
+    const user = await this.createUser(dto);
     const token = await this.createToken(user);
+    const account = await this.prisma.account.create({
+      data: {
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+      },
+    });
+    await this.prisma.userAccount.create({
+      data: {
+        accountId: account.id,
+        userId: user.id,
+      },
+    });
     return { ...user, ...token };
   }
 

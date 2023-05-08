@@ -10,6 +10,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Account {
+  id                 Int                  @id @default(autoincrement())
+  firstName          String?
+  lastName           String?
+  users              User[]
+  userAccounts       UserAccount[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+}
+
+model UserAccount {
+  id           Int     @id @default(autoincrement())
+  invitationId String?
+  account      Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId    Int
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  role         Role  @default(USER) // Admin, user
+  status       InvitationStatus? //pending accepted, rejected
+}
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -19,7 +39,8 @@ model User {
   picture   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  userAccounts UserAccount[]
+  accounts     Account[]
   tasks            Task[]
   integrations     Integration[]
   taskIntegrations TaskIntegration[]
@@ -126,4 +147,15 @@ enum SessionStatus {
 
 enum IntegrationType {
   JIRA
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
