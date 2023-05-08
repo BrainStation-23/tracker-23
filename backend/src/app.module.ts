@@ -6,6 +6,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { ExportModule } from './export/export.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ExportModule } from './export/export.module';
     SessionsModule,
     IntegrationsModule,
     ExportModule,
+    WebhooksModule,
   ],
 })
 export class AppModule {}
