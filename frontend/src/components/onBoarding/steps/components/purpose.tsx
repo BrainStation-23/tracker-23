@@ -10,7 +10,9 @@ const PurposeStep = () => {
   };
   return (
     <div className="flex flex-col gap-4 px-2">
-      <div className="text-xl px-1 font-semibold">How are you planning to use Tracker23?</div>
+      <div className="px-1 text-xl font-semibold text-black">
+        How are you planning to use Tracker23?
+      </div>
       <div className="pl-6">
         <Radio.Group onChange={onChange} value={value}>
           <Space direction="vertical">

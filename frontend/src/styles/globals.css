@@ -38,3 +38,25 @@ body {
 .custom-rangePicker-dropdown .ant-picker-panel-container {
   box-shadow: none;
 }
+
+.ant-steps .ant-steps-item-process .ant-steps-item-icon,
+.ant-radio-wrapper .ant-radio-checked .ant-radio-inner {
+  background-color: #00a3de;
+  border-color: #00a3de;
+}
+
+.ant-btn-primary {
+  background-color: #00a3de;
+}
+
+.ant-steps .ant-steps-item-finish .ant-steps-item-icon {
+  background-color: #97cb00;
+  border-color: #97cb00;
+}
+
+.ant-steps .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+  color: #ffffff;
+  position: relative;
+  top: -4.5px;
+  line-height: 1;
+}

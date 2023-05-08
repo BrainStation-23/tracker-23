@@ -83,13 +83,14 @@ const CustomLayout = ({ children }: any) => {
   return (
     <>
       <div className="flex">
-        {!publicRoutes.some((route) => path.includes(route)) && (
-          <div className="mr-6 w-[300px]">
-            <div className="fixed">
-              <SideMenu />
+        {!publicRoutes.some((route) => path.includes(route)) &&
+          !path.includes("onBoarding") && (
+            <div className="mr-6 w-[300px]">
+              <div className="fixed">
+                <SideMenu />
+              </div>
             </div>
-          </div>
-        )}
+          )}
         {/* {!publicRoutes.some((route) => path.includes(route)) && (
           <>
             <div
@@ -113,13 +114,13 @@ const CustomLayout = ({ children }: any) => {
         )} */}
         <div
           className={classNames("flex w-full flex-col overflow-y-auto", {
-            "px-8": !isPublicRoute,
+            "px-8": !isPublicRoute && !path.includes("onBoarding"),
           })}
         >
-          {!isPublicRoute && <Navbar />}
+          {!isPublicRoute && !path.includes("onBoarding") && <Navbar />}
 
           <div className="h-full w-full bg-white">
-            {!isPublicRoute && <GlobalClock />}
+            {!isPublicRoute && !path.includes("onBoarding") && <GlobalClock />}
             {children}
           </div>
         </div>
