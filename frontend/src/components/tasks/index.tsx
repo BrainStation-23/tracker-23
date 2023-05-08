@@ -23,6 +23,7 @@ import TableComponent from "./components/tableComponent";
 import CreateTaskComponent from "./components/createTaskComponent";
 import TopPanel from "./components/topPanel";
 import SessionStartWarning from "./components/warning";
+import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -310,32 +311,14 @@ const TasksPage = () => {
         <div className="mb-4 flex justify-between">
           <h2 className="text-2xl font-bold">Tasks</h2>
           <div className="flex gap-1">
-            {/* <Button
-              onClick={() =>
-                setManualTimeEntryModalOpen(!manualTimeEntryModalOpen)
-              }
+            <Button
+              type="primary"
+              className="flex items-center gap-2 py-3 text-[15px] text-white"
+              onClick={() => setViewModalOpen(true)}
             >
-              Manual Time
-            </Button> */}
-            <Button onClick={() => setViewModalOpen(true)}>Add Task</Button>
-            {/* <Button
-              className={`flex items-center justify-center ${
-                syncRunning ? "border-green-500 text-green-500" : ""
-              }`}
-              onClick={async () => {
-                await syncTasks();
-              }}
-            >
-              <SyncOutlined spin={syncRunning} />
-            </Button> */}
-            {/* <Button
-              className={`flex items-center justify-center ${
-                syncRunning ? "border-green-500 text-green-500" : ""
-              }`}
-              onClick={syncFunction}
-            >
-              <SyncOutlined spin={syncRunning} /> Status
-            </Button> */}
+              <PlusIconSvg />
+              Add Task
+            </Button>
           </div>
         </div>
         <TopPanel
