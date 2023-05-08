@@ -30,15 +30,8 @@ const syncSlice = createSlice({
   initialState,
   reducers: {
     setSyncStatus: (state, action: PayloadAction<SyncStatus>) => {
-      // Redux Toolkit allows us to write "mutating" logic in reducers. It
-      // doesn't actually mutate the state because it uses the Immer library,
-      // which detects changes to a "draft state" and produces a brand new
-      // immutable state based off those changes
       state.syncStatus = action.payload;
-      console.log(
-        "🚀 ~ file: syncSlice.ts:38 ~ action.payload:",
-        action.payload
-      );
+
       state.syncRunning = action.payload.status === "IN_PROGRESS";
     },
     setSyncRunning: (state, action: PayloadAction<boolean>) => {

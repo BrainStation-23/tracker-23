@@ -37,22 +37,19 @@ export default function LoginV2() {
                 Create account here
               </Link>
             </div>
-            <p className="font-medium">© 2023 Brainstation 23</p>
+            <p className="font-medium">© 2023 BrainStation 23</p>
           </div>
 
           <div className="relative flex flex-1 flex-col items-center justify-center px-10">
-            <div className="flex w-full items-center justify-between py-4 lg:hidden">
-              <div className="flex items-center justify-start space-x-3">
-                <span className="h-6 w-6 rounded-full bg-black"></span>
-                <a href="#" className="text-lg font-medium">
-                  Brand
-                </a>
-              </div>
+            <div className="flex w-full items-center justify-end py-4 lg:hidden">
               <div className="flex items-center space-x-2">
                 <span>Not a member? </span>
-                <a href="#" className="font-medium text-[#070eff] underline">
+                <Link
+                  href="/registration"
+                  className="font-medium text-[#070eff] underline"
+                >
                   Sign up now
-                </a>
+                </Link>
               </div>
             </div>
             <div className="flex max-w-md flex-1  flex-col justify-center space-y-5">

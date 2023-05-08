@@ -3,8 +3,10 @@ import { Button, Form, Input, message } from "antd";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { userAPI } from "../../../../APIs/index";
-
-const RegistrationForm: React.FC = () => {
+type Props = {
+  setIsModalOpen: Function;
+};
+const RegistrationForm = ({ setIsModalOpen }: Props) => {
   const router = useRouter();
 
   const [emailStatus, setEmailStatus] = useState<
@@ -21,9 +23,14 @@ const RegistrationForm: React.FC = () => {
       lastName: values.lastName,
       password: values.password,
     };
+    setIsModalOpen(true);
     const userRegistered = await userAPI.registerUser(temp);
-    if (userRegistered) router.push("/login");
-    else {
+    setIsModalOpen(false);
+
+    if (userRegistered) {
+      message.success("Singed up Successfully");
+      router.push("/login");
+    } else {
       message.error("email already Used");
     }
   };
@@ -39,8 +46,6 @@ const RegistrationForm: React.FC = () => {
   return (
     <Form
       name="basic"
-      labelCol={{ span: 8 }}
-      wrapperCol={{ span: 16 }}
       initialValues={{ remember: true }}
       onFinish={onFinish}
       onValuesChange={(e) => setEmailStatus("validating")}
@@ -48,26 +53,27 @@ const RegistrationForm: React.FC = () => {
       autoComplete="off"
     >
       <Form.Item
-        label="First Name"
         name="firstName"
         rules={[{ required: true, message: "Please input your First Name!" }]}
       >
-        <Input />
+        <Input
+          placeholder="First Name"
+          className="flex w-full rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
+        />
       </Form.Item>
       <Form.Item
-        label="Last Name"
         name="lastName"
         rules={[{ required: true, message: "Please input your Last Name!" }]}
       >
-        <Input />
+        <Input
+          placeholder="Last Name"
+          className="flex w-full rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
+        />
       </Form.Item>
 
       <Form.Item
-        label="Email"
         name="email"
         validateFirst={true}
-        validateStatus={emailStatus}
-        hasFeedback
         rules={[
           { required: true, message: "Please input a valid email!" },
           {
@@ -77,42 +83,28 @@ const RegistrationForm: React.FC = () => {
             max: 200,
             message: `Please input a valid email.`,
           },
-          // ({ getFieldValue }) => ({
-          //   async validator(_, value) {
-          //     let v;
-          //     if (emailStatus === "validating" && value?.length >= 5) {
-          //       v = await CheckEmailValidity(value);
-          //       if (v) {
-          //         setEmailStatus("success");
-          //         return Promise.resolve();
-          //       }
-          //       if (!v) {
-          //         setEmailStatus("error");
-          //         return Promise.reject(new Error("Email already in use!"));
-          //       }
-          //     }
-          //   },
-          // }),
         ]}
         // help="Something breaks the rule."
       >
         <Input
-          placeholder="I'm the content is being validated"
           type="email"
           id="validating"
+          placeholder="Email"
+          className="flex w-full rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
         />
       </Form.Item>
 
       <Form.Item
-        label="Password"
         name="password"
         rules={[{ required: true, message: "Please input your password!" }]}
       >
-        <Input.Password />
+        <Input.Password
+          placeholder="Password"
+          className="flex rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
+        />
       </Form.Item>
 
       <Form.Item
-        label="Re-type Password"
         name="passwordRe"
         rules={[
           { required: true, message: "Please re-input your password!" },
@@ -126,13 +118,16 @@ const RegistrationForm: React.FC = () => {
           }),
         ]}
       >
-        <Input.Password />
+        <Input.Password
+          placeholder="Re-type Password"
+          className="flex rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
+        />
       </Form.Item>
 
-      <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-        <Button type="primary" htmlType="submit" className="bg-blue-600">
-          Submit
-        </Button>
+      <Form.Item>
+        <button className="flex w-full flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
+          Sign up
+        </button>
       </Form.Item>
     </Form>
   );

@@ -1,4 +1,4 @@
-import { Labels, Priority, Status } from '@prisma/client';
+import { Frequency, Priority, Status } from '@prisma/client';
 import {
   IsArray,
   IsDateString,
@@ -40,6 +40,28 @@ export class CreateTaskDto {
 
   @IsOptional()
   @IsArray()
-  @IsEnum(Labels, { each: true })
-  labels: Labels[];
+  labels: string[];
+
+  @IsOptional()
+  isRecurrent: boolean;
+
+  @IsOptional()
+  @IsString()
+  frequency: Frequency;
+
+  @IsOptional()
+  @IsString()
+  startTime: Date;
+
+  @IsOptional()
+  @IsString()
+  endTime: Date;
+
+  @IsOptional()
+  @IsString()
+  startDate: Date;
+
+  @IsOptional()
+  @IsString()
+  endDate: Date;
 }
