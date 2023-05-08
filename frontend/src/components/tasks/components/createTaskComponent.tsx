@@ -131,11 +131,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
           />
         </Form.Item>
 
-        <Form.Item
-          name="isRecurrent"
-          label="isRecurrent"
-          valuePropName="checked"
-        >
+        <Form.Item name="isRecurrent" valuePropName="checked">
           <Checkbox onChange={onCheckBoxChange}>Recurrent Task</Checkbox>
         </Form.Item>
         {recurrentTask && (
