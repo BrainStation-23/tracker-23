@@ -71,7 +71,7 @@ const SideMenu = () => {
 export default SideMenu;
 
 export const sideMenuOptions = [
-  { link: "/dashboard", title: "DashBoard", icon: <DashboardIconSvg /> },
+  { link: "/dashboard", title: "Dashboard", icon: <DashboardIconSvg /> },
   { link: "/taskList", title: "All Tasks", icon: <TasksIconSvg /> },
   {
     link: "/integrations",

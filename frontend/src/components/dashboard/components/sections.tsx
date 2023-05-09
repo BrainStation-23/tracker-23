@@ -2,7 +2,7 @@ import { Spin } from "antd";
 import { useEffect, useState } from "react";
 
 type Props = { children: any; title: string };
-const DashBoardSection = ({ children, title }: Props) => {
+const DashboardSection = ({ children, title }: Props) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -25,4 +25,4 @@ const DashBoardSection = ({ children, title }: Props) => {
   );
 };
 
-export default DashBoardSection;
+export default DashboardSection;

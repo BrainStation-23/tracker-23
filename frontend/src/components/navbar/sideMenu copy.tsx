@@ -69,7 +69,7 @@ export default SideMenu;
 
 export const sideMenuOptions = [
   { link: "/taskList", title: "Tasks Page", icon: <UnorderedListOutlined /> },
-  // { link: "/dashboard", title: "DashBoard Page" },
+  // { link: "/dashboard", title: "Dashboard Page" },
   {
     link: "/integrations",
     title: "Integrations Page",

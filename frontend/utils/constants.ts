@@ -6,7 +6,7 @@ export const publicRoutes = [
 export const ignoreRoutes = ["/_next", "/assets", "/integrations"];
 export const menuOptions = [
   { link: "/taskList", title: "Tasks Page" },
-  // { link: "/dashboard", title: "DashBoard Page" },
+  // { link: "/dashboard", title: "Dashboard Page" },
   // { link: "/integrations", title: "Integrations Page" },
   // { link: "/onBoarding", title: "OnBoarding Page" },
 ];
@@ -95,4 +95,5 @@ export const whiteListEmails = [
   "belal.cseai@gmail.com",
   "dinar@timetackle.com",
   "shakil@timetackle.com",
+  "shatabdibiswasswarna@gmail.com",
 ];

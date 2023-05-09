@@ -31,12 +31,12 @@ import SessionStartWarning from "../tasks/components/warning";
 import DonutChart from "./charts/donutChart";
 import Line from "./charts/lineChart";
 import { useRouter } from "next/router";
-import DashBoardSection from "./components/sections";
+import DashboardSection from "./components/sections";
 import DashboardTableComponent from "./components/tableComponentDashboard";
 import { getDateRangeArray } from "../datePicker";
 const { Text } = Typography;
 
-const DashBoard = () => {
+const Dashboard = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
@@ -537,18 +537,18 @@ const DashBoard = () => {
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-2">
-        <DashBoardSection title="Project wise Track hour">
+        <DashboardSection title="Project wise Track hour">
           {dataDonut?.length > 0 ? (
             <DonutChart data={dataDonut} total={dataDonutTotal} />
           ) : (
             <Empty className="pt-20" description="No Data" />
           )}
-        </DashBoardSection>
-        <DashBoardSection title="Actual VS Estimate">
+        </DashboardSection>
+        <DashboardSection title="Actual VS Estimate">
           <Line data={lineChartData} />
-        </DashBoardSection>
+        </DashboardSection>
       </div>
-      {/* <DashBoardSection title="Pinned tasks">
+      {/* <DashboardSection title="Pinned tasks">
         <Table
           columns={columns}
           dataSource={getPinnedTasks()}
@@ -575,8 +575,8 @@ const DashBoard = () => {
             Click to View More
           </div>
         )}
-      </DashBoardSection> */}
-      <DashBoardSection title="Pinned tasks">
+      </DashboardSection> */}
+      <DashboardSection title="Pinned tasks">
         <DashboardTableComponent
           tasks={getPinnedTasks()}
           {...{
@@ -587,14 +587,14 @@ const DashBoard = () => {
             reload,
           }}
         />
-      </DashBoardSection>
-      <DashBoardSection title="Tracker By Day">
+      </DashboardSection>
+      <DashboardSection title="Tracker By Day">
         {weekData?.length > 0 ? (
           <XYChart data={weekData} />
         ) : (
           <Empty className="py-20" description="No Data" />
         )}
-      </DashBoardSection>
+      </DashboardSection>
 
       {/* <div>
         <MyTasks />
@@ -613,4 +613,4 @@ const DashBoard = () => {
   );
 };
 
-export default DashBoard;
+export default Dashboard;
