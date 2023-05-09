@@ -4,10 +4,10 @@ import { FilterValue } from "antd/es/table/interface";
 export type CreateTaskDto = {
   title: string;
   estimation: number;
-  priority: "MEDIUM" | "HIGH" | "LOW";
+  priority: PriorityDto;
   label: string[];
   isRecurrent: boolean;
-  frequency?: "Daily" | "WEEKLY" | "BI-WEEKLY";
+  frequency?: FrequencyDto;
   startTime?: Date;
   endTime?: Date;
   startDate?: Date;
@@ -17,10 +17,10 @@ export type CreateTaskDto = {
 export type CreateTaskValues = {
   title: string;
   estimation: number;
-  priority: "MEDIUM" | "HIGH" | "LOW";
+  priority: PriorityDto;
   label: string[];
   isRecurrent: boolean;
-  frequency?: "Daily" | "WEEKLY" | "BI-WEEKLY";
+  frequency?: FrequencyDto;
   timeRange?: Date[];
   dateRange?: Date[];
 };
@@ -30,9 +30,9 @@ export type TaskDto = {
   title: string;
   description: string;
   estimation: number;
-  status: "IN_PROGRESS" | "TODO" | "DONE";
+  status: StatusDto;
   due: any;
-  priority: "MEDIUM" | "HIGH" | "LOW";
+  priority: PriorityDto;
   labels: string[];
   createdAt: string;
   sessions: any;
@@ -54,3 +54,10 @@ export interface AddWorkLogParams {
   endTime: Date;
   taskId: number;
 }
+export interface UpdateTaskStatusParams {
+  status: StatusDto;
+}
+
+export type StatusDto = "TODO" | "IN_PROGRESS" | "DONE";
+export type PriorityDto = "HIGH" | "MEDIUM" | "LOW";
+export type FrequencyDto = "DAILY" | "WEEKLY" | "BI-WEEKLY";

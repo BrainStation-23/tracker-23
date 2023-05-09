@@ -1,9 +1,10 @@
 import { Button, Empty, message, Spin } from "antd";
 import { userAPI } from "APIs";
-import { TaskDto } from "models/tasks";
+import { StatusDto, TaskDto } from "models/tasks";
 import { useRouter } from "next/router";
 import { createContext, useEffect, useState } from "react";
 
+import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 import {
   formatDate,
   getFormattedTime,
@@ -18,12 +19,11 @@ import { getLocalStorage, setLocalStorage } from "@/storage/storage";
 import { getDateRangeArray } from "../datePicker";
 import GlobalModal from "../modals/globalModal";
 import TaskDetailsModal from "../modals/taskDetails.modal";
+import CreateTaskComponent from "./components/createTaskComponent";
 import ManualTimeEntry from "./components/manualTimeEntry";
 import TableComponent from "./components/tableComponent";
-import CreateTaskComponent from "./components/createTaskComponent";
 import TopPanel from "./components/topPanel";
 import SessionStartWarning from "./components/warning";
-import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -272,6 +272,19 @@ const TasksPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncRunning]);
 
+  const handleStatusChange = async (task: TaskDto, value: StatusDto) => {
+    setLoading(true);
+    const res = await userAPI.updateTaskSTatus(task.id, {
+      status: value,
+    });
+    if (res) {
+      task.status = res.status;
+      message.success("Status Changed");
+    }
+    setReload(!reload);
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (tasks) {
       tasks.map((task) => {
@@ -342,6 +355,8 @@ const TasksPage = () => {
                     setReload,
                     reload,
                     sessionActionLoading,
+                    setLoading,
+                    handleStatusChange,
                   }}
                 />
               </div>
@@ -365,6 +380,8 @@ const TasksPage = () => {
                   setReload,
                   reload,
                   sessionActionLoading,
+                  setLoading,
+                  handleStatusChange,
                 }}
               />
             </div>

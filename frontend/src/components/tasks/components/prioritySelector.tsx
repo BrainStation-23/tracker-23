@@ -1,6 +1,7 @@
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import SortPriorityIconSvg from "@/assets/svg/sortIcons/SortPriorityIconSvg";
 import { Select } from "antd";
+import { PriorityDto } from "models/tasks";
 import {
   PriorityBGColorEnum,
   PriorityBorderColorEnum,
@@ -8,7 +9,7 @@ import {
 } from "utils/constants";
 type TagProps = {
   label: any;
-  value: "MEDIUM" | "HIGH" | "LOW";
+  value: PriorityDto;
   closable: any;
   onClose: any;
 };

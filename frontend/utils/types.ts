@@ -1,6 +1,10 @@
 import { SearchParamsModel } from "models/apiParams";
 import { LoginDto, LoginResponseDto } from "models/auth";
-import { AddWorkLogParams, CreateTaskDto } from "models/tasks";
+import {
+  AddWorkLogParams,
+  CreateTaskDto,
+  UpdateTaskStatusParams,
+} from "models/tasks";
 
 import { RegisterDto } from "../models/auth/index";
 import { TaskDto } from "../models/tasks/index";
@@ -26,4 +30,5 @@ export interface apiFunction {
   getProjectWiseHour: (dates?: any) => Promise<any>;
   getSpentTimePerDay: (dates?: any) => Promise<any>;
   addManualWorkLog: (data: AddWorkLogParams) => Promise<any>;
+  updateTaskSTatus: (taskId: any, data: UpdateTaskStatusParams) => Promise<any>;
 }

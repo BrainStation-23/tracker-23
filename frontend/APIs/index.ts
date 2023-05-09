@@ -22,6 +22,7 @@ import {
   stopSessionRest,
   syncStatusRest,
   syncTasksRest,
+  updateTaskSTatusRest,
 } from "./restApi";
 
 const graphqlApi: apiFunction = {
@@ -45,6 +46,7 @@ const graphqlApi: apiFunction = {
   getProjectWiseHour: getProjectWiseHourRest,
   getSpentTimePerDay: getSpentTimePerDayRest,
   addManualWorkLog: addManualWorkLogRest,
+  updateTaskSTatus: updateTaskSTatusRest,
 };
 
 const restApi: apiFunction = {
@@ -68,6 +70,7 @@ const restApi: apiFunction = {
   getProjectWiseHour: getProjectWiseHourRest,
   getSpentTimePerDay: getSpentTimePerDayRest,
   addManualWorkLog: addManualWorkLogRest,
+  updateTaskSTatus: updateTaskSTatusRest,
 };
 
 export const userAPI: apiFunction =
