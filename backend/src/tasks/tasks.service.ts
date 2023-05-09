@@ -1,5 +1,11 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { IntegrationType, SessionStatus, Task, User } from '@prisma/client';
+import {
+  IntegrationType,
+  SessionStatus,
+  Status,
+  Task,
+  User,
+} from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CreateTaskDto,
@@ -374,13 +380,22 @@ export class TasksService {
   async updateIssueStatus(user: User, issueId: string, status: string) {
     try {
       const updated_integration = await this.updateIntegration(user);
+      const taskIntegration = await this.prisma.taskIntegration.findFirst({
+        where: {
+          userId: user.id,
+          taskId: Number(issueId),
+        },
+        select: {
+          integratedTaskId: true,
+        },
+      });
       const statusBody = JSON.stringify({
         transition: {
           id: this.getTransitionId(status),
         },
       });
 
-      const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${issueId}/transitions`;
+      const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${taskIntegration?.integratedTaskId}/transitions`;
       const config = {
         method: 'post',
         url,
@@ -390,7 +405,22 @@ export class TasksService {
         },
         data: statusBody,
       };
-      await axios(config);
+      const updatedIssue = await axios(config);
+      const updatedTask =
+        updatedIssue &&
+        (await this.prisma.task.update({
+          where: {
+            id: Number(issueId),
+          },
+          data: { status: status as Status },
+        }));
+      if (!updatedTask) {
+        throw new APIException(
+          'Can not update issue status',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      return updatedTask;
     } catch (err) {
       console.log(err.message);
       throw new APIException(
