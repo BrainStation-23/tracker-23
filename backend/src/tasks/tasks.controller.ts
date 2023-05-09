@@ -114,7 +114,6 @@ export class TasksController {
   @Get('all/status')
   @UseGuards(JwtAuthGuard)
   async getAllStatus(@GetUser() user: User) {
-    console.log(user);
     return this.tasksService.getAllStatus(user);
   }
 }
