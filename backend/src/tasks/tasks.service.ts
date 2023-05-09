@@ -373,21 +373,19 @@ export class TasksService {
 
   async updateIssueStatus(user: User, issueId: string, status: string) {
     try {
-      const integration = await this.prisma.integration.findFirst({
-        where: { userId: user.id, type: IntegrationType.JIRA },
-      });
+      const updated_integration = await this.updateIntegration(user);
       const statusBody = JSON.stringify({
         transition: {
           id: this.getTransitionId(status),
         },
       });
 
-      const url = `https://api.atlassian.com/ex/jira/${integration?.siteId}/rest/api/3/issue/${issueId}/transitions`;
+      const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${issueId}/transitions`;
       const config = {
         method: 'post',
         url,
         headers: {
-          Authorization: `Bearer ${integration?.accessToken}`,
+          Authorization: `Bearer ${updated_integration?.accessToken}`,
           'Content-Type': 'application/json',
         },
         data: statusBody,
@@ -395,6 +393,10 @@ export class TasksService {
       await axios(config);
     } catch (err) {
       console.log(err.message);
+      throw new APIException(
+        'Can not update issue status',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -567,5 +569,36 @@ export class TasksService {
     } catch (err) {
       console.log(err.message);
     }
+  }
+
+  async updateIntegration(user: User) {
+    const tokenUrl = 'https://auth.atlassian.com/oauth/token';
+    const headers: any = { 'Content-Type': 'application/json' };
+    const integration = await this.prisma.integration.findFirst({
+      where: { userId: user.id, type: IntegrationType.JIRA },
+    });
+    if (!integration) {
+      throw new APIException('You have no integration', HttpStatus.BAD_REQUEST);
+    }
+
+    const data = {
+      grant_type: 'refresh_token',
+      client_id: this.config.get('JIRA_CLIENT_ID'),
+      client_secret: this.config.get('JIRA_SECRET_KEY'),
+      refresh_token: integration?.refreshToken,
+    };
+
+    const tokenResp = (
+      await lastValueFrom(this.httpService.post(tokenUrl, data, headers))
+    ).data;
+
+    const updated_integration = await this.prisma.integration.update({
+      where: { id: integration?.id },
+      data: {
+        accessToken: tokenResp.access_token,
+        refreshToken: tokenResp.refresh_token,
+      },
+    });
+    return updated_integration;
   }
 }
