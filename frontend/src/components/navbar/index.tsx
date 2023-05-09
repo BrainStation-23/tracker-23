@@ -138,6 +138,11 @@ function Navbar() {
         </Button>
       ) : (
         <div className="flex items-center gap-4">
+          {syncing && (
+            <div className="flex h-9 w-9 cursor-pointer items-center justify-center text-green-500">
+              <SyncOutlined spin={syncing} />
+            </div>
+          )}
           <div
             className="flex h-9 w-9 cursor-pointer items-center justify-center"
             style={{
@@ -157,7 +162,6 @@ function Navbar() {
             overlayClassName='w-32'
             className="flex w-[300px] items-center rounded bg-gray-50 p-2 hover:bg-gray-100"
           > */}
-
           <div>
             <Dropdown
               menu={menuProps}
@@ -207,7 +211,6 @@ function Navbar() {
             </Dropdown>
           </div>
           {/* </Dropdown> */}
-
           {/* <LogOutButton /> */}
         </div>
       )}
