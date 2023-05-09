@@ -37,6 +37,8 @@ const TableComponent = ({
   reload,
   setManualTimeEntryModalOpen,
   sessionActionLoading,
+  setLoading,
+  handleStatusChange,
 }: any) => {
   const columns: any = [
     {
@@ -98,12 +100,17 @@ const TableComponent = ({
       dataIndex: "status",
       key: "status",
       // align: "center",
-      render: (_: any, { status }: TaskDto) => (
-        <StatusDropdownComponent selectedStatus={status}>
+      render: (_: any, task: TaskDto) => (
+        <StatusDropdownComponent
+          selectedStatus={task.status}
+          task={task}
+          setLoading={setLoading}
+          handleStatusChange={handleStatusChange}
+        >
           <div
             style={{
-              backgroundColor: statusBGColorEnum[status],
-              border: `1px solid ${statusBorderColorEnum[status]}`,
+              backgroundColor: statusBGColorEnum[task.status],
+              border: `1px solid ${statusBorderColorEnum[task.status]}`,
               borderRadius: "36px",
             }}
             className="relative flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
@@ -111,11 +118,11 @@ const TableComponent = ({
             <div
               className="h-2 w-2 rounded-full"
               style={{
-                backgroundColor: statusBorderColorEnum[status],
+                backgroundColor: statusBorderColorEnum[task.status],
               }}
             />
 
-            <div>{taskStatusEnum[status]}</div>
+            <div>{taskStatusEnum[task.status]}</div>
           </div>
         </StatusDropdownComponent>
       ),
