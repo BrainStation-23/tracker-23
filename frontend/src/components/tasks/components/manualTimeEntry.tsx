@@ -56,10 +56,9 @@ const ManualTimeEntry = ({ task, handleAddManualSession }: Props) => {
           name="time"
           label="Time"
           labelCol={{ span: 24 }}
-          className="col-span-4"
           rules={[{ required: true }]}
         >
-          <TimePicker.RangePicker format={"HH:mm"} />
+          <TimePicker.RangePicker format={"HH:mm"} className="w-full" />
         </Form.Item>
         <Form.Item
           name="date"
@@ -68,19 +67,19 @@ const ManualTimeEntry = ({ task, handleAddManualSession }: Props) => {
           className="col-span-4"
           rules={[{ required: true }]}
         >
-          <DatePicker />
+          <DatePicker className="w-full" />
         </Form.Item>
         <Form.Item>
-          <div className="flex justify-center gap-3">
+          <div className="flex justify-end gap-3">
+            <Button htmlType="button" onClick={onReset}>
+              Reset
+            </Button>
             <Button
               type="ghost"
               htmlType="submit"
               className="bg-[#00A3DE] text-white hover:bg-[#00a3deb2]"
             >
               Add Entry
-            </Button>
-            <Button htmlType="button" onClick={onReset}>
-              Reset
             </Button>
           </div>
         </Form.Item>
