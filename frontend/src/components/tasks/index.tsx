@@ -22,7 +22,7 @@ import TaskDetailsModal from "../modals/taskDetails.modal";
 import CreateTaskComponent from "./components/createTaskComponent";
 import ManualTimeEntry from "./components/manualTimeEntry";
 import TableComponent from "./components/tableComponent";
-import TopPanel from "./components/topPanel";
+import TopPanel from "./components/topPanel/topPanel";
 import SessionStartWarning from "./components/warning";
 
 export const TaskContext = createContext<any>({

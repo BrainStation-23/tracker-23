@@ -6,8 +6,8 @@ import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { DownloadOutlined } from "@ant-design/icons";
-import StatusSelectorComponent from "@/components/tasks/components/statusSelector";
-import PrioritySelectorComponent from "@/components/tasks/components/prioritySelector";
+import StatusSelectorComponent from "@/components/tasks/components/topPanel/components/statusSelector";
+import PrioritySelectorComponent from "@/components/tasks/components/topPanel/components/prioritySelector";
 import { userAPI } from "APIs";
 
 type Props = {

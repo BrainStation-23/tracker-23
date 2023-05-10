@@ -6,8 +6,8 @@ import { TaskDto } from "models/tasks";
 import { useState } from "react";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { useEffect } from "react";
-import StatusSelectorComponent from "./statusSelector";
-import PrioritySelectorComponent from "./prioritySelector";
+import StatusSelectorComponent from "./components/statusSelector";
+import PrioritySelectorComponent from "./components/prioritySelector";
 import { debounce } from "lodash";
 
 type Props = {
