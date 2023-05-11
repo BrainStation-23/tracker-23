@@ -40,13 +40,15 @@ const CustomLayout = ({ children }: any) => {
       }
     };
     let timeout: NodeJS.Timeout;
-    timeout = setTimeout(getSyncStatus, 2000);
+    timeout =
+      !publicRoutes.some((route) => path.includes(route)) &&
+      setTimeout(getSyncStatus, 2000);
     const cleanup = () => {
       clearTimeout(timeout);
     };
 
     return cleanup;
-  }, []);
+  }, [publicRoutes.some((route) => path.includes(route))]);
   useEffect(() => {
     let myTimeout: NodeJS.Timeout;
 
