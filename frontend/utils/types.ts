@@ -31,4 +31,5 @@ export interface apiFunction {
   getSpentTimePerDay: (dates?: any) => Promise<any>;
   addManualWorkLog: (data: AddWorkLogParams) => Promise<any>;
   updateTaskSTatus: (taskId: any, data: UpdateTaskStatusParams) => Promise<any>;
+  pinTask: (taskId: any, pinned: boolean) => Promise<any>;
 }

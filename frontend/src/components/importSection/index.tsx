@@ -44,22 +44,18 @@ const ImportSection = () => {
   console.log(integratedTypes);
 
   return (
-    <Spin spinning={loading} tip={loadingTip}>
-      <div className="flex w-full flex-col gap-2">
-        <div className="flex w-full flex-col gap-2">
+    <div className="flex w-full flex-col gap-2">
+      <div className="flex flex-col gap-2">
+        <div className="text-2xl font-semibold">Select Source of Import</div>
+        <Spin spinning={loading} tip={loadingTip} className="h-full">
           {integratedTypes && (
             <ImportSelect
               {...{ integratedTypes, integrations, handleDeleteIntegration }}
             />
           )}
-        </div>
-        {/* <IntegratedServices {...{ data }} /> */}
-        {/* <div className="flex justify-end">
-        <Button type="link">Skip ...</Button>{" "}
-      </div> */}
-        {/* <Button onClick={() => handleOnclick()}>jira link</Button> */}
+        </Spin>
       </div>
-    </Spin>
+    </div>
   );
 };
 

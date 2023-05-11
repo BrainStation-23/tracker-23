@@ -1,4 +1,10 @@
-import { Button, Table, TablePaginationConfig, Typography } from "antd";
+import {
+  Button,
+  Table,
+  TablePaginationConfig,
+  Typography,
+  message,
+} from "antd";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { TableParams, TaskDto } from "models/tasks";
 import { useState } from "react";
@@ -23,6 +29,7 @@ import ProgressComponent from "./progressComponent";
 import StaticProgressComponent from "./progressComponentStatic";
 import TimeDisplayComponent from "./timeDisplayComponent";
 import StatusDropdownComponent from "./statusDropdown";
+import { userAPI } from "APIs";
 
 const { Text } = Typography;
 const TableComponent = ({
@@ -94,6 +101,17 @@ const TableComponent = ({
           </div>
         );
       },
+      sorter: (a: any, b: any) => {
+        if (a.title === b.title) {
+          return 0;
+        }
+
+        if (a.title > b.title) {
+          return 1;
+        }
+
+        return -1;
+      },
     },
     {
       title: "Status",
@@ -128,10 +146,23 @@ const TableComponent = ({
       ),
     },
     {
-      title: "Date",
+      title: "Created",
       dataIndex: "created",
       key: "created",
       // align: "center",
+      sorter: (a: any, b: any) => {
+        const aCreated = new Date(a.created);
+        const bCreated = new Date(b.created);
+        if (aCreated === bCreated) {
+          return 0;
+        }
+
+        if (aCreated > bCreated) {
+          return 1;
+        }
+
+        return -1;
+      },
     },
     {
       title: "Priority",
@@ -181,6 +212,8 @@ const TableComponent = ({
           //   addEndTime={() => {}}
           // />
         ),
+      sorter: (a: any, b: any) =>
+        getTotalSpentTime(a.sessions) - getTotalSpentTime(b.sessions),
     },
     {
       title: "Estimation",
@@ -192,6 +225,7 @@ const TableComponent = ({
         ) : (
           <div className="text-center">---</div>
         ),
+      sorter: (a: any, b: any) => a.estimation - b.estimation,
     },
     {
       title: "",
@@ -261,7 +295,7 @@ const TableComponent = ({
     setManualTimeEntryModalOpen(true);
     setSelectedTask(task);
   };
-  const handlePin = (task: TaskDto) => {
+  const handlePin = async (task: TaskDto) => {
     task.pinned
       ? (tableParams.pagination.total = tableParams.pagination.total - 1)
       : (tableParams.pagination.total = tableParams.pagination.total + 1);
@@ -278,6 +312,9 @@ const TableComponent = ({
       pinnedTasks.push(task.id);
       setLocalStorage("pinnedTasks", pinnedTasks);
     }
+    const res = await userAPI.pinTask(task.id, !task.pinned);
+    if (res) message.success("Task Pinned");
+
     task.pinned = !task.pinned;
     setReload(!reload);
   };

@@ -296,3 +296,13 @@ export async function updateTaskSTatusRest(
     return false;
   }
 }
+export async function pinTaskRest(taskId: any, pinned: boolean) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.tasks}/${taskId}`, {
+      pinned: pinned,
+    });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
