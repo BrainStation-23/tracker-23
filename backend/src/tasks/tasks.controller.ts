@@ -18,12 +18,12 @@ import {
   GetTaskQuery,
   StatusReqBodyDto,
   TimeSpentReqBodyDto,
+  UpdatePinDto,
 } from './dto';
 import { TasksService } from './tasks.service';
 import { Task, User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/guard';
 import { GetUser } from 'src/decorator';
-import { UpdateTaskDto } from './dto';
 
 @Controller('tasks')
 export class TasksController {
@@ -49,11 +49,11 @@ export class TasksController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
-  async updateTask(
+  async updatePin(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateTaskDto: UpdateTaskDto,
+    @Body() updatePinDto: UpdatePinDto,
   ): Promise<Task> {
-    return this.tasksService.updateTask(id, updateTaskDto);
+    return this.tasksService.updatePin(id, updatePinDto);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
