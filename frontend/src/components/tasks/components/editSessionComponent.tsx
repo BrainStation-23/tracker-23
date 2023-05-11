@@ -11,9 +11,9 @@ type Props = {
   task: TaskDto;
   handleAddManualSession: Function;
 };
-const ManualTimeEntry = ({ task, handleAddManualSession }: Props) => {
+const EditSessionComponent = ({ task, handleAddManualSession }: Props) => {
   console.log(
-    "🚀 ~ file: manualTimeEntry.tsx:12 ~ ManualTimeEntry ~ task:",
+    "🚀 ~ file: manualTimeEntry.tsx:12 ~ EditSessionComponent ~ task:",
     task
   );
   const [spinning, setSpinning] = useState(false);
@@ -88,4 +88,4 @@ const ManualTimeEntry = ({ task, handleAddManualSession }: Props) => {
   );
 };
 
-export default ManualTimeEntry;
+export default EditSessionComponent;

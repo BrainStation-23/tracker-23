@@ -2,7 +2,11 @@ import { message } from "antd";
 import axios from "axios";
 import { SearchParamsModel } from "models/apiParams";
 import { LoginDto, LoginResponseDto, RegisterDto } from "models/auth";
-import { AddWorkLogParams, CreateTaskDto } from "models/tasks";
+import {
+  AddWorkLogParams,
+  CreateTaskDto,
+  UpdateTaskStatusParams,
+} from "models/tasks";
 import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
@@ -272,6 +276,31 @@ export async function getSpentTimePerDayRest(dates?: any) {
 export async function addManualWorkLogRest(data: AddWorkLogParams) {
   try {
     const res = await axios.patch(`${apiEndPoints.addWorkLog}`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function updateTaskSTatusRest(
+  taskId: any,
+  data: UpdateTaskStatusParams
+) {
+  try {
+    const res = await axios.patch(
+      `${apiEndPoints.updateTaskStatus}/${taskId}`,
+      data
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function pinTaskRest(taskId: any, pinned: boolean) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.tasks}/${taskId}`, {
+      pinned: pinned,
+    });
     return res.data;
   } catch (error: any) {
     return false;

@@ -36,7 +36,11 @@ const columns: any = [
     dataIndex: "title",
     key: "title",
     render: (_: any, { title }: TaskDto) => (
-      <div className=" mx-auto max-w-[200px]">{title ? title : "---"}</div>
+      <div className="w-full text-left">
+        <div className=" mx-auto max-w-[200px] font-semibold">
+          {title ? title : "---"}
+        </div>
+      </div>
     ),
     // defaultSortOrder: "descend",
     sorter: (a: any, b: any) => {
@@ -69,24 +73,26 @@ const columns: any = [
     title: "Status",
     dataIndex: "status",
     key: "status",
-    // align: "center",
+    align: "center",
     render: (_: any, { status }: TaskDto) => (
-      <div
-        style={{
-          backgroundColor: statusBGColorEnum[status],
-          border: `1px solid ${statusBorderColorEnum[status]}`,
-          borderRadius: "36px",
-        }}
-        className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
-      >
+      <div className="flex justify-center">
         <div
-          className="h-2 w-2 rounded-full"
           style={{
-            backgroundColor: statusBorderColorEnum[status],
+            backgroundColor: statusBGColorEnum[status],
+            border: `1px solid ${statusBorderColorEnum[status]}`,
+            borderRadius: "36px",
           }}
-        />
+          className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
+        >
+          <div
+            className="h-2 w-2 rounded-full"
+            style={{
+              backgroundColor: statusBorderColorEnum[status],
+            }}
+          />
 
-        <div>{taskStatusEnum[status]}</div>
+          <div>{taskStatusEnum[status]}</div>
+        </div>
       </div>
     ),
   },

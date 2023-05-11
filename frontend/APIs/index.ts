@@ -17,11 +17,13 @@ import {
   googleLoginRest,
   loginRest,
   logoutRest,
+  pinTaskRest,
   registerRest,
   sendJiraCodeRest,
   stopSessionRest,
   syncStatusRest,
   syncTasksRest,
+  updateTaskSTatusRest,
 } from "./restApi";
 
 const graphqlApi: apiFunction = {
@@ -45,6 +47,8 @@ const graphqlApi: apiFunction = {
   getProjectWiseHour: getProjectWiseHourRest,
   getSpentTimePerDay: getSpentTimePerDayRest,
   addManualWorkLog: addManualWorkLogRest,
+  updateTaskSTatus: updateTaskSTatusRest,
+  pinTask: pinTaskRest,
 };
 
 const restApi: apiFunction = {
@@ -68,6 +72,8 @@ const restApi: apiFunction = {
   getProjectWiseHour: getProjectWiseHourRest,
   getSpentTimePerDay: getSpentTimePerDayRest,
   addManualWorkLog: addManualWorkLogRest,
+  updateTaskSTatus: updateTaskSTatusRest,
+  pinTask: pinTaskRest,
 };
 
 export const userAPI: apiFunction =

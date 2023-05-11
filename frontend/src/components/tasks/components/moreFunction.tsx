@@ -1,17 +1,11 @@
 import { Button, Dropdown, MenuProps, Tooltip } from "antd";
 import { TaskDto } from "models/tasks";
 import { useState } from "react";
-import { BsPinAngle, BsPinAngleFill } from "react-icons/bs";
 
 import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
 import PinFilledIconSvg from "@/assets/svg/PinFilledIconSvg";
 import PinIconSvg from "@/assets/svg/PinIconSvg";
-import {
-  DeleteFilled,
-  DeleteOutlined,
-  EditOutlined,
-  MoreOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, MoreOutlined } from "@ant-design/icons";
 
 type Props = {
   deleteTask: Function;
@@ -33,7 +27,7 @@ const MoreFunctionComponent = ({
       key: "entry",
       label: (
         <Button
-          className="-2 flex items-center gap-2 p-1 hover:bg-white"
+          className=" flex items-center gap-2 p-1 hover:bg-white"
           onClick={() => {
             handleAddManualWorkLog(task);
           }}
@@ -48,7 +42,7 @@ const MoreFunctionComponent = ({
       key: "1",
       label: (
         <Button
-          className="-2 flex gap-2 p-1 hover:bg-white"
+          className="flex w-full gap-2 p-1 hover:bg-white"
           onClick={() => {
             deleteTask(task.id);
           }}
@@ -63,7 +57,7 @@ const MoreFunctionComponent = ({
       key: "1",
       label: (
         <Button
-          className="-2 flex w-full gap-3 p-1 hover:bg-white"
+          className=" flex w-full gap-3 p-1 hover:bg-white"
           onClick={() => {
             handlePin(task);
           }}

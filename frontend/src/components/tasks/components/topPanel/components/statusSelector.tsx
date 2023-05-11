@@ -1,6 +1,7 @@
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import SortStatusIconSvg from "@/assets/svg/sortIcons/SortStatusIconSvg";
 import { Select } from "antd";
+import { StatusDto } from "models/tasks";
 import {
   statusBGColorEnum,
   statusBorderColorEnum,
@@ -12,7 +13,7 @@ type Props = {
 };
 type TagProps = {
   label: any;
-  value: "IN_PROGRESS" | "TODO" | "DONE";
+  value: StatusDto;
   closable: any;
   onClose: any;
 };
