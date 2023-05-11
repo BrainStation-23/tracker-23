@@ -94,6 +94,17 @@ const TableComponent = ({
           </div>
         );
       },
+      sorter: (a: any, b: any) => {
+        if (a.title === b.title) {
+          return 0;
+        }
+
+        if (a.title > b.title) {
+          return 1;
+        }
+
+        return -1;
+      },
     },
     {
       title: "Status",
@@ -128,10 +139,23 @@ const TableComponent = ({
       ),
     },
     {
-      title: "Date",
+      title: "Created",
       dataIndex: "created",
       key: "created",
       // align: "center",
+      sorter: (a: any, b: any) => {
+        const aCreated = new Date(a.created);
+        const bCreated = new Date(b.created);
+        if (aCreated === bCreated) {
+          return 0;
+        }
+
+        if (aCreated > bCreated) {
+          return 1;
+        }
+
+        return -1;
+      },
     },
     {
       title: "Priority",
@@ -181,6 +205,8 @@ const TableComponent = ({
           //   addEndTime={() => {}}
           // />
         ),
+      sorter: (a: any, b: any) =>
+        getTotalSpentTime(a.sessions) - getTotalSpentTime(b.sessions),
     },
     {
       title: "Estimation",
@@ -192,6 +218,7 @@ const TableComponent = ({
         ) : (
           <div className="text-center">---</div>
         ),
+      sorter: (a: any, b: any) => a.estimation - b.estimation,
     },
     {
       title: "",

@@ -117,7 +117,7 @@ const TopPanel = ({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, priority, status]);
-  const sortOptions = [
+  const filterOptions = [
     // {
     //   icon: <SortNameIconSvg />,
     //   title: "Name",
@@ -166,7 +166,7 @@ const TopPanel = ({
             setActive("");
           }}
         >
-          <div
+          {/* <div
             className={`flex cursor-pointer gap-2 text-[#00A3DE] ${
               active === "Sort" ? "" : "grayscale"
             }`}
@@ -178,7 +178,7 @@ const TopPanel = ({
           >
             <SortIconSvg />
             <span className="font-normal">Sort</span>
-          </div>
+          </div> */}
 
           <div
             className={`relative flex cursor-pointer gap-2 text-[#00A3DE] ${
@@ -209,7 +209,7 @@ const TopPanel = ({
                 borderRadius: "12px",
               }}
             >
-              {sortOptions?.map((option) => option)}
+              {filterOptions?.map((option) => option)}
             </div>
           </div>
         </div>
