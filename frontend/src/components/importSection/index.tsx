@@ -21,7 +21,7 @@ const ImportSection = () => {
     );
     if (integrations) {
       setIntegrations(integrations);
-      integrations.forEach((i: any) => {
+      integrations?.forEach((i: any) => {
         tmp.push(i.type);
       });
       setIntegratedTypes(tmp);

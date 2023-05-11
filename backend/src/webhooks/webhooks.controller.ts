@@ -3,14 +3,19 @@ import { JwtAuthGuard } from 'src/guard';
 import { WebhooksService } from './webhooks.service';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
-@Controller('webhookreceiver')
+@Controller('webhook')
 export class WebhooksController {
   constructor(private webhooksService: WebhooksService) {}
 
-  @Post()
+  @Post('receiver')
+  async handleWebhook(@Body() payload: any) {
+    return this.webhooksService.handleWebhook(payload);
+  }
+
+  @Post('register')
   @UseGuards(JwtAuthGuard)
-  async handleWebhook(@Body() data: any) {
-    return this.webhooksService.handleWebhook(data);
+  async registerWebhook(@GetUser() user: User, @Body() reqBody: any) {
+    return this.webhooksService.registerWebhook(user, reqBody);
   }
 
   @Get()

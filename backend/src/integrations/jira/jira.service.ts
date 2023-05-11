@@ -24,25 +24,16 @@ export class JiraService {
     return `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${client_id}&scope=read:jira-work manage:jira-project manage:jira-data-provider manage:jira-webhook write:jira-work write:issue:jira read:jira-user manage:jira-configuration write:workflow:jira offline_access&redirect_uri=${callback_url}${stateParam}&response_type=code&prompt=consent`;
   }
 
-  async createIntegration(dto: AuthorizeJiraDto, user: User) {
+  async findIntegration(dto: AuthorizeJiraDto, user: User) {
+    // console.log(dto);
     console.log(
       '🚀 ~ file: jira.service.ts:21 ~ JiraService ~ createIntegration ~ user:',
       user,
     );
-    const doesExistIntegration = await this.prisma.integration.findFirst({
-      where: { userId: user.id, type: IntegrationType.JIRA },
-    });
-    if (doesExistIntegration) {
-      throw new APIException(
-        'Already you have an integration',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
 
     // get access token and refresh tokens and store those on integrations table.
     const url = 'https://auth.atlassian.com/oauth/token';
-    const urlResources =
-      'https://api.atlassian.com/oauth/token/accessible-resources';
+    const urlResources = `https://api.atlassian.com/oauth/token/accessible-resources`;
     const headers: any = { 'Content-Type': 'application/json' };
     const body = {
       grant_type: 'authorization_code',
@@ -66,33 +57,36 @@ export class JiraService {
     const respResources = (
       await lastValueFrom(this.httpService.get(urlResources, { headers }))
     ).data;
-    // console.log(respResources);
 
-    // add all available resources in our database if doesn't exist
-    respResources.forEach(async (element: any) => {
-      // const integration = await this.prisma.integration.upsert({
-      await this.prisma.integration.upsert({
-        where: {
-          integrationIdentifier: { userId: user.id, siteId: element.id },
-        },
-        update: {
-          accessToken: resp.access_token,
-          refreshToken: resp.refresh_token,
-          site: element.url,
-        },
-        create: {
-          siteId: element.id,
-          userId: user.id,
-          type: IntegrationType.JIRA,
-          accessToken: resp.access_token,
-          refreshToken: resp.refresh_token,
-          site: element.url,
-          accountId: accountId,
-        },
-      });
-      // console.log(integration);
-    });
-    return await this.prisma.integration.findMany({
+    await Promise.allSettled(
+      respResources.map(async (element: any) => {
+        // const integration = await this.prisma.integration.upsert({
+        await this.prisma.tempIntegration.upsert({
+          where: {
+            tempIntegrationIdentifier: {
+              siteId: element.id,
+              userId: user.id,
+            },
+          },
+          update: {
+            accessToken: resp.access_token,
+            refreshToken: resp.refresh_token,
+            site: element.url,
+          },
+          create: {
+            siteId: element.id,
+            userId: user.id,
+            type: IntegrationType.JIRA,
+            accessToken: resp.access_token,
+            refreshToken: resp.refresh_token,
+            site: element.url,
+            jiraAccountId: accountId,
+          },
+        });
+        // console.log(integration);
+      }),
+    );
+    return await this.prisma.tempIntegration.findMany({
       where: { userId: user.id },
       select: {
         id: true,
@@ -102,5 +96,65 @@ export class JiraService {
         accessToken: true,
       },
     });
+  }
+
+  async createIntegration(user: User, siteId: string) {
+    try {
+      const doesExistIntegration = await this.prisma.integration.findUnique({
+        where: {
+          integrationIdentifier: {
+            siteId,
+            userId: user.id,
+          },
+        },
+      });
+      if (doesExistIntegration) {
+        throw new APIException(
+          'Already you have an integration',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const getTempIntegration = await this.prisma.tempIntegration.findUnique({
+        where: {
+          tempIntegrationIdentifier: {
+            siteId,
+            userId: user.id,
+          },
+        },
+      });
+
+      if (!getTempIntegration) {
+        throw new APIException('Time Expired!', HttpStatus.BAD_REQUEST);
+      }
+      const integration = await this.prisma.integration.create({
+        data: {
+          siteId,
+          userId: user.id,
+          type: IntegrationType.JIRA,
+          accessToken: getTempIntegration.accessToken,
+          refreshToken: getTempIntegration.refreshToken,
+          site: getTempIntegration.site,
+          jiraAccountId: getTempIntegration.jiraAccountId,
+        },
+      });
+      const deleteTempIntegrations =
+        integration &&
+        (await this.prisma.tempIntegration.deleteMany({
+          where: { jiraAccountId: integration.jiraAccountId },
+        }));
+      // console.log(integration);
+      if (!deleteTempIntegrations) {
+        throw new APIException(
+          'Can not create integration',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      return { message: `Integration successful in ${integration.site}` };
+    } catch (err) {
+      throw new APIException(
+        err.message || 'Something is wrong in creating integration',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }

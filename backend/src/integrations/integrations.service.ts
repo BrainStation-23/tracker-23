@@ -1,8 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { IntegrationType, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { APIException } from 'src/internal/exception/api.exception';
 import { PrismaService } from 'src/prisma/prisma.service';
-
 @Injectable()
 export class IntegrationsService {
   constructor(private prisma: PrismaService) {}
@@ -33,7 +32,7 @@ export class IntegrationsService {
     } catch (err) {
       console.log(err.message);
       throw new APIException(
-        'Can not delete user integration',
+        err.message || 'Can not delete user integration',
         HttpStatus.BAD_REQUEST,
       );
     }
