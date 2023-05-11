@@ -90,26 +90,81 @@ export class TasksService {
   }
 
   async createTask(user: User, dto: CreateTaskDto) {
-    const task: Task = await this.prisma.task.create({
-      data: {
-        userId: user.id,
-        title: dto.title,
-        description: dto.description,
-        estimation: dto.estimation,
-        due: dto.due,
-        priority: dto.priority,
-        status: dto.status,
-        labels: dto.labels,
-      },
-    });
+    if (dto.isRecurrent) {
+      await this.recurrentTask(user, dto);
+    } else {
+      const task: Task = await this.prisma.task.create({
+        data: {
+          userId: user.id,
+          title: dto.title,
+          description: dto.description,
+          estimation: dto.estimation,
+          due: dto.due,
+          priority: dto.priority,
+          status: dto.status,
+          labels: dto.labels,
+        },
+      });
+      return task;
+    }
+  }
 
-    const sessions = [];
+  recurrentTask = async (user: User, dto: CreateTaskDto) => {
+    const endDate = new Date(dto.endDate);
+    const timeMultiplier =
+      dto.frequency === 'DAILY' ? 1 : dto.frequency === 'WEEKLY' ? 7 : 14;
+    const timeInterval = timeMultiplier * 3600 * 24 * 1000;
+    const oneDay = 3600 * 24 * 1000;
+
+    try {
+      for (
+        let startTime = new Date(dto.startTime).getTime(),
+          endTime = new Date(dto.endTime).getTime();
+        endTime <= endDate.getTime() + oneDay;
+        startTime += timeInterval, endTime += timeInterval
+      ) {
+        const task: Task = await this.prisma.task.create({
+          data: {
+            userId: user.id,
+            title: dto.title,
+            description: dto.description,
+            estimation: dto.estimation,
+            due: dto.due,
+            priority: dto.priority,
+            status: dto.status,
+            labels: dto.labels,
+            createdAt: new Date(startTime),
+            updatedAt: new Date(endTime),
+          },
+        });
+        await this.prisma.session.create({
+          data: {
+            startTime: new Date(startTime),
+            endTime: new Date(endTime),
+            status: SessionStatus.STOPPED,
+            taskId: task.id,
+            userId: user.id,
+          },
+        });
+      }
+      return { message: 'Recurrent Tasks created' };
+    } catch (error) {
+      throw new APIException(
+        'Session creation Failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  };
+
+  // for future use
+  recurrentSession = async (user: User, dto: CreateTaskDto, task: Task) => {
     if (dto.isRecurrent) {
       const endDate = new Date(dto.endDate);
       const timeMultiplier =
         dto.frequency === 'DAILY' ? 1 : dto.frequency === 'WEEKLY' ? 7 : 14;
       const timeInterval = timeMultiplier * 3600 * 24 * 1000;
       const oneDay = 3600 * 24 * 1000;
+      const sessions: any = [];
       try {
         for (
           let startTime = new Date(dto.startTime).getTime(),
@@ -135,8 +190,7 @@ export class TasksService {
         );
       }
     }
-    return { ...task, sessions };
-  }
+  };
 
   async updateTask(id: number, dto: UpdateTaskDto): Promise<Task> {
     return await this.prisma.task.update({ where: { id }, data: dto });
