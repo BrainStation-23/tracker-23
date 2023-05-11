@@ -60,8 +60,8 @@ export class WebhooksService {
     return updated_integration;
   }
 
-  async handleWebhook(data: any) {
-    console.log('Incoming webhook data:', data);
+  async handleWebhook(payload: any) {
+    console.log('Incoming webhook data:', payload);
 
     // const taskId = data.issue.key; // assume the webhook payload includes an issue key
     // const task = await this.prisma.task.findUnique({ where: { id: taskId } });
@@ -77,5 +77,31 @@ export class WebhooksService {
     //   console.log(`Task ${taskId} not found`);
     //   return { message: `Task ${taskId} not found` };
     // }
+  }
+
+  async registerWebhook(user: User, reqBody: any) {
+    try {
+      const updated_integration = await this.updateIntegration(user);
+      const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook`;
+      const config = {
+        method: 'post',
+        url,
+        headers: {
+          Authorization: `Bearer ${updated_integration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        data: reqBody,
+      };
+
+      const webhook = await (await axios(config)).data;
+      console.log(webhook);
+      return webhook;
+    } catch (err) {
+      console.log(err);
+      throw new APIException(
+        err.message || 'Fetching problem to register webhook!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

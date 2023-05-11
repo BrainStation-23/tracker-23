@@ -79,7 +79,7 @@ export class ExportService {
 
       const databaseQuery = {
         userId: user.id,
-        assigneeId: integrations[0].accountId,
+        assigneeId: integrations[0].jiraAccountId,
         ...(startDate &&
           endDate && {
             createdAt: { gte: startDate, lte: endDate },
