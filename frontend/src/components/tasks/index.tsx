@@ -24,6 +24,7 @@ import ManualTimeEntry from "./components/manualTimeEntry";
 import TableComponent from "./components/tableComponent";
 import TopPanel from "./components/topPanel/topPanel";
 import SessionStartWarning from "./components/warning";
+import { CreateTaskDto } from "models/tasks";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -60,23 +61,28 @@ const TasksPage = () => {
   const [reload, setReload] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
   const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
-  const createTask = async (data: any) => {
+  const createTask = async (data: CreateTaskDto) => {
     setLoading(true);
     try {
       const res = await userAPI.createTask(data);
       message.success("Task created successfully");
-      setTasks((tasks) => [res, ...tasks]);
-      if (tasks) {
-        tasks.map((task) => {
-          if (
-            task.sessions &&
-            task.sessions[task.sessions?.length - 1]?.status === "STARTED"
-          ) {
-            setRunningTask(task);
-          }
-        });
+      if (data.isRecurrent) {
+        setViewModalOpen(false);
+        getTasks();
+      } else {
+        setTasks((tasks) => [res, ...tasks]);
+        if (tasks) {
+          tasks.map((task) => {
+            if (
+              task.sessions &&
+              task.sessions[task.sessions?.length - 1]?.status === "STARTED"
+            ) {
+              setRunningTask(task);
+            }
+          });
+        }
+        setViewModalOpen(false);
       }
-      setViewModalOpen(false);
     } catch (error) {
       message.error("Error creating task");
       setViewModalOpen(false);
