@@ -1,11 +1,10 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { CreateTaskDto } from './create-task.dto';
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 import { StatusEnum } from './getTask.dto';
 
-export class UpdateTaskDto extends CreateTaskDto {
-  @IsOptional()
-  @IsString()
-  title: string;
+export class UpdatePinDto {
+  @IsNotEmpty()
+  @IsBoolean()
+  pinned: boolean;
 }
 export class StatusReqBodyDto {
   @IsNotEmpty()

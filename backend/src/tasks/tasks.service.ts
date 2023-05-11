@@ -12,7 +12,7 @@ import {
   GetTaskQuery,
   StatusEnum,
   TimeSpentReqBodyDto,
-  UpdateTaskDto,
+  UpdatePinDto,
 } from './dto';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
@@ -115,7 +115,7 @@ export class TasksService {
       dto.frequency === 'DAILY' ? 1 : dto.frequency === 'WEEKLY' ? 7 : 14;
     const timeInterval = timeMultiplier * 3600 * 24 * 1000;
     const oneDay = 3600 * 24 * 1000;
-
+    const taskPromises: Promise<any>[] = [];
     try {
       for (
         let startTime = new Date(dto.startTime).getTime(),
@@ -123,34 +123,40 @@ export class TasksService {
         endTime <= endDate.getTime() + oneDay;
         startTime += timeInterval, endTime += timeInterval
       ) {
-        const task: Task = await this.prisma.task.create({
-          data: {
-            userId: user.id,
-            title: dto.title,
-            description: dto.description,
-            estimation: dto.estimation,
-            due: dto.due,
-            priority: dto.priority,
-            status: dto.status,
-            labels: dto.labels,
-            createdAt: new Date(startTime),
-            updatedAt: new Date(endTime),
-          },
-        });
-        await this.prisma.session.create({
-          data: {
-            startTime: new Date(startTime),
-            endTime: new Date(endTime),
-            status: SessionStatus.STOPPED,
-            taskId: task.id,
-            userId: user.id,
-          },
-        });
+        taskPromises.push(
+          this.prisma.task
+            .create({
+              data: {
+                userId: user.id,
+                title: dto.title,
+                description: dto.description,
+                estimation: dto.estimation,
+                due: dto.due,
+                priority: dto.priority,
+                status: dto.status,
+                labels: dto.labels,
+                createdAt: new Date(startTime),
+                updatedAt: new Date(endTime),
+              },
+            })
+            .then((task) => {
+              this.prisma.session.create({
+                data: {
+                  startTime: new Date(startTime),
+                  endTime: new Date(endTime),
+                  status: SessionStatus.STOPPED,
+                  taskId: task.id,
+                  userId: user.id,
+                },
+              });
+            }),
+        );
       }
+      await Promise.allSettled(taskPromises);
       return { message: 'Recurrent Tasks created' };
     } catch (error) {
       throw new APIException(
-        'Session creation Failed',
+        error.message || 'Session creation Failed',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -192,8 +198,13 @@ export class TasksService {
     }
   };
 
-  async updateTask(id: number, dto: UpdateTaskDto): Promise<Task> {
-    return await this.prisma.task.update({ where: { id }, data: dto });
+  async updatePin(id: number, dto: UpdatePinDto): Promise<Task> {
+    return await this.prisma.task.update({
+      where: { id },
+      data: {
+        pinned: dto.pinned,
+      },
+    });
   }
 
   async deleteTask(id: number): Promise<Task> {
