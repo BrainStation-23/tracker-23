@@ -22,11 +22,11 @@ export class IntegrationsService {
   async deleteIntegration(user: User, integrationId: number) {
     try {
       const id = Number(integrationId);
-      const deletedIntgration = await this.prisma.integration.delete({
+      const deletedIntegration = await this.prisma.integration.delete({
         where: { id },
       });
       await this.prisma.task.deleteMany({
-        where: { userId: user.id, source: deletedIntgration.type },
+        where: { userId: user.id, source: deletedIntegration.type },
       });
       return { message: 'Successfully user integration deleted' };
     } catch (err) {

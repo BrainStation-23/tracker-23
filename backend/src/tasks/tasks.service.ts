@@ -627,9 +627,12 @@ export class TasksService {
           totalTimeSpent += sessionTimeSpent;
         });
       }
-      let tmp = map.get(new Date(endDay));
+      let tmp = map.get(new Date(startDay));
       if (!tmp) tmp = 0;
-      map.set(new Date(endDay), tmp + this.getHourFromMinutes(totalTimeSpent));
+      map.set(
+        new Date(startDay),
+        tmp + this.getHourFromMinutes(totalTimeSpent),
+      );
       totalTimeSpent = 0;
     }
     const ar = [];
