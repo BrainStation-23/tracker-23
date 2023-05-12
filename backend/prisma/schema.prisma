@@ -111,6 +111,8 @@ model TaskIntegration {
   url              String?
 
   // @@unique([type, integratedTaskId, userId], name: "integratedTaskIdentifier")
+  // @@index([integratedTaskId, userId, type], type: Hash)
+  @@index(fields: [integratedTaskId, userId, type])
 }
 
 model Session {
