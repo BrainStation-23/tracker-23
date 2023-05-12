@@ -26,7 +26,7 @@ export class JiraService {
 
   async findIntegration(dto: AuthorizeJiraDto, user: User) {
     const previousIntegrations = await this.prisma.integration.findMany({
-      where: { userId: user.id, type: 'JIRA' },
+      where: { userId: user.id, type: IntegrationType.JIRA },
     });
     if (previousIntegrations.length) {
       throw new APIException(
@@ -91,7 +91,7 @@ export class JiraService {
         }),
       );
       const integrations = await this.prisma.tempIntegration.findMany({
-        where: { userId: user.id },
+        where: { userId: user.id, type: IntegrationType.JIRA },
         select: {
           id: true,
           site: true,
