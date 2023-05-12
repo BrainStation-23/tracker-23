@@ -1,5 +1,7 @@
 import { Button } from "antd";
+import { userAPI } from "APIs";
 import { Integration } from "models/integration";
+import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import JiraLogoFullSvg from "@/assets/svg/JiraFullLogoSvg";
@@ -10,9 +12,12 @@ type Props = {
 };
 
 const IntegrationSelectionCard = ({ data }: Props) => {
-  console.log("🚀 ~ file: IntegrationSelectionCard.tsx:19 ~ data:", data);
-
-  useEffect(() => {}, []);
+  const router = useRouter();
+  const handleSelectIntegration = async (id: string) => {
+    const res = await userAPI.selectJiraIntegration(id);
+    if (res) router.push("/taskList");
+    else router.push("/integrations");
+  };
 
   return (
     <div
@@ -36,7 +41,9 @@ const IntegrationSelectionCard = ({ data }: Props) => {
       </div>
       <div className="flex w-full pt-3">
         <Button
-          onClick={async () => {}}
+          onClick={() => {
+            handleSelectIntegration(data.siteId);
+          }}
           type="default"
           className={`w-full cursor-pointer bg-[#F1F1F1] text-sm font-semibold
           hover:bg-[#d1d1d17f] hover:text-black`}

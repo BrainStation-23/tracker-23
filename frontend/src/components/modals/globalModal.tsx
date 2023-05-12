@@ -1,5 +1,5 @@
 import { Modal } from "antd";
-import { Children } from "react";
+import { useRouter } from "next/router";
 type Props = {
   children: any;
   isModalOpen: boolean;
@@ -14,10 +14,12 @@ const GlobalMOdal = ({
   title,
   className,
 }: Props) => {
+  const router = useRouter();
   const handleOk = () => {
     setIsModalOpen(false);
   };
   const handleCancel = () => {
+    router.push("/integrations");
     setIsModalOpen(false);
   };
   return (

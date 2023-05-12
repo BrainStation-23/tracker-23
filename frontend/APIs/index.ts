@@ -19,6 +19,7 @@ import {
   logoutRest,
   pinTaskRest,
   registerRest,
+  selectJiraIntegrationRest,
   sendJiraCodeRest,
   stopSessionRest,
   syncStatusRest,
@@ -49,6 +50,7 @@ const graphqlApi: apiFunction = {
   addManualWorkLog: addManualWorkLogRest,
   updateTaskSTatus: updateTaskSTatusRest,
   pinTask: pinTaskRest,
+  selectJiraIntegration: selectJiraIntegrationRest,
 };
 
 const restApi: apiFunction = {
@@ -74,6 +76,7 @@ const restApi: apiFunction = {
   addManualWorkLog: addManualWorkLogRest,
   updateTaskSTatus: updateTaskSTatusRest,
   pinTask: pinTaskRest,
+  selectJiraIntegration: selectJiraIntegrationRest,
 };
 
 export const userAPI: apiFunction =

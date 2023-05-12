@@ -8,22 +8,6 @@ import IntegrationSelectionCard from "./component/integrationSelectionCard";
 
 const JiraCallBack = () => {
   const router = useRouter();
-  // const integrations = [
-  //   {
-  //     id: 29,
-  //     site: "https://pm23.atlassian.net",
-  //     siteId: "739f9088-50ef-4fe2-bbde-44f89c49917e",
-  //     type: "JIRA",
-  //     accessToken: "dsffdsf",
-  //   },
-  //   {
-  //     id: 29,
-  //     site: "https://pm23.atlassian.net",
-  //     siteId: "739f9088-50ef-4fe2-bbde-44f89c49917e",
-  //     type: "JIRA",
-  //     accessToken: "dsffdsf",
-  //   },
-  // ];
   const [integrations, setIntegrations] = useState<any>();
   const [status, setStatus] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,43 +18,20 @@ const JiraCallBack = () => {
     console.log("🚀 ~ file: callback.tsx:12 ~ codeFound ~ res:", res);
     if (res) {
       if (res?.length > 1) {
-        setIntegrations([
-          {
-            id: 29,
-            site: "https://pm23.atlassian.net",
-            siteId: "739f9088-50ef-4fe2-bbde-44f89c49917e",
-            type: "JIRA",
-            accessToken: "dsffdsf",
-          },
-          {
-            id: 29,
-            site: "https://pm23.atlassian.net",
-            siteId: "739f9088-50ef-4fe2-bbde-44f89c49917e",
-            type: "JIRA",
-            accessToken: "dsffdsf",
-          },
-        ]);
+        setIntegrations(res);
         setIsModalOpen(true);
+      } else {
+        message.success(res.message ? res.message : "Integration Successful");
+        router.push("/taskList");
       }
-
-      message.success(res.message ? res.message : "Integration Successful");
-      // router.push("/taskList");
-    }
-    // else router.push("/integrations");
+    } else router.push("/integrations");
   };
 
   useEffect(() => {
     const code = router.query.code;
-    console.log("🚀 ~ file: callback.tsx:10 ~ useEffect ~ searchTerm:", code);
     if (typeof code === "string") codeFound(code);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
-
-  useEffect(() => {
-    if (status) {
-      // router.push("/home");
-    }
-  }, [router, status]);
   return (
     <>
       <div className="flex w-full justify-center p-40">
@@ -92,12 +53,7 @@ const JiraCallBack = () => {
           </div>
           <div className="flex gap-4">
             {integrations?.map((d: any) => (
-              <IntegrationSelectionCard
-                key={Math.random()}
-                data={d}
-                // selected={selected}
-                // setSelected={setSelected}
-              />
+              <IntegrationSelectionCard key={Math.random()} data={d} />
             ))}
           </div>
         </div>

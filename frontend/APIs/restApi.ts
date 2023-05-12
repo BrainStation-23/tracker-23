@@ -216,7 +216,7 @@ export async function getJiraLinkRest() {
 
 export async function sendJiraCodeRest(code: string) {
   try {
-    const res = await axios.post(`${apiEndPoints.jira}`, { code: code });
+    const res = await axios.post(`${apiEndPoints.authJira}`, { code: code });
     return res.data;
   } catch (error: any) {
     return false;
@@ -229,6 +229,16 @@ export async function deleteIntegrationRest(id: number) {
     console.log("deleteIntegrationRest", res);
     message.success("Integration Deleted");
     return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function selectJiraIntegrationRest(id: string) {
+  try {
+    const res = await axios.post(`${apiEndPoints.jira}/${id}`);
+    message.success(res?.data?.message);
+    return true;
   } catch (error: any) {
     return false;
   }
