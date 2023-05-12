@@ -32,6 +32,9 @@ const JiraCallBack = () => {
     if (typeof code === "string") codeFound(code);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
+  const handleCancel = () => {
+    router.push("/integrations");
+  };
   return (
     <>
       <div className="flex w-full justify-center p-40">
@@ -43,7 +46,7 @@ const JiraCallBack = () => {
         ></Spin>
       </div>
       <GlobalMOdal
-        {...{ isModalOpen, setIsModalOpen }}
+        {...{ isModalOpen, setIsModalOpen, handleCancel }}
         title="Select Integration"
       >
         <div className="flex flex-col gap-6">

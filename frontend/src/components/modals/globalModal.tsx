@@ -4,6 +4,7 @@ type Props = {
   children: any;
   isModalOpen: boolean;
   setIsModalOpen: Function;
+  handleCancel?: Function;
   title?: string;
   className?: string;
 };
@@ -13,13 +14,14 @@ const GlobalMOdal = ({
   setIsModalOpen,
   title,
   className,
+  handleCancel,
 }: Props) => {
   const router = useRouter();
   const handleOk = () => {
     setIsModalOpen(false);
   };
-  const handleCancel = () => {
-    router.push("/integrations");
+  const handleOnCancel = () => {
+    if (handleCancel) handleCancel();
     setIsModalOpen(false);
   };
   return (
@@ -27,7 +29,7 @@ const GlobalMOdal = ({
       title={title}
       open={isModalOpen}
       onOk={handleOk}
-      onCancel={handleCancel}
+      onCancel={handleOnCancel}
       width={"720px"}
       className={className}
       footer={null}
