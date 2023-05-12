@@ -299,23 +299,10 @@ const TableComponent = ({
     task.pinned
       ? (tableParams.pagination.total = tableParams.pagination.total - 1)
       : (tableParams.pagination.total = tableParams.pagination.total + 1);
-
-    if (task.pinned) {
-      let pinnedTasks = getLocalStorage("pinnedTasks");
-      if (!pinnedTasks) pinnedTasks = [];
-      pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
-      setLocalStorage("pinnedTasks", pinnedTasks);
-    } else {
-      let pinnedTasks = getLocalStorage("pinnedTasks");
-      if (!pinnedTasks) pinnedTasks = [];
-      pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
-      pinnedTasks.push(task.id);
-      setLocalStorage("pinnedTasks", pinnedTasks);
-    }
     const res = await userAPI.pinTask(task.id, !task.pinned);
     if (res) message.success("Task Pinned");
-
     task.pinned = !task.pinned;
+
     setReload(!reload);
   };
 

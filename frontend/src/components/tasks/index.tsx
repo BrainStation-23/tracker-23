@@ -125,8 +125,6 @@ const TasksPage = () => {
 
   const getTasks = async () => {
     setLoading(true);
-    let pinnedTasks = getLocalStorage("pinnedTasks");
-    if (!pinnedTasks) pinnedTasks = [];
     try {
       const res = await userAPI.getTasks(searchParams);
       const tmpTasks = res.map((task: TaskDto) => {
@@ -149,7 +147,6 @@ const TasksPage = () => {
         const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
         return {
           ...task,
-          pinned: pinnedTasks.includes(task.id),
           id: task.id,
           title: task?.title,
           description: task.description,
