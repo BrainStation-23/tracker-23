@@ -2,18 +2,22 @@ import { Button } from "antd";
 import { userAPI } from "APIs";
 import { Integration } from "models/integration";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
 
 import JiraLogoFullSvg from "@/assets/svg/JiraFullLogoSvg";
 import TrelloLogoSvg from "@/assets/svg/TrelloLogoSvg";
 
 type Props = {
-  data: Integration;
+  integration: Integration;
+  setIsModalSpinning: Function;
 };
 
-const IntegrationSelectionCard = ({ data }: Props) => {
+const IntegrationSelectionCard = ({
+  integration,
+  setIsModalSpinning,
+}: Props) => {
   const router = useRouter();
   const handleSelectIntegration = async (id: string) => {
+    setIsModalSpinning(true);
     const res = await userAPI.selectJiraIntegration(id);
     if (res) router.push("/taskList");
     else router.push("/integrations");
@@ -25,24 +29,24 @@ const IntegrationSelectionCard = ({ data }: Props) => {
     >
       <div>
         <div className="flex h-10 items-center gap-2">
-          {integrationIcons[data.type]}
+          {integrationIcons[integration.type]}
         </div>
         <div className="text-sm font-normal">
           Connect to
           <div
             className="text-sm font-normal text-blue-500"
             onClick={() => {
-              window.open(data.site);
+              window.open(integration.site);
             }}
           >
-            {data.site}
+            {integration.site}
           </div>
         </div>
       </div>
       <div className="flex w-full pt-3">
         <Button
           onClick={() => {
-            handleSelectIntegration(data.siteId);
+            handleSelectIntegration(integration.siteId);
           }}
           type="default"
           className={`w-full cursor-pointer bg-[#F1F1F1] text-sm font-semibold

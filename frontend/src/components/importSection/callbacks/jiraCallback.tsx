@@ -1,21 +1,22 @@
 import { message, Spin } from "antd";
 import { userAPI } from "APIs";
+import { Integration } from "models/integration";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import GlobalMOdal from "@/components/modals/globalModal";
-import IntegrationSelectionCard from "./component/integrationSelectionCard";
+
+import IntegrationSelectionCard from "./components/integrationSelectionCard";
 
 const JiraCallBack = () => {
   const router = useRouter();
-  const [integrations, setIntegrations] = useState<any>();
-  const [status, setStatus] = useState(false);
+  const [integrations, setIntegrations] = useState<Integration[]>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSpinning, setIsSpinning] = useState(true);
+  const [isModalSpinning, setIsModalSpinning] = useState(false);
 
   const codeFound = async (code: string) => {
     const res = await userAPI.sendJiraCode(code);
-    console.log("🚀 ~ file: callback.tsx:12 ~ codeFound ~ res:", res);
     if (res) {
       if (res?.length > 1) {
         setIntegrations(res);
@@ -49,17 +50,21 @@ const JiraCallBack = () => {
         {...{ isModalOpen, setIsModalOpen, handleCancel }}
         title="Select Integration"
       >
-        <div className="flex flex-col gap-6">
+        <Spin spinning={isModalSpinning} className="flex flex-col gap-6">
           <div>
             You have given access to multiple jira sites. Please select which
             one you want to integrate.
           </div>
           <div className="flex gap-4">
-            {integrations?.map((d: any) => (
-              <IntegrationSelectionCard key={Math.random()} data={d} />
+            {integrations?.map((integration: any) => (
+              <IntegrationSelectionCard
+                key={Math.random()}
+                integration={integration}
+                setIsModalSpinning={setIsModalSpinning}
+              />
             ))}
           </div>
-        </div>
+        </Spin>
       </GlobalMOdal>
     </>
   );
