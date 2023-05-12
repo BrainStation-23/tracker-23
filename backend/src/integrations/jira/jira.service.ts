@@ -25,77 +25,87 @@ export class JiraService {
   }
 
   async findIntegration(dto: AuthorizeJiraDto, user: User) {
-    // console.log(dto);
-    console.log(
-      '🚀 ~ file: jira.service.ts:21 ~ JiraService ~ createIntegration ~ user:',
-      user,
-    );
+    const previousIntegrations = await this.prisma.integration.findMany({
+      where: { userId: user.id, type: 'JIRA' },
+    });
+    if (previousIntegrations.length) {
+      throw new APIException(
+        'You already have an integration',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    try {
+      // get access token and refresh tokens and store those on integrations table.
+      const url = 'https://auth.atlassian.com/oauth/token';
+      const urlResources = `https://api.atlassian.com/oauth/token/accessible-resources`;
+      const headers: any = { 'Content-Type': 'application/json' };
+      const body = {
+        grant_type: 'authorization_code',
+        client_id: this.config.get('JIRA_CLIENT_ID'),
+        client_secret: this.config.get('JIRA_SECRET_KEY'),
+        code: dto.code,
+        redirect_uri: this.config.get('JIRA_CALLBACK_URL'),
+      };
 
-    // get access token and refresh tokens and store those on integrations table.
-    const url = 'https://auth.atlassian.com/oauth/token';
-    const urlResources = `https://api.atlassian.com/oauth/token/accessible-resources`;
-    const headers: any = { 'Content-Type': 'application/json' };
-    const body = {
-      grant_type: 'authorization_code',
-      client_id: this.config.get('JIRA_CLIENT_ID'),
-      client_secret: this.config.get('JIRA_SECRET_KEY'),
-      code: dto.code,
-      redirect_uri: this.config.get('JIRA_CALLBACK_URL'),
-    };
+      const resp = (
+        await lastValueFrom(this.httpService.post(url, body, { headers }))
+      ).data;
+      // console.log(resp);
 
-    const resp = (
-      await lastValueFrom(this.httpService.post(url, body, { headers }))
-    ).data;
-    // console.log(resp);
+      // get resources from jira
+      headers['Authorization'] = `Bearer ${resp['access_token']}`;
+      const accountId = JSON.parse(
+        Buffer.from(resp['access_token'].split('.')[1], 'base64').toString(),
+      ).sub as string;
 
-    // get resources from jira
-    headers['Authorization'] = `Bearer ${resp['access_token']}`;
-    const accountId = JSON.parse(
-      Buffer.from(resp['access_token'].split('.')[1], 'base64').toString(),
-    ).sub as string;
+      const respResources = (
+        await lastValueFrom(this.httpService.get(urlResources, { headers }))
+      ).data;
 
-    const respResources = (
-      await lastValueFrom(this.httpService.get(urlResources, { headers }))
-    ).data;
-
-    await Promise.allSettled(
-      respResources.map(async (element: any) => {
-        // const integration = await this.prisma.integration.upsert({
-        await this.prisma.tempIntegration.upsert({
-          where: {
-            tempIntegrationIdentifier: {
+      await Promise.allSettled(
+        respResources.map(async (element: any) => {
+          // const integration = await this.prisma.integration.upsert({
+          await this.prisma.tempIntegration.upsert({
+            where: {
+              tempIntegrationIdentifier: {
+                siteId: element.id,
+                userId: user.id,
+              },
+            },
+            update: {
+              accessToken: resp.access_token,
+              refreshToken: resp.refresh_token,
+              site: element.url,
+            },
+            create: {
               siteId: element.id,
               userId: user.id,
+              type: IntegrationType.JIRA,
+              accessToken: resp.access_token,
+              refreshToken: resp.refresh_token,
+              site: element.url,
+              jiraAccountId: accountId,
             },
-          },
-          update: {
-            accessToken: resp.access_token,
-            refreshToken: resp.refresh_token,
-            site: element.url,
-          },
-          create: {
-            siteId: element.id,
-            userId: user.id,
-            type: IntegrationType.JIRA,
-            accessToken: resp.access_token,
-            refreshToken: resp.refresh_token,
-            site: element.url,
-            jiraAccountId: accountId,
-          },
-        });
-        // console.log(integration);
-      }),
-    );
-    return await this.prisma.tempIntegration.findMany({
-      where: { userId: user.id },
-      select: {
-        id: true,
-        site: true,
-        siteId: true,
-        type: true,
-        accessToken: true,
-      },
-    });
+          });
+          // console.log(integration);
+        }),
+      );
+      const integrations = await this.prisma.tempIntegration.findMany({
+        where: { userId: user.id },
+        select: {
+          id: true,
+          site: true,
+          siteId: true,
+          type: true,
+          accessToken: true,
+        },
+      });
+      if (integrations.length === 1)
+        return await this.createIntegration(user, integrations[0].siteId);
+      return integrations;
+    } catch (error) {
+      throw new APIException('Code Expired', HttpStatus.BAD_REQUEST);
+    }
   }
 
   async createIntegration(user: User, siteId: string) {
