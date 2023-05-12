@@ -34,7 +34,7 @@ export class TasksService {
       const { priority, status, text } = query;
       let { startDate, endDate } = query as unknown as GetTaskQuery;
 
-      const integrations = await this.prisma.integration.findMany({
+      const jiraIntegration = await this.prisma.integration.findFirst({
         where: { userId: user.id, type: IntegrationType.JIRA },
       });
 
@@ -47,18 +47,20 @@ export class TasksService {
         const oneDay = 3600 * 24 * 1000;
         endDate = new Date(endDate.getTime() + oneDay);
       }
+      console.log(
+        jiraIntegration,
+        jiraIntegration?.jiraAccountId ? jiraIntegration?.jiraAccountId : -1,
+      );
 
       const databaseQuery = {
         userId: user.id,
         OR: [
           {
-            assigneeId: integrations[0]?.jiraAccountId
-              ? integrations[0]?.jiraAccountId
-              : -1,
+            assigneeId: jiraIntegration?.jiraAccountId,
             source: IntegrationType.JIRA,
           },
           {
-            source: 'Tracker23',
+            source: IntegrationType.TRACKER23,
           },
         ],
         ...(startDate &&
@@ -75,14 +77,18 @@ export class TasksService {
           },
         }),
       };
+      console.log(
+        '🚀 ~ file: tasks.service.ts:80 ~ TasksService ~ getTasks ~ databaseQuery:',
+        databaseQuery,
+      );
 
-      const task = await this.prisma.task.findMany({
+      const tasks = await this.prisma.task.findMany({
         where: databaseQuery,
         include: {
           sessions: true,
         },
       });
-      return task;
+      return tasks;
     } catch (err) {
       // console.log(err.message);
       return [];
