@@ -95,7 +95,7 @@ model Task {
   userId Int
 
   taskIntegrations TaskIntegration[]
-  source           String            @default("Tracker23")
+  source           IntegrationType   @default(TRACKER23)
   sessions         Session[]
   pinned           Boolean?          @default(false)
 }
@@ -161,6 +161,7 @@ enum SessionStatus {
 
 enum IntegrationType {
   JIRA
+  TRACKER23
 }
 
 enum Role {
