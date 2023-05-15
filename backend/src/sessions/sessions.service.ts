@@ -79,8 +79,10 @@ export class SessionsService {
     return updated_session;
   }
 
-  async validateTaskAccess(user: User, taskId: number) {
-    const task = await this.prisma.task.findUnique({ where: { id: taskId } });
+  async validateTaskAccess(user: User, integratedTaskId: number) {
+    const task = await this.prisma.task.findFirst({
+      where: { integratedTaskId },
+    });
 
     if (!task) {
       throw new BadRequestException('Task not found');
@@ -98,7 +100,11 @@ export class SessionsService {
     });
   }
 
-  async logToIntegrations(userId: number, taskId: number, session: Session) {
+  async logToIntegrations(
+    userId: number,
+    integratedTaskId: number,
+    session: Session,
+  ) {
     if (session.endTime == null) {
       return null;
     }
@@ -118,15 +124,9 @@ export class SessionsService {
       return null;
     }
 
-    const taskIntegration = await this.prisma.taskIntegration.findFirst({
-      where: {
-        taskId,
-      },
-    });
-
     this.addWorkLog(
       session.startTime,
-      taskIntegration?.integratedTaskId as unknown as string,
+      integratedTaskId as unknown as string,
       this.timeConverter(timeSpent),
       await this.updatedIntegration(jiraIntegration),
     );
@@ -217,7 +217,7 @@ export class SessionsService {
     try {
       const startTime = new Date(`${dto.startTime}`);
       const endTime = new Date(`${dto.endTime}`);
-      await this.validateTaskAccess(user, dto.taskId);
+      await this.validateTaskAccess(user, dto.integratedTaskId);
       const jiraIntegration = await this.prisma.integration.findFirst({
         where: {
           type: IntegrationType.JIRA,
@@ -230,11 +230,6 @@ export class SessionsService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      const taskIntegration = await this.prisma.taskIntegration.findFirst({
-        where: {
-          taskId: dto.taskId,
-        },
-      });
 
       const timeSpent = Math.ceil(
         (endTime.getTime() - startTime.getTime()) / 1000,
@@ -248,7 +243,7 @@ export class SessionsService {
 
       this.addWorkLog(
         startTime,
-        taskIntegration?.integratedTaskId as unknown as string,
+        dto.integratedTaskId as unknown as string,
         this.timeConverter(Number(timeSpent)),
         await this.updatedIntegration(jiraIntegration),
       );
@@ -258,7 +253,7 @@ export class SessionsService {
           startTime: startTime,
           endTime: endTime,
           status: SessionStatus.STOPPED,
-          taskId: dto.taskId,
+          taskId: dto.integratedTaskId,
           userId: user.id,
         },
       });
