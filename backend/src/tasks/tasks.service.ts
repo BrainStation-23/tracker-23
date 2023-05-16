@@ -225,37 +225,33 @@ export class TasksService {
     try {
       const updated_integration = await this.updateIntegration(user);
       const headers: any = { 'Content-Type': 'application/json' };
+      let worklogPromises: Promise<any>[] = [];
       const taskList: any[] = [],
+        worklogsList: any[] = [],
         sessionArray: any[] = [];
       res.json(await this.syncCall(StatusEnum.IN_PROGRESS, user.id));
 
       headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
       const searchUrl = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/search?`;
-
-      // let count = 0;
       const mappedIssues = new Map<number, any>();
-      for (let startAt = 0; startAt < 3000; startAt += 100) {
+      const fields =
+        'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority';
+      for (let startAt = 0; startAt < 5000; startAt += 100) {
         const respTasks = (
           await lastValueFrom(
             this.httpService.get(searchUrl, {
               headers,
-              params: { startAt, maxResults: 100 },
+              params: { startAt, maxResults: 100, fields },
             }),
           )
         ).data;
         if (respTasks.issues.length === 0) {
           break;
         }
-        // issueList.push(
         respTasks.issues.map((issue: any) => {
           mappedIssues.set(Number(issue.id), issue.fields);
         });
-        // );
       }
-
-      // console.log(mappedIssues);
-
-      // find task list from local database
       const integratedTasks = await this.prisma.task.findMany({
         where: {
           userId: user.id,
@@ -266,21 +262,14 @@ export class TasksService {
           integratedTaskId: true,
         },
       });
-      // console.log('local database tasks', integratedTasks);
 
       // keep the task list that doesn't exist in the database
       for (let j = 0, len = integratedTasks.length; j < len; j++) {
         const key = integratedTasks[j].integratedTaskId;
         key && mappedIssues.delete(key);
       }
-      // const i = 0;
-      for (const [integratedTaskId, integratedTask] of mappedIssues) {
-        // console.log(integratedTask);
-        // const integratedTask = mappedIssues.get(integratedTaskId);
-        const taskStatus = this.formatStatus(integratedTask.status.name);
-        const taskPriority = this.formatPriority(integratedTask.priority.name);
 
-        // find all workLog
+      for (const [integratedTaskId] of mappedIssues) {
         const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${integratedTaskId}/worklog`;
         const config = {
           method: 'get',
@@ -290,7 +279,35 @@ export class TasksService {
             'Content-Type': 'application/json',
           },
         };
-        const workLog = (await axios(config)).data;
+        worklogPromises.push(axios(config));
+        if (worklogPromises.length >= 10) {
+          const resolvedPromise = await Promise.all(worklogPromises);
+          worklogsList.push(...resolvedPromise);
+          worklogPromises = [];
+        }
+      }
+      if (worklogPromises.length) {
+        const resolvedPromise = await Promise.all(worklogPromises);
+        worklogsList.push(...resolvedPromise);
+      }
+
+      for (let index = 0; index < worklogsList.length; index++) {
+        worklogsList[index].data.worklogs.map((log: any) => {
+          const lastTime =
+            new Date(log.started).getTime() +
+            Number(log.timeSpentSeconds * 1000);
+          sessionArray.push({
+            startTime: new Date(log.started),
+            endTime: new Date(lastTime),
+            status: SessionStatus.STOPPED,
+            taskId: Number(log.issueId),
+            userId: user.id,
+          });
+        });
+      }
+      for (const [integratedTaskId, integratedTask] of mappedIssues) {
+        const taskStatus = this.formatStatus(integratedTask.status.name);
+        const taskPriority = this.formatPriority(integratedTask.priority.name);
         taskList.push({
           userId: user.id,
           title: integratedTask.summary,
@@ -305,18 +322,6 @@ export class TasksService {
           createdAt: new Date(integratedTask.created),
           updatedAt: new Date(integratedTask.updated),
           source: IntegrationType.JIRA,
-        });
-        workLog.worklogs.map((log: any) => {
-          const lastTime =
-            new Date(log.started).getTime() +
-            Number(log.timeSpentSeconds * 1000);
-          sessionArray.push({
-            startTime: new Date(log.started),
-            endTime: new Date(lastTime),
-            status: SessionStatus.STOPPED,
-            taskId: integratedTaskId,
-            userId: user.id,
-          });
         });
       }
       await Promise.allSettled([
