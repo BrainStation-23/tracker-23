@@ -8,7 +8,7 @@ const PreviousIconSvg = () => {
       xmlns="http://www.w3.org/2000/svg"
     >
       <rect width="28" height="28" rx="14" fill="#ECECED" />
-      <g clip-path="url(#clip0_302_10813)">
+      <g clipPath="url(#clip0_302_10813)">
         <path
           d="M16 18L12 14L16 10"
           stroke="#4D4E55"

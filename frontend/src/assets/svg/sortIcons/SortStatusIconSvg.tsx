@@ -7,7 +7,7 @@ const SortStatusIconSvg = () => {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-path="url(#clip0_33_996)">
+      <g clipPath="url(#clip0_33_996)">
         <path
           d="M8.56002 3.69C7.4681 4.14199 6.47588 4.8046 5.64001 5.64"
           stroke="#7E7E7E"
