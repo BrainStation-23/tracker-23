@@ -266,7 +266,7 @@ export class TasksService {
           },
         };
         worklogPromises.push(axios(config));
-        if (worklogPromises.length >= 10) {
+        if (worklogPromises.length >= 5) {
           const resolvedPromise = await Promise.all(worklogPromises);
           worklogsList.push(...resolvedPromise);
           worklogPromises = [];
@@ -304,6 +304,9 @@ export class TasksService {
           projectName: integratedTask.project.name,
           projectId: integratedTask.project.id,
           status: taskStatus,
+          statusCategoryName: integratedTask.status.statusCategory.name
+            .replace(' ', '_')
+            .toUpperCase(),
           priority: taskPriority,
           integratedTaskId: integratedTaskId,
           createdAt: new Date(integratedTask.created),

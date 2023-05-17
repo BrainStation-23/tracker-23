@@ -96,17 +96,18 @@ model TempIntegration {
 }
 
 model Task {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String?
-  assigneeId  String?
-  projectName String?
-  projectId   String?
-  estimation  Decimal?  @db.Decimal(5, 2)
-  status      String?    @default("To Do")
-  due         DateTime?
-  priority    Priority  @default(MEDIUM)
-  labels      Labels[]  @default([])
+  id                 Int       @id @default(autoincrement())
+  title              String
+  description        String?
+  assigneeId         String?
+  projectName        String?
+  projectId          String?
+  estimation         Decimal?  @db.Decimal(5, 2)
+  status             String?   @default("To Do")
+  statusCategoryName String?   @default("TO_DO")
+  due                DateTime?
+  priority           Priority  @default(MEDIUM)
+  labels             Labels[]  @default([])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())

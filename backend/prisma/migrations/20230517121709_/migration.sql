@@ -5,5 +5,6 @@
 
 */
 -- AlterTable
-ALTER TABLE "Task" DROP COLUMN "status",
+ALTER TABLE "Task" ADD COLUMN     "statusCategoryName" TEXT DEFAULT 'TO_DO',
+DROP COLUMN "status",
 ADD COLUMN     "status" TEXT DEFAULT 'To Do';
