@@ -47,10 +47,6 @@ export class TasksService {
         const oneDay = 3600 * 24 * 1000;
         endDate = new Date(endDate.getTime() + oneDay);
       }
-      console.log(
-        jiraIntegration,
-        jiraIntegration?.jiraAccountId ? jiraIntegration?.jiraAccountId : -1,
-      );
 
       const databaseQuery = {
         userId: user.id,
@@ -77,10 +73,6 @@ export class TasksService {
           },
         }),
       };
-      console.log(
-        '🚀 ~ file: tasks.service.ts:80 ~ TasksService ~ getTasks ~ databaseQuery:',
-        databaseQuery,
-      );
 
       const tasks = await this.prisma.task.findMany({
         where: databaseQuery,
@@ -299,6 +291,7 @@ export class TasksService {
             ? integratedTask.timeoriginalestimate / 3600
             : null,
           projectName: integratedTask.project.name,
+          projectId: integratedTask.project.id,
           status: taskStatus,
           priority: taskPriority,
           integratedTaskId: integratedTaskId,

@@ -1,11 +1,18 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IntegrationType, User } from '@prisma/client';
+import {
+  IntegrationType,
+  ProjectStatus,
+  StatusDetail,
+  User,
+} from '@prisma/client';
 import { lastValueFrom } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthorizeJiraDto } from './dto';
 import { APIException } from 'src/internal/exception/api.exception';
+import { TasksService } from 'src/tasks/tasks.service';
+import axios from 'axios';
 
 @Injectable()
 export class JiraService {
@@ -13,6 +20,7 @@ export class JiraService {
     private httpService: HttpService,
     private prisma: PrismaService,
     private config: ConfigService,
+    private tasksService: TasksService,
   ) {}
   async getIntegrationLink(state: string | undefined) {
     let stateParam = '';
@@ -100,8 +108,14 @@ export class JiraService {
           accessToken: true,
         },
       });
-      if (integrations.length === 1)
-        return await this.createIntegration(user, integrations[0].siteId);
+      if (integrations.length === 1) {
+        const createdIntegration = await this.createIntegration(
+          user,
+          integrations[0].siteId,
+        );
+        this.setProjectStatuses(user);
+        return createdIntegration;
+      }
       return integrations;
     } catch (error) {
       throw new APIException('Code Expired', HttpStatus.BAD_REQUEST);
@@ -159,10 +173,74 @@ export class JiraService {
           HttpStatus.BAD_REQUEST,
         );
       }
+      this.setProjectStatuses(user);
       return { message: `Integration successful in ${integration.site}` };
     } catch (err) {
       throw new APIException(
         err.message || 'Something is wrong in creating integration',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async setProjectStatuses(user: User) {
+    const updated_integration = await this.tasksService.updateIntegration(user);
+    // let statusList: any;
+    const getStatusListUrl = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/status`;
+    try {
+      const { data: statusList } = await axios.get(getStatusListUrl, {
+        headers: {
+          Authorization: `Bearer ${updated_integration?.accessToken}`,
+        },
+      });
+      const projectIdList = new Set();
+      const projectStatusArray: ProjectStatus[] = [];
+      const statusArray: StatusDetail[] = [];
+      for (const status of statusList) {
+        const { name, untranslatedName, id, statusCategory } = status;
+        const projectId = status?.scope?.project?.id;
+        if (projectId) {
+          if (!projectIdList.has(projectId)) {
+            projectIdList.add(projectId);
+            projectStatusArray.push({
+              projectId,
+              integrationID: updated_integration.id,
+            });
+          }
+          const statusDetail: StatusDetail = {
+            name,
+            untranslatedName,
+            id,
+            statusCategoryId: `${statusCategory.id}`,
+            statusCategoryName: statusCategory.name,
+            projectId,
+          };
+          statusArray.push(statusDetail);
+        }
+      }
+      await this.prisma.projectStatus.createMany({
+        data: projectStatusArray,
+      });
+      await this.prisma.statusDetail.createMany({ data: statusArray });
+      return this.getProjectStatuses(user);
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async getProjectStatuses(user: User) {
+    const updated_integration = await this.tasksService.updateIntegration(user);
+    try {
+      const statuses = await this.prisma.projectStatus.findMany({
+        where: { integrationID: updated_integration.id },
+        include: {
+          statuses: true,
+        },
+      });
+      return statuses;
+    } catch (error) {
+      throw new APIException(
+        'Can not get Project Statuses',
         HttpStatus.BAD_REQUEST,
       );
     }
