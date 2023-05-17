@@ -103,7 +103,7 @@ model Task {
   projectName String?
   projectId   String?
   estimation  Decimal?  @db.Decimal(5, 2)
-  status      Status    @default(TODO)
+  status      String?    @default("To Do")
   due         DateTime?
   priority    Priority  @default(MEDIUM)
   labels      Labels[]  @default([])

@@ -1,11 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import {
-  IntegrationType,
-  SessionStatus,
-  Status,
-  Task,
-  User,
-} from '@prisma/client';
+import { IntegrationType, SessionStatus, Task, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CreateTaskDto,
@@ -298,7 +292,7 @@ export class TasksService {
         });
       }
       for (const [integratedTaskId, integratedTask] of mappedIssues) {
-        const taskStatus = this.formatStatus(integratedTask.status.name);
+        const taskStatus = integratedTask.status.name;
         const taskPriority = this.formatPriority(integratedTask.priority.name);
         taskList.push({
           userId: user.id,
@@ -445,7 +439,7 @@ export class TasksService {
           where: {
             id: Number(issueId),
           },
-          data: { status: status as Status },
+          data: { status: status },
         }));
       if (!updatedTask) {
         throw new APIException(

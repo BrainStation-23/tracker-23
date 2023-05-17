@@ -218,10 +218,12 @@ export class JiraService {
           statusArray.push(statusDetail);
         }
       }
-      await this.prisma.projectStatus.createMany({
-        data: projectStatusArray,
-      });
-      await this.prisma.statusDetail.createMany({ data: statusArray });
+      await Promise.allSettled([
+        await this.prisma.projectStatus.createMany({
+          data: projectStatusArray,
+        }),
+        await this.prisma.statusDetail.createMany({ data: statusArray }),
+      ]);
       return this.getProjectStatuses(user);
     } catch (error) {
       return error;
