@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import StatusSelectorComponent from "./components/statusSelector";
 import PrioritySelectorComponent from "./components/prioritySelector";
 import { debounce } from "lodash";
+import { StatusType } from "@/storage/redux/projectsSlice";
 
 type Props = {
   tasks: TaskDto[];
@@ -30,7 +31,10 @@ const TopPanel = ({
   searchParams,
 }: Props) => {
   const [searchText, setSearchText] = useState("");
-  const [status, setStatus] = useState(["TODO", "IN_PROGRESS"]);
+  const [status, setStatus] = useState<StatusType[]>([
+    { name: "To Do", statusCategoryName: "TODO" },
+    { name: "In Progress", statusCategoryName: "IN_PROGRESS" },
+  ]);
   const [priority, setPriority] = useState([]);
   const [active, setActive] = useState("");
   const [selectedDate, setSelectedDate] = useState(

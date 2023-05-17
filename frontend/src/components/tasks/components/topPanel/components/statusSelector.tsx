@@ -1,5 +1,6 @@
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import SortStatusIconSvg from "@/assets/svg/sortIcons/SortStatusIconSvg";
+import { StatusType } from "@/storage/redux/projectsSlice";
 import { Select } from "antd";
 import { StatusDto } from "models/tasks";
 import {
@@ -8,7 +9,7 @@ import {
   taskStatusEnum,
 } from "utils/constants";
 type Props = {
-  status: string[];
+  status: StatusType[];
   setStatus: Function;
 };
 type TagProps = {

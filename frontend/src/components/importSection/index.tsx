@@ -4,13 +4,20 @@ import { Integration } from "models/integration";
 import { useEffect, useState } from "react";
 
 import ImportSelect from "./importSelect";
+import { useAppDispatch, useAppSelector } from "@/storage/redux";
+import {
+  deleteIntegrationsSlice,
+  setIntegrationsSlice,
+} from "@/storage/redux/integrationsSlice";
+import { resetProjectsSlice } from "@/storage/redux/projectsSlice";
+import { RootState } from "@/storage/redux/store";
 
 const ImportSection = () => {
+  const dispatch = useAppDispatch();
   const [integratedTypes, setIntegratedTypes] = useState<string[] | null>(null);
   const [integrations, setIntegrations] = useState<Integration[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingTip, setLoadingTip] = useState("");
-
   const getIntegrations = async () => {
     setLoading(true);
     const tmp: string[] = [];
@@ -20,6 +27,7 @@ const ImportSection = () => {
       integrations
     );
     if (integrations) {
+      dispatch(setIntegrationsSlice(integrations));
       setIntegrations(integrations);
       integrations?.forEach((i: any) => {
         tmp.push(i.type);
@@ -32,6 +40,10 @@ const ImportSection = () => {
     setLoadingTip("Deleting Integration");
     setLoading(true);
     const res = await userAPI.deleteIntegration(id);
+    if (res) {
+      dispatch(deleteIntegrationsSlice(id));
+      dispatch(resetProjectsSlice());
+    }
     getIntegrations();
     setLoading(false);
     setLoadingTip("");

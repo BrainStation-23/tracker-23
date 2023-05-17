@@ -1,10 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import syncReducer from "./syncSlice";
+import projectsReducer from "./projectsSlice";
+import integrationsReducer from "./integrationsSlice";
 // ...
 
 export const store = configureStore({
   reducer: {
     syncStatus: syncReducer,
+    projectList: projectsReducer,
+    integrations: integrationsReducer,
   },
 });
 

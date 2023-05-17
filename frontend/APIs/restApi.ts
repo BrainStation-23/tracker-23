@@ -227,8 +227,8 @@ export async function deleteIntegrationRest(id: number) {
   try {
     const res = await axios.delete(`${apiEndPoints.integrations}/${id}`);
     console.log("deleteIntegrationRest", res);
-    message.success("Integration Deleted");
-    return res.data;
+    message.success(res?.data?.message);
+    return true;
   } catch (error: any) {
     return false;
   }
@@ -311,6 +311,15 @@ export async function pinTaskRest(taskId: any, pinned: boolean) {
     const res = await axios.patch(`${apiEndPoints.tasks}/${taskId}`, {
       pinned: pinned,
     });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getProjectWiseStatusRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.projectWiseStatus}`);
     return res.data;
   } catch (error: any) {
     return false;
