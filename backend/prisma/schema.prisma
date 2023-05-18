@@ -72,11 +72,12 @@ model ProjectStatus {
 }
 
 model StatusDetail {
-  id                 String @unique
+  id                 String  @unique
   name               String
   untranslatedName   String
   statusCategoryId   String
   statusCategoryName String
+  transitionId       String?
 
   TransitionStatus ProjectStatus @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
   projectId        String
