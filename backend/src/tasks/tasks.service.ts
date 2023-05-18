@@ -1,5 +1,11 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { IntegrationType, SessionStatus, Task, User } from '@prisma/client';
+import {
+  IntegrationType,
+  SessionStatus,
+  StatusDetail,
+  Task,
+  User,
+} from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CreateTaskDto,
@@ -413,44 +419,85 @@ export class TasksService {
       const taskIntegration = await this.prisma.task.findFirst({
         where: {
           userId: user.id,
-          integratedTaskId: Number(issueId),
+          id: Number(issueId),
         },
         select: {
           integratedTaskId: true,
+          projectId: true,
         },
       });
-      const statusBody = JSON.stringify({
-        transition: {
-          id: this.getTransitionId(status),
-        },
-      });
-
-      const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${taskIntegration?.integratedTaskId}/transitions`;
-      const config = {
-        method: 'post',
-        url,
-        headers: {
-          Authorization: `Bearer ${updated_integration?.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        data: statusBody,
-      };
-      const updatedIssue = await axios(config);
-      const updatedTask =
-        updatedIssue &&
-        (await this.prisma.task.update({
+      if (taskIntegration && taskIntegration.projectId) {
+        const statuses: StatusDetail[] = taskIntegration?.projectId
+          ? await this.prisma.statusDetail.findMany({
+              where: {
+                projectId: taskIntegration?.projectId,
+              },
+            })
+          : [];
+        const statusNames = statuses?.map((status) => status.name);
+        const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${taskIntegration?.integratedTaskId}/transitions`;
+        if (statuses[0].transitionId === null) {
+          const config = {
+            method: 'get',
+            url,
+            headers: {
+              Authorization: `Bearer ${updated_integration?.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          };
+          const { transitions } = (await axios(config)).data;
+          transitions.forEach(async (transition: any) => {
+            taskIntegration.projectId &&
+              statusNames.includes(transition.name) &&
+              (await this.prisma.statusDetail.update({
+                where: {
+                  tempStatusDetailIdentifier: {
+                    name: transition.name,
+                    projectId: taskIntegration.projectId,
+                  },
+                },
+                data: { transitionId: transition.id },
+              }));
+          });
+        }
+        const statusDetails = await this.prisma.statusDetail.findFirst({
           where: {
-            id: Number(issueId),
+            projectId: taskIntegration?.projectId,
+            name: status,
           },
-          data: { status: status },
-        }));
-      if (!updatedTask) {
-        throw new APIException(
-          'Can not update issue status',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      return updatedTask;
+        });
+        const statusBody = JSON.stringify({
+          transition: {
+            id: statusDetails?.transitionId,
+          },
+        });
+        const config = {
+          method: 'post',
+          url,
+          headers: {
+            Authorization: `Bearer ${updated_integration?.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          data: statusBody,
+        };
+        const updatedIssue = await axios(config);
+        const updatedTask =
+          updatedIssue &&
+          (await this.prisma.task.update({
+            where: {
+              id: Number(issueId),
+            },
+            data: { status: status },
+          }));
+        if (!updatedTask) {
+          throw new APIException(
+            'Can not update issue status',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        return updatedTask;
+      } else
+        throw new APIException('No Integrations Found', HttpStatus.BAD_REQUEST);
     } catch (err) {
       console.log(err.message);
       throw new APIException(
