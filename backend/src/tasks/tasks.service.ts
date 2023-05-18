@@ -487,7 +487,10 @@ export class TasksService {
             where: {
               id: Number(issueId),
             },
-            data: { status: status },
+            data: {
+              status: status,
+              statusCategoryName: statusDetails?.statusCategoryName,
+            },
           }));
         if (!updatedTask) {
           throw new APIException(
