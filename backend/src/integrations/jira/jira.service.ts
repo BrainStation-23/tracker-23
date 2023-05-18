@@ -216,6 +216,7 @@ export class JiraService {
               .replace(' ', '_')
               .toUpperCase(),
             projectId,
+            transitionId: null,
           };
           statusArray.push(statusDetail);
         }

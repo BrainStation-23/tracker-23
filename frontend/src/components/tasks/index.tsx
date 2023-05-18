@@ -25,6 +25,7 @@ import TableComponent from "./components/tableComponent";
 import TopPanel from "./components/topPanel/topPanel";
 import SessionStartWarning from "./components/warning";
 import { CreateTaskDto } from "models/tasks";
+import { StatusType } from "@/storage/redux/projectsSlice";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -279,13 +280,14 @@ const TasksPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncRunning]);
 
-  const handleStatusChange = async (task: TaskDto, value: StatusDto) => {
+  const handleStatusChange = async (task: TaskDto, value: StatusType) => {
     setLoading(true);
     const res = await userAPI.updateTaskSTatus(task.id, {
       status: value,
     });
     if (res) {
       task.status = res.status;
+      task.statusCategoryName = res.statusCategoryName;
       message.success("Status Changed");
     }
     setReload(!reload);

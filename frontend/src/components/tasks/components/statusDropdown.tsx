@@ -35,7 +35,6 @@ const StatusDropdownComponent = ({
 
   const statuses: StatusType[] = getProjectStatusList(projects, task.projectId);
   const statusComponent = (status: StatusType, selectedStatus: StatusType) => {
-
     return {
       key: `${Math.random()}`,
       label: (
