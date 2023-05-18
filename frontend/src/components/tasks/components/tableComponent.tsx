@@ -120,15 +120,20 @@ const TableComponent = ({
       // align: "center",
       render: (_: any, task: TaskDto) => (
         <StatusDropdownComponent
-          selectedStatus={task.status}
+          selectedStatus={{
+            name: task.status,
+            statusCategoryName: task.statusCategoryName,
+          }}
           task={task}
           setLoading={setLoading}
           handleStatusChange={handleStatusChange}
         >
           <div
             style={{
-              backgroundColor: statusBGColorEnum[task.status],
-              border: `1px solid ${statusBorderColorEnum[task.status]}`,
+              backgroundColor: statusBGColorEnum[task.statusCategoryName],
+              border: `1px solid ${
+                statusBorderColorEnum[task.statusCategoryName]
+              }`,
               borderRadius: "36px",
             }}
             className="relative flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
@@ -136,11 +141,11 @@ const TableComponent = ({
             <div
               className="h-2 w-2 rounded-full"
               style={{
-                backgroundColor: statusBorderColorEnum[task.status],
+                backgroundColor: statusBorderColorEnum[task.statusCategoryName],
               }}
             />
 
-            <div>{taskStatusEnum[task.status]}</div>
+            <div>{task.status}</div>
           </div>
         </StatusDropdownComponent>
       ),
@@ -299,23 +304,10 @@ const TableComponent = ({
     task.pinned
       ? (tableParams.pagination.total = tableParams.pagination.total - 1)
       : (tableParams.pagination.total = tableParams.pagination.total + 1);
-
-    if (task.pinned) {
-      let pinnedTasks = getLocalStorage("pinnedTasks");
-      if (!pinnedTasks) pinnedTasks = [];
-      pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
-      setLocalStorage("pinnedTasks", pinnedTasks);
-    } else {
-      let pinnedTasks = getLocalStorage("pinnedTasks");
-      if (!pinnedTasks) pinnedTasks = [];
-      pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
-      pinnedTasks.push(task.id);
-      setLocalStorage("pinnedTasks", pinnedTasks);
-    }
     const res = await userAPI.pinTask(task.id, !task.pinned);
     if (res) message.success("Task Pinned");
-
     task.pinned = !task.pinned;
+
     setReload(!reload);
   };
 

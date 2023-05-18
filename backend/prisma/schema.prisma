@@ -32,34 +32,54 @@ model UserAccount {
 }
 
 model User {
-  id               Int               @id @default(autoincrement())
-  email            String            @unique
-  hash             String?
-  firstName        String?
-  lastName         String?
-  picture          String?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  userAccounts     UserAccount[]
-  accounts         Account[]
-  tasks            Task[]
-  integrations     Integration[]
-  sessions         Session[]
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  hash         String?
+  firstName    String?
+  lastName     String?
+  picture      String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  userAccounts UserAccount[]
+  accounts     Account[]
+  tasks        Task[]
+  integrations Integration[]
+  sessions     Session[]
 }
 
 model Integration {
-  id            Int             @id @default(autoincrement())
-  siteId        String
-  type          IntegrationType
-  accessToken   String
-  refreshToken  String
-  site          String?
-  jiraAccountId String?
+  id              Int             @id @default(autoincrement())
+  siteId          String
+  type            IntegrationType
+  accessToken     String
+  refreshToken    String
+  site            String?
+  jiraAccountId   String?
+  ProjectStatuses ProjectStatus[]
 
   user   User @relation(fields: [userId], references: [id])
   userId Int
 
   @@unique([siteId, userId], name: "integrationIdentifier")
+}
+
+model ProjectStatus {
+  projectId String         @unique
+  statuses  StatusDetail[]
+
+  integration   Integration @relation(fields: [integrationID], references: [id], onDelete: Cascade)
+  integrationID Int
+}
+
+model StatusDetail {
+  id                 String @unique
+  name               String
+  untranslatedName   String
+  statusCategoryId   String
+  statusCategoryName String
+
+  TransitionStatus ProjectStatus @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  projectId        String
 }
 
 model TempIntegration {
@@ -76,16 +96,18 @@ model TempIntegration {
 }
 
 model Task {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String?
-  assigneeId  String?
-  projectName String?
-  estimation  Decimal?  @db.Decimal(5, 2)
-  status      Status    @default(TODO)
-  due         DateTime?
-  priority    Priority  @default(MEDIUM)
-  labels      Labels[]  @default([])
+  id                 Int       @id @default(autoincrement())
+  title              String
+  description        String?
+  assigneeId         String?
+  projectName        String?
+  projectId          String?
+  estimation         Decimal?  @db.Decimal(5, 2)
+  status             String?   @default("To Do")
+  statusCategoryName String?   @default("TO_DO")
+  due                DateTime?
+  priority           Priority  @default(MEDIUM)
+  labels             Labels[]  @default([])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
@@ -93,11 +115,11 @@ model Task {
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
 
-  source           IntegrationType   @default(TRACKER23)
-  integratedTaskId  Int? @unique
+  source           IntegrationType @default(TRACKER23)
+  integratedTaskId Int?            @unique
   url              String?
   sessions         Session[]
-  pinned           Boolean?          @default(false)
+  pinned           Boolean?        @default(false)
 }
 
 model Session {
@@ -116,7 +138,7 @@ model Session {
 }
 
 model callSync {
-  id  Int @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   status    String
   userId    Int
   createdAt DateTime @default(now())

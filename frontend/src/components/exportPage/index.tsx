@@ -74,24 +74,26 @@ const columns: any = [
     dataIndex: "status",
     key: "status",
     align: "center",
-    render: (_: any, { status }: TaskDto) => (
+    render: (_: any, task: TaskDto) => (
       <div className="flex justify-center">
         <div
           style={{
-            backgroundColor: statusBGColorEnum[status],
-            border: `1px solid ${statusBorderColorEnum[status]}`,
+            backgroundColor: statusBGColorEnum[task.statusCategoryName],
+            border: `1px solid ${
+              statusBorderColorEnum[task.statusCategoryName]
+            }`,
             borderRadius: "36px",
           }}
-          className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
+          className="relative flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
         >
           <div
             className="h-2 w-2 rounded-full"
             style={{
-              backgroundColor: statusBorderColorEnum[status],
+              backgroundColor: statusBorderColorEnum[task.statusCategoryName],
             }}
           />
 
-          <div>{taskStatusEnum[status]}</div>
+          <div>{task.status}</div>
         </div>
       </div>
     ),
@@ -201,7 +203,7 @@ const ExportPageComponent = () => {
     setLoading(true);
     try {
       const res = await userAPI.getTasks(searchParams);
-      const tmpTasks = res.map((task: TaskDto) => {
+      const tmpTasks = res?.map((task: TaskDto) => {
         const started = task.sessions[0]
           ? getFormattedTime(formatDate(task.sessions[0].startTime))
           : "Not Started";
@@ -229,8 +231,8 @@ const ExportPageComponent = () => {
         };
       });
       setTasks(tmpTasks || []);
-      console.log("🚀 ~ file: index.tsx:177 ~ getTasks ~ tmpTasks:", tmpTasks);
     } catch (error) {
+      console.log("🚀 ~ file: index.tsx:236 ~ getTasks ~ error:", error);
       message.error("Error getting tasks");
     } finally {
       setLoading(false);
@@ -253,7 +255,7 @@ const ExportPageComponent = () => {
     if (tasks?.length <= 0) getTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  console.log("🚀 ~ file: index.tsx:106 ~ useEffect ~ tasks:", tasks);
+
   return (
     <div>
       <TopPanelExportPage {...{ tasks, setSearchParams }} />

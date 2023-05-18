@@ -11,6 +11,8 @@ import { userAPI } from "APIs";
 import { setSyncStatus, setSyncRunning } from "@/storage/redux/syncSlice";
 import { message } from "antd";
 import { publicRoutes } from "utils/constants";
+import { setProjectsSlice } from "@/storage/redux/projectsSlice";
+import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -22,12 +24,45 @@ const CustomLayout = ({ children }: any) => {
   const syncRunning = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
+  const integrationsSlice = useAppSelector(
+    (state: RootState) => state.integrations.integrations
+  );
   const [syncing, setSyncing] = useState(
     useAppSelector((state: RootState) => state.syncStatus.syncRunning)
   );
   const tmp = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
+  const projectStatuses = useAppSelector(
+    (state: RootState) => state.projectList.projects
+  );
+
+  const getProjectWiseStatues = async () => {
+    if (!projectStatuses) {
+      {
+        const res = await userAPI.getProjectWiseStatus();
+        res?.length > 0 && dispatch(setProjectsSlice(res));
+      }
+    }
+  };
+  const getIntegrations = async () => {
+    const integrations =
+      integrationsSlice?.length > 0
+        ? integrationsSlice
+        : await userAPI.getIntegrations();
+    if (!(integrationsSlice?.length > 0) && integrations) {
+      dispatch(setIntegrationsSlice(integrations));
+      integrations?.length > 0 && getProjectWiseStatues();
+    }
+  };
+  const initialLoading = async () => {
+    await getIntegrations();
+  };
+  useEffect(() => {
+    if (!publicRoutes.some((route) => path.includes(route))) {
+      initialLoading();
+    }
+  }, [publicRoutes.some((route) => path.includes(route)), path]);
   useEffect(() => {
     const getSyncStatus = async () => {
       const res = await userAPI.syncStatus();
@@ -49,6 +84,7 @@ const CustomLayout = ({ children }: any) => {
 
     return cleanup;
   }, [publicRoutes.some((route) => path.includes(route))]);
+
   useEffect(() => {
     let myTimeout: NodeJS.Timeout;
 

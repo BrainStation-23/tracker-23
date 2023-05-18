@@ -1,12 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "./store";
 
-// Define a type for the slice state
-interface CounterState {
-  syncing: boolean;
-  syncStatus: SyncStatus;
-}
 interface SyncStatus {
   createdAt: string;
   id: string;
@@ -41,8 +35,5 @@ const syncSlice = createSlice({
 });
 
 export const { setSyncStatus, setSyncRunning } = syncSlice.actions;
-
-// Other code such as selectors can use the imported `RootState` type
-export const selectCount = (state: RootState) => state.syncStatus;
 
 export default syncSlice.reducer;

@@ -1,3 +1,7 @@
+import { getProjectStatusList } from "@/services/taskActions";
+import { useAppSelector } from "@/storage/redux";
+import { StatusType } from "@/storage/redux/projectsSlice";
+import { RootState } from "@/storage/redux/store";
 import { userAPI } from "APIs";
 import { Dropdown, MenuProps } from "antd";
 import { StatusDto, TaskDto } from "models/tasks";
@@ -11,7 +15,7 @@ import {
 type Props = {
   task: TaskDto;
   children: any;
-  selectedStatus: StatusDto;
+  selectedStatus: StatusType;
   setLoading: Function;
   handleStatusChange: Function;
 };
@@ -25,9 +29,13 @@ const StatusDropdownComponent = ({
   const [dropDownOpen, setDropdownOpen] = useState(false);
 
   const [status, setStatus] = useState(selectedStatus);
+  const projects = useAppSelector(
+    (state: RootState) => state.projectList.projects
+  );
 
-  const statuses: StatusDto[] = ["TODO", "IN_PROGRESS", "DONE"];
-  const statusComponent = (status: StatusDto, selectedStatus: StatusDto) => {
+  const statuses: StatusType[] = getProjectStatusList(projects, task.projectId);
+  const statusComponent = (status: StatusType, selectedStatus: StatusType) => {
+
     return {
       key: `${Math.random()}`,
       label: (
@@ -37,7 +45,7 @@ const StatusDropdownComponent = ({
             updateStatus(status);
           }}
         >
-          <div>{taskStatusEnum[status]}</div>
+          {/* <div>{status.name}</div> */}
           <div
             className={`${
               status === selectedStatus && "border-r-2 bg-[#ECECED] "
@@ -45,8 +53,10 @@ const StatusDropdownComponent = ({
           >
             <div
               style={{
-                backgroundColor: statusBGColorEnum[status],
-                border: `1px solid ${statusBorderColorEnum[status]}`,
+                backgroundColor: statusBGColorEnum[status.statusCategoryName],
+                border: `1px solid ${
+                  statusBorderColorEnum[status.statusCategoryName]
+                }`,
                 borderRadius: "36px",
               }}
               className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
@@ -54,18 +64,19 @@ const StatusDropdownComponent = ({
               <div
                 className="h-2 w-2 rounded-full"
                 style={{
-                  backgroundColor: statusBorderColorEnum[status],
+                  backgroundColor:
+                    statusBorderColorEnum[status.statusCategoryName],
                 }}
               />
 
-              <div>{taskStatusEnum[status]}</div>
+              <div>{status.name}</div>
             </div>
           </div>
         </div>
       ),
     };
   };
-  const items: MenuProps["items"] = statuses.map((status) =>
+  const items: MenuProps["items"] = statuses?.map((status) =>
     statusComponent(status, selectedStatus)
   );
   const menuProps = {
@@ -73,7 +84,7 @@ const StatusDropdownComponent = ({
     onClick: () => {},
   };
 
-  const updateStatus = async (value: StatusDto) => {
+  const updateStatus = async (value: StatusType) => {
     if (status !== value && value !== selectedStatus) {
       setStatus(value);
       handleStatusChange(task, value);

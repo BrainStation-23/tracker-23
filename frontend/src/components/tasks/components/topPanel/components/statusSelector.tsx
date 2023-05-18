@@ -1,7 +1,11 @@
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import SortStatusIconSvg from "@/assets/svg/sortIcons/SortStatusIconSvg";
+import { useAppSelector } from "@/storage/redux";
+import { StatusType } from "@/storage/redux/projectsSlice";
+import { RootState } from "@/storage/redux/store";
 import { Select } from "antd";
 import { StatusDto } from "models/tasks";
+import { useEffect, useState } from "react";
 import {
   statusBGColorEnum,
   statusBorderColorEnum,
@@ -18,8 +22,21 @@ type TagProps = {
   onClose: any;
 };
 const StatusSelectorComponent = ({ status, setStatus }: Props) => {
+  const [statusValues, setStatusValues] = useState<any>();
+  const statuses = useAppSelector(
+    (state: RootState) => state.projectList.statuses
+  );
+  const Options = statuses?.map((st) => {
+    return {
+      value: JSON.stringify(st),
+      label: st.name,
+    };
+  });
+
   const tagRender = (props: TagProps) => {
     const { label, value, closable, onClose } = props;
+    const statusObj: StatusType = value && JSON.parse(value);
+
     const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
       event.preventDefault();
       event.stopPropagation();
@@ -27,8 +44,10 @@ const StatusSelectorComponent = ({ status, setStatus }: Props) => {
     return (
       <div
         style={{
-          backgroundColor: statusBGColorEnum[value],
-          border: `1px solid ${statusBorderColorEnum[value]}`,
+          backgroundColor: statusBGColorEnum[statusObj?.statusCategoryName],
+          border: `1px solid ${
+            statusBorderColorEnum[statusObj?.statusCategoryName]
+          }`,
           borderRadius: "36px",
         }}
         onClick={onClose}
@@ -36,14 +55,23 @@ const StatusSelectorComponent = ({ status, setStatus }: Props) => {
       >
         <div
           className="flex h-2 w-2 items-center rounded-full"
-          style={{
-            backgroundColor: statusBorderColorEnum[value],
-          }}
+          // style={{
+          //   backgroundColor: statusBorderColorEnum[value],
+          // }}
         />
-        <div>{taskStatusEnum[value]}</div> <CrossIconSvg />
+        <div>{label}</div> <CrossIconSvg />
       </div>
     );
   };
+  useEffect(() => {
+    const tmpArray: any[] = [];
+    status.map((st) => {
+      Options?.map((option) => {
+        if (option.label === JSON.parse(st).label) tmpArray.push(option.value);
+      });
+    });
+    setStatusValues(tmpArray);
+  }, [status]);
   return (
     <div
       className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
@@ -58,17 +86,28 @@ const StatusSelectorComponent = ({ status, setStatus }: Props) => {
       <Select
         placeholder="Select Status"
         mode="multiple"
-        tagRender={tagRender}
+        tagRender={(props) => tagRender(props)}
         value={status}
-        // style={{ width: 120 }}
+        defaultValue={[
+          '{"name":"To Do","statusCategoryName":"TO_DO"}',
+          '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
+        ]}
         className="w-full"
         showArrow
-        options={[
-          { value: "TODO", label: "Todo" },
-          { value: "IN_PROGRESS", label: "In Progress" },
-          { value: "DONE", label: "Done" },
-        ]}
-        onChange={(value) => setStatus(value)}
+        options={Options}
+        // options={[
+        //   { value: "TO_DO", label: "Todo" },
+        //   { value: "IN_PROGRESS", label: "In Progress" },
+        //   { value: "DONE", label: "Done" },
+        // ]}
+        onChange={(value) => {
+          console.log(
+            "🚀 ~ file: statusSelector.tsx:90 ~ StatusSelectorComponent ~ value:",
+            value
+          );
+          setStatus(value);
+          setStatusValues(value);
+        }}
       />
     </div>
   );

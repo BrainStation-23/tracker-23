@@ -11,7 +11,7 @@ import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
 import { GetCookie, RemoveCookie, SetCookie } from "@/services/cookie.service";
-import { getStringFromArray } from "@/services/taskActions";
+import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
@@ -98,7 +98,7 @@ export async function deleteTaskRest(taskId: any) {
 }
 
 export async function getTasksRest(searchParams: SearchParamsModel) {
-  const status = getStringFromArray(searchParams?.status);
+  const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
   try {
     const res = await axios.get(
@@ -227,8 +227,8 @@ export async function deleteIntegrationRest(id: number) {
   try {
     const res = await axios.delete(`${apiEndPoints.integrations}/${id}`);
     console.log("deleteIntegrationRest", res);
-    message.success("Integration Deleted");
-    return res.data;
+    message.success(res?.data?.message);
+    return true;
   } catch (error: any) {
     return false;
   }
@@ -299,7 +299,7 @@ export async function updateTaskSTatusRest(
   try {
     const res = await axios.patch(
       `${apiEndPoints.updateTaskStatus}/${taskId}`,
-      data
+      { status: data.status.name }
     );
     return res.data;
   } catch (error: any) {
@@ -311,6 +311,15 @@ export async function pinTaskRest(taskId: any, pinned: boolean) {
     const res = await axios.patch(`${apiEndPoints.tasks}/${taskId}`, {
       pinned: pinned,
     });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getProjectWiseStatusRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.projectWiseStatus}`);
     return res.data;
   } catch (error: any) {
     return false;

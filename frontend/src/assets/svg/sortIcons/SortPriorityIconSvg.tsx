@@ -7,7 +7,7 @@ const SortPriorityIconSvg = () => {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-path="url(#clip0_33_993)">
+      <g clipPath="url(#clip0_33_993)">
         <path
           d="M4 4H10V10H4V4Z"
           stroke="#7E7E7E"

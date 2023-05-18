@@ -1,4 +1,11 @@
 {
-  "cSpell.words": ["amcharts", "antd"],
-  "cSpell.ignoreWords": ["DDTHH", "SSSZ", "dipankar", "hosen"]
+  "cSpell.words": ["amcharts", "antd", "worklog", "worklogs"],
+  "cSpell.ignoreWords": [
+    "DDTHH",
+    "SSSZ",
+    "dipankar",
+    "hosen",
+    "svgr",
+    "timeoriginalestimate"
+  ]
 }

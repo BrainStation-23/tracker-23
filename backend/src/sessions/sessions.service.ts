@@ -6,13 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  IntegrationType,
-  Session,
-  SessionStatus,
-  Status,
-  User,
-} from '@prisma/client';
+import { IntegrationType, Session, SessionStatus, User } from '@prisma/client';
 import { lastValueFrom } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ManualTimeEntryReqBody, SessionDto } from './dto';
@@ -39,7 +33,7 @@ export class SessionsService {
     await this.validateTaskAccess(user, dto.taskId);
     await this.prisma.task.update({
       where: { id: dto.taskId },
-      data: { status: Status.IN_PROGRESS },
+      data: { status: 'In Progress' },
     });
 
     const activeSession = await this.prisma.session.findFirst({

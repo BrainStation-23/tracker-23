@@ -89,23 +89,25 @@ const DashboardTableComponent = ({
       dataIndex: "status",
       key: "status",
       // align: "center",
-      render: (_: any, { status }: TaskDto) => (
+      render: (_: any, task: TaskDto) => (
         <div
           style={{
-            backgroundColor: statusBGColorEnum[status],
-            border: `1px solid ${statusBorderColorEnum[status]}`,
+            backgroundColor: statusBGColorEnum[task.statusCategoryName],
+            border: `1px solid ${
+              statusBorderColorEnum[task.statusCategoryName]
+            }`,
             borderRadius: "36px",
           }}
-          className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
+          className="relative flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
         >
           <div
             className="h-2 w-2 rounded-full"
             style={{
-              backgroundColor: statusBorderColorEnum[status],
+              backgroundColor: statusBorderColorEnum[task.statusCategoryName],
             }}
           />
 
-          <div>{taskStatusEnum[status]}</div>
+          <div>{task.status}</div>
         </div>
       ),
     },

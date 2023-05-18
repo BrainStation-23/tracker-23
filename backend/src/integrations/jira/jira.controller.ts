@@ -44,4 +44,15 @@ export class JiraController {
   ) {
     return this.jiraService.createIntegration(user, siteId);
   }
+
+  @Post('projects')
+  @UseGuards(JwtAuthGuard)
+  async setProjects(@GetUser() user: User) {
+    return this.jiraService.setProjectStatuses(user);
+  }
+  @Get('projects')
+  @UseGuards(JwtAuthGuard)
+  async getProjects(@GetUser() user: User) {
+    return this.jiraService.getProjectStatuses(user);
+  }
 }

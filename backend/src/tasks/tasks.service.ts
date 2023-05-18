@@ -1,11 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import {
-  IntegrationType,
-  SessionStatus,
-  Status,
-  Task,
-  User,
-} from '@prisma/client';
+import { IntegrationType, SessionStatus, Task, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CreateTaskDto,
@@ -47,10 +41,6 @@ export class TasksService {
         const oneDay = 3600 * 24 * 1000;
         endDate = new Date(endDate.getTime() + oneDay);
       }
-      console.log(
-        jiraIntegration,
-        jiraIntegration?.jiraAccountId ? jiraIntegration?.jiraAccountId : -1,
-      );
 
       const databaseQuery = {
         userId: user.id,
@@ -77,10 +67,6 @@ export class TasksService {
           },
         }),
       };
-      console.log(
-        '🚀 ~ file: tasks.service.ts:80 ~ TasksService ~ getTasks ~ databaseQuery:',
-        databaseQuery,
-      );
 
       const tasks = await this.prisma.task.findMany({
         where: databaseQuery,
@@ -280,7 +266,7 @@ export class TasksService {
           },
         };
         worklogPromises.push(axios(config));
-        if (worklogPromises.length >= 10) {
+        if (worklogPromises.length >= 5) {
           const resolvedPromise = await Promise.all(worklogPromises);
           worklogsList.push(...resolvedPromise);
           worklogPromises = [];
@@ -306,7 +292,7 @@ export class TasksService {
         });
       }
       for (const [integratedTaskId, integratedTask] of mappedIssues) {
-        const taskStatus = this.formatStatus(integratedTask.status.name);
+        const taskStatus = integratedTask.status.name;
         const taskPriority = this.formatPriority(integratedTask.priority.name);
         taskList.push({
           userId: user.id,
@@ -316,7 +302,11 @@ export class TasksService {
             ? integratedTask.timeoriginalestimate / 3600
             : null,
           projectName: integratedTask.project.name,
+          projectId: integratedTask.project.id,
           status: taskStatus,
+          statusCategoryName: integratedTask.status.statusCategory.name
+            .replace(' ', '_')
+            .toUpperCase(),
           priority: taskPriority,
           integratedTaskId: integratedTaskId,
           createdAt: new Date(integratedTask.created),
@@ -452,7 +442,7 @@ export class TasksService {
           where: {
             id: Number(issueId),
           },
-          data: { status: status as Status },
+          data: { status: status },
         }));
       if (!updatedTask) {
         throw new APIException(
@@ -596,9 +586,12 @@ export class TasksService {
           totalTimeSpent += sessionTimeSpent;
         });
       }
-      let tmp = map.get(new Date(endDay));
+      let tmp = map.get(new Date(startDay));
       if (!tmp) tmp = 0;
-      map.set(new Date(endDay), tmp + this.getHourFromMinutes(totalTimeSpent));
+      map.set(
+        new Date(startDay),
+        tmp + this.getHourFromMinutes(totalTimeSpent),
+      );
       totalTimeSpent = 0;
     }
     const ar = [];

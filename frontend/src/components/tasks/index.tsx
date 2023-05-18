@@ -53,7 +53,10 @@ const TasksPage = () => {
     searchText: "",
     selectedDate: getDateRangeArray("this-week"),
     priority: [],
-    status: ["TODO", "IN_PROGRESS"],
+    status: [
+      '{"name":"To Do","statusCategoryName":"TO_DO"}',
+      '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
+    ],
   });
   const syncRunning = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
@@ -125,8 +128,6 @@ const TasksPage = () => {
 
   const getTasks = async () => {
     setLoading(true);
-    let pinnedTasks = getLocalStorage("pinnedTasks");
-    if (!pinnedTasks) pinnedTasks = [];
     try {
       const res = await userAPI.getTasks(searchParams);
       const tmpTasks = res.map((task: TaskDto) => {
@@ -149,7 +150,6 @@ const TasksPage = () => {
         const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
         return {
           ...task,
-          pinned: pinnedTasks.includes(task.id),
           id: task.id,
           title: task?.title,
           description: task.description,
@@ -173,6 +173,7 @@ const TasksPage = () => {
       });
       setTasks(tmpTasks || []);
     } catch (error) {
+      console.log("🚀 ~ file: index.tsx:176 ~ getTasks ~ error:", error);
       message.error("Error getting tasks");
     } finally {
       setLoading(false);

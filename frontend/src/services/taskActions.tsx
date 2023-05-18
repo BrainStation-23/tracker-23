@@ -1,10 +1,11 @@
+import { Project } from "@/storage/redux/projectsSlice";
 import {
   deleteFromLocalStorage,
   getLocalStorage,
   setLocalStorage,
 } from "@/storage/storage";
 import { message } from "antd";
-import { TaskDto } from "models/tasks";
+import { StatusDto, TaskDto } from "models/tasks";
 
 export const updateTask = (task: any, taskName: string) => {
   console.log(task, taskName);
@@ -48,11 +49,35 @@ export const getStringFromArray = (val: string[]) => {
   return res;
 };
 export function sortByStatus(tasks: TaskDto[]): TaskDto[] {
-  const order: Record<"IN_PROGRESS" | "TODO" | "DONE", number> = {
+  const order: Record<"IN_PROGRESS" | "TO_DO" | "DONE", number> = {
     IN_PROGRESS: 0,
-    TODO: 1,
+    TO_DO: 1,
     DONE: 2,
   };
 
-  return tasks.sort((a, b) => order[a.status] - order[b.status]);
+  return tasks.sort(
+    (a, b) => order[a.statusCategoryName] - order[b.statusCategoryName]
+  );
 }
+export const getLabels = (values: string[]) => {
+  return values?.map((status) => {
+    return JSON.parse(status).name;
+  });
+};
+
+export const getProjectStatusList = (
+  projects: Project[],
+  projectId: string
+) => {
+  if (!projects) return [];
+  for (const project of projects) {
+    if (project.projectId === projectId) {
+      return project.statuses?.map((status) => {
+        return {
+          name: status.name,
+          statusCategoryName: status.statusCategoryName as StatusDto,
+        };
+      });
+    }
+  }
+};
