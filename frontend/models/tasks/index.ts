@@ -30,7 +30,8 @@ export type TaskDto = {
   title: string;
   description: string;
   estimation: number;
-  status: StatusDto;
+  status: string;
+  statusCategoryName: StatusDto;
   due: any;
   priority: PriorityDto;
   labels: string[];
@@ -41,6 +42,7 @@ export type TaskDto = {
   pinned: boolean;
   percentage?: number;
   projectName?: string;
+  projectId?: string;
 };
 export interface TableParams {
   pagination?: TablePaginationConfig;
@@ -58,6 +60,6 @@ export interface UpdateTaskStatusParams {
   status: StatusDto;
 }
 
-export type StatusDto = "TODO" | "IN_PROGRESS" | "DONE";
+export type StatusDto = "TO_DO" | "IN_PROGRESS" | "DONE";
 export type PriorityDto = "HIGH" | "MEDIUM" | "LOW";
 export type FrequencyDto = "DAILY" | "WEEKLY" | "BI-WEEKLY";

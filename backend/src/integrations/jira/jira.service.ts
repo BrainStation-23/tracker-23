@@ -212,7 +212,9 @@ export class JiraService {
             untranslatedName,
             id,
             statusCategoryId: `${statusCategory.id}`,
-            statusCategoryName: statusCategory.name,
+            statusCategoryName: statusCategory.name
+              .replace(' ', '_')
+              .toUpperCase(),
             projectId,
           };
           statusArray.push(statusDetail);

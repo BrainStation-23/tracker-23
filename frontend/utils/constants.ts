@@ -13,25 +13,25 @@ export const menuOptions = [
 
 export enum progressColorEnum {
   IN_PROGRESS = "#85C6DB",
-  TODO = "#0099ff",
+  TO_DO = "#0099ff",
   DONE = "#BADF4F",
   BG = "#ECECED",
 }
 export const taskStatusEnum = {
   IN_PROGRESS: "In progress",
-  TODO: "To do",
+  TO_DO: "To do",
   DONE: "Done",
 };
 
 export enum statusBorderColorEnum {
   IN_PROGRESS = "#56A2E9",
-  TODO = "#ADACB0",
+  TO_DO = "#ADACB0",
   DONE = "#BADF4F",
   BG = "#ECECED",
 }
 export enum statusBGColorEnum {
   IN_PROGRESS = "#E4F2FF",
-  TODO = "#F9F9F9",
+  TO_DO = "#F9F9F9",
   DONE = "#FAFFEA",
   BG = "#ECECED",
 }

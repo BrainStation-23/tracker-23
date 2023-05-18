@@ -183,8 +183,7 @@ const Dashboard = () => {
   };
   const getTasks = async () => {
     setLoading(true);
-    let pinnedTasks = getLocalStorage("pinnedTasks");
-    if (!pinnedTasks) pinnedTasks = [];
+    let pinnedTasks = [];
     try {
       const res = await userAPI.getTasks();
       if (res) {
@@ -213,26 +212,10 @@ const Dashboard = () => {
           const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
           return {
             ...task,
-            pinned: pinnedTasks?.includes(task?.id),
-            id: task?.id,
-            title: task?.title,
-            // description: task?.description,
-            // estimation: task?.estimation,
-            // startTime: formatDate(task?.sessions[0]?.startTime),
-            // endTime: formatDate(
-            //   task?.sessions[task?.sessions?.length - 1]?.endTime
-            // ),
             started: started,
             ended: ended,
             total: total,
             created: getFormattedTime(formatDate(task.createdAt)),
-            // percentage: task?.estimation
-            //   ? Math.round(
-            //       getTotalSpentTime(task?.sessions) / (task?.estimation * 36000)
-            //     )
-            //   : -1,
-            // totalSpent: getTotalSpentTime(task?.sessions),
-            // priority: task?.priority,
           };
         });
         const tmpPinnedTaskList = tmpTasks?.filter(
@@ -240,9 +223,6 @@ const Dashboard = () => {
         );
         if (tmpPinnedTaskList?.length > 5) setMorePin(true);
         const pinnedTaskList = tmpPinnedTaskList;
-        // const pinnedTaskList = tmpPinnedTaskList?.filter(
-        //   (task: TaskDto, index: any) => index < 5
-        // );
         setTasks(pinnedTaskList || []);
 
         setTableParamsPinned({
@@ -255,6 +235,7 @@ const Dashboard = () => {
         });
       }
     } catch (error) {
+      console.log("🚀 ~ file: index.tsx:258 ~ getTasks ~ error:", error);
       message.error("Error getting tasks");
     } finally {
       setLoading(false);
@@ -280,7 +261,7 @@ const Dashboard = () => {
     if (session) {
       if (!task.sessions) task.sessions = [];
       task.sessions?.push(session);
-      task.status = "IN_PROGRESS";
+      task.status = "In Progress";
       setRunningTask({ ...task });
       session && message.success("Session Started");
       setReload(!reload);
@@ -366,23 +347,25 @@ const Dashboard = () => {
       dataIndex: "status",
       key: "status",
       // align: "center",
-      render: (_: any, { status }: TaskDto) => (
+      render: (_: any, task: TaskDto) => (
         <div
           style={{
-            backgroundColor: statusBGColorEnum[status],
-            border: `1px solid ${statusBorderColorEnum[status]}`,
+            backgroundColor: statusBGColorEnum[task.statusCategoryName],
+            border: `1px solid ${
+              statusBorderColorEnum[task.statusCategoryName]
+            }`,
             borderRadius: "36px",
           }}
-          className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
+          className="relative flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
         >
           <div
             className="h-2 w-2 rounded-full"
             style={{
-              backgroundColor: statusBorderColorEnum[status],
+              backgroundColor: statusBorderColorEnum[task.statusCategoryName],
             }}
           />
 
-          <div>{taskStatusEnum[status]}</div>
+          <div>{task.status}</div>
         </div>
       ),
     },

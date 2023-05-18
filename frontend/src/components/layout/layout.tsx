@@ -41,10 +41,6 @@ const CustomLayout = ({ children }: any) => {
     if (!projectStatuses) {
       {
         const res = await userAPI.getProjectWiseStatus();
-        console.log(
-          "🚀 ~ file: layout.tsx:34 ~ getProjectWiseStatues ~ res:",
-          res
-        );
         res?.length > 0 && dispatch(setProjectsSlice(res));
       }
     }

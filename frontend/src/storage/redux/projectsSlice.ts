@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { StatusDto } from "models/tasks";
 
 export interface ProjectStatus {
   id: string;
@@ -17,7 +18,7 @@ export interface Project {
 }
 export interface StatusType {
   name: string;
-  statusCategoryName: string;
+  statusCategoryName: StatusDto;
 }
 export interface ProjectStatusesState {
   projects: Project[] | null;
@@ -41,12 +42,12 @@ const projectsSlice = createSlice({
     setProjectsSlice: (state, action: PayloadAction<Project[]>) => {
       const tmpArray: StatusType[] = [];
       action.payload.forEach((project: Project) => {
-        project.statuses.forEach((status: ProjectStatus) => {
+        project.statuses?.forEach((status: ProjectStatus) => {
           const tmpStatus = {
             name: status.name,
             statusCategoryName: status.statusCategoryName
               .replace(" ", "_")
-              .toUpperCase(),
+              .toUpperCase() as StatusDto,
           };
           if (!tmpArray.find((item) => isSame(tmpStatus, item)))
             tmpArray.push(tmpStatus);

@@ -53,7 +53,10 @@ const TasksPage = () => {
     searchText: "",
     selectedDate: getDateRangeArray("this-week"),
     priority: [],
-    status: ["TODO", "IN_PROGRESS"],
+    status: [
+      '{"name":"To Do","statusCategoryName":"TO_DO"}',
+      '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
+    ],
   });
   const syncRunning = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
@@ -170,6 +173,7 @@ const TasksPage = () => {
       });
       setTasks(tmpTasks || []);
     } catch (error) {
+      console.log("🚀 ~ file: index.tsx:176 ~ getTasks ~ error:", error);
       message.error("Error getting tasks");
     } finally {
       setLoading(false);

@@ -10,7 +10,6 @@ import {
   setIntegrationsSlice,
 } from "@/storage/redux/integrationsSlice";
 import { resetProjectsSlice } from "@/storage/redux/projectsSlice";
-import { RootState } from "@/storage/redux/store";
 
 const ImportSection = () => {
   const dispatch = useAppDispatch();

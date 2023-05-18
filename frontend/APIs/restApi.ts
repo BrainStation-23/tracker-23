@@ -11,7 +11,7 @@ import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
 import { GetCookie, RemoveCookie, SetCookie } from "@/services/cookie.service";
-import { getStringFromArray } from "@/services/taskActions";
+import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
@@ -98,7 +98,7 @@ export async function deleteTaskRest(taskId: any) {
 }
 
 export async function getTasksRest(searchParams: SearchParamsModel) {
-  const status = getStringFromArray(searchParams?.status);
+  const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
   try {
     const res = await axios.get(

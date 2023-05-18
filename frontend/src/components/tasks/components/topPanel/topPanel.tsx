@@ -10,6 +10,8 @@ import StatusSelectorComponent from "./components/statusSelector";
 import PrioritySelectorComponent from "./components/prioritySelector";
 import { debounce } from "lodash";
 import { StatusType } from "@/storage/redux/projectsSlice";
+import { useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
 
 type Props = {
   tasks: TaskDto[];
@@ -31,14 +33,17 @@ const TopPanel = ({
   searchParams,
 }: Props) => {
   const [searchText, setSearchText] = useState("");
-  const [status, setStatus] = useState<StatusType[]>([
-    { name: "To Do", statusCategoryName: "TODO" },
-    { name: "In Progress", statusCategoryName: "IN_PROGRESS" },
+  const [status, setStatus] = useState<string[]>([
+    '{"name":"To Do","statusCategoryName":"TO_DO"}',
+    '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
   ]);
   const [priority, setPriority] = useState([]);
   const [active, setActive] = useState("");
   const [selectedDate, setSelectedDate] = useState(
     getDateRangeArray("this-week")
+  );
+  const statuses = useAppSelector(
+    (state: RootState) => state.projectList.statuses
   );
   const totalPinned = tasks?.filter((task) => task.pinned)?.length;
   const tabs = ["All", "Pin"];
@@ -95,6 +100,7 @@ const TopPanel = ({
     setSearchText(event.target.value);
   };
   const debouncedHandleInputChange = debounce(handleInputChange, 500);
+  // useEffect(()=>)
   useEffect(() => {
     setSearchParams({
       searchText: searchText,
