@@ -109,7 +109,7 @@ model Task {
   status             String?   @default("To Do")
   statusCategoryName String?   @default("TO_DO")
   due                DateTime?
-  priority           Priority  @default(MEDIUM)
+  priority           String?  @default("Medium")
   labels             Labels[]  @default([])
 
   createdAt DateTime @default(now())
