@@ -233,10 +233,12 @@ export class JiraService {
   }
 
   async getProjectStatuses(user: User) {
-    const updated_integration = await this.tasksService.updateIntegration(user);
+    const jiraIntegration = await this.prisma.integration.findFirst({
+      where: { userId: user.id, type: IntegrationType.JIRA },
+    });
     try {
       const statuses = await this.prisma.projectStatus.findMany({
-        where: { integrationID: updated_integration.id },
+        where: { integrationID: jiraIntegration?.id },
         include: {
           statuses: true,
         },
