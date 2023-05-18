@@ -35,10 +35,7 @@ const StatusDropdownComponent = ({
 
   const statuses: StatusType[] = getProjectStatusList(projects, task.projectId);
   const statusComponent = (status: StatusType, selectedStatus: StatusType) => {
-    console.log(
-      "🚀 ~ file: statusDropdown.tsx:78 ~ statusComponent ~ status:",
-      status
-    );
+
     return {
       key: `${Math.random()}`,
       label: (

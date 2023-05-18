@@ -299,7 +299,7 @@ export async function updateTaskSTatusRest(
   try {
     const res = await axios.patch(
       `${apiEndPoints.updateTaskStatus}/${taskId}`,
-      data
+      { status: data.status.name }
     );
     return res.data;
   } catch (error: any) {

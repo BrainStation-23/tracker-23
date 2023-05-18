@@ -1,3 +1,4 @@
+import { StatusType } from "@/storage/redux/projectsSlice";
 import { TablePaginationConfig } from "antd";
 import { FilterValue } from "antd/es/table/interface";
 
@@ -57,7 +58,7 @@ export interface AddWorkLogParams {
   taskId: number;
 }
 export interface UpdateTaskStatusParams {
-  status: StatusDto;
+  status: StatusType;
 }
 
 export type StatusDto = "TO_DO" | "IN_PROGRESS" | "DONE";
