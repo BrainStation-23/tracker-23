@@ -95,9 +95,9 @@ const TaskDetailsModal = ({
             </span>
             <div
               style={{
-                backgroundColor: statusBGColorEnum[taskDetails?.status],
+                backgroundColor: statusBGColorEnum[taskDetails?.statusCategoryName],
                 border: `1px solid ${
-                  statusBorderColorEnum[taskDetails?.status]
+                  statusBorderColorEnum[taskDetails?.statusCategoryName]
                 }`,
                 borderRadius: "36px",
               }}
@@ -106,11 +106,11 @@ const TaskDetailsModal = ({
               <div
                 className="h-2 w-2 rounded-full"
                 style={{
-                  backgroundColor: statusBorderColorEnum[taskDetails?.status],
+                  backgroundColor: statusBorderColorEnum[taskDetails?.statusCategoryName],
                 }}
               />
 
-              <div>{taskStatusEnum[taskDetails?.status]}</div>
+              <div>{taskStatusEnum[taskDetails?.statusCategoryName]}</div>
             </div>
           </div>
 

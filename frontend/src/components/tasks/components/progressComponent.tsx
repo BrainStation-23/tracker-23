@@ -31,7 +31,7 @@ const ProgressComponent = ({ task }: Props) => {
           <Progress
             percent={Math.floor(time / (task.estimation * 36000))}
             size="small"
-            strokeColor={progressColorEnum[task.status]}
+            strokeColor={progressColorEnum[task.statusCategoryName]}
             trailColor={progressColorEnum["BG"]}
             showInfo={false}
           />
@@ -40,7 +40,7 @@ const ProgressComponent = ({ task }: Props) => {
             percent={Math.floor(time / (task.estimation * 36000))}
             size="small"
             status="success"
-            strokeColor={progressColorEnum[task.status]}
+            strokeColor={progressColorEnum[task.statusCategoryName]}
             trailColor={progressColorEnum["BG"]}
             showInfo={false}
           />
