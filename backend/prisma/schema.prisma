@@ -109,7 +109,7 @@ model Task {
   status             String?   @default("To Do")
   statusCategoryName String?   @default("TO_DO")
   due                DateTime?
-  priority           String?  @default("Medium")
+  priority           String?   @default("Medium")
   labels             Labels[]  @default([])
 
   createdAt DateTime @default(now())
@@ -119,10 +119,12 @@ model Task {
   userId Int
 
   source           IntegrationType @default(TRACKER23)
-  integratedTaskId Int?            @unique
+  integratedTaskId Int?            @default(-1)
   url              String?
   sessions         Session[]
   pinned           Boolean?        @default(false)
+
+  @@unique([id, integratedTaskId], name: "taskIntegrationIdentifier")
 }
 
 model Session {
@@ -133,8 +135,9 @@ model Session {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
-  task   Task @relation(fields: [taskId], references: [integratedTaskId], onDelete: Cascade)
-  taskId Int
+  task             Task @relation(fields: [taskId, integratedTaskId], references: [id, integratedTaskId], onDelete: Cascade)
+  taskId           Int
+  integratedTaskId Int  @default(-1)
 
   user   User @relation(fields: [userId], references: [id])
   userId Int

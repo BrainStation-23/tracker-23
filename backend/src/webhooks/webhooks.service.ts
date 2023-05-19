@@ -98,7 +98,7 @@ export class WebhooksService {
       );
       console.log(toBeUpdateField);
 
-      await this.prisma.task.update({
+      await this.prisma.task.updateMany({
         where: { integratedTaskId: Number(payload.issue.id) },
         data: toBeUpdateField,
       });

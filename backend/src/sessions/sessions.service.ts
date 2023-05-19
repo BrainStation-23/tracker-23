@@ -36,13 +36,13 @@ export class SessionsService {
       data: { status: 'In Progress' },
     });
 
+    // Checking for previous active session
     const activeSession = await this.prisma.session.findFirst({
       where: { taskId: dto.taskId, endTime: null },
     });
 
     if (activeSession) {
-      const updated_sesssion = await this.stopSessionUtil(activeSession.id);
-      await this.logToIntegrations(user.id, dto.taskId, updated_sesssion);
+      await this.stopSession(user, activeSession.taskId);
     }
 
     return await this.prisma.session.create({
@@ -51,7 +51,7 @@ export class SessionsService {
   }
 
   async stopSession(user: User, taskId: number) {
-    await this.validateTaskAccess(user, taskId);
+    const task = await this.validateTaskAccess(user, taskId);
     const activeSession = await this.prisma.session.findFirst({
       where: { taskId, endTime: null },
     });
@@ -60,22 +60,24 @@ export class SessionsService {
       throw new BadRequestException('No active session');
     }
     const updated_session = await this.stopSessionUtil(activeSession.id);
-    const session = await this.logToIntegrations(
-      user.id,
-      taskId,
-      updated_session,
-    );
-    if (!session) {
-      throw new BadRequestException({
-        message: 'Session canceled due to insufficient time',
-      });
+    if (task.integratedTaskId) {
+      const session = await this.logToIntegrations(
+        user.id,
+        task.integratedTaskId,
+        updated_session,
+      );
+      if (!session) {
+        throw new BadRequestException({
+          message: 'Session canceled due to insufficient time',
+        });
+      }
     }
     return updated_session;
   }
 
-  async validateTaskAccess(user: User, integratedTaskId: number) {
+  async validateTaskAccess(user: User, taskId: number) {
     const task = await this.prisma.task.findFirst({
-      where: { integratedTaskId },
+      where: { id: taskId },
     });
 
     if (!task) {
@@ -85,6 +87,7 @@ export class SessionsService {
     if (task.userId !== user.id) {
       throw new UnauthorizedException('You do not have access to this task');
     }
+    return task;
   }
 
   async stopSessionUtil(sessionId: number) {
@@ -211,19 +214,16 @@ export class SessionsService {
     try {
       const startTime = new Date(`${dto.startTime}`);
       const endTime = new Date(`${dto.endTime}`);
-      await this.validateTaskAccess(user, dto.integratedTaskId);
+      const { integratedTaskId, id } = await this.validateTaskAccess(
+        user,
+        dto.taskId,
+      );
       const jiraIntegration = await this.prisma.integration.findFirst({
         where: {
           type: IntegrationType.JIRA,
           userId: user.id,
         },
       });
-      if (!jiraIntegration) {
-        throw new APIException(
-          'You have no integration',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
 
       const timeSpent = Math.ceil(
         (endTime.getTime() - startTime.getTime()) / 1000,
@@ -234,23 +234,31 @@ export class SessionsService {
           HttpStatus.BAD_REQUEST,
         );
       }
-
-      this.addWorkLog(
-        startTime,
-        dto.integratedTaskId as unknown as string,
-        this.timeConverter(Number(timeSpent)),
-        await this.updatedIntegration(jiraIntegration),
-      );
-
-      return await this.prisma.session.create({
-        data: {
-          startTime: startTime,
-          endTime: endTime,
-          status: SessionStatus.STOPPED,
-          taskId: dto.integratedTaskId,
-          userId: user.id,
-        },
-      });
+      if (jiraIntegration) {
+        await this.addWorkLog(
+          startTime,
+          integratedTaskId as unknown as string,
+          this.timeConverter(Number(timeSpent)),
+          await this.updatedIntegration(jiraIntegration),
+        );
+      }
+      if (id)
+        return await this.prisma.session.create({
+          data: {
+            startTime: startTime,
+            endTime: endTime,
+            status: SessionStatus.STOPPED,
+            taskId: id,
+            integratedTaskId: integratedTaskId ? integratedTaskId : -1,
+            userId: user.id,
+          },
+        });
+      else {
+        throw new APIException(
+          'Something is wrong in manual time entry',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     } catch (err) {
       console.log(err);
       throw new APIException(

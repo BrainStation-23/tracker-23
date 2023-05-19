@@ -293,7 +293,7 @@ export class TasksService {
             startTime: new Date(log.started),
             endTime: new Date(lastTime),
             status: SessionStatus.STOPPED,
-            taskId: Number(log.issueId),
+            integratedTaskId: Number(log.issueId),
             userId: user.id,
           });
         });
