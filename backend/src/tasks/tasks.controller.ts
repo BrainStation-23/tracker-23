@@ -79,12 +79,12 @@ export class TasksController {
   @UseGuards(JwtAuthGuard)
   async updateIssueStatus(
     @GetUser() user: User,
-    @Param('issueId') issueId: string,
+    @Param('taskId') taskId: string,
     @Body() statusReqBody: StatusReqBodyDto,
   ) {
     return this.tasksService.updateIssueStatus(
       user,
-      issueId,
+      taskId,
       statusReqBody.status,
     );
   }

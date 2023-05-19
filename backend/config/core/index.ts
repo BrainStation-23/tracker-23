@@ -1,4 +1,5 @@
-const { API, ENV, HOST, REST_API_PREFIX, BASE_URL } = process.env;
+const { API, ENV, HOST, REST_API_PREFIX, BASE_URL, PROMISE_RESOLVE_QUANTITY } =
+  process.env;
 
 export const coreConfig = {
   api: API || 'REST',
@@ -6,4 +7,5 @@ export const coreConfig = {
   host: HOST || 'localhost',
   restApiPrefix: REST_API_PREFIX || 'api',
   baseUrl: BASE_URL || 'http://localhost:3000',
+  promiseQuantity: Number(PROMISE_RESOLVE_QUANTITY) || 10,
 };
