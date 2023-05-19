@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IntegrationType, User } from '@prisma/client';
+import { IntegrationType, SessionStatus, User } from '@prisma/client';
 import axios from 'axios';
 import { lastValueFrom } from 'rxjs';
 import { APIException } from 'src/internal/exception/api.exception';
@@ -61,22 +61,85 @@ export class WebhooksService {
   }
 
   async handleWebhook(payload: any) {
-    console.log('Incoming webhook data:', payload);
+    const jiraEvent = payload.webhookEvent;
+    if (payload.webhookEvent === 'jira:issue_created') {
+      await this.prisma.task.create({
+        data: {
+          userId: 1,
+          title: payload.issue.fields.summary,
+          assigneeId: payload.issue.fields.assignee?.accountId || null,
+          estimation: payload.issue.fields.timeoriginalestimate
+            ? payload.issue.timeoriginalestimate / 3600
+            : null,
+          projectName: payload.issue.fields.project.name,
+          status: payload.issue.fields.status.name,
+          priority: payload.issue.fields.priority.name,
+          integratedTaskId: Number(payload.issue.id),
+          createdAt: new Date(payload.issue.fields.created),
+          updatedAt: new Date(payload.issue.fields.updated),
+          source: IntegrationType.JIRA,
+        },
+      });
+    } else if (jiraEvent === 'jira:issue_updated') {
+      let sendToModify;
+      if (
+        payload.changelog.items[0].field ===
+        ('summary' || 'priority' || 'status')
+      ) {
+        sendToModify = payload.changelog.items[0].toString;
+      }
+      sendToModify = payload.changelog.items[0].to;
+      const toBeUpdateField = this.toBeUpdateField(
+        payload.changelog.items[0].field,
+        sendToModify,
+      );
 
-    // const taskId = data.issue.key; // assume the webhook payload includes an issue key
-    // const task = await this.prisma.task.findUnique({ where: { id: taskId } });
-    // if (task) {
-    //   const newStatus = data.issue.fields.status.name; // assume the webhook payload includes the new status
-    //   await this.prisma.task.update({
-    //     where: { id: taskId },
-    //     data: { status: newStatus },
-    //   });
-    //   console.log(`Task ${taskId} updated to status ${newStatus}`);
-    //   return { message: `Task ${taskId} updated` };
-    // } else {
-    //   console.log(`Task ${taskId} not found`);
-    //   return { message: `Task ${taskId} not found` };
-    // }
+      await this.prisma.task.update({
+        where: { integratedTaskId: Number(payload.issue.id) },
+        data: toBeUpdateField,
+      });
+    } else if (jiraEvent === 'worklog_created') {
+      const lastTime =
+        new Date(payload.worklog.started).getTime() +
+        Number(payload.worklog.timeSpentSeconds * 1000);
+
+      await this.prisma.session.create({
+        data: {
+          startTime: new Date(payload.worklog.started),
+          endTime: new Date(lastTime),
+          status: SessionStatus.STOPPED,
+          taskId: Number(payload.worklog.issueId),
+          userId: 1,
+        },
+      });
+    }
+  }
+
+  toBeUpdateField(key: any, value: any) {
+    switch (key) {
+      case 'summary':
+        return {
+          title: value,
+        };
+      case 'assignee':
+        return {
+          assigneeId: value,
+        };
+      case 'timeoriginalestimate':
+        return {
+          estimation: Number(value) / 3600,
+        };
+      case 'status':
+        return {
+          status: value,
+        };
+      case 'priority':
+        return {
+          priority: value,
+        };
+      default:
+        return {};
+    }
   }
 
   async registerWebhook(user: User, reqBody: any) {

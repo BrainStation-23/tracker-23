@@ -1,4 +1,4 @@
-import { Labels, Priority } from '@prisma/client';
+import { Labels } from '@prisma/client';
 import {
   IsArray,
   IsDateString,
@@ -30,8 +30,7 @@ export class CreateTaskDto {
 
   @IsOptional()
   @IsString()
-  @IsEnum(Priority)
-  priority: Priority;
+  priority: string;
 
   @IsOptional()
   @IsString()
