@@ -2,7 +2,6 @@ import { Labels } from '@prisma/client';
 import {
   IsArray,
   IsDateString,
-  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
