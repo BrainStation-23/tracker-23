@@ -82,17 +82,21 @@ export class WebhooksService {
       });
     } else if (jiraEvent === 'jira:issue_updated') {
       let sendToModify;
+      console.log(payload.changelog.items[0]);
       if (
-        payload.changelog.items[0].field ===
-        ('summary' || 'priority' || 'status')
+        payload.changelog.items[0].field === 'summary' ||
+        payload.changelog.items[0].field === 'priority' ||
+        payload.changelog.items[0].field === 'status'
       ) {
         sendToModify = payload.changelog.items[0].toString;
+      } else {
+        sendToModify = payload.changelog.items[0].to;
       }
-      sendToModify = payload.changelog.items[0].to;
       const toBeUpdateField = this.toBeUpdateField(
         payload.changelog.items[0].field,
         sendToModify,
       );
+      console.log(toBeUpdateField);
 
       await this.prisma.task.update({
         where: { integratedTaskId: Number(payload.issue.id) },

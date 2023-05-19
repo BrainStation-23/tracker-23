@@ -20,6 +20,7 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { Response } from 'express';
 import { APIException } from 'src/internal/exception/api.exception';
+import { coreConfig } from 'config/core';
 
 @Injectable()
 export class TasksService {
@@ -272,7 +273,7 @@ export class TasksService {
           },
         };
         worklogPromises.push(axios(config));
-        if (worklogPromises.length >= 5) {
+        if (worklogPromises.length >= coreConfig.promiseQuantity) {
           const resolvedPromise = await Promise.all(worklogPromises);
           worklogsList.push(...resolvedPromise);
           worklogPromises = [];
@@ -413,13 +414,13 @@ export class TasksService {
     }
   }
 
-  async updateIssueStatus(user: User, issueId: string, status: string) {
+  async updateIssueStatus(user: User, taskId: string, status: string) {
     try {
       const updated_integration = await this.updateIntegration(user);
       const taskIntegration = await this.prisma.task.findFirst({
         where: {
           userId: user.id,
-          id: Number(issueId),
+          id: Number(taskId),
         },
         select: {
           integratedTaskId: true,
@@ -485,7 +486,7 @@ export class TasksService {
           updatedIssue &&
           (await this.prisma.task.update({
             where: {
-              id: Number(issueId),
+              id: Number(taskId),
             },
             data: {
               status: status,
