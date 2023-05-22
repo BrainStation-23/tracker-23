@@ -44,18 +44,17 @@ model User {
   accounts     Account[]
   tasks        Task[]
   integrations Integration[]
-  sessions     Session[]
 }
 
 model Integration {
-  id              Int             @id @default(autoincrement())
-  siteId          String
-  type            IntegrationType
-  accessToken     String
-  refreshToken    String
-  site            String?
-  jiraAccountId   String?
-  ProjectStatuses ProjectStatus[]
+  id            Int             @id @default(autoincrement())
+  siteId        String
+  type          IntegrationType
+  accessToken   String
+  refreshToken  String
+  site          String?
+  jiraAccountId String?
+  Projects      Projects[]
 
   user   User @relation(fields: [userId], references: [id])
   userId Int
@@ -63,7 +62,7 @@ model Integration {
   @@unique([siteId, userId], name: "integrationIdentifier")
 }
 
-model ProjectStatus {
+model Projects {
   projectId String         @unique
   statuses  StatusDetail[]
 
@@ -79,7 +78,7 @@ model StatusDetail {
   statusCategoryName String
   transitionId       String?
 
-  TransitionStatus ProjectStatus @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  TransitionStatus Projects @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
   projectId        String
 
   @@unique([name, projectId], name: "tempStatusDetailIdentifier")
@@ -123,8 +122,6 @@ model Task {
   url              String?
   sessions         Session[]
   pinned           Boolean?        @default(false)
-
-  @@unique([id, integratedTaskId], name: "taskIntegrationIdentifier")
 }
 
 model Session {
@@ -134,13 +131,11 @@ model Session {
   status    SessionStatus @default(STARTED)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+  author    String?
 
-  task             Task @relation(fields: [taskId, integratedTaskId], references: [id, integratedTaskId], onDelete: Cascade)
+  task             Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId           Int
-  integratedTaskId Int  @default(-1)
-
-  user   User @relation(fields: [userId], references: [id])
-  userId Int
+  integratedTaskId Int?
 }
 
 model callSync {
