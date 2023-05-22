@@ -145,7 +145,6 @@ export class TasksService {
                   endTime: new Date(endTime),
                   status: SessionStatus.STOPPED,
                   taskId: task.id,
-                  userId: user.id,
                 },
               });
             }),
@@ -187,7 +186,6 @@ export class TasksService {
               endTime: new Date(endTime),
               status: SessionStatus.STOPPED,
               taskId: task.id,
-              userId: user.id,
             },
           });
           if (session) sessions.push(session);
@@ -219,6 +217,7 @@ export class TasksService {
       const updated_integration = await this.updateIntegration(user);
       const headers: any = { 'Content-Type': 'application/json' };
       let worklogPromises: Promise<any>[] = [];
+      // let taskPromises: Promise<any>[] = [];
       const taskList: any[] = [],
         worklogsList: any[] = [],
         sessionArray: any[] = [];
@@ -247,7 +246,6 @@ export class TasksService {
       }
       const integratedTasks = await this.prisma.task.findMany({
         where: {
-          userId: user.id,
           integratedTaskId: { in: [...mappedIssues.keys()] },
           source: IntegrationType.JIRA,
         },
@@ -262,42 +260,6 @@ export class TasksService {
         key && mappedIssues.delete(key);
       }
 
-      for (const [integratedTaskId] of mappedIssues) {
-        const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${integratedTaskId}/worklog`;
-        const config = {
-          method: 'get',
-          url,
-          headers: {
-            Authorization: `Bearer ${updated_integration?.accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        };
-        worklogPromises.push(axios(config));
-        if (worklogPromises.length >= coreConfig.promiseQuantity) {
-          const resolvedPromise = await Promise.all(worklogPromises);
-          worklogsList.push(...resolvedPromise);
-          worklogPromises = [];
-        }
-      }
-      if (worklogPromises.length) {
-        const resolvedPromise = await Promise.all(worklogPromises);
-        worklogsList.push(...resolvedPromise);
-      }
-
-      for (let index = 0; index < worklogsList.length; index++) {
-        worklogsList[index].data.worklogs.map((log: any) => {
-          const lastTime =
-            new Date(log.started).getTime() +
-            Number(log.timeSpentSeconds * 1000);
-          sessionArray.push({
-            startTime: new Date(log.started),
-            endTime: new Date(lastTime),
-            status: SessionStatus.STOPPED,
-            integratedTaskId: Number(log.issueId),
-            userId: user.id,
-          });
-        });
-      }
       for (const [integratedTaskId, integratedTask] of mappedIssues) {
         const taskStatus = integratedTask.status.name;
         const taskPriority = this.formatPriority(integratedTask.priority.name);
@@ -321,10 +283,74 @@ export class TasksService {
           source: IntegrationType.JIRA,
         });
       }
-      await Promise.allSettled([
+
+      const [t, tasks] = await Promise.all([
         await this.prisma.task.createMany({
           data: taskList,
         }),
+        await this.prisma.task.findMany({
+          where: {
+            source: IntegrationType.JIRA,
+          },
+          select: {
+            id: true,
+            integratedTaskId: true,
+          },
+        }),
+      ]);
+      const mappedTaskId = new Map<number, number>();
+      for (let index = 0; index < tasks.length; index++) {
+        mappedTaskId.set(
+          Number(tasks[index].integratedTaskId),
+          tasks[index].id,
+        );
+      }
+
+      for (const [integratedTaskId] of mappedIssues) {
+        const fields = 'issueId';
+        const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${integratedTaskId}/worklog`;
+        const config = {
+          method: 'get',
+          url,
+          headers: {
+            Authorization: `Bearer ${updated_integration?.accessToken}`,
+            'Content-Type': 'application/json',
+            fields,
+          },
+        };
+        worklogPromises.push(axios(config));
+        if (worklogPromises.length >= coreConfig.promiseQuantity) {
+          const resolvedPromise = await Promise.all(worklogPromises);
+          worklogsList.push(...resolvedPromise);
+          worklogPromises = [];
+        }
+      }
+      if (worklogPromises.length) {
+        const resolvedPromise = await Promise.all(worklogPromises);
+        worklogsList.push(...resolvedPromise);
+      }
+
+      for (let index = 0; index < worklogsList.length; index++) {
+        const urlArray = worklogsList[index].config.url.split('/');
+        const jiraTaskId = urlArray[urlArray.length - 2];
+        const taskId = mappedTaskId.get(Number(jiraTaskId));
+
+        taskId &&
+          worklogsList[index].data.worklogs.map((log: any) => {
+            const lastTime =
+              new Date(log.started).getTime() +
+              Number(log.timeSpentSeconds * 1000);
+            sessionArray.push({
+              startTime: new Date(log.started),
+              endTime: new Date(lastTime),
+              status: SessionStatus.STOPPED,
+              taskId: taskId,
+              author: log.author.accountId,
+            });
+          });
+      }
+
+      await Promise.allSettled([
         await this.prisma.session.createMany({
           data: sessionArray,
         }),

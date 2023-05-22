@@ -113,7 +113,6 @@ export class WebhooksService {
           endTime: new Date(lastTime),
           status: SessionStatus.STOPPED,
           taskId: Number(payload.worklog.issueId),
-          userId: 1,
         },
       });
     }

@@ -46,7 +46,7 @@ export class SessionsService {
     }
 
     return await this.prisma.session.create({
-      data: { ...dto, userId: user.id },
+      data: { ...dto },
     });
   }
 
@@ -249,8 +249,6 @@ export class SessionsService {
             endTime: endTime,
             status: SessionStatus.STOPPED,
             taskId: id,
-            integratedTaskId: integratedTaskId ? integratedTaskId : -1,
-            userId: user.id,
           },
         });
       else {
