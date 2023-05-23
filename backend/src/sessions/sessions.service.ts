@@ -62,7 +62,7 @@ export class SessionsService {
     const updated_session = await this.stopSessionUtil(activeSession.id);
     if (task.integratedTaskId) {
       const session = await this.logToIntegrations(
-        user.id,
+        user,
         task.integratedTaskId,
         updated_session,
       );
@@ -98,7 +98,7 @@ export class SessionsService {
   }
 
   async logToIntegrations(
-    userId: number,
+    user: User,
     integratedTaskId: number,
     session: Session,
   ) {
@@ -111,13 +111,8 @@ export class SessionsService {
     if (timeSpent < 60) {
       return null;
     }
-    const jiraIntegration = await this.prisma.integration.findFirst({
-      where: {
-        type: IntegrationType.JIRA,
-        userId: userId,
-      },
-    });
-    if (!jiraIntegration) {
+    const updated_integration = await this.updateIntegration(user);
+    if (!updated_integration) {
       return null;
     }
 
@@ -125,32 +120,40 @@ export class SessionsService {
       session.startTime,
       integratedTaskId as unknown as string,
       this.timeConverter(timeSpent),
-      await this.updatedIntegration(jiraIntegration),
+      updated_integration,
     );
     return { success: true, msg: 'successfully updated to jira' };
   }
 
-  async updatedIntegration(jiraIntegration: any) {
+  async updateIntegration(user: User) {
+    const tokenUrl = 'https://auth.atlassian.com/oauth/token';
     const headers: any = { 'Content-Type': 'application/json' };
+    const integration = await this.prisma.integration.findFirst({
+      where: { userId: user.id, type: IntegrationType.JIRA },
+    });
+    if (!integration) {
+      throw new APIException('You have no integration', HttpStatus.BAD_REQUEST);
+    }
+
     const data = {
       grant_type: 'refresh_token',
       client_id: this.config.get('JIRA_CLIENT_ID'),
       client_secret: this.config.get('JIRA_SECRET_KEY'),
-      refresh_token: jiraIntegration.refreshToken,
+      refresh_token: integration?.refreshToken,
     };
-    const tokenUrl = 'https://auth.atlassian.com/oauth/token';
 
     const tokenResp = (
       await lastValueFrom(this.httpService.post(tokenUrl, data, headers))
     ).data;
 
-    return await this.prisma.integration.update({
-      where: { id: jiraIntegration.id },
+    const updated_integration = await this.prisma.integration.update({
+      where: { id: integration?.id },
       data: {
         accessToken: tokenResp.access_token,
         refreshToken: tokenResp.refresh_token,
       },
     });
+    return updated_integration;
   }
 
   timeConverter(timeSpent: number) {
@@ -182,9 +185,9 @@ export class SessionsService {
         },
         data: data,
       };
-      return await (
-        await axios(config)
-      ).data;
+      const workLog = await (await axios(config)).data;
+      console.log(workLog);
+      return workLog;
     } catch (err) {
       console.log(err.message);
     }
@@ -218,12 +221,7 @@ export class SessionsService {
         user,
         dto.taskId,
       );
-      const jiraIntegration = await this.prisma.integration.findFirst({
-        where: {
-          type: IntegrationType.JIRA,
-          userId: user.id,
-        },
-      });
+      const updated_integration = await this.updateIntegration(user);
 
       const timeSpent = Math.ceil(
         (endTime.getTime() - startTime.getTime()) / 1000,
@@ -234,12 +232,12 @@ export class SessionsService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      if (jiraIntegration) {
+      if (updated_integration) {
         await this.addWorkLog(
           startTime,
           integratedTaskId as unknown as string,
           this.timeConverter(Number(timeSpent)),
-          await this.updatedIntegration(jiraIntegration),
+          updated_integration,
         );
       }
       if (id)
@@ -249,6 +247,7 @@ export class SessionsService {
             endTime: endTime,
             status: SessionStatus.STOPPED,
             taskId: id,
+            authorId: updated_integration.jiraAccountId,
           },
         });
       else {

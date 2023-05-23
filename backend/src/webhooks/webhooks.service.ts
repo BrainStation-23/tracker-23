@@ -65,7 +65,7 @@ export class WebhooksService {
     if (payload.webhookEvent === 'jira:issue_created') {
       await this.prisma.task.create({
         data: {
-          userId: 1,
+          userId: 1, //unknown user or search user from integration
           title: payload.issue.fields.summary,
           assigneeId: payload.issue.fields.assignee?.accountId || null,
           estimation: payload.issue.fields.timeoriginalestimate
@@ -113,6 +113,9 @@ export class WebhooksService {
           endTime: new Date(lastTime),
           status: SessionStatus.STOPPED,
           taskId: Number(payload.worklog.issueId),
+          integratedTaskId: Number(payload.worklog.issueId),
+          worklogId: payload.worklog.id,
+          authorId: payload.worklog.author.accountId,
         },
       });
     }

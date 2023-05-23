@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import {
   IntegrationType,
+  Session,
   SessionStatus,
   StatusDetail,
   Task,
@@ -215,15 +216,17 @@ export class TasksService {
   async syncTasks(user: User, res: Response) {
     try {
       const updated_integration = await this.updateIntegration(user);
-      const headers: any = { 'Content-Type': 'application/json' };
+      const headers: any = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${updated_integration.accessToken}`,
+      };
+      // headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
       let worklogPromises: Promise<any>[] = [];
       // let taskPromises: Promise<any>[] = [];
       const taskList: any[] = [],
         worklogsList: any[] = [],
         sessionArray: any[] = [];
       res.json(await this.syncCall(StatusEnum.IN_PROGRESS, user.id));
-
-      headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
       const searchUrl = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/search?`;
       const mappedIssues = new Map<number, any>();
       const fields =
@@ -345,7 +348,9 @@ export class TasksService {
               endTime: new Date(lastTime),
               status: SessionStatus.STOPPED,
               taskId: taskId,
-              author: log.author.accountId,
+              integratedTaskId: Number(log.issueId),
+              worklogId: Number(log.id),
+              authorId: log.author.accountId,
             });
           });
       }
@@ -543,16 +548,13 @@ export class TasksService {
     timeSpentReqBody: TimeSpentReqBodyDto,
   ) {
     try {
-      const integration = await this.prisma.integration.findFirst({
-        where: { userId: user.id, type: IntegrationType.JIRA },
-      });
-
-      const url = `https://api.atlassian.com/ex/jira/${integration?.siteId}/rest/api/3/issue/${issueId}/worklog`;
+      const updated_integration = await this.updateIntegration(user);
+      const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${issueId}/worklog`;
       const config = {
         method: 'post',
         url,
         headers: {
-          Authorization: `Bearer ${integration?.accessToken}`,
+          Authorization: `Bearer ${updated_integration?.accessToken}`,
           'Content-Type': 'application/json',
         },
         data: timeSpentReqBody,
@@ -564,6 +566,77 @@ export class TasksService {
     } catch (err) {
       console.log(err.message);
     }
+  }
+
+  async deleteWorkLog(user: User, sessionId: string) {
+    try {
+      const doesExistWorklog = await this.prisma.session.findUnique({
+        where: { id: Number(sessionId) },
+      });
+      if (!doesExistWorklog) {
+        throw new APIException(
+          'You have no session with this id',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      let session: Session | false | null = null;
+      const task = await this.prisma.task.findFirst({
+        where: {
+          id: doesExistWorklog.taskId,
+          userId: user.id,
+        },
+      });
+      if (task && task.source === IntegrationType.TRACKER23) {
+        session = await this.deleteSessionFromLocal(Number(sessionId));
+      }
+
+      const updated_integration = await this.updateIntegration(user);
+      if (doesExistWorklog.authorId === updated_integration.jiraAccountId) {
+        const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${doesExistWorklog?.integratedTaskId}/worklog/${doesExistWorklog.worklogId}`;
+        const config = {
+          method: 'delete',
+          url,
+          headers: {
+            Authorization: `Bearer ${updated_integration?.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        };
+
+        const status = (await axios(config)).status;
+        session =
+          status === 204 &&
+          (await this.deleteSessionFromLocal(Number(sessionId)));
+      }
+
+      if (!session) {
+        throw new APIException(
+          'You are not allowed to delete this session!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      return { message: 'Session deleted successfully!' };
+    } catch (err) {
+      throw new APIException(
+        err.message || 'Something is wrong to delete this session!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async deleteSessionFromLocal(sessionId: number) {
+    const deleteFromLocal = await this.prisma.session.delete({
+      where: {
+        id: Number(sessionId),
+      },
+    });
+    if (!deleteFromLocal) {
+      throw new APIException(
+        'Can not delete this session!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return deleteFromLocal;
   }
 
   async weeklySpentTime(user: User, query: GetTaskQuery) {
