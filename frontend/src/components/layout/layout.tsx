@@ -13,6 +13,7 @@ import { message } from "antd";
 import { publicRoutes } from "utils/constants";
 import { setProjectsSlice } from "@/storage/redux/projectsSlice";
 import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
+import { initializeSocket } from "@/services/socket.service";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -61,6 +62,7 @@ const CustomLayout = ({ children }: any) => {
   useEffect(() => {
     if (!publicRoutes.some((route) => path.includes(route))) {
       initialLoading();
+      initializeSocket();
     }
   }, [publicRoutes.some((route) => path.includes(route)), path]);
   useEffect(() => {
