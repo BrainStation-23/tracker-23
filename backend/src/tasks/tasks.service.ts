@@ -141,7 +141,7 @@ export class TasksService {
                 updatedAt: new Date(endTime),
               },
             })
-            .then(async (task) => {
+            .then(async (task: any) => {
               await this.prisma.session.create({
                 data: {
                   startTime: new Date(startTime),
@@ -216,6 +216,13 @@ export class TasksService {
   }
 
   async syncTasks(user: User, res: Response) {
+    this.myGateway.sendNotification(`${user.id}`, {
+      id: Math.floor(Math.random() * 10),
+      time: '12:00',
+      seen: false,
+      author: 'himel',
+      description: 'Sync Started',
+    });
     try {
       const updated_integration = await this.updateIntegration(user);
       const headers: any = {
@@ -364,8 +371,9 @@ export class TasksService {
         await this.syncCall(StatusEnum.DONE, user.id),
       ]);
       this.myGateway.sendNotification(`${user.id}`, {
+        id: Math.floor(Math.random() * 10),
         time: '12:00',
-        status: 'unseen',
+        seen: false,
         author: 'himel',
         description: 'Sync Completed',
       });
