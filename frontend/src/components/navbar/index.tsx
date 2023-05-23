@@ -7,6 +7,7 @@ import {
   MenuProps,
   message,
   Space,
+  Tooltip,
 } from "antd";
 import LogOutButton from "../logOutButton";
 import { useRouter } from "next/router";
@@ -139,9 +140,13 @@ function Navbar() {
       ) : (
         <div className="flex items-center gap-4">
           {syncing && (
-            <div className="flex h-9 w-9 cursor-pointer items-center justify-center text-green-500">
+            <Tooltip
+              placement="bottom"
+              title={"Syncing "}
+              className="flex h-9 w-9 cursor-pointer items-center justify-center text-green-500"
+            >
               <SyncOutlined spin={syncing} />
-            </div>
+            </Tooltip>
           )}
           <div
             className="flex h-9 w-9 cursor-pointer items-center justify-center"

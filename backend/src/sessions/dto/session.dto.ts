@@ -19,5 +19,5 @@ export class ManualTimeEntryReqBody {
   @Min(1)
   @IsNotEmpty()
   @IsNumber()
-  integratedTaskId: number;
+  taskId: number;
 }
