@@ -1,12 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  IntegrationType,
-  ProjectStatus,
-  StatusDetail,
-  User,
-} from '@prisma/client';
+import { IntegrationType, Projects, StatusDetail, User } from '@prisma/client';
 import { lastValueFrom } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthorizeJiraDto } from './dto';
@@ -194,7 +189,7 @@ export class JiraService {
         },
       });
       const projectIdList = new Set();
-      const projectStatusArray: ProjectStatus[] = [];
+      const projectStatusArray: Projects[] = [];
       const statusArray: StatusDetail[] = [];
       for (const status of statusList) {
         const { name, untranslatedName, id, statusCategory } = status;
@@ -222,7 +217,7 @@ export class JiraService {
         }
       }
       await Promise.allSettled([
-        await this.prisma.projectStatus.createMany({
+        await this.prisma.projects.createMany({
           data: projectStatusArray,
         }),
         await this.prisma.statusDetail.createMany({ data: statusArray }),
@@ -238,7 +233,7 @@ export class JiraService {
       where: { userId: user.id, type: IntegrationType.JIRA },
     });
     try {
-      const statuses = await this.prisma.projectStatus.findMany({
+      const statuses = await this.prisma.projects.findMany({
         where: { integrationID: jiraIntegration?.id },
         include: {
           statuses: true,

@@ -99,6 +99,12 @@ export class TasksController {
     return this.tasksService.addWorkLog(user, issueId, timeSpentReqBody);
   }
 
+  @Delete('delete-worklog/:id')
+  @UseGuards(JwtAuthGuard)
+  async deleteWorkLog(@GetUser() user: User, @Param('id') id: string) {
+    return this.tasksService.deleteWorkLog(user, id);
+  }
+
   @Get('spent-time/time-range')
   @UseGuards(JwtAuthGuard)
   async weeklySpentTime(@GetUser() user: User, @Query() query: GetTaskQuery) {

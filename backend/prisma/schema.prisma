@@ -118,7 +118,7 @@ model Task {
   userId Int
 
   source           IntegrationType @default(TRACKER23)
-  integratedTaskId Int?            @default(-1)
+  integratedTaskId Int?            
   url              String?
   sessions         Session[]
   pinned           Boolean?        @default(false)
@@ -131,11 +131,12 @@ model Session {
   status    SessionStatus @default(STARTED)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
-  author    String?
+  authorId    String?
 
   task             Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId           Int
   integratedTaskId Int?
+  worklogId        Int?
 }
 
 model callSync {
