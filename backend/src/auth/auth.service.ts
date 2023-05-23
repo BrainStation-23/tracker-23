@@ -148,4 +148,20 @@ export class AuthService {
       ...token,
     };
   }
+  async getUserFromAccessToken(accessToken: string): Promise<userDto | null> {
+    try {
+      const decoded = this.jwt.verify(accessToken, {
+        secret: this.config.get('JWT_SECRET'),
+      });
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: decoded.sub },
+      });
+
+      return user as userDto;
+    } catch (error) {
+      // If the token is invalid or expired, throw an UnauthorizedException
+      return null;
+    }
+  }
 }

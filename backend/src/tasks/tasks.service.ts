@@ -21,6 +21,7 @@ import axios from 'axios';
 import { Response } from 'express';
 import { APIException } from 'src/internal/exception/api.exception';
 import { coreConfig } from 'config/core';
+import { MyGateway } from 'src/notification/notification';
 
 @Injectable()
 export class TasksService {
@@ -28,6 +29,7 @@ export class TasksService {
     private config: ConfigService,
     private prisma: PrismaService,
     private httpService: HttpService,
+    private myGateway: MyGateway,
   ) {}
 
   async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
@@ -330,6 +332,12 @@ export class TasksService {
         }),
         await this.syncCall(StatusEnum.DONE, user.id),
       ]);
+      this.myGateway.sendNotification(`${user.id}`, {
+        time: '12:00',
+        status: 'unseen',
+        author: 'himel',
+        description: 'Sync Completed',
+      });
     } catch (err) {
       console.log(err);
       throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
