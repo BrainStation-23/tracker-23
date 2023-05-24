@@ -13,7 +13,9 @@ export const setLocalStorage = (key, data) => {
 
 export const getLocalStorage = (key) => {
   try {
-    return JSON.parse(localStorage.getItem(key) ?? null);
+    return localStorage.getItem(key)
+      ? JSON.parse(localStorage.getItem(key))
+      : null;
   } catch (e) {
     // logout();
   }

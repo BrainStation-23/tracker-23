@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import syncReducer from "./syncSlice";
 import projectsReducer from "./projectsSlice";
 import integrationsReducer from "./integrationsSlice";
+import notificationsReducer from "./notificationsSlice";
 // ...
 
 export const store = configureStore({
@@ -9,6 +10,7 @@ export const store = configureStore({
     syncStatus: syncReducer,
     projectList: projectsReducer,
     integrations: integrationsReducer,
+    notificationsSlice: notificationsReducer,
   },
 });
 
