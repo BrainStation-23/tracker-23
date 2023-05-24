@@ -1,11 +1,11 @@
 import { IsDate, IsNotEmpty } from 'class-validator';
 
 export class SessionReqBodyDto {
-  @IsDate()
+  // @IsDate()
   @IsNotEmpty()
   startTime?: Date;
 
-  @IsDate()
+  // @IsDate()
   @IsNotEmpty()
   endTime?: Date;
 }
