@@ -22,6 +22,7 @@ import axios from 'axios';
 import { Response } from 'express';
 import { APIException } from 'src/internal/exception/api.exception';
 import { coreConfig } from 'config/core';
+import { MyGateway } from 'src/notification/notification';
 import { SessionReqBodyDto } from './dto/update.session.dto';
 
 @Injectable()
@@ -30,6 +31,7 @@ export class TasksService {
     private config: ConfigService,
     private prisma: PrismaService,
     private httpService: HttpService,
+    private myGateway: MyGateway,
   ) {}
 
   async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
@@ -140,7 +142,7 @@ export class TasksService {
                 updatedAt: new Date(endTime),
               },
             })
-            .then(async (task) => {
+            .then(async (task: any) => {
               await this.prisma.session.create({
                 data: {
                   startTime: new Date(startTime),
@@ -215,6 +217,13 @@ export class TasksService {
   }
 
   async syncTasks(user: User, res: Response) {
+    this.myGateway.sendNotification(`${user.id}`, {
+      id: Math.floor(Math.random() * 10),
+      time: '12:00',
+      seen: false,
+      author: 'himel',
+      description: 'Sync Started',
+    });
     try {
       const updated_integration = await this.updateIntegration(user);
       const headers: any = {
@@ -362,6 +371,13 @@ export class TasksService {
         }),
         await this.syncCall(StatusEnum.DONE, user.id),
       ]);
+      this.myGateway.sendNotification(`${user.id}`, {
+        id: Math.floor(Math.random() * 10),
+        time: '12:00',
+        seen: false,
+        author: 'himel',
+        description: 'Sync Completed',
+      });
     } catch (err) {
       console.log(err);
       throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);

@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 
 const InvalidUserPage = () => {
-  const [userDetails, serUserDetails] = useState(
+  const [userDetails, setUserDetails] = useState(
     getLocalStorage("userDetails")
   );
   console.log(
@@ -13,7 +13,7 @@ const InvalidUserPage = () => {
     userDetails
   );
   useEffect(() => {
-    serUserDetails(getLocalStorage("userDetails"));
+    setUserDetails(getLocalStorage("userDetails"));
   }, []);
 
   return (

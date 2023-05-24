@@ -23,6 +23,7 @@ import ProfileIconSvg from "@/assets/svg/ProfileIconSvg";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
+import NotificationSection from "./components/notificationSection";
 
 function Navbar() {
   const [userDetails, setUserDetails] = useState<LoginResponseDto>();
@@ -30,6 +31,7 @@ function Navbar() {
   const syncing = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
+
   const router = useRouter();
   const path = router.asPath;
   const btnText = path === "/login" ? "Register" : "Login";
@@ -148,15 +150,8 @@ function Navbar() {
               <SyncOutlined spin={syncing} />
             </Tooltip>
           )}
-          <div
-            className="flex h-9 w-9 cursor-pointer items-center justify-center"
-            style={{
-              border: "1px solid #ECECED",
-              borderRadius: "8px",
-            }}
-          >
-            <BellIconSvg />
-          </div>
+
+          <NotificationSection />
           {/* <Dropdown
             menu={menuProps}
             trigger={["click"]}
