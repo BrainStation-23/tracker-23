@@ -36,4 +36,5 @@ export interface apiFunction {
   getProjectWiseStatus: () => Promise<any>;
   getNotifications: () => Promise<any>;
   deleteSession: (sessionId: number) => Promise<any>;
+  updateSession: (sessionId: number, data: AddWorkLogParams) => Promise<any>;
 }

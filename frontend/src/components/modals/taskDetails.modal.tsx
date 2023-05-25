@@ -1,6 +1,6 @@
 import { message, Modal } from "antd";
 import { userAPI } from "APIs";
-import { TaskDto } from "models/tasks";
+import { AddWorkLogParams, TaskDto } from "models/tasks";
 import { useState } from "react";
 import {
   statusBGColorEnum,
@@ -14,6 +14,7 @@ import {
 } from "@/services/timeActions";
 
 import Sessions from "./components/sessions";
+import { localFormat, timeFormat } from "../datePicker";
 
 type Props = {
   task: TaskDto;
@@ -21,6 +22,7 @@ type Props = {
   setIsModalOpen: Function;
   handleDelete?: Function;
   handleDeleteSession: Function;
+  handleUpdateSession: Function;
 };
 
 const TaskDetailsModal = ({
@@ -29,6 +31,7 @@ const TaskDetailsModal = ({
   setIsModalOpen,
   handleDelete,
   handleDeleteSession,
+  handleUpdateSession,
 }: Props) => {
   const [editing, SetEditing] = useState(true);
   const [currentTaskName, setCurrentTaskName] = useState(task?.title);
@@ -48,7 +51,28 @@ const TaskDetailsModal = ({
       handleDeleteSession(task, sessionId);
     }
   };
-
+  const updateSession = async (sessionID: any, values: any) => {
+    console.log(
+      "🚀 ~ file: taskDetails.modal.tsx:55 ~ updateSession ~ values:",
+      values
+    );
+    const tmp: AddWorkLogParams = {
+      startTime: new Date(
+        `${localFormat(values.date)} ${timeFormat(values.time[0])}`
+      ),
+      endTime: new Date(
+        `${localFormat(values.date)} ${timeFormat(values.time[1])}`
+      ),
+      taskId: taskDetails.id,
+    };
+    const res = await userAPI.updateSession(sessionID, tmp);
+    if (res) {
+      console.log("🚀 ~ file: sessions.tsx:44 ~ onFinish ~ res:", res);
+      handleUpdateSession(task, res);
+      message.success("Session Updated");
+      return true;
+    } else return false;
+  };
   return (
     <>
       <Modal
@@ -57,7 +81,7 @@ const TaskDetailsModal = ({
         onOk={handleOk}
         onCancel={handleCancel}
         footer={null}
-        width={720}
+        width={850}
       >
         <div className="flex flex-col gap-4">
           <div className="flex w-full items-center gap-4">
@@ -135,7 +159,7 @@ const TaskDetailsModal = ({
                 : "---"}
             </span>
           </div>
-          <Sessions {...{ taskDetails, deleteSession }} />
+          <Sessions {...{ taskDetails, deleteSession, updateSession }} />
         </div>
       </Modal>
     </>
