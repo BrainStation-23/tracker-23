@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/guard';
 import { WebhooksService } from './webhooks.service';
 import { GetUser } from 'src/decorator';
@@ -16,6 +24,18 @@ export class WebhooksController {
   @UseGuards(JwtAuthGuard)
   async registerWebhook(@GetUser() user: User, @Body() reqBody: any) {
     return this.webhooksService.registerWebhook(user, reqBody);
+  }
+
+  @Delete('delete')
+  @UseGuards(JwtAuthGuard)
+  async deleteWebhook(@GetUser() user: User, @Body() reqBody: any) {
+    return this.webhooksService.deleteWebhook(user, reqBody);
+  }
+
+  @Get('failed')
+  @UseGuards(JwtAuthGuard)
+  async failedWebhook(@GetUser() user: User) {
+    return this.webhooksService.failedWebhook(user);
   }
 
   @Get()
