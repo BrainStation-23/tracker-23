@@ -11,6 +11,7 @@ import {
   exportTasksRest,
   getIntegrationsRest,
   getJiraLinkRest,
+  getNotificationsRest,
   getProjectWiseHourRest,
   getProjectWiseStatusRest,
   getSpentTimePerDayRest,
@@ -53,6 +54,7 @@ const graphqlApi: apiFunction = {
   pinTask: pinTaskRest,
   selectJiraIntegration: selectJiraIntegrationRest,
   getProjectWiseStatus: getProjectWiseStatusRest,
+  getNotifications: getNotificationsRest,
 };
 
 const restApi: apiFunction = {
@@ -80,6 +82,7 @@ const restApi: apiFunction = {
   pinTask: pinTaskRest,
   selectJiraIntegration: selectJiraIntegrationRest,
   getProjectWiseStatus: getProjectWiseStatusRest,
+  getNotifications: getNotificationsRest,
 };
 
 export const userAPI: apiFunction =
