@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface Notification {
   id: number;
-  time: string;
+  createdAt: Date;
   seen: boolean;
   author: string;
   description: string;
@@ -21,16 +21,13 @@ const appSlice = createSlice({
   initialState,
   reducers: {
     addNotification: (state, action: PayloadAction<Notification>) => {
-      const newNotification = action.payload;
-      const existingNotification = state.notifications.find(
-        (n) => n.id === newNotification.id
-      );
-      if (!existingNotification) {
-        state.notifications.push(newNotification);
+      if (!state.notifications) state.notifications = [];
+      if (action.payload) {
+        state.notifications.push(action.payload);
       }
     },
     setNotifications: (state, action: PayloadAction<Notification[]>) => {
-      state.notifications = action.payload;
+      if (action.payload) state.notifications = action.payload;
     },
     removeNotification: (state, action: PayloadAction<number>) => {
       const notificationId = action.payload;

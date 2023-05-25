@@ -7,6 +7,7 @@ import {
   createSessionRest,
   createTaskRest,
   deleteIntegrationRest,
+  deleteSessionRest,
   deleteTaskRest,
   exportTasksRest,
   getIntegrationsRest,
@@ -55,6 +56,7 @@ const graphqlApi: apiFunction = {
   selectJiraIntegration: selectJiraIntegrationRest,
   getProjectWiseStatus: getProjectWiseStatusRest,
   getNotifications: getNotificationsRest,
+  deleteSession: deleteSessionRest,
 };
 
 const restApi: apiFunction = {
@@ -83,6 +85,7 @@ const restApi: apiFunction = {
   selectJiraIntegration: selectJiraIntegrationRest,
   getProjectWiseStatus: getProjectWiseStatusRest,
   getNotifications: getNotificationsRest,
+  deleteSession: deleteSessionRest,
 };
 
 export const userAPI: apiFunction =

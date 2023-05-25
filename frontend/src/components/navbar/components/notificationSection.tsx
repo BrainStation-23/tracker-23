@@ -1,4 +1,5 @@
 import BellIconSvg from "@/assets/svg/BellIconSvg";
+import { getElapsedTime, getPassedTime } from "@/services/timeActions";
 import { useAppSelector } from "@/storage/redux";
 import {
   Notification,
@@ -7,6 +8,7 @@ import {
 import { RootState } from "@/storage/redux/store";
 import { CheckCircleOutlined } from "@ant-design/icons";
 import { Badge, Dropdown, MenuProps, theme } from "antd";
+import dayjs from "dayjs";
 import React from "react";
 import { useDispatch } from "react-redux";
 
@@ -16,6 +18,10 @@ const NotificationSection = () => {
   const notifications: Notification[] = useAppSelector(
     (state: RootState) => state.notificationsSlice.notifications
   );
+  const sortedNOtifications = [...notifications].sort(
+    (a: Notification, b: Notification) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
   const newNotificationNumber = notifications.filter(
     (notification) => !notification.seen
   ).length;
@@ -23,9 +29,16 @@ const NotificationSection = () => {
     "🚀 ~ file: notificationSection.tsx:20 ~ NotificationSection ~ notifications:",
     notifications
   );
-  const items: MenuProps["items"] = notifications.map((notification) => {
+
+  const items: MenuProps["items"] = sortedNOtifications.map((notification) => {
+    const elapsedTime = getElapsedTime(notification.createdAt);
     return {
-      label: notification.description,
+      label: (
+        <div className="relative py-1">
+          <div className="max-w-[150px]">{notification.description}</div>
+          <div className="absolute right-0 top-0 text-xs">{elapsedTime}</div>
+        </div>
+      ),
       key: notification.id,
       icon: <CheckCircleOutlined className="text-green-500" />,
       disabled: notification.seen,
@@ -71,7 +84,7 @@ const NotificationSection = () => {
         )}
         trigger={["click"]}
         className="transition-all delay-1000 duration-1000"
-        overlayClassName="duration-1000 delay-1000 transition-all max-w-[300px]"
+        overlayClassName="duration-1000 delay-1000 transition-all w-[300px]"
       >
         <div
           className="flex h-9 w-9 cursor-pointer items-center justify-center"

@@ -5,14 +5,14 @@ import {
   getFormattedShortTime,
   getFormattedTime,
   getFormattedTotalTime,
-  getTotalSpentTime,
 } from "@/services/timeActions";
 
 type Props = {
   taskDetails: any;
+  deleteSession: Function;
 };
 
-const Sessions = ({ taskDetails }: Props) => {
+const Sessions = ({ taskDetails, deleteSession }: Props) => {
   const endedSessions = taskDetails?.sessions?.filter(
     (session: any) => session.endTime
   );
@@ -59,7 +59,7 @@ const Sessions = ({ taskDetails }: Props) => {
                   {" "}
                   <EditIconSvg />
                 </div>
-                <div>
+                <div onClick={() => deleteSession(session.id)}>
                   <DeleteIconSvg />
                 </div>
               </span>
