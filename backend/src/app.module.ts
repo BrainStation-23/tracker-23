@@ -7,7 +7,7 @@ import { SessionsModule } from './sessions/sessions.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { ExportModule } from './export/export.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
-import { NotificationModule } from './notification/notification.module';
+import { NotificationModule } from './notifications/notifications.module';
 
 @Module({
   imports: [

@@ -22,7 +22,7 @@ import axios from 'axios';
 import { Response } from 'express';
 import { APIException } from 'src/internal/exception/api.exception';
 import { coreConfig } from 'config/core';
-import { MyGateway } from 'src/notification/notification';
+import { MyGateway } from 'src/notifications/socketGateway';
 
 @Injectable()
 export class TasksService {
