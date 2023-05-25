@@ -27,6 +27,7 @@ import {
   stopSessionRest,
   syncStatusRest,
   syncTasksRest,
+  updateSessionRest,
   updateTaskSTatusRest,
 } from "./restApi";
 
@@ -57,6 +58,7 @@ const graphqlApi: apiFunction = {
   getProjectWiseStatus: getProjectWiseStatusRest,
   getNotifications: getNotificationsRest,
   deleteSession: deleteSessionRest,
+  updateSession: updateSessionRest,
 };
 
 const restApi: apiFunction = {
@@ -86,6 +88,7 @@ const restApi: apiFunction = {
   getProjectWiseStatus: getProjectWiseStatusRest,
   getNotifications: getNotificationsRest,
   deleteSession: deleteSessionRest,
+  updateSession: updateSessionRest,
 };
 
 export const userAPI: apiFunction =

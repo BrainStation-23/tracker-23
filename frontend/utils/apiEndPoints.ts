@@ -8,6 +8,7 @@ export const apiEndPoints = {
   syncStatus: `/tasks/sync/status`,
   sessions: `/sessions`,
   deleteSession: `/tasks/delete-session/`,
+  updateSession: `/tasks/update-session/`,
   jira: `/integrations/jira`,
   integrations: `/integrations`,
   notifications: `/notifications`,

@@ -229,6 +229,16 @@ const TasksPage = () => {
     } else message.error("Work log add Failed");
     // setManualTimeEntryModalOpen(false);
   };
+
+  const handleUpdateSession = (task: TaskDto, session: any) => {
+    if (session) {
+      if (!task.sessions) task.sessions = [];
+      task.sessions = task.sessions.map((tSession: any) =>
+        session.id === tSession.id ? session : tSession
+      );
+      setReload(!reload);
+    } else message.error("Work log add Failed");
+  };
   const startSession = async (task: TaskDto) => {
     setSessionActionLoading(true);
 
@@ -445,6 +455,7 @@ const TasksPage = () => {
           isModalOpen={taskViewModalOpen}
           setIsModalOpen={setTaskViewModalOpen}
           handleDeleteSession={handleDeleteSession}
+          handleUpdateSession={handleUpdateSession}
           // handleDelete={handleDelete}
         />
       </div>

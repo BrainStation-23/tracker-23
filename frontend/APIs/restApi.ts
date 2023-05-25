@@ -343,3 +343,18 @@ export async function deleteSessionRest(sessionId: number) {
     return false;
   }
 }
+
+export async function updateSessionRest(
+  sessionId: number,
+  data: AddWorkLogParams
+) {
+  try {
+    const res = await axios.patch(
+      `${apiEndPoints.updateSession}${sessionId}`,
+      data
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}

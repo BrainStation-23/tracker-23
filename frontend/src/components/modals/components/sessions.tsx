@@ -1,3 +1,7 @@
+import { Button, DatePicker, Form, TimePicker } from "antd";
+import dayjs from "dayjs";
+import { useEffect, useState } from "react";
+
 import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
 import EditIconSvg from "@/assets/svg/EditIconSvg";
 import {
@@ -6,30 +10,54 @@ import {
   getFormattedTime,
   getFormattedTotalTime,
 } from "@/services/timeActions";
+import { CheckCircleOutlined } from "@ant-design/icons";
 
 type Props = {
   taskDetails: any;
   deleteSession: Function;
+  updateSession: Function;
 };
 
-const Sessions = ({ taskDetails, deleteSession }: Props) => {
+const Sessions = ({ taskDetails, deleteSession, updateSession }: Props) => {
+  const [form] = Form.useForm();
   const endedSessions = taskDetails?.sessions?.filter(
     (session: any) => session.endTime
   );
   const currentSessions = taskDetails?.sessions?.filter(
     (session: any) => !session.endTime
   );
+  const [sessionInEdit, setSessionInEdit] = useState(null);
+  const onFinish = async (values: any) => {
+    console.log(values);
+    updateSession(sessionInEdit, values) && setSessionInEdit(null);
+  };
 
+  const onReset = () => {
+    form.resetFields();
+  };
+  const [initialValues, setInitialValues] = useState<any>();
+  const handleInitialValues = (session: any) => {
+    setSessionInEdit(session.id);
+    form.setFieldsValue({ date: dayjs(session.startTime) });
+    form.setFieldsValue({
+      time: [dayjs(session.startTime), dayjs(session.endTime)],
+    });
+    // setInitialValues({
+    //   date: dayjs(new Date(session.startTime)),
+    //   time: [new Date(session.startTime), new Date(session.startTime)],
+    // });
+  };
+  useEffect(() => {}, [initialValues]);
   return (
     <>
       <h3 className="w-full  text-left text-base font-semibold">Sessions</h3>
       <div className="flex max-h-64 w-full flex-col gap-3 overflow-y-scroll">
         {endedSessions?.length > 0 && (
           <div className="grid grid-cols-12 gap-4 font-semibold">
-            <span className="col-span-1">No</span>
-            <span className="col-span-3">Date</span>
-            <span className="col-span-3">Time Stamp</span>
-            <span className="col-span-3">Hours</span>
+            <div className="col-span-1">No</div>
+            <div className="col-span-3">Date</div>
+            <div className="col-span-4">Time Stamp</div>
+            <div className="col-span-2">Hours</div>
           </div>
         )}
         {endedSessions?.map((session: any, index: number) => {
@@ -37,33 +65,91 @@ const Sessions = ({ taskDetails, deleteSession }: Props) => {
           const endTime: any = formatDate(session.endTime);
 
           const totalTime = getFormattedTotalTime(endTime - startTime);
+
           return (
-            <div
-              className="grid grid-cols-12 gap-4 text-sm font-medium"
-              key={session.id}
+            <Form
+              form={form}
+              // name="control-hooks"
+              onFinish={onFinish}
+              // initialValues={{
+              //   date: dayjs(new Date(session.startTime)),
+              //   time: [
+              //     dayjs(new Date(session.startTime)),
+              //     dayjs(new Date(session.endTime)),
+              //   ],
+              // }}
+              // style={{ width: "500px" }}
             >
-              <span className="col-span-1 font-semibold">#{index + 1}</span>
-              <span className="col-span-3">{` ${getFormattedTime(
-                startTime
-              )}`}</span>
-              <span className="col-span-3">
-                {`${getFormattedShortTime(startTime)} `} -
-                {` ${getFormattedShortTime(endTime)}`}
-              </span>
-              <span className="col-span-3">
-                {" "}
-                {getFormattedTotalTime(endTime - startTime)}
-              </span>
-              <span className="col-span-2 mr-3 flex items-center justify-end gap-2">
-                <div>
+              {" "}
+              <div
+                className="grid grid-cols-12 gap-4 text-sm font-medium"
+                key={session.id}
+              >
+                <div className="col-span-1 font-semibold">#{index + 1}</div>
+                <div className="col-span-3">
+                  {session.id !== sessionInEdit ? (
+                    ` ${getFormattedTime(startTime)}`
+                  ) : (
+                    <>
+                      <Form.Item
+                        name="date"
+                        className="mb-0"
+                        rules={[{ required: true }]}
+                      >
+                        <DatePicker className="w-full" />
+                      </Form.Item>
+                    </>
+                  )}
+                </div>
+                <div className="col-span-4">
+                  {session.id !== sessionInEdit ? (
+                    <>
+                      {`${getFormattedShortTime(startTime)} `} -
+                      {` ${getFormattedShortTime(endTime)}`}
+                    </>
+                  ) : (
+                    <div>
+                      <Form.Item
+                        name="time"
+                        className="mb-0"
+                        rules={[{ required: true }]}
+                      >
+                        <TimePicker.RangePicker
+                          format={"HH:mm"}
+                          className="w-full"
+                        />
+                      </Form.Item>
+                    </div>
+                  )}
+                </div>
+                <div className="col-span-2">
                   {" "}
-                  <EditIconSvg />
+                  {getFormattedTotalTime(endTime - startTime)}
                 </div>
-                <div onClick={() => deleteSession(session.id)}>
-                  <DeleteIconSvg />
+                <div className="col-span-2 mr-3 flex items-center justify-end gap-2">
+                  {session.id !== sessionInEdit ? (
+                    <>
+                      <div onClick={() => handleInitialValues(session)}>
+                        <EditIconSvg />
+                      </div>
+                      <div onClick={() => deleteSession(session.id)}>
+                        <DeleteIconSvg />
+                      </div>
+                    </>
+                  ) : (
+                    <div>
+                      <button
+                        type="submit"
+                        className="m-0 h-min p-0"
+                        // onClick={() => setSessionInEdit(null)}
+                      >
+                        <CheckCircleOutlined />
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </span>
-            </div>
+              </div>
+            </Form>
           );
         })}
       </div>
