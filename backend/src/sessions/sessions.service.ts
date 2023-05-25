@@ -186,10 +186,9 @@ export class SessionsService {
         data: data,
       };
       const workLog = await (await axios(config)).data;
-      console.log(workLog);
       return workLog;
     } catch (err) {
-      console.log(err.message);
+      return null;
     }
   }
   getUtcTime(date: any) {
@@ -232,15 +231,16 @@ export class SessionsService {
           HttpStatus.BAD_REQUEST,
         );
       }
+      let jiraSession: any;
       if (updated_integration) {
-        await this.addWorkLog(
+        jiraSession = await this.addWorkLog(
           startTime,
           integratedTaskId as unknown as string,
           this.timeConverter(Number(timeSpent)),
           updated_integration,
         );
       }
-      if (id)
+      if (id) {
         return await this.prisma.session.create({
           data: {
             startTime: startTime,
@@ -248,9 +248,11 @@ export class SessionsService {
             status: SessionStatus.STOPPED,
             taskId: id,
             authorId: updated_integration.jiraAccountId,
+            integratedTaskId: jiraSession ? Number(jiraSession.issueId) : null,
+            worklogId: jiraSession ? Number(jiraSession.id) : null,
           },
         });
-      else {
+      } else {
         throw new APIException(
           'Something is wrong in manual time entry',
           HttpStatus.INTERNAL_SERVER_ERROR,

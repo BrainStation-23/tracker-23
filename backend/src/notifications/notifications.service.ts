@@ -13,4 +13,22 @@ export class NotificationsService {
       },
     });
   }
+
+  async seenSingleNotification(user: User, id: string) {
+    return await this.prisma.notification.update({
+      where: {
+        id: Number(id),
+      },
+      data: { seen: true },
+    });
+  }
+
+  async seenAllNotifications(user: User) {
+    return await this.prisma.notification.updateMany({
+      where: {
+        userId: user.id,
+      },
+      data: { seen: true },
+    });
+  }
 }

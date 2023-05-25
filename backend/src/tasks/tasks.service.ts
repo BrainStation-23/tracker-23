@@ -733,7 +733,7 @@ export class TasksService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      return { message: 'Session updated successfully!' };
+      return session;
     } catch (err) {
       throw new APIException(
         err.message || 'Something is wrong to update this session!',
@@ -743,19 +743,19 @@ export class TasksService {
   }
 
   async updateSessionFromLocal(sessionId: number, reqBody: SessionReqBodyDto) {
-    const deleteFromLocal = await this.prisma.session.update({
+    const updateFromLocal = await this.prisma.session.update({
       where: {
         id: Number(sessionId),
       },
       data: reqBody,
     });
-    if (!deleteFromLocal) {
+    if (!updateFromLocal) {
       throw new APIException(
-        'Can not delete this session!',
+        'Can not update this session!',
         HttpStatus.BAD_REQUEST,
       );
     }
-    return deleteFromLocal;
+    return updateFromLocal;
   }
 
   async weeklySpentTime(user: User, query: GetTaskQuery) {

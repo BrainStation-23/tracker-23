@@ -173,4 +173,55 @@ export class WebhooksService {
       );
     }
   }
+
+  async deleteWebhook(user: User, reqBody: any) {
+    try {
+      const updated_integration = await this.updateIntegration(user);
+      const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook`;
+      const config = {
+        method: 'delete',
+        url,
+        headers: {
+          Authorization: `Bearer ${updated_integration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        data: reqBody,
+      };
+
+      const webhook = (await axios(config)).status;
+      console.log('deleted', webhook);
+      return webhook;
+    } catch (err) {
+      console.log(err.message);
+      throw new APIException(
+        err.message || 'Fetching problem to register webhook!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async failedWebhook(user: User) {
+    try {
+      const updated_integration = await this.updateIntegration(user);
+      const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook/failed`;
+      const config = {
+        method: 'get',
+        url,
+        headers: {
+          Authorization: `Bearer ${updated_integration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      };
+
+      const webhooks = (await axios(config)).data;
+      console.log('Get failed', webhooks);
+      return webhooks;
+    } catch (err) {
+      console.log(err.message);
+      throw new APIException(
+        err.message || 'Fetching problem to get failed webhook!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
