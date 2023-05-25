@@ -216,13 +216,24 @@ export class TasksService {
   }
 
   async syncTasks(user: User, res: Response) {
-    this.myGateway.sendNotification(`${user.id}`, {
-      id: Math.floor(Math.random() * 10),
-      time: '12:00',
-      seen: false,
-      author: 'himel',
-      description: 'Sync Started',
-    });
+    try {
+      const notification = await this.prisma.notification.create({
+        data: {
+          seen: false,
+          author: 'SYSTEM',
+          title: 'Sync Started',
+          description: 'Sync Started',
+          userId: user.id,
+        },
+      });
+      this.myGateway.sendNotification(`${user.id}`, notification);
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
+        error,
+      );
+    }
+
     try {
       const updated_integration = await this.updateIntegration(user);
       const headers: any = {
@@ -370,14 +381,23 @@ export class TasksService {
         }),
         await this.syncCall(StatusEnum.DONE, user.id),
       ]);
-      this.myGateway.sendNotification(`${user.id}`, {
-        id: Math.floor(Math.random() * 10),
-        time: '12:00',
-        seen: false,
-        author: 'himel',
-        title: 'Sync Completed',
-        description: 'Sync Completed',
-      });
+      try {
+        const notification = await this.prisma.notification.create({
+          data: {
+            seen: false,
+            author: 'SYSTEM',
+            title: 'Sync Completed',
+            description: 'Sync Completed',
+            userId: user.id,
+          },
+        });
+        this.myGateway.sendNotification(`${user.id}`, notification);
+      } catch (error) {
+        console.log(
+          '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
+          error,
+        );
+      }
     } catch (err) {
       console.log(err);
       throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
