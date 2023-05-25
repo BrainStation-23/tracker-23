@@ -1,6 +1,9 @@
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { monthsList } from "utils/constants";
 
+// Extend Day.js with the relativeTime plugin
+dayjs.extend(relativeTime);
 export const getFormattedTotalTime = (time: number) => {
   if (!time) return null;
   let tmp = time;
@@ -107,4 +110,19 @@ export const getHourFromMinutes = (min: number) => {
 
 export const getDayWithMonth = (date: any) => {
   return dayjs(date).format("D MMMM");
+};
+
+export const getPassedTime = (date: Date) => {
+  const totalTime = new Date().getTime() - new Date(date).getTime();
+  return Math.floor(totalTime / 1000);
+};
+
+export const getElapsedTime = (date: Date) => {
+  // Get the start time as a Day.js instance
+  const startTime = dayjs(date);
+
+  // Calculate the elapsed time using `.fromNow()`
+  const elapsedTime = startTime.fromNow();
+
+  return elapsedTime;
 };
