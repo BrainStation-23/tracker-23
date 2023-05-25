@@ -14,6 +14,7 @@ import { publicRoutes } from "utils/constants";
 import { setProjectsSlice } from "@/storage/redux/projectsSlice";
 import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
 import { initializeSocket } from "@/services/socket.service";
+import { setNotifications } from "@/storage/redux/notificationsSlice";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -27,6 +28,9 @@ const CustomLayout = ({ children }: any) => {
   );
   const integrationsSlice = useAppSelector(
     (state: RootState) => state.integrations.integrations
+  );
+  const notificationsSlice = useAppSelector(
+    (state: RootState) => state.notificationsSlice.notifications
   );
   const [syncing, setSyncing] = useState(
     useAppSelector((state: RootState) => state.syncStatus.syncRunning)
@@ -56,8 +60,16 @@ const CustomLayout = ({ children }: any) => {
       integrations?.length > 0 && getProjectWiseStatues();
     }
   };
+
+  const getNotifications = async () => {
+    const notifications = await userAPI.getNotifications();
+    if (!(notificationsSlice?.length > 0) && notifications) {
+      dispatch(setNotifications(notifications));
+    }
+  };
   const initialLoading = async () => {
     await getIntegrations();
+    await getNotifications();
   };
   useEffect(() => {
     if (!publicRoutes.some((route) => path.includes(route))) {

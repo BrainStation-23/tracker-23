@@ -9,6 +9,7 @@ export const apiEndPoints = {
   sessions: `/sessions`,
   jira: `/integrations/jira`,
   integrations: `/integrations`,
+  notifications: `/notifications`,
   authJira: `/integrations/jira/authorization`,
   spentTime: `/tasks/spent-time/time-range`,
   spentTimePerDay: `/tasks/spent-time/per-day`,

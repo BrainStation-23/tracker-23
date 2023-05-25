@@ -32,18 +32,31 @@ model UserAccount {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  email        String        @unique
-  hash         String?
-  firstName    String?
-  lastName     String?
-  picture      String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  userAccounts UserAccount[]
-  accounts     Account[]
-  tasks        Task[]
-  integrations Integration[]
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  hash          String?
+  firstName     String?
+  lastName      String?
+  picture       String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  userAccounts  UserAccount[]
+  accounts      Account[]
+  tasks         Task[]
+  integrations  Integration[]
+  notifications Notification[]
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  seen        Boolean  @default(false)
+  author      String
+  title       String
+  description String
+
+  User   User @relation(fields: [userId], references: [id])
+  userId Int
 }
 
 model Integration {
@@ -118,7 +131,7 @@ model Task {
   userId Int
 
   source           IntegrationType @default(TRACKER23)
-  integratedTaskId Int?            
+  integratedTaskId Int?
   url              String?
   sessions         Session[]
   pinned           Boolean?        @default(false)
@@ -131,7 +144,7 @@ model Session {
   status    SessionStatus @default(STARTED)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
-  authorId    String?
+  authorId  String?
 
   task             Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId           Int

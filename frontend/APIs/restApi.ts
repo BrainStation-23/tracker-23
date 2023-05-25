@@ -325,3 +325,12 @@ export async function getProjectWiseStatusRest() {
     return false;
   }
 }
+
+export async function getNotificationsRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.notifications}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
