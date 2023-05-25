@@ -22,17 +22,29 @@ type TagProps = {
   onClose: any;
 };
 const StatusSelectorComponent = ({ status, setStatus }: Props) => {
-  const [statusValues, setStatusValues] = useState<any>();
+  const defaultValues = [
+    { name: "To Do", statusCategoryName: "TO_DO" },
+    { name: "In Progress", statusCategoryName: "IN_PROGRESS" },
+  ];
   const statuses = useAppSelector(
     (state: RootState) => state.projectList.statuses
   );
-  const Options = statuses?.map((st) => {
-    return {
-      value: JSON.stringify(st),
-      label: st.name,
-    };
-  });
-
+  const Options = statuses
+    ? statuses?.map((st) => {
+        return {
+          value: JSON.stringify(st),
+          label: st.name,
+        };
+      })
+    : [];
+  if (Options?.length === 0) {
+    defaultValues.forEach((val) => {
+      Options.push({
+        value: JSON.stringify(val),
+        label: val.name,
+      });
+    });
+  }
   const tagRender = (props: TagProps) => {
     const { label, value, closable, onClose } = props;
     const statusObj: StatusType = value && JSON.parse(value);
@@ -70,7 +82,6 @@ const StatusSelectorComponent = ({ status, setStatus }: Props) => {
         if (option.label === JSON.parse(st).label) tmpArray.push(option.value);
       });
     });
-    setStatusValues(tmpArray);
   }, [status]);
   return (
     <div
@@ -106,7 +117,6 @@ const StatusSelectorComponent = ({ status, setStatus }: Props) => {
             value
           );
           setStatus(value);
-          setStatusValues(value);
         }}
       />
     </div>

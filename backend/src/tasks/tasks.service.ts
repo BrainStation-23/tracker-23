@@ -375,6 +375,7 @@ export class TasksService {
         time: '12:00',
         seen: false,
         author: 'himel',
+        title: 'Sync Completed',
         description: 'Sync Completed',
       });
     } catch (err) {
