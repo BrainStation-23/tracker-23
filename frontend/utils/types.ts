@@ -35,4 +35,5 @@ export interface apiFunction {
   pinTask: (taskId: any, pinned: boolean) => Promise<any>;
   getProjectWiseStatus: () => Promise<any>;
   getNotifications: () => Promise<any>;
+  deleteSession: (sessionId: number) => Promise<any>;
 }

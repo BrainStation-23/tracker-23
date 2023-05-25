@@ -1,11 +1,5 @@
-import { updateTask } from "@/services/taskActions";
-import {
-  getFormattedTime,
-  getFormattedTotalTime,
-  getTotalSpentTime,
-} from "@/services/timeActions";
-import { EditOutlined, SaveOutlined } from "@ant-design/icons";
-import { Button, Input, Modal } from "antd";
+import { message, Modal } from "antd";
+import { userAPI } from "APIs";
 import { TaskDto } from "models/tasks";
 import { useState } from "react";
 import {
@@ -13,6 +7,12 @@ import {
   statusBorderColorEnum,
   taskStatusEnum,
 } from "utils/constants";
+
+import {
+  getFormattedTotalTime,
+  getTotalSpentTime,
+} from "@/services/timeActions";
+
 import Sessions from "./components/sessions";
 
 type Props = {
@@ -20,6 +20,7 @@ type Props = {
   isModalOpen: boolean;
   setIsModalOpen: Function;
   handleDelete?: Function;
+  handleDeleteSession: Function;
 };
 
 const TaskDetailsModal = ({
@@ -27,6 +28,7 @@ const TaskDetailsModal = ({
   isModalOpen,
   setIsModalOpen,
   handleDelete,
+  handleDeleteSession,
 }: Props) => {
   const [editing, SetEditing] = useState(true);
   const [currentTaskName, setCurrentTaskName] = useState(task?.title);
@@ -38,6 +40,13 @@ const TaskDetailsModal = ({
   };
   const handleCancel = () => {
     setIsModalOpen(false);
+  };
+  const deleteSession = async (sessionId: number) => {
+    const res = await userAPI.deleteSession(sessionId);
+    if (res) {
+      message.success(res.message);
+      handleDeleteSession(task, sessionId);
+    }
   };
 
   return (
@@ -95,7 +104,8 @@ const TaskDetailsModal = ({
             </span>
             <div
               style={{
-                backgroundColor: statusBGColorEnum[taskDetails?.statusCategoryName],
+                backgroundColor:
+                  statusBGColorEnum[taskDetails?.statusCategoryName],
                 border: `1px solid ${
                   statusBorderColorEnum[taskDetails?.statusCategoryName]
                 }`,
@@ -106,7 +116,8 @@ const TaskDetailsModal = ({
               <div
                 className="h-2 w-2 rounded-full"
                 style={{
-                  backgroundColor: statusBorderColorEnum[taskDetails?.statusCategoryName],
+                  backgroundColor:
+                    statusBorderColorEnum[taskDetails?.statusCategoryName],
                 }}
               />
 
@@ -124,7 +135,7 @@ const TaskDetailsModal = ({
                 : "---"}
             </span>
           </div>
-          <Sessions {...{ taskDetails }} />
+          <Sessions {...{ taskDetails, deleteSession }} />
         </div>
       </Modal>
     </>

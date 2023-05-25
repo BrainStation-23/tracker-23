@@ -334,3 +334,12 @@ export async function getNotificationsRest() {
     return false;
   }
 }
+
+export async function deleteSessionRest(sessionId: number) {
+  try {
+    const res = await axios.delete(`${apiEndPoints.deleteSession}${sessionId}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
