@@ -307,6 +307,7 @@ export class TasksService {
         });
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [t, tasks] = await Promise.all([
         await this.prisma.task.createMany({
           data: taskList,
