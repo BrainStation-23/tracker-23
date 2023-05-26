@@ -3,11 +3,21 @@ import { getElapsedTime, getPassedTime } from "@/services/timeActions";
 import { useAppSelector } from "@/storage/redux";
 import {
   Notification,
+  markAllNotificationsAsSeen,
   markNotificationAsSeen,
 } from "@/storage/redux/notificationsSlice";
 import { RootState } from "@/storage/redux/store";
 import { CheckCircleOutlined } from "@ant-design/icons";
-import { Badge, Dropdown, MenuProps, theme } from "antd";
+import { userAPI } from "APIs";
+import {
+  Badge,
+  Button,
+  Divider,
+  Dropdown,
+  Empty,
+  MenuProps,
+  theme,
+} from "antd";
 import dayjs from "dayjs";
 import React from "react";
 import { useDispatch } from "react-redux";
@@ -29,6 +39,19 @@ const NotificationSection = () => {
     "🚀 ~ file: notificationSection.tsx:20 ~ NotificationSection ~ notifications:",
     notifications
   );
+  const handleClickNotification = async (notification: any) => {
+    console.log(
+      "🚀 ~ file: notificationSection.tsx:34 ~ handleClickNotification ~ notification:",
+      notification
+    );
+    const res = await userAPI.markNotificationSeen(notification.key);
+    res && dispatch(markNotificationAsSeen(notification.key));
+  };
+
+  const handleMarkAllSeen = async () => {
+    const res = await userAPI.markAllNotificationsSeen();
+    res && dispatch(markAllNotificationsAsSeen());
+  };
 
   const items: MenuProps["items"] = sortedNOtifications.map((notification) => {
     const elapsedTime = getElapsedTime(notification.createdAt);
@@ -44,7 +67,7 @@ const NotificationSection = () => {
       disabled: notification.seen,
       className: notification.seen ? "bg-gray-100" : "",
       onClick: (item: any) => {
-        dispatch(markNotificationAsSeen(item.key));
+        handleClickNotification(item);
         console.log("🚀", item);
       },
     };
@@ -80,6 +103,16 @@ const NotificationSection = () => {
             {React.cloneElement(menu as React.ReactElement, {
               style: menuStyle,
             })}
+            {notifications.length > 0 ? (
+              <>
+                <Divider style={{ margin: 0 }} />
+                <Button className="w-full" onClick={() => handleMarkAllSeen()}>
+                  Mark all as seen
+                </Button>
+              </>
+            ) : (
+              <Empty description="No new Notifications" className="py-2"></Empty>
+            )}
           </div>
         )}
         trigger={["click"]}

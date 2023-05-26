@@ -62,6 +62,7 @@ export const {
   removeAllNotifications,
   setNotifications,
   markNotificationAsSeen,
+  markAllNotificationsAsSeen,
 } = appSlice.actions;
 
 export default appSlice.reducer;

@@ -20,6 +20,8 @@ import {
   googleLoginRest,
   loginRest,
   logoutRest,
+  markAllNotificationsSeenRest,
+  markNotificationSeenRest,
   pinTaskRest,
   registerRest,
   selectJiraIntegrationRest,
@@ -59,6 +61,8 @@ const graphqlApi: apiFunction = {
   getNotifications: getNotificationsRest,
   deleteSession: deleteSessionRest,
   updateSession: updateSessionRest,
+  markNotificationSeen: markNotificationSeenRest,
+  markAllNotificationsSeen: markAllNotificationsSeenRest,
 };
 
 const restApi: apiFunction = {
@@ -89,6 +93,8 @@ const restApi: apiFunction = {
   getNotifications: getNotificationsRest,
   deleteSession: deleteSessionRest,
   updateSession: updateSessionRest,
+  markNotificationSeen: markNotificationSeenRest,
+  markAllNotificationsSeen: markAllNotificationsSeenRest,
 };
 
 export const userAPI: apiFunction =

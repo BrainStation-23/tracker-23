@@ -17,7 +17,10 @@ export class NotificationController {
 
   @Patch('seen/:id')
   @UseGuards(JwtAuthGuard)
-  async seenSingleNotification(@GetUser() user: User, @Param('id') id: string): Promise<any> {
+  async seenSingleNotification(
+    @GetUser() user: User,
+    @Param('id') id: string,
+  ): Promise<any> {
     return this.notificationService.seenSingleNotification(user, id);
   }
   @Patch('seen-all')
