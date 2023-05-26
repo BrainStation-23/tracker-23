@@ -497,7 +497,11 @@ export class TasksService {
           projectId: true,
         },
       });
-      if (taskIntegration && taskIntegration.projectId) {
+      if (
+        taskIntegration &&
+        taskIntegration.projectId &&
+        taskIntegration.projectId !== 'None'
+      ) {
         const statuses: StatusDetail[] = taskIntegration?.projectId
           ? await this.prisma.statusDetail.findMany({
               where: {

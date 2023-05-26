@@ -13,12 +13,14 @@ import { ManualTimeEntryReqBody, SessionDto } from './dto';
 import axios from 'axios';
 import * as moment from 'moment';
 import { APIException } from 'src/internal/exception/api.exception';
+import { TasksService } from 'src/tasks/tasks.service';
 @Injectable()
 export class SessionsService {
   constructor(
     private config: ConfigService,
     private prisma: PrismaService,
     private httpService: HttpService,
+    private tasksService: TasksService,
   ) {}
 
   async getSessions(user: User, taskId: number) {
@@ -33,7 +35,7 @@ export class SessionsService {
     await this.validateTaskAccess(user, dto.taskId);
     await this.prisma.task.update({
       where: { id: dto.taskId },
-      data: { status: 'In Progress' },
+      data: { status: 'In Progress', statusCategoryName: 'IN_PROGRESS' },
     });
 
     // Checking for previous active session
@@ -52,6 +54,7 @@ export class SessionsService {
 
   async stopSession(user: User, taskId: number) {
     const task = await this.validateTaskAccess(user, taskId);
+    this.tasksService.updateIssueStatus(user, taskId + '', task.status + '');
     const activeSession = await this.prisma.session.findFirst({
       where: { taskId, endTime: null },
     });

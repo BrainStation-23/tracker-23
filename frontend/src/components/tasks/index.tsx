@@ -204,7 +204,8 @@ const TasksPage = () => {
     if (session) {
       if (!task.sessions) task.sessions = [];
       task.sessions?.push(session);
-      task.status = "IN_PROGRESS";
+      task.status = "In Progress";
+      task.statusCategoryName = "IN_PROGRESS";
       setRunningTask({ ...task });
       session && message.success("Session Started");
       setReload(!reload);

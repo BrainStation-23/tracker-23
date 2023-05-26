@@ -76,7 +76,7 @@ export class TasksController {
     return await this.tasksService.getCallSync(user.id);
   }
 
-  @Patch('update/status/:issueId')
+  @Patch('update/status/:taskId')
   @UseGuards(JwtAuthGuard)
   async updateIssueStatus(
     @GetUser() user: User,
