@@ -8,6 +8,7 @@ import {
   SelectProps,
   Spin,
   TimePicker,
+  Tooltip,
 } from "antd";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import { SizeType } from "antd/es/config-provider/SizeContext";
@@ -16,6 +17,7 @@ import { CreateTaskDto, CreateTaskValues } from "models/tasks";
 import React, { useState } from "react";
 
 import { localFormat, timeFormat } from "@/components/datePicker";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 
 const { RangePicker } = DatePicker;
 
@@ -148,9 +150,39 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
                 placeholder="Select Frequency"
                 onChange={handlePriorityChange}
                 options={[
-                  { value: "DAILY", label: "Daily" },
-                  { value: "WEEKLY", label: "Weekly" },
-                  { value: "BI-WEEKLY", label: "Bi-Weekly" },
+                  {
+                    value: "DAILY",
+                    label: (
+                      <div className="flex justify-between">
+                        Daily
+                        <Tooltip title="Repeat Every Day">
+                          <QuestionCircleOutlined />
+                        </Tooltip>
+                      </div>
+                    ),
+                  },
+                  {
+                    value: "WEEKLY",
+                    label: (
+                      <div className="flex justify-between">
+                        Weekly
+                        <Tooltip title="Repeat Every 7th Day">
+                          <QuestionCircleOutlined />
+                        </Tooltip>
+                      </div>
+                    ),
+                  },
+                  {
+                    value: "BI-WEEKLY",
+                    label: (
+                      <div className="flex justify-between">
+                        Bi-Weekly
+                        <Tooltip title="Repeat Every 14th Day">
+                          <QuestionCircleOutlined />
+                        </Tooltip>
+                      </div>
+                    ),
+                  },
                 ]}
               />
             </Form.Item>

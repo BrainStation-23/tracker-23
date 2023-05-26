@@ -520,8 +520,11 @@ const Dashboard = () => {
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1">
-      {/* <div className="grid grid-cols-2"> */}
-        <DashboardSection title="Project wise Track hour">
+        {/* <div className="grid grid-cols-2"> */}
+        <DashboardSection
+          title="Project wise Track hour"
+          tooltipMessage="This Month"
+        >
           {dataDonut?.length > 0 ? (
             <DonutChart data={dataDonut} total={dataDonutTotal} />
           ) : (
@@ -572,7 +575,7 @@ const Dashboard = () => {
           }}
         />
       </DashboardSection>
-      <DashboardSection title="Tracker By Day">
+      <DashboardSection title="Tracker By Day" tooltipMessage="This Week">
         {weekData?.length > 0 ? (
           <XYChart data={weekData} />
         ) : (

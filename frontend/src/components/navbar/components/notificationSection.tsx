@@ -1,14 +1,3 @@
-import BellIconSvg from "@/assets/svg/BellIconSvg";
-import { getElapsedTime, getPassedTime } from "@/services/timeActions";
-import { useAppSelector } from "@/storage/redux";
-import {
-  Notification,
-  markAllNotificationsAsSeen,
-  markNotificationAsSeen,
-} from "@/storage/redux/notificationsSlice";
-import { RootState } from "@/storage/redux/store";
-import { CheckCircleOutlined } from "@ant-design/icons";
-import { userAPI } from "APIs";
 import {
   Badge,
   Button,
@@ -18,9 +7,21 @@ import {
   MenuProps,
   theme,
 } from "antd";
+import { userAPI } from "APIs";
 import dayjs from "dayjs";
 import React from "react";
 import { useDispatch } from "react-redux";
+
+import BellIconSvg from "@/assets/svg/BellIconSvg";
+import { getElapsedTime, getPassedTime } from "@/services/timeActions";
+import { useAppSelector } from "@/storage/redux";
+import {
+  markNotificationAsSeen,
+  Notification,
+  removeAllNotifications,
+} from "@/storage/redux/notificationsSlice";
+import { RootState } from "@/storage/redux/store";
+import { CheckCircleOutlined } from "@ant-design/icons";
 
 const { useToken } = theme;
 const NotificationSection = () => {
@@ -50,7 +51,7 @@ const NotificationSection = () => {
 
   const handleMarkAllSeen = async () => {
     const res = await userAPI.markAllNotificationsSeen();
-    res && dispatch(markAllNotificationsAsSeen());
+    res && dispatch(removeAllNotifications());
   };
 
   const items: MenuProps["items"] = sortedNOtifications.map((notification) => {
@@ -98,6 +99,9 @@ const NotificationSection = () => {
         menu={menuProps}
         placement="bottomRight"
         // dropdownRender={dropdownRender}
+        onOpenChange={(open) => {
+          !open && handleMarkAllSeen();
+        }}
         dropdownRender={(menu) => (
           <div style={contentStyle}>
             {React.cloneElement(menu as React.ReactElement, {
@@ -107,11 +111,14 @@ const NotificationSection = () => {
               <>
                 <Divider style={{ margin: 0 }} />
                 <Button className="w-full" onClick={() => handleMarkAllSeen()}>
-                  Mark all as seen
+                  Clear All
                 </Button>
               </>
             ) : (
-              <Empty description="No new Notifications" className="py-2"></Empty>
+              <Empty
+                description="No new Notifications"
+                className="py-2"
+              ></Empty>
             )}
           </div>
         )}
