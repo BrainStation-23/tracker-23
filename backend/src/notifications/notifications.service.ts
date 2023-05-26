@@ -8,6 +8,7 @@ export class NotificationsService {
   constructor(private prisma: PrismaService) {}
   async getNotifications(user: User) {
     return await this.prisma.notification.findMany({
+      take: 50,
       where: {
         userId: user.id,
         seen: false,
