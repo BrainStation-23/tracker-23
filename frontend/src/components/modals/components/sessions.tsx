@@ -16,9 +16,15 @@ type Props = {
   taskDetails: any;
   deleteSession: Function;
   updateSession: Function;
+  SetSpinning: Function;
 };
 
-const Sessions = ({ taskDetails, deleteSession, updateSession }: Props) => {
+const Sessions = ({
+  taskDetails,
+  deleteSession,
+  updateSession,
+  SetSpinning,
+}: Props) => {
   const [form] = Form.useForm();
   const endedSessions = taskDetails?.sessions?.filter(
     (session: any) => session.endTime
@@ -28,8 +34,10 @@ const Sessions = ({ taskDetails, deleteSession, updateSession }: Props) => {
   );
   const [sessionInEdit, setSessionInEdit] = useState(null);
   const onFinish = async (values: any) => {
+    SetSpinning(true);
     console.log(values);
-    updateSession(sessionInEdit, values) && setSessionInEdit(null);
+    (await updateSession(sessionInEdit, values)) && setSessionInEdit(null);
+    SetSpinning(false);
   };
 
   const onReset = () => {

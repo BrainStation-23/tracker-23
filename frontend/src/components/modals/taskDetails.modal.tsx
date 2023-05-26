@@ -1,4 +1,4 @@
-import { message, Modal } from "antd";
+import { message, Modal, Spin } from "antd";
 import { userAPI } from "APIs";
 import { AddWorkLogParams, TaskDto } from "models/tasks";
 import { useState } from "react";
@@ -33,7 +33,8 @@ const TaskDetailsModal = ({
   handleDeleteSession,
   handleUpdateSession,
 }: Props) => {
-  const [editing, SetEditing] = useState(true);
+  const [editing, SetEditing] = useState(false);
+  const [spinning, SetSpinning] = useState(false);
   const [currentTaskName, setCurrentTaskName] = useState(task?.title);
   const [currentSession, setCurrentSession] = useState(null);
   const taskDetails = task;
@@ -45,11 +46,13 @@ const TaskDetailsModal = ({
     setIsModalOpen(false);
   };
   const deleteSession = async (sessionId: number) => {
+    SetSpinning(true);
     const res = await userAPI.deleteSession(sessionId);
     if (res) {
       message.success(res.message);
       handleDeleteSession(task, sessionId);
     }
+    SetSpinning(false);
   };
   const updateSession = async (sessionID: any, values: any) => {
     console.log(
@@ -83,84 +86,88 @@ const TaskDetailsModal = ({
         footer={null}
         width={850}
       >
-        <div className="flex flex-col gap-4">
-          <div className="flex w-full items-center gap-4">
-            <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
-              TItle
-            </span>
-            <span className="font-medium">{task?.title}</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
-              Description
-            </span>{" "}
-            <span className="font-medium">
-              {taskDetails?.description ?? <em>No description provided.</em>}
-            </span>
-          </div>
-          <div className="grid grid-cols-2">
+        <Spin spinning={spinning}>
+          <div className="flex flex-col gap-4">
+            <div className="flex w-full items-center gap-4">
+              <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+                TItle
+              </span>
+              <span className="font-medium">{task?.title}</span>
+            </div>
             <div className="flex items-center gap-4">
               <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
-                Estimation
+                Description
               </span>{" "}
               <span className="font-medium">
-                {taskDetails?.estimation ?? <em>No estimation provided.</em>}
+                {taskDetails?.description ?? <em>No description provided.</em>}
               </span>
             </div>
+            <div className="grid grid-cols-2">
+              <div className="flex items-center gap-4">
+                <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+                  Estimation
+                </span>{" "}
+                <span className="font-medium">
+                  {taskDetails?.estimation ?? <em>No estimation provided.</em>}
+                </span>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+                  Time Left
+                </span>
+                <span className="font-medium">
+                  {taskDetails?.estimation
+                    ? getFormattedTotalTime(
+                        taskDetails?.estimation * 3600000 -
+                          getTotalSpentTime(task.sessions)
+                      )
+                    : "No estimation"}{" "}
+                </span>
+              </div>
+            </div>
+
             <div className="flex items-center gap-4">
               <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
-                Time Left
+                Status
               </span>
-              <span className="font-medium">
-                {taskDetails?.estimation
-                  ? getFormattedTotalTime(
-                      taskDetails?.estimation * 3600000 -
-                        getTotalSpentTime(task.sessions)
-                    )
-                  : "No estimation"}{" "}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
-              Status
-            </span>
-            <div
-              style={{
-                backgroundColor:
-                  statusBGColorEnum[taskDetails?.statusCategoryName],
-                border: `1px solid ${
-                  statusBorderColorEnum[taskDetails?.statusCategoryName]
-                }`,
-                borderRadius: "36px",
-              }}
-              className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
-            >
               <div
-                className="h-2 w-2 rounded-full"
                 style={{
                   backgroundColor:
-                    statusBorderColorEnum[taskDetails?.statusCategoryName],
+                    statusBGColorEnum[taskDetails?.statusCategoryName],
+                  border: `1px solid ${
+                    statusBorderColorEnum[taskDetails?.statusCategoryName]
+                  }`,
+                  borderRadius: "36px",
                 }}
-              />
+                className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
+              >
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{
+                    backgroundColor:
+                      statusBorderColorEnum[taskDetails?.statusCategoryName],
+                  }}
+                />
 
-              <div>{taskStatusEnum[taskDetails?.statusCategoryName]}</div>
+                <div>{taskStatusEnum[taskDetails?.statusCategoryName]}</div>
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-4">
-            <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
-              Total Spent{" "}
-            </span>
-            <span className="font-medium">
-              {getFormattedTotalTime(getTotalSpentTime(task?.sessions))
-                ? getFormattedTotalTime(getTotalSpentTime(task?.sessions))
-                : "---"}
-            </span>
+            <div className="flex items-center gap-4">
+              <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+                Total Spent{" "}
+              </span>
+              <span className="font-medium">
+                {getFormattedTotalTime(getTotalSpentTime(task?.sessions))
+                  ? getFormattedTotalTime(getTotalSpentTime(task?.sessions))
+                  : "---"}
+              </span>
+            </div>
+            <Sessions
+              {...{ taskDetails, deleteSession, updateSession, SetSpinning }}
+            />
           </div>
-          <Sessions {...{ taskDetails, deleteSession, updateSession }} />
-        </div>
+        </Spin>
       </Modal>
     </>
   );
