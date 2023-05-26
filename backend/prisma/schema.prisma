@@ -79,8 +79,8 @@ model Projects {
   projectId String         @unique
   statuses  StatusDetail[]
 
-  integration   Integration @relation(fields: [integrationID], references: [id], onDelete: Cascade)
-  integrationID Int
+  integration   Integration? @relation(fields: [integrationID], references: [id], onDelete: Cascade)
+  integrationID Int?
 }
 
 model StatusDetail {
