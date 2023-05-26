@@ -335,6 +335,24 @@ export async function getNotificationsRest() {
   }
 }
 
+export async function markNotificationSeenRest(id: number) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.markNotificationSeen}${id}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function markAllNotificationsSeenRest() {
+  try {
+    const res = await axios.patch(`${apiEndPoints.markAllNotificationsSeen}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
 export async function deleteSessionRest(sessionId: number) {
   try {
     const res = await axios.delete(`${apiEndPoints.deleteSession}${sessionId}`);
