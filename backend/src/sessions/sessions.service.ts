@@ -220,7 +220,6 @@ export class SessionsService {
         user,
         dto.taskId,
       );
-      const updated_integration = await this.updateIntegration(user);
 
       const timeSpent = Math.ceil(
         (endTime.getTime() - startTime.getTime()) / 1000,
@@ -232,13 +231,16 @@ export class SessionsService {
         );
       }
       let jiraSession: any;
-      if (updated_integration) {
-        jiraSession = await this.addWorkLog(
-          startTime,
-          integratedTaskId as unknown as string,
-          this.timeConverter(Number(timeSpent)),
-          updated_integration,
-        );
+      let updated_integration;
+      if (integratedTaskId) {
+        updated_integration = await this.updateIntegration(user);
+        if (updated_integration)
+          jiraSession = await this.addWorkLog(
+            startTime,
+            integratedTaskId as unknown as string,
+            this.timeConverter(Number(timeSpent)),
+            updated_integration,
+          );
       }
       if (id) {
         return await this.prisma.session.create({
@@ -247,7 +249,9 @@ export class SessionsService {
             endTime: endTime,
             status: SessionStatus.STOPPED,
             taskId: id,
-            authorId: updated_integration.jiraAccountId,
+            authorId: updated_integration?.jiraAccountId
+              ? updated_integration?.jiraAccountId
+              : null,
             integratedTaskId: jiraSession ? Number(jiraSession.issueId) : null,
             worklogId: jiraSession ? Number(jiraSession.id) : null,
           },
