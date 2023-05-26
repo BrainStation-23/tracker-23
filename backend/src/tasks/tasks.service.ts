@@ -625,6 +625,7 @@ export class TasksService {
       });
       if (task && task.source === IntegrationType.TRACKER23) {
         session = await this.deleteSessionFromLocal(Number(sessionId));
+        return { message: 'Session Deleted Successfully!' };
       }
 
       const updated_integration = await this.updateIntegration(user);
