@@ -698,6 +698,7 @@ export class TasksService {
       });
       if (task && task.source === IntegrationType.TRACKER23) {
         session = await this.updateSessionFromLocal(Number(sessionId), reqBody);
+        return session;
       }
 
       const updated_integration = await this.updateIntegration(user);
