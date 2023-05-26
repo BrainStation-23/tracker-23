@@ -239,6 +239,39 @@ export class JiraService {
           statuses: true,
         },
       });
+      statuses.push({
+        projectId: 'None',
+        integrationID: -1,
+        statuses: [
+          {
+            id: 'None',
+            name: 'To Do',
+            untranslatedName: 'To Do',
+            statusCategoryId: '2',
+            statusCategoryName: 'TO_DO',
+            transitionId: null,
+            projectId: '10226',
+          },
+          {
+            id: 'None',
+            name: 'In Progress',
+            untranslatedName: 'In Progress',
+            statusCategoryId: '4',
+            statusCategoryName: 'IN_PROGRESS',
+            transitionId: null,
+            projectId: '10226',
+          },
+          {
+            id: 'None',
+            name: 'Done',
+            untranslatedName: 'Done',
+            statusCategoryId: '3',
+            statusCategoryName: 'DONE',
+            transitionId: null,
+            projectId: '10226',
+          },
+        ],
+      });
       return statuses;
     } catch (error) {
       throw new APIException(
