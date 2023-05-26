@@ -519,7 +519,8 @@ const Dashboard = () => {
   }, []);
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2">
+      <div className="grid grid-cols-1">
+      {/* <div className="grid grid-cols-2"> */}
         <DashboardSection title="Project wise Track hour">
           {dataDonut?.length > 0 ? (
             <DonutChart data={dataDonut} total={dataDonutTotal} />
@@ -527,9 +528,9 @@ const Dashboard = () => {
             <Empty className="pt-20" description="No Data" />
           )}
         </DashboardSection>
-        <DashboardSection title="Actual VS Estimate">
+        {/* <DashboardSection title="Actual VS Estimate">
           <Line data={lineChartData} />
-        </DashboardSection>
+        </DashboardSection> */}
       </div>
       {/* <DashboardSection title="Pinned tasks">
         <Table

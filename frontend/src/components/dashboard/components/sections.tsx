@@ -18,7 +18,7 @@ const DashboardSection = ({ children, title }: Props) => {
           {/* <div className=" rounded-lg border-2 p-1 px-2 text-sm">This Week</div> */}
         </div>
         <Spin className="custom-spin" spinning={isLoading}>
-          {<div>{children}</div>}
+          {<div className="flex w-full justify-center">{children}</div>}
         </Spin>
       </div>
     </>

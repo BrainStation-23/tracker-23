@@ -224,7 +224,7 @@ const DashboardTableComponent = ({
     // }
   };
   return (
-    <div className="pr-4">
+    <div className="w-full">
       <Table
         columns={columns}
         dataSource={tasks}
