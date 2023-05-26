@@ -22,12 +22,20 @@ const appSlice = createSlice({
   reducers: {
     addNotification: (state, action: PayloadAction<Notification>) => {
       if (!state.notifications) state.notifications = [];
+      const notification = state.notifications.find(
+        (n) => n.id === action.payload.id
+      );
       if (action.payload) {
-        state.notifications.push(action.payload);
+        if (notification) {
+          notification.seen = action.payload.seen;
+        } else {
+          state.notifications.push(action.payload);
+        }
       }
     },
     setNotifications: (state, action: PayloadAction<Notification[]>) => {
       if (action.payload) state.notifications = action.payload;
+      else state.notifications = [];
     },
     removeNotification: (state, action: PayloadAction<number>) => {
       const notificationId = action.payload;
