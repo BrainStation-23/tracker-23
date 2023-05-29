@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { IntegrationType, Session, SessionStatus, User } from '@prisma/client';
 import { lastValueFrom } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ManualTimeEntryReqBody, SessionDto } from './dto';
+import { ManualTimeEntryReqBody, SessionDto, SessionReqBodyDto } from './dto';
 import axios from 'axios';
 import * as moment from 'moment';
 import { APIException } from 'src/internal/exception/api.exception';
@@ -272,5 +272,166 @@ export class SessionsService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async updateSession(
+    user: User,
+    sessionId: string,
+    reqBody: SessionReqBodyDto,
+  ) {
+    try {
+      const doesExistWorklog = await this.prisma.session.findUnique({
+        where: { id: Number(sessionId) },
+      });
+      if (!doesExistWorklog) {
+        throw new APIException('No session found', HttpStatus.BAD_REQUEST);
+      }
+
+      let session: Session | false | null = null;
+      const task = await this.prisma.task.findFirst({
+        where: {
+          id: doesExistWorklog.taskId,
+          userId: user.id,
+        },
+      });
+      if (task && task.source === IntegrationType.TRACKER23) {
+        session = await this.updateSessionFromLocal(Number(sessionId), reqBody);
+        return session;
+      }
+
+      const updated_integration = await this.updateIntegration(user);
+      if (doesExistWorklog.authorId === updated_integration.jiraAccountId) {
+        const startTime = new Date(`${reqBody.startTime}`);
+        const endTime = new Date(`${reqBody.endTime}`);
+        const timeSpentReqBody = Math.ceil(
+          (endTime.getTime() - startTime.getTime()) / 1000,
+        );
+        if (timeSpentReqBody < 60) {
+          throw new APIException(
+            'Insufficient TimeSpent',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        const timeSpent = this.timeConverter(Number(timeSpentReqBody));
+        const data = JSON.stringify({
+          started: this.getUtcTime(startTime),
+          timeSpent: timeSpent,
+        });
+        const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${doesExistWorklog?.integratedTaskId}/worklog/${doesExistWorklog.worklogId}`;
+        const config = {
+          method: 'put',
+          url,
+          headers: {
+            Authorization: `Bearer ${updated_integration?.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          data: data,
+        };
+
+        const response = (await axios(config)).data;
+        session =
+          response &&
+          (await this.updateSessionFromLocal(Number(sessionId), reqBody));
+      }
+
+      if (!session) {
+        throw new APIException(
+          'You are not allowed to update this session!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      return session;
+    } catch (err) {
+      throw new APIException(
+        err.message || 'Something is wrong to update this session!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async updateSessionFromLocal(sessionId: number, reqBody: SessionReqBodyDto) {
+    const updateFromLocal = await this.prisma.session.update({
+      where: {
+        id: Number(sessionId),
+      },
+      data: reqBody,
+    });
+    if (!updateFromLocal) {
+      throw new APIException(
+        'Can not update this session!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return updateFromLocal;
+  }
+
+  async deleteSession(user: User, sessionId: string) {
+    try {
+      const doesExistWorklog = await this.prisma.session.findUnique({
+        where: { id: Number(sessionId) },
+      });
+      if (!doesExistWorklog) {
+        throw new APIException('No session found', HttpStatus.BAD_REQUEST);
+      }
+
+      let session: Session | false | null = null;
+      const task = await this.prisma.task.findFirst({
+        where: {
+          id: doesExistWorklog.taskId,
+          userId: user.id,
+        },
+      });
+      if (task && task.source === IntegrationType.TRACKER23) {
+        session = await this.deleteSessionFromLocal(Number(sessionId));
+        return { message: 'Session Deleted Successfully!' };
+      }
+
+      const updated_integration = await this.updateIntegration(user);
+      if (doesExistWorklog.authorId === updated_integration.jiraAccountId) {
+        const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${doesExistWorklog?.integratedTaskId}/worklog/${doesExistWorklog.worklogId}`;
+        const config = {
+          method: 'delete',
+          url,
+          headers: {
+            Authorization: `Bearer ${updated_integration?.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        };
+
+        const status = (await axios(config)).status;
+        session =
+          status === 204 &&
+          (await this.deleteSessionFromLocal(Number(sessionId)));
+      }
+
+      if (!session) {
+        throw new APIException(
+          'You are not allowed to delete this session!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      return { message: 'Session deleted successfully!' };
+    } catch (err) {
+      throw new APIException(
+        err.message || 'Something is wrong to delete this session!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async deleteSessionFromLocal(sessionId: number) {
+    const deleteFromLocal = await this.prisma.session.delete({
+      where: {
+        id: Number(sessionId),
+      },
+    });
+    if (!deleteFromLocal) {
+      throw new APIException(
+        'Can not delete this session!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return deleteFromLocal;
   }
 }

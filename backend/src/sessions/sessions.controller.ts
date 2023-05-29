@@ -4,6 +4,7 @@ import { JwtAuthGuard } from 'src/guard';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -13,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 
-import { ManualTimeEntryReqBody, SessionDto } from './dto';
+import { ManualTimeEntryReqBody, SessionDto, SessionReqBodyDto } from './dto';
 import { SessionsService } from './sessions.service';
 
 @Controller('sessions')
@@ -51,5 +52,22 @@ export class SessionsController {
     @Body() manualTimeEntryReqBody: ManualTimeEntryReqBody,
   ) {
     return this.sessionsService.manualTimeEntry(user, manualTimeEntryReqBody);
+  }
+
+  @Patch('update-session/:sessionId')
+  @UseGuards(JwtAuthGuard)
+  async updateSession(
+    @GetUser() user: User,
+    @Param('sessionId') sessionId: string,
+    @Body() reqBody: SessionReqBodyDto,
+  ) {
+    console.log(sessionId);
+    return this.sessionsService.updateSession(user, sessionId, reqBody);
+  }
+
+  @Delete('delete-session/:id')
+  @UseGuards(JwtAuthGuard)
+  async deleteSession(@GetUser() user: User, @Param('id') id: string) {
+    return this.sessionsService.deleteSession(user, id);
   }
 }

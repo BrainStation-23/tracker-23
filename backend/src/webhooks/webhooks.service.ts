@@ -6,6 +6,7 @@ import axios from 'axios';
 import { lastValueFrom } from 'rxjs';
 import { APIException } from 'src/internal/exception/api.exception';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { RegisterWebhookDto } from './dto.ts';
 
 @Injectable()
 export class WebhooksService {
@@ -61,8 +62,23 @@ export class WebhooksService {
   }
 
   async handleWebhook(payload: any) {
+    console.log(payload);
     const jiraEvent = payload.webhookEvent;
-    if (payload.webhookEvent === 'jira:issue_created') {
+
+    const projectKey = payload.issue.fields.project.key;
+    const siteUrl = payload.user.self.split('/')[2];
+    const webhookId = payload.matchedWebhookIds;
+    const doesExistWebhook = await this.prisma.webhook.findUnique({
+      where: {
+        webhookIdentifier: {
+          projectKey,
+          webhookId,
+          siteUrl,
+        },
+      },
+    });
+    if (doesExistWebhook && payload.webhookEvent === 'jira:issue_created') {
+      console.log('project', projectKey, siteUrl, webhookId);
       await this.prisma.task.create({
         data: {
           userId: 1, //unknown user or search user from integration
@@ -80,9 +96,9 @@ export class WebhooksService {
           source: IntegrationType.JIRA,
         },
       });
-    } else if (jiraEvent === 'jira:issue_updated') {
+    } else if (doesExistWebhook && jiraEvent === 'jira:issue_updated') {
       let sendToModify;
-      console.log(payload.changelog.items[0]);
+      console.log(payload);
       if (
         payload.changelog.items[0].field === 'summary' ||
         payload.changelog.items[0].field === 'priority' ||
@@ -148,9 +164,36 @@ export class WebhooksService {
     }
   }
 
-  async registerWebhook(user: User, reqBody: any) {
+  async registerWebhook(user: User, reqBody: RegisterWebhookDto) {
     try {
       const updated_integration = await this.updateIntegration(user);
+      const doesExist =
+        updated_integration.site &&
+        (await this.prisma.webhook.findMany({
+          where: {
+            siteUrl: updated_integration.site,
+            projectKey: {
+              hasSome: reqBody.projectName.map((key) => key),
+            },
+          },
+        }));
+      if (doesExist && doesExist[0]) {
+        throw new APIException(
+          'Already one of the project has webhook registered!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      const projectList = reqBody.projectName.map((el) => el);
+      const formateReqBody = {
+        url: reqBody.url,
+        webhooks: [
+          {
+            events: reqBody.webhookEvents,
+            jqlFilter: `project IN (${projectList})`,
+          },
+        ],
+      };
+      console.log(formateReqBody);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook`;
       const config = {
         method: 'post',
@@ -159,12 +202,23 @@ export class WebhooksService {
           Authorization: `Bearer ${updated_integration?.accessToken}`,
           'Content-Type': 'application/json',
         },
-        data: reqBody,
+        data: formateReqBody,
       };
 
       const webhook = await (await axios(config)).data;
-      console.log(webhook);
-      return webhook;
+      const localWebhook =
+        webhook &&
+        updated_integration.site &&
+        (await this.prisma.webhook.create({
+          data: {
+            projectKey: reqBody.projectName,
+            webhookId: Number(
+              webhook.webhookRegistrationResult[0].createdWebhookId,
+            ),
+            siteUrl: updated_integration.site,
+          },
+        }));
+      return localWebhook;
     } catch (err) {
       console.log(err);
       throw new APIException(

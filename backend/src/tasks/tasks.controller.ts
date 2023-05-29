@@ -24,7 +24,6 @@ import { TasksService } from './tasks.service';
 import { Task, User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/guard';
 import { GetUser } from 'src/decorator';
-import { SessionReqBodyDto } from './dto/update.session.dto';
 
 @Controller('tasks')
 export class TasksController {
@@ -98,23 +97,6 @@ export class TasksController {
     @Body() timeSpentReqBody: TimeSpentReqBodyDto,
   ) {
     return this.tasksService.addWorkLog(user, issueId, timeSpentReqBody);
-  }
-
-  @Delete('delete-session/:id')
-  @UseGuards(JwtAuthGuard)
-  async deleteSession(@GetUser() user: User, @Param('id') id: string) {
-    return this.tasksService.deleteSession(user, id);
-  }
-
-  @Patch('update-session/:sessionId')
-  @UseGuards(JwtAuthGuard)
-  async updateSession(
-    @GetUser() user: User,
-    @Param('sessionId') sessionId: string,
-    @Body() reqBody: SessionReqBodyDto,
-  ) {
-    console.log(sessionId);
-    return this.tasksService.updateSession(user, sessionId, reqBody);
   }
 
   @Get('spent-time/time-range')
