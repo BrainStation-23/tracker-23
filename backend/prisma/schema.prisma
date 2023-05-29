@@ -152,12 +152,22 @@ model Session {
   worklogId        Int?
 }
 
+
+
 model callSync {
   id        Int      @id @default(autoincrement())
   status    String
   userId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model webhook {
+  id Int @id @default(autoincrement())
+  projectKey String[]
+  webhookId Int
+  siteUrl String
+  @@unique([projectKey, webhookId, siteUrl], name: "webhookIdentifier")
 }
 
 enum Priority {

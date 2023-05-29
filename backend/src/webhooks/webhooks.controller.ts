@@ -11,6 +11,7 @@ import { JwtAuthGuard } from 'src/guard';
 import { WebhooksService } from './webhooks.service';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
+import { RegisterWebhookDto } from './dto.ts';
 @Controller('webhook')
 export class WebhooksController {
   constructor(private webhooksService: WebhooksService) {}
@@ -22,7 +23,10 @@ export class WebhooksController {
 
   @Post('register')
   @UseGuards(JwtAuthGuard)
-  async registerWebhook(@GetUser() user: User, @Body() reqBody: any) {
+  async registerWebhook(
+    @GetUser() user: User,
+    @Body() reqBody: RegisterWebhookDto,
+  ) {
     return this.webhooksService.registerWebhook(user, reqBody);
   }
 
