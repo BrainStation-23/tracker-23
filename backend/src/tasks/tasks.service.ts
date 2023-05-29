@@ -268,6 +268,7 @@ export class TasksService {
       }
       const integratedTasks = await this.prisma.task.findMany({
         where: {
+          userId: user.id,
           integratedTaskId: { in: [...mappedIssues.keys()] },
           source: IntegrationType.JIRA,
         },
