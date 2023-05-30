@@ -56,6 +56,7 @@ export class MyGateway implements OnModuleInit {
   }
 
   sendNotification(eventName: string, data: any) {
+    console.log(eventName, data);
     this.server.emit(eventName, data);
   }
 }

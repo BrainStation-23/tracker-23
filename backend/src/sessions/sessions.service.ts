@@ -79,6 +79,7 @@ export class SessionsService {
           message: 'Session canceled due to insufficient time',
         });
       }
+      await this.updateTaskUpdatedAt(taskId);
     }
     return updated_session;
   }
@@ -249,6 +250,7 @@ export class SessionsService {
             this.timeConverter(Number(timeSpent)),
             updated_integration,
           );
+        jiraSession && this.updateTaskUpdatedAt(dto.taskId);
       }
       if (id) {
         return await this.prisma.session.create({
@@ -338,6 +340,7 @@ export class SessionsService {
         session =
           response &&
           (await this.updateSessionFromLocal(Number(sessionId), reqBody));
+        task && (await this.updateTaskUpdatedAt(task.id));
       }
 
       if (!session) {
@@ -408,6 +411,7 @@ export class SessionsService {
         session =
           status === 204 &&
           (await this.deleteSessionFromLocal(Number(sessionId)));
+        task && this.updateTaskUpdatedAt(task.id);
       }
 
       if (!session) {
@@ -438,5 +442,37 @@ export class SessionsService {
       );
     }
     return deleteFromLocal;
+  }
+
+  async updateTaskUpdatedAt(taskId: number) {
+    const task = await this.prisma.task.findUnique({
+      where: {
+        id: taskId,
+      },
+      include: {
+        sessions: true,
+      },
+    });
+    const sessionDate: any = task?.sessions
+      .map((el: any) => {
+        if (el.endTime > new Date(Date.now())) return el.endTime;
+      })
+      .filter((val: any) => val)
+      .sort();
+    let date = new Date(Date.now());
+    if (
+      sessionDate?.length > 0 &&
+      date < sessionDate[sessionDate?.length - 1]
+    ) {
+      date = sessionDate[sessionDate?.length - 1];
+    }
+    await this.prisma.task.update({
+      where: {
+        id: taskId,
+      },
+      data: {
+        updatedAt: date,
+      },
+    });
   }
 }

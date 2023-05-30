@@ -214,7 +214,7 @@ export class TasksService {
     return await this.prisma.task.delete({ where: { id } });
   }
 
-  async syncTasks(user: User, res: Response) {
+  async syncTasks(user: User, res?: Response) {
     try {
       const notification = await this.prisma.notification.create({
         data: {
@@ -225,6 +225,7 @@ export class TasksService {
           userId: user.id,
         },
       });
+      console.log(notification);
       this.myGateway.sendNotification(`${user.id}`, notification);
     } catch (error) {
       console.log(
@@ -245,7 +246,7 @@ export class TasksService {
       const taskList: any[] = [],
         worklogsList: any[] = [],
         sessionArray: any[] = [];
-      res.json(await this.syncCall(StatusEnum.IN_PROGRESS, user.id));
+      res && res.json(await this.syncCall(StatusEnum.IN_PROGRESS, user.id));
       const searchUrl = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/search?`;
       const mappedIssues = new Map<number, any>();
       const fields =
@@ -528,7 +529,7 @@ export class TasksService {
               },
             };
             const { transitions } = (await axios(config)).data;
-            transitions.forEach(async (transition: any) => {
+            await transitions.forEach(async (transition: any) => {
               taskIntegration.projectId &&
                 statusNames.includes(transition.name) &&
                 (await this.prisma.statusDetail.update({
@@ -576,7 +577,7 @@ export class TasksService {
             }));
           if (!updatedTask) {
             throw new APIException(
-              'Can not update issue status',
+              'Can not update issue status 1',
               HttpStatus.BAD_REQUEST,
             );
           }
@@ -593,6 +594,7 @@ export class TasksService {
     }
   }
 
+  // This api doesn't in use
   async addWorkLog(
     user: User,
     issueId: string,
