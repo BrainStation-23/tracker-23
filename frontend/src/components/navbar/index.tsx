@@ -49,23 +49,23 @@ function Navbar() {
     if (!userDetails && tmp) setUserDetails(tmp);
   }, [userDetails, path]);
   const items: MenuProps["items"] = [
-    {
-      key: "3",
-      icon: (
-        <div>
-          <button
-            // type="ghost"
-            className={`flex w-full items-center`}
-            onClick={async () => {}}
-          >
-            <div className="ml-3 flex items-center gap-1">
-              <ProfileIconSvg />{" "}
-              <span className="text-[15px] font-semibold"> Account</span>
-            </div>
-          </button>
-        </div>
-      ),
-    },
+    // {
+    //   key: "3",
+    //   icon: (
+    //     <div>
+    //       <button
+    //         // type="ghost"
+    //         className={`flex w-full items-center`}
+    //         onClick={async () => {}}
+    //       >
+    //         <div className="ml-3 flex items-center gap-1">
+    //           <ProfileIconSvg />{" "}
+    //           <span className="text-[15px] font-semibold"> Account</span>
+    //         </div>
+    //       </button>
+    //     </div>
+    //   ),
+    // },
     {
       key: "1",
       icon: (
@@ -75,15 +75,18 @@ function Navbar() {
             className={`flex w-full items-center ${
               syncing ? "text-green-500" : ""
             }`}
-            onClick={async () => {
-              syncFunction();
-            }}
+            // onClick={async () => {
+            //   syncFunction();
+            // }}
           >
             <SyncOutlined spin={syncing} />{" "}
             <span className="text-[15px] font-semibold">Sync</span>
           </Button>
         </div>
       ),
+      onClick: async () => {
+        syncFunction();
+      },
     },
     {
       key: "2",
