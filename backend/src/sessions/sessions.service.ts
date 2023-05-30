@@ -54,7 +54,12 @@ export class SessionsService {
 
   async stopSession(user: User, taskId: number) {
     const task = await this.validateTaskAccess(user, taskId);
-    this.tasksService.updateIssueStatus(user, taskId + '', task.status + '');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const statusUpdatedTask = this.tasksService.updateIssueStatus(
+      user,
+      taskId + '',
+      task.status + '',
+    );
     const activeSession = await this.prisma.session.findFirst({
       where: { taskId, endTime: null },
     });
