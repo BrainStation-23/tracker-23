@@ -188,6 +188,11 @@ export class JiraService {
           Authorization: `Bearer ${updated_integration?.accessToken}`,
         },
       });
+      // statusList.map((el: any) => {
+      //   if(!el.scope) console.log(el);
+      //   console.log(el.scope);
+      // });
+
       const projectIdList = new Set();
       const projectStatusArray: Projects[] = [];
       const statusArray: StatusDetail[] = [];

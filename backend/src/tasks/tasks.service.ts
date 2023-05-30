@@ -528,7 +528,7 @@ export class TasksService {
               },
             };
             const { transitions } = (await axios(config)).data;
-            transitions.forEach(async (transition: any) => {
+            await transitions.forEach(async (transition: any) => {
               taskIntegration.projectId &&
                 statusNames.includes(transition.name) &&
                 (await this.prisma.statusDetail.update({
