@@ -8,6 +8,7 @@ import { AuthorizeJiraDto } from './dto';
 import { APIException } from 'src/internal/exception/api.exception';
 import { TasksService } from 'src/tasks/tasks.service';
 import axios from 'axios';
+import { Response } from 'express';
 
 @Injectable()
 export class JiraService {
@@ -169,6 +170,7 @@ export class JiraService {
         );
       }
       this.setProjectStatuses(user);
+      this.tasksService.syncTasks(user);
       return { message: `Integration successful in ${integration.site}` };
     } catch (err) {
       throw new APIException(
