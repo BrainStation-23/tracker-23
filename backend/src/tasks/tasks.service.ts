@@ -576,7 +576,7 @@ export class TasksService {
             }));
           if (!updatedTask) {
             throw new APIException(
-              'Can not update issue status',
+              'Can not update issue status 1',
               HttpStatus.BAD_REQUEST,
             );
           }
@@ -593,6 +593,7 @@ export class TasksService {
     }
   }
 
+  // This api doesn't in use
   async addWorkLog(
     user: User,
     issueId: string,
