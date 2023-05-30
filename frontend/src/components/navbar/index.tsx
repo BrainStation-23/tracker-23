@@ -9,7 +9,7 @@ import {
   Space,
   Tooltip,
 } from "antd";
-import LogOutButton from "../logOutButton";
+import LogOutButton from "../logout/logOutButton";
 import { useRouter } from "next/router";
 import { getLocalStorage } from "@/storage/storage";
 import { useEffect, useState } from "react";

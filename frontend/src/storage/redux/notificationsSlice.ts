@@ -10,10 +10,12 @@ export interface Notification {
 
 export interface NotificationsState {
   notifications: Notification[];
+  socket: string | null;
 }
 
 const initialState: NotificationsState = {
   notifications: [],
+  socket: null,
 };
 
 const appSlice = createSlice({
@@ -61,6 +63,9 @@ const appSlice = createSlice({
         notification.seen = true;
       });
     },
+    setSocket: (state, action: PayloadAction<string | null>) => {
+      state.socket = action.payload;
+    },
   },
 });
 
@@ -71,6 +76,7 @@ export const {
   setNotifications,
   markNotificationAsSeen,
   markAllNotificationsAsSeen,
+  setSocket,
 } = appSlice.actions;
 
 export default appSlice.reducer;

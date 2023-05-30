@@ -1,8 +1,9 @@
 import ALertCircleIconSvg from "@/assets/svg/ALertCircleIconSvg";
 import { getLocalStorage } from "@/storage/storage";
-import LogOutButton from "../logOutButton";
+import LogOutButton from "../logout/logOutButton";
 import { useEffect } from "react";
 import { useState } from "react";
+import { logOutFunction } from "../logout/logoutFunction";
 
 const InvalidUserPage = () => {
   const [userDetails, setUserDetails] = useState(
@@ -13,6 +14,9 @@ const InvalidUserPage = () => {
     userDetails
   );
   useEffect(() => {
+    if (!getLocalStorage("userDetails")) {
+      logOutFunction();
+    }
     setUserDetails(getLocalStorage("userDetails"));
   }, []);
 

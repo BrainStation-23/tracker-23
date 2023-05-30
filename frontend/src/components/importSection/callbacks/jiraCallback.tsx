@@ -7,8 +7,11 @@ import { useEffect, useState } from "react";
 import GlobalMOdal from "@/components/modals/globalModal";
 
 import IntegrationSelectionCard from "./components/integrationSelectionCard";
+import { useDispatch } from "react-redux";
+import { setSyncRunning } from "@/storage/redux/syncSlice";
 
 const JiraCallBack = () => {
+  const dispatch = useDispatch();
   const router = useRouter();
   const [integrations, setIntegrations] = useState<Integration[]>();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,6 +26,7 @@ const JiraCallBack = () => {
         setIsModalOpen(true);
       } else {
         message.success(res.message ? res.message : "Integration Successful");
+        dispatch(setSyncRunning(true));
         router.push("/taskList");
       }
     } else router.push("/integrations");

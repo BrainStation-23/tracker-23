@@ -4,9 +4,8 @@ import io from "socket.io-client";
 import { GetCookie } from "./cookie.service";
 import { getLocalStorage } from "@/storage/storage";
 import { store } from "@/storage/redux/store";
-import { addNotification } from "@/storage/redux/notificationsSlice";
-
-const socket = io(config?.baseUrl, {
+import { addNotification, setSocket } from "@/storage/redux/notificationsSlice";
+let socket = io(config?.baseUrl, {
   withCredentials: true,
   extraHeaders: {
     "my-custom-header": "abcd",
@@ -14,11 +13,20 @@ const socket = io(config?.baseUrl, {
   query: { token: GetCookie("access_token") },
 }); // Replace with your backend server URL
 
-export function initializeSocket() {
+export async function initializeSocket() {
   console.log("ok");
+
+  socket = io(config?.baseUrl, {
+    withCredentials: true,
+    extraHeaders: {
+      "my-custom-header": "abcd",
+    },
+    query: { token: GetCookie("access_token") },
+  }); // Replace with your backend server URL
 
   socket.on("connect", () => {
     console.log("Connected to socket");
+    store.dispatch(setSocket(socket.id));
   });
   socket.on("error", () => {
     console.log("Error");
@@ -30,6 +38,10 @@ export function initializeSocket() {
   const loggedInUser: LoginResponseDto = getLocalStorage("userDetails");
   socket.on(`${loggedInUser.id}`, (payload) => {
     console.log("Received new notification:", payload);
+    // if(payload?.title ==='Sync Completed')
+    // {
+
+    // }
     store.dispatch(addNotification(payload));
     // Handle the received notification payload in your frontend application
   });

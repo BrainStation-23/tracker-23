@@ -15,6 +15,7 @@ import { setProjectsSlice } from "@/storage/redux/projectsSlice";
 import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
 import { initializeSocket } from "@/services/socket.service";
 import { setNotifications } from "@/storage/redux/notificationsSlice";
+import { GetCookie } from "@/services/cookie.service";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -31,6 +32,9 @@ const CustomLayout = ({ children }: any) => {
   );
   const notificationsSlice = useAppSelector(
     (state: RootState) => state.notificationsSlice.notifications
+  );
+  const connectedSocket = useAppSelector(
+    (state: RootState) => state.notificationsSlice.socket
   );
   const [syncing, setSyncing] = useState(
     useAppSelector((state: RootState) => state.syncStatus.syncRunning)
@@ -74,9 +78,25 @@ const CustomLayout = ({ children }: any) => {
   useEffect(() => {
     if (!publicRoutes.some((route) => path.includes(route))) {
       initialLoading();
-      initializeSocket();
     }
   }, [publicRoutes.some((route) => path.includes(route)), path]);
+  useEffect(() => {
+    const connectSocket = async () => {
+      GetCookie("access_token") &&
+        !connectedSocket &&
+        (await initializeSocket());
+    };
+    let timeout: NodeJS.Timeout;
+    timeout =
+      !publicRoutes.some((route) => path.includes(route)) &&
+      !connectedSocket &&
+      setTimeout(connectSocket, 2000);
+    const cleanup = () => {
+      clearTimeout(timeout);
+    };
+
+    return cleanup;
+  });
   useEffect(() => {
     const getSyncStatus = async () => {
       const res = await userAPI.syncStatus();
