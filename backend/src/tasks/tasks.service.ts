@@ -529,10 +529,12 @@ export class TasksService {
               },
             };
             const { transitions } = (await axios(config)).data;
-            await transitions.forEach(async (transition: any) => {
-              taskIntegration.projectId &&
-                statusNames.includes(transition.name) &&
-                (await this.prisma.statusDetail.update({
+            for (const transition of transitions) {
+              if (
+                taskIntegration.projectId &&
+                statusNames.includes(transition.name)
+              ) {
+                await this.prisma.statusDetail.update({
                   where: {
                     tempStatusDetailIdentifier: {
                       name: transition.name,
@@ -540,15 +542,18 @@ export class TasksService {
                     },
                   },
                   data: { transitionId: transition.id },
-                }));
-            });
+                });
+              }
+            }
           }
+
           const statusDetails = await this.prisma.statusDetail.findFirst({
             where: {
               projectId: taskIntegration?.projectId,
               name: status,
             },
           });
+
           const statusBody = JSON.stringify({
             transition: {
               id: statusDetails?.transitionId,
