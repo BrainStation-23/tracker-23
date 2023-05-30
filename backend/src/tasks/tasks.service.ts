@@ -246,7 +246,12 @@ export class TasksService {
       const taskList: any[] = [],
         worklogsList: any[] = [],
         sessionArray: any[] = [];
-      res && res.json(await this.syncCall(StatusEnum.IN_PROGRESS, user.id));
+      if (res) {
+        res.json(await this.syncCall(StatusEnum.IN_PROGRESS, user.id));
+      } else {
+        await this.syncCall(StatusEnum.IN_PROGRESS, user.id);
+      }
+
       const searchUrl = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/search?`;
       const mappedIssues = new Map<number, any>();
       const fields =
