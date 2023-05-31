@@ -453,19 +453,18 @@ export class SessionsService {
         sessions: true,
       },
     });
+
     const sessionDate: any = task?.sessions
       .map((el: any) => {
         if (el.endTime > new Date(Date.now())) return el.endTime;
       })
       .filter((val: any) => val)
-      .sort();
+      .sort((x: Date, y: Date) => {
+        return new Date(y).getTime() - new Date(x).getTime();
+      });
+
     let date = new Date(Date.now());
-    if (
-      sessionDate?.length > 0 &&
-      date < sessionDate[sessionDate?.length - 1]
-    ) {
-      date = sessionDate[sessionDate?.length - 1];
-    }
+    if (sessionDate?.length > 0 && date < sessionDate[0]) date = sessionDate[0];
     await this.prisma.task.update({
       where: {
         id: taskId,
