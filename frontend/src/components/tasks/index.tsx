@@ -262,7 +262,6 @@ const TasksPage = () => {
       });
       const st: any = formatDate(session.endTime);
       const en: any = formatDate(session.startTime);
-      console.log("🚀 🚀🚀🚀🚀🚀🚀🚀🚀", session, st - en);
 
       (task.percentage = task.estimation
         ? Math.round(

@@ -9,7 +9,6 @@ const GoogleCallbackPage = () => {
   const router = useRouter();
   const getUserData = async (code: string) => {
     const res = await userAPI.googleLogin(code);
-    console.log("🚀 ~ file: redirect.tsx:14 ~ getUserData ~ res:", res);
     if (res?.access_token) {
       SetCookie("access_token", res?.access_token);
       setLocalStorage("access_token", res?.access_token);

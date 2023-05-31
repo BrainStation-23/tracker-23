@@ -32,7 +32,6 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
     const res = await userAPI.createSession(task.id);
     res && addSession(res);
     res && message.success("Session Started");
-    console.log("🚀 ~ file: reactStopWatch.tsx:19 ~ startSession ~ res", res);
   };
   const stopSession = async () => {
     console.log("stop");
@@ -40,7 +39,6 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
     const res = await userAPI.stopSession(task.id);
     res && addEndTime(res);
     res && message.success("Session Ended");
-    console.log("🚀 ~ file: reactStopWatch.tsx:19 ~ startSession ~ res", res);
   };
 
   const start = async () => {
@@ -59,7 +57,6 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
       await handleWarning(task, startFunction);
     } else startFunction();
   };
-  // console.log(time);
   var updatedMs = time.ms,
     updatedS = time.s,
     updatedM = time.m,
@@ -182,8 +179,6 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
 
   useEffect(() => {
     if (runningTask && runningTask.id !== task.id) {
-      console.log(task.sessions[task.sessions.length - 1]);
-
       if (task.sessions[task.sessions.length - 1]?.status === "STARTED") stop();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

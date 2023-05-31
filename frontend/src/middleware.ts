@@ -10,7 +10,6 @@ export default async function middleware(req: any) {
 
   if (!ignoreRoutes.some((route) => url.includes(route))) {
     if (publicRoutes.some((route) => url.includes(route))) {
-      console.log("inf", access_token, url);
       if (access_token) return NextResponse.redirect(baseUrl);
       return NextResponse.next();
     } else {

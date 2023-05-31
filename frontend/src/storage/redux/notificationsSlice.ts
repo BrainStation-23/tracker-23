@@ -53,7 +53,6 @@ const appSlice = createSlice({
       const notification = state.notifications.find(
         (n) => n.id === notificationId
       );
-      console.log("🚀 ~ file: notificationsSlice.ts:60 ~ action:", action);
       if (notification) {
         notification.seen = true;
       }

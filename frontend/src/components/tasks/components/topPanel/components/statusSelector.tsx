@@ -112,10 +112,6 @@ const StatusSelectorComponent = ({ status, setStatus }: Props) => {
         //   { value: "DONE", label: "Done" },
         // ]}
         onChange={(value) => {
-          console.log(
-            "🚀 ~ file: statusSelector.tsx:90 ~ StatusSelectorComponent ~ value:",
-            value
-          );
           setStatus(value);
         }}
       />

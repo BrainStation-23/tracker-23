@@ -8,18 +8,11 @@ import { message } from "antd";
 import { StatusDto, TaskDto } from "models/tasks";
 
 export const updateTask = (task: any, taskName: string) => {
-  console.log(task, taskName);
-
   try {
     const taskList = getLocalStorage("TaskList").filter(
       (tn: string) => tn !== taskName
     );
-    console.log(
-      "🚀 ~ file: taskActions.tsx:16 ~ updateTask ~ taskList",
-      taskList
-    );
     if (taskList.includes(task.name)) {
-      console.log("Name exists");
       message.error("TaskName Exists");
       return false;
     } else {

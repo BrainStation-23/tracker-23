@@ -235,7 +235,6 @@ const Dashboard = () => {
         });
       }
     } catch (error) {
-      console.log("🚀 ~ file: index.tsx:258 ~ getTasks ~ error:", error);
       message.error("Error getting tasks");
     } finally {
       setLoading(false);
@@ -284,7 +283,6 @@ const Dashboard = () => {
       });
       const st: any = formatDate(session.endTime);
       const en: any = formatDate(session.startTime);
-      console.log("🚀 🚀🚀🚀🚀🚀🚀🚀🚀", session, st - en);
 
       (task.percentage = task.estimation
         ? Math.round(

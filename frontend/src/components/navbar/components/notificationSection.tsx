@@ -36,10 +36,6 @@ const NotificationSection = () => {
   const newNotificationNumber = notifications.filter(
     (notification) => !notification.seen
   ).length;
-  console.log(
-    "🚀 ~ file: notificationSection.tsx:20 ~ NotificationSection ~ notifications:",
-    notifications
-  );
   const handleClickNotification = async (notification: any) => {
     console.log(
       "🚀 ~ file: notificationSection.tsx:34 ~ handleClickNotification ~ notification:",
@@ -69,16 +65,13 @@ const NotificationSection = () => {
       className: notification.seen ? "bg-gray-100" : "",
       onClick: (item: any) => {
         handleClickNotification(item);
-        console.log("🚀", item);
       },
     };
   });
 
   const menuProps = {
     items,
-    onClick: (item: any) => {
-      // console.log(item);
-    },
+    onClick: (item: any) => {},
   };
   const dropdownRender = (menu: React.ReactNode) => (
     <div className="float-right">{menu}</div>

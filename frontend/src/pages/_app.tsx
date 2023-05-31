@@ -33,10 +33,6 @@ Axios.interceptors.request.use(
 
 Axios.interceptors.response.use(undefined, async (error) => {
   const { status, data } = error.response;
-  console.log(
-    "🚀 ~ file: _app.tsx:38 ~ axios.interceptors.response.use ~ error:",
-    error.config.url
-  );
   if (!error.response) {
     message.error("Backend Crashed");
   }

@@ -12,16 +12,10 @@ type Props = {
   handleAddManualSession: Function;
 };
 const ManualTimeEntry = ({ task, handleAddManualSession }: Props) => {
-  console.log(
-    "🚀 ~ file: manualTimeEntry.tsx:12 ~ ManualTimeEntry ~ task:",
-    task
-  );
   const [spinning, setSpinning] = useState(false);
   const [form] = Form.useForm();
   const initialValues = {};
   const onFinish = async (values: any) => {
-    console.log(values);
-    console.log(values.time);
     const tmp: AddWorkLogParams = {
       startTime: new Date(
         `${localFormat(values.date)} ${timeFormat(values.time[0])}`
@@ -36,7 +30,6 @@ const ManualTimeEntry = ({ task, handleAddManualSession }: Props) => {
     if (session) {
       handleAddManualSession(task, session);
     }
-    console.log(tmp);
     setSpinning(false);
   };
 

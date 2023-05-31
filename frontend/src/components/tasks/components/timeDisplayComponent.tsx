@@ -14,7 +14,6 @@ function TimeDisplayComponent(props: any) {
   const m = tmp % 60;
   tmp = Math.floor(tmp / 60);
   const h = tmp;
-  // console.log(props.sessionTime);
   return (
     <div className="flex w-max">
       {h > 0 ? h + "hrs " : ""}

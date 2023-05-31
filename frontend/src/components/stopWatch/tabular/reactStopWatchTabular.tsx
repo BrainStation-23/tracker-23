@@ -31,7 +31,6 @@ function StopWatchTabular({ task, addSession, addEndTime }: Props) {
     const res = await userAPI.createSession(task.id);
     res && addSession(res);
     res && message.success("Session Started");
-    console.log("🚀 ~ file: reactStopWatch.tsx:19 ~ startSession ~ res", res);
   };
   const stopSession = async () => {
     console.log("stop");
@@ -39,7 +38,6 @@ function StopWatchTabular({ task, addSession, addEndTime }: Props) {
     const res = await userAPI.stopSession(task.id);
     res && addEndTime(res);
     res && message.success("Session Ended");
-    console.log("🚀 ~ file: reactStopWatch.tsx:19 ~ startSession ~ res", res);
   };
 
   const start = async () => {
@@ -58,7 +56,6 @@ function StopWatchTabular({ task, addSession, addEndTime }: Props) {
       await handleWarning(task, startFunction);
     } else startFunction();
   };
-  // console.log(time);
   var updatedMs = time.ms,
     updatedS = time.s,
     updatedM = time.m,
@@ -183,8 +180,6 @@ function StopWatchTabular({ task, addSession, addEndTime }: Props) {
     if (status) {
       if (!task.sessions) task.sessions = [];
       if (runningTask && runningTask.id !== task.id) {
-        console.log(task.sessions[task.sessions.length - 1]);
-
         if (task.sessions[task.sessions.length - 1]?.status === "STARTED")
           stop();
       }
@@ -199,11 +194,6 @@ function StopWatchTabular({ task, addSession, addEndTime }: Props) {
         task.sessions[task.sessions.length - 1]?.status === "STARTED"
       )
         resumeTimeFunction();
-      console.log(
-        "🚀 ~ file: reactStopWatchTabular.tsx:191 ~ StopWatchTabular ~ runningTask:",
-        runningTask,
-        task.sessions[task.sessions.length - 1]?.status
-      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runningTask]);

@@ -19,10 +19,7 @@ import { sortByStatus } from "../src/services/taskActions";
 export async function loginRest(
   data: LoginDto
 ): Promise<LoginResponseDto | undefined> {
-  console.log("🚀 ~ file: restApi.ts:19 ~ logInRest ~ data", data);
   try {
-    console.log(">>", axios.defaults.baseURL);
-
     const res = await axios.post(`${apiEndPoints.login}`, data);
     if (res?.data?.access_token) {
       SetCookie("access_token", res?.data?.access_token);
@@ -39,10 +36,7 @@ export async function googleLoginRest(
   code: string
 ): Promise<LoginResponseDto | undefined> {
   try {
-    console.log(">>", axios.defaults.baseURL);
-
     const res = await axios.post(`${apiEndPoints.googleLogin}?code=${code}`);
-    console.log("🚀 ~ file: restApi.ts:45 ~ res:", res);
     return res.data;
   } catch (error: any) {
     return error;
@@ -52,7 +46,6 @@ export async function googleLoginRest(
 export async function registerRest(
   data: RegisterDto
 ): Promise<RegisterDto | undefined> {
-  console.log("🚀 ~ file: restApi.ts:19 ~ logInRest ~ data", data);
   try {
     const res = await axios.post(`${apiEndPoints.register}`, data);
     return res.data;
@@ -78,8 +71,6 @@ export async function logoutRest() {
 export async function createTaskRest(data: CreateTaskDto) {
   try {
     const res = await axios.post(`${apiEndPoints.tasks}`, data);
-    // console.log(res);
-
     return res.data;
   } catch (error: any) {
     return false;
@@ -89,7 +80,6 @@ export async function createTaskRest(data: CreateTaskDto) {
 export async function deleteTaskRest(taskId: any) {
   try {
     const res = await axios.delete(`${apiEndPoints.tasks}/${taskId}`);
-    // console.log(res);
     message.success("Task Deleted");
     return true;
   } catch (error: any) {
@@ -143,7 +133,6 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
         responseType: "blob", // Set responseType to 'blob' to receive binary data
       }
     );
-    console.log("🚀 ~ file: restApi.ts:167 ~ exportTasksRest ~ res:", res);
     return res.data;
   } catch (error: any) {
     return false;
@@ -169,8 +158,6 @@ export async function syncTasksRest() {
 }
 
 export async function createSessionRest(taskId: string) {
-  console.log("🚀 ~ file: restApi.ts:91 ~ createSessionRest ~ taskID", taskId);
-
   try {
     const res = await axios.post(`${apiEndPoints.sessions}`, {
       taskId: taskId,
@@ -182,14 +169,10 @@ export async function createSessionRest(taskId: string) {
 }
 
 export async function stopSessionRest(taskId: string) {
-  console.log("🚀 ~ file: restApi.ts:91 ~ stopSessionRest ~ taskID", taskId);
-
   try {
     const res = await axios.post(`${apiEndPoints.sessions}/${taskId}`, {});
     return res.data;
   } catch (error: any) {
-    console.log("🚀 ~ file: restApi.ts:241 ~ stopSessionRest ~ error:", error);
-
     return false;
   }
 }
@@ -197,7 +180,6 @@ export async function stopSessionRest(taskId: string) {
 export async function authJiraRest() {
   try {
     const res = await axios.get(`${apiEndPoints.jira}`);
-    console.log("🚀 ~ file: restApi.ts:160 ~ authJiraRest ~ res:", res);
     return res.data;
   } catch (error: any) {
     return false;
@@ -207,7 +189,6 @@ export async function authJiraRest() {
 export async function getJiraLinkRest() {
   try {
     const res = await axios.get(`${apiEndPoints.jira}`);
-    console.log("🚀 ~ file: restApi.ts:160 ~ authJiraRest ~ res:", res);
     return res.data;
   } catch (error: any) {
     return false;
@@ -226,7 +207,6 @@ export async function sendJiraCodeRest(code: string) {
 export async function deleteIntegrationRest(id: number) {
   try {
     const res = await axios.delete(`${apiEndPoints.integrations}/${id}`);
-    console.log("deleteIntegrationRest", res);
     message.success(res?.data?.message);
     return true;
   } catch (error: any) {
@@ -247,7 +227,6 @@ export async function selectJiraIntegrationRest(id: string) {
 export async function getIntegrationsRest() {
   try {
     const res = await axios.get(`${apiEndPoints.integrations}`);
-    console.log("getIntegrationsRest", res);
     return res.data;
   } catch (error: any) {
     return false;
