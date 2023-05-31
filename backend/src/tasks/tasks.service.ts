@@ -215,6 +215,7 @@ export class TasksService {
   }
 
   async syncTasks(user: User, res?: Response) {
+    await this.setProjectStatuses(user);
     try {
       const notification = await this.prisma.notification.create({
         data: {
@@ -288,7 +289,13 @@ export class TasksService {
         const key = integratedTasks[j].integratedTaskId;
         key && mappedIssues.delete(key);
       }
-
+      const projectsList = await this.prisma.projects.findMany({
+        where: { integrationID: updated_integration.id },
+      });
+      const mappedProjects = new Map<string, number>();
+      projectsList.map((project: any) => {
+        mappedProjects.set(project.projectId, project.id);
+      });
       for (const [integratedTaskId, integratedTask] of mappedIssues) {
         const taskStatus = integratedTask.status.name;
         const taskPriority = this.formatPriority(integratedTask.priority.name);
@@ -300,7 +307,7 @@ export class TasksService {
             ? integratedTask.timeoriginalestimate / 3600
             : null,
           projectName: integratedTask.project.name,
-          projectId: integratedTask.project.id,
+          projectId: mappedProjects.get(integratedTask.project.id) ?? null,
           status: taskStatus,
           statusCategoryName: integratedTask.status.statusCategory.name
             .replace(' ', '_')
@@ -503,7 +510,7 @@ export class TasksService {
       });
       const updated_integration = await this.updateIntegration(user);
       if (taskIntegration && taskIntegration.projectId) {
-        if (taskIntegration?.projectId === 'None') {
+        if (taskIntegration?.projectId === null) {
           const updatedTask = await this.prisma.task.update({
             where: {
               id: Number(taskId),
@@ -805,6 +812,108 @@ export class TasksService {
       },
     });
     return updated_integration;
+  }
+
+  async setProjectStatuses(user: User) {
+    const updated_integration = await this.updateIntegration(user);
+    // let statusList: any;
+    const getStatusListUrl = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/status`;
+    try {
+      const { data: statusList } = await axios.get(getStatusListUrl, {
+        headers: {
+          Authorization: `Bearer ${updated_integration?.accessToken}`,
+        },
+      });
+      // console.log(
+      //   '🚀 ~ file: jira.service.ts:193 ~ setProjectStatuses ~ statusList:',
+      //   statusList,
+      // );
+      // statusList.map((el: any) => {
+      //   if(!el.scope) console.log(el);
+      //   console.log(el.scope);
+      // });
+
+      const projectIdList = new Set();
+      const projectStatusArray: any[] = [];
+      const statusArray: StatusDetail[] = [];
+      for (const status of statusList) {
+        const projectId = status?.scope?.project?.id;
+        if (projectId) {
+          if (!projectIdList.has(projectId)) {
+            projectIdList.add(projectId);
+            console.log(
+              '🚀 ~ file: jira.service.ts:210 ~ setProjectStatuses ~ projectId:',
+              projectId,
+            );
+            projectStatusArray.push({
+              projectId,
+              integrationID: updated_integration.id,
+            });
+          }
+        }
+      }
+      console.log(
+        '🚀 ~ file: jira.service.ts:214 ~ setProjectStatuses ~ projectStatusArray:',
+        projectStatusArray.length,
+        statusList.length,
+      );
+      await this.prisma.projects.createMany({
+        data: projectStatusArray,
+      });
+      const projectsList = await this.prisma.projects.findMany({
+        where: { integrationID: updated_integration.id },
+      });
+      const mappedProjects = new Map<string, number>();
+      projectsList.map((project: any) => {
+        mappedProjects.set(project.projectId, project.id);
+      });
+      for (const status of statusList) {
+        const { name, untranslatedName, id, statusCategory } = status;
+        const projectId = status?.scope?.project?.id;
+        const statusProjectId = mappedProjects.get(projectId);
+        const statusDetail: any = {
+          name,
+          untranslatedName,
+          statusId: id,
+          statusCategoryId: `${statusCategory.id}`,
+          statusCategoryName: statusCategory.name
+            .replace(' ', '_')
+            .toUpperCase(),
+          projectId: statusProjectId,
+          transitionId: null,
+        };
+        statusProjectId && statusArray.push(statusDetail);
+      }
+
+      console.log(
+        '🚀 ~ file: jira.service.ts:255 ~ setProjectStatuses ~ statusArray:',
+        statusArray,
+      );
+      try {
+        const tmp = await this.prisma.statusDetail.createMany({
+          data: statusArray,
+        });
+        console.log(
+          '🚀 ~ file: jira.service.ts:260 ~ setProjectStatuses ~ tmp:',
+          tmp,
+        );
+      } catch (error) {
+        console.log(
+          '🚀 ~ file: jira.service.ts:261 ~ setProjectStatuses ~ error:',
+          error,
+        );
+      }
+
+      // return await this.getProjectStatuses(user);
+      // await Promise.allSettled([
+      //   await this.prisma.projects.createMany({
+      //     data: projectStatusArray,
+      //   }),
+      //   await this.prisma.statusDetail.createMany({ data: statusArray }),
+      // ]);
+    } catch (error) {
+      return error;
+    }
   }
 }
 

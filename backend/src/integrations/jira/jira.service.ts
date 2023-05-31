@@ -1,14 +1,14 @@
+import { lastValueFrom } from 'rxjs';
+import { APIException } from 'src/internal/exception/api.exception';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { TasksService } from 'src/tasks/tasks.service';
+
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IntegrationType, Projects, StatusDetail, User } from '@prisma/client';
-import { lastValueFrom } from 'rxjs';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { IntegrationType, User } from '@prisma/client';
+
 import { AuthorizeJiraDto } from './dto';
-import { APIException } from 'src/internal/exception/api.exception';
-import { TasksService } from 'src/tasks/tasks.service';
-import axios from 'axios';
-import { Response } from 'express';
 
 @Injectable()
 export class JiraService {
@@ -109,7 +109,6 @@ export class JiraService {
           user,
           integrations[0].siteId,
         );
-        this.setProjectStatuses(user);
         return createdIntegration;
       }
       return integrations;
@@ -169,7 +168,7 @@ export class JiraService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      this.setProjectStatuses(user);
+
       this.tasksService.syncTasks(user);
       return { message: `Integration successful in ${integration.site}` };
     } catch (err) {
@@ -177,61 +176,6 @@ export class JiraService {
         err.message || 'Something is wrong in creating integration',
         HttpStatus.BAD_REQUEST,
       );
-    }
-  }
-
-  async setProjectStatuses(user: User) {
-    const updated_integration = await this.tasksService.updateIntegration(user);
-    // let statusList: any;
-    const getStatusListUrl = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/status`;
-    try {
-      const { data: statusList } = await axios.get(getStatusListUrl, {
-        headers: {
-          Authorization: `Bearer ${updated_integration?.accessToken}`,
-        },
-      });
-      // statusList.map((el: any) => {
-      //   if(!el.scope) console.log(el);
-      //   console.log(el.scope);
-      // });
-
-      const projectIdList = new Set();
-      const projectStatusArray: Projects[] = [];
-      const statusArray: StatusDetail[] = [];
-      for (const status of statusList) {
-        const { name, untranslatedName, id, statusCategory } = status;
-        const projectId = status?.scope?.project?.id;
-        if (projectId) {
-          if (!projectIdList.has(projectId)) {
-            projectIdList.add(projectId);
-            projectStatusArray.push({
-              projectId,
-              integrationID: updated_integration.id,
-            });
-          }
-          const statusDetail: StatusDetail = {
-            name,
-            untranslatedName,
-            id,
-            statusCategoryId: `${statusCategory.id}`,
-            statusCategoryName: statusCategory.name
-              .replace(' ', '_')
-              .toUpperCase(),
-            projectId,
-            transitionId: null,
-          };
-          statusArray.push(statusDetail);
-        }
-      }
-      await Promise.allSettled([
-        await this.prisma.projects.createMany({
-          data: projectStatusArray,
-        }),
-        await this.prisma.statusDetail.createMany({ data: statusArray }),
-      ]);
-      return this.getProjectStatuses(user);
-    } catch (error) {
-      return error;
     }
   }
 
@@ -247,35 +191,39 @@ export class JiraService {
         },
       });
       statuses.push({
+        id: 0,
         projectId: 'None',
         integrationID: -1,
         statuses: [
           {
-            id: 'None',
+            id: 0,
+            statusId: 'None',
             name: 'To Do',
             untranslatedName: 'To Do',
             statusCategoryId: '2',
             statusCategoryName: 'TO_DO',
             transitionId: null,
-            projectId: '10226',
+            projectId: 0,
           },
           {
-            id: 'None',
+            id: 0,
+            statusId: 'None',
             name: 'In Progress',
             untranslatedName: 'In Progress',
             statusCategoryId: '4',
             statusCategoryName: 'IN_PROGRESS',
             transitionId: null,
-            projectId: '10226',
+            projectId: 0,
           },
           {
-            id: 'None',
+            id: 0,
+            statusId: 'None',
             name: 'Done',
             untranslatedName: 'Done',
             statusCategoryId: '3',
             statusCategoryName: 'DONE',
             transitionId: null,
-            projectId: '10226',
+            projectId: 0,
           },
         ],
       });

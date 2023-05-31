@@ -76,23 +76,26 @@ model Integration {
 }
 
 model Projects {
-  projectId String         @unique
+  id        Int            @id @default(autoincrement())
+  projectId String
   statuses  StatusDetail[]
 
   integration   Integration? @relation(fields: [integrationID], references: [id], onDelete: Cascade)
   integrationID Int?
+  tasks         Task[]
 }
 
 model StatusDetail {
-  id                 String  @unique
+  id                 Int     @id @default(autoincrement())
+  statusId           String
   name               String
   untranslatedName   String
   statusCategoryId   String
   statusCategoryName String
   transitionId       String?
 
-  TransitionStatus Projects @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-  projectId        String
+  transitionStatus Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId        Int
 
   @@unique([name, projectId], name: "tempStatusDetailIdentifier")
 }
@@ -116,7 +119,6 @@ model Task {
   description        String?
   assigneeId         String?
   projectName        String?
-  projectId          String?   @default("None")
   estimation         Decimal?  @db.Decimal(5, 2)
   status             String?   @default("To Do")
   statusCategoryName String?   @default("TO_DO")
@@ -135,6 +137,8 @@ model Task {
   url              String?
   sessions         Session[]
   pinned           Boolean?        @default(false)
+  projects         Projects?       @relation(fields: [projectId], references: [id])
+  projectId        Int?
 }
 
 model Session {
@@ -152,8 +156,6 @@ model Session {
   worklogId        Int?
 }
 
-
-
 model callSync {
   id        Int      @id @default(autoincrement())
   status    String
@@ -163,10 +165,11 @@ model callSync {
 }
 
 model webhook {
-  id Int @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   projectKey String[]
-  webhookId Int
-  siteUrl String
+  webhookId  Int
+  siteUrl    String
+
   @@unique([projectKey, webhookId, siteUrl], name: "webhookIdentifier")
 }
 
