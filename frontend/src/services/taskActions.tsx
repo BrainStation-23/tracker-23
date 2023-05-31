@@ -67,11 +67,11 @@ export const getLabels = (values: string[]) => {
 
 export const getProjectStatusList = (
   projects: Project[],
-  projectId: string
+  projectId: number
 ) => {
   if (!projects) return [];
   for (const project of projects) {
-    if (project.projectId === projectId) {
+    if (project.id === projectId) {
       return project.statuses?.map((status) => {
         return {
           name: status.name,

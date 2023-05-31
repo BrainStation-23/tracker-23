@@ -25,7 +25,7 @@ import TableComponent from "./components/tableComponent";
 import TopPanel from "./components/topPanel/topPanel";
 import SessionStartWarning from "./components/warning";
 import { CreateTaskDto } from "models/tasks";
-import { StatusType } from "@/storage/redux/projectsSlice";
+import { setProjectsSlice, StatusType } from "@/storage/redux/projectsSlice";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -291,13 +291,19 @@ const TasksPage = () => {
     setRunningTask(null);
     setSessionActionLoading(false);
   };
-
+  const getProjects = async () => {
+    const res = await userAPI.getProjectWiseStatus();
+    res?.length > 0 && dispatch(setProjectsSlice(res));
+  };
   useEffect(() => {
     !loading && getTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
   useEffect(() => {
-    !loading && !syncRunning && getTasks();
+    if (!loading && !syncRunning) {
+      getProjects();
+      getTasks();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncRunning]);
 

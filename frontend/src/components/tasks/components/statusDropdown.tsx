@@ -98,7 +98,7 @@ const StatusDropdownComponent = ({
       menu={menuProps}
       dropdownRender={dropdownRender}
       trigger={["click"]}
-      className=" w-max"
+      className="w-max cursor-pointer"
       // overlayClassName="absolute left-[-200px]"
       placement="bottomLeft"
     >

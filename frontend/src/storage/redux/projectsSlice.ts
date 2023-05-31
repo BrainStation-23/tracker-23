@@ -12,6 +12,7 @@ export interface ProjectStatus {
 }
 
 export interface Project {
+  id: number;
   projectId: string;
   integrationID: number;
   statuses: ProjectStatus[];
