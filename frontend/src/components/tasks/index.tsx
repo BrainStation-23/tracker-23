@@ -26,6 +26,7 @@ import TopPanel from "./components/topPanel/topPanel";
 import SessionStartWarning from "./components/warning";
 import { CreateTaskDto } from "models/tasks";
 import { setProjectsSlice, StatusType } from "@/storage/redux/projectsSlice";
+import { publicRoutes } from "utils/constants";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -343,7 +344,31 @@ const TasksPage = () => {
   const getPinnedTasks = () => {
     return tasks.filter((task) => task.pinned);
   };
+  const [syncing, setSyncing] = useState(
+    useAppSelector((state: RootState) => state.syncStatus.syncRunning)
+  );
+  const path = router.asPath;
+  useEffect(() => {
+    const getSyncStatus = async () => {
+      const res = await userAPI.syncStatus();
+      res && dispatch(setSyncStatus(res));
+      if (res.status === "IN_PROGRESS") {
+        dispatch(setSyncRunning(true));
+      } else if (res.status === "DONE") {
+        syncing && message.success("Sync Completed");
+        dispatch(setSyncRunning(false));
+      }
+    };
+    let timeout: NodeJS.Timeout;
+    timeout =
+      !publicRoutes.some((route) => path.includes(route)) &&
+      setTimeout(getSyncStatus, 2000);
+    const cleanup = () => {
+      clearTimeout(timeout);
+    };
 
+    return cleanup;
+  }, [publicRoutes.some((route) => path.includes(route))]);
   return (
     <TaskContext.Provider
       value={{
