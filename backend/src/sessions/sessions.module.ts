@@ -17,5 +17,6 @@ import { JwtService } from '@nestjs/jwt';
     AuthService,
     JwtService,
   ],
+  exports: [SessionsService],
 })
 export class SessionsModule {}

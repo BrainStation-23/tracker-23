@@ -15,12 +15,25 @@ export class AuthService {
 
   async createUser(dto: RegisterDto) {
     const hashedPassword = await argon.hash(dto.password);
+    const account = await this.prisma.account.create({
+      data: {
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+      },
+    });
+
     const data = {
       email: dto.email,
       firstName: dto.firstName,
       lastName: dto.lastName,
       hash: hashedPassword,
+      accounts: {
+        connect: {
+          id: account.id,
+        },
+      },
     };
+
     const user = await this.prisma.user.create({
       data,
       select: {
@@ -28,6 +41,22 @@ export class AuthService {
         email: true,
         firstName: true,
         lastName: true,
+        accounts: true,
+      },
+    });
+
+    await this.prisma.userAccount.create({
+      data: {
+        account: {
+          connect: {
+            id: account.id,
+          },
+        },
+        user: {
+          connect: {
+            id: user.id,
+          },
+        },
       },
     });
     return user;
@@ -47,25 +76,13 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     const doesExistUser = await this.getUser(dto);
-
     if (doesExistUser) {
       const token = await this.createToken(doesExistUser);
       return { ...doesExistUser, ...token };
     }
+
     const user = await this.createUser(dto);
     const token = await this.createToken(user);
-    const account = await this.prisma.account.create({
-      data: {
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-      },
-    });
-    await this.prisma.userAccount.create({
-      data: {
-        accountId: account.id,
-        userId: user.id,
-      },
-    });
     return { ...user, ...token };
   }
 
