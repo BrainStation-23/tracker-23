@@ -21,7 +21,7 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
   const [priority, setPriority] = useState([]);
   const [active, setActive] = useState("");
   const [selectedDate, setSelectedDate] = useState(
-    getDateRangeArray("this-month")
+    getDateRangeArray("this-week")
   );
 
   // const handleOnClick = () => {};
