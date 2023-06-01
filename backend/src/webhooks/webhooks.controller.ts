@@ -11,8 +11,8 @@ import { JwtAuthGuard } from 'src/guard';
 import { WebhooksService } from './webhooks.service';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
-import { RegisterWebhookDto, extendWebhookLifeReqDto } from './dto.ts';
-import { deleteWebhookDto } from './dto.ts/deleteWebhook.dto';
+import { RegisterWebhookDto, extendWebhookLifeReqDto } from './dto';
+import { deleteWebhookDto } from './dto/deleteWebhook.dto';
 @Controller('webhook')
 export class WebhooksController {
   constructor(private webhooksService: WebhooksService) {}
