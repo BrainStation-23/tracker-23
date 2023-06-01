@@ -361,7 +361,7 @@ const TasksPage = () => {
     let timeout: NodeJS.Timeout;
     timeout =
       !publicRoutes.some((route) => path.includes(route)) &&
-      setTimeout(getSyncStatus, 2000);
+      setTimeout(getSyncStatus, 5000);
     const cleanup = () => {
       clearTimeout(timeout);
     };
