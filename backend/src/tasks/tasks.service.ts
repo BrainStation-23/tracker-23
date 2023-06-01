@@ -215,7 +215,6 @@ export class TasksService {
   }
 
   async syncTasks(user: User, res?: Response) {
-    await this.setProjectStatuses(user);
     try {
       const notification = await this.prisma.notification.create({
         data: {
@@ -226,7 +225,6 @@ export class TasksService {
           userId: user.id,
         },
       });
-      console.log(notification);
       this.myGateway.sendNotification(`${user.id}`, notification);
     } catch (error) {
       console.log(
@@ -252,6 +250,7 @@ export class TasksService {
       } else {
         await this.syncCall(StatusEnum.IN_PROGRESS, user.id);
       }
+      // await this.setProjectStatuses(user);
 
       const searchUrl = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/search?`;
       const mappedIssues = new Map<number, any>();
@@ -342,26 +341,37 @@ export class TasksService {
           tasks[index].id,
         );
       }
-
-      for (const [integratedTaskId] of mappedIssues) {
-        const fields = 'issueId';
-        const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${integratedTaskId}/worklog`;
-        const config = {
-          method: 'get',
-          url,
-          headers: {
-            Authorization: `Bearer ${updated_integration?.accessToken}`,
-            'Content-Type': 'application/json',
-            fields,
-          },
-        };
-        worklogPromises.push(axios(config));
-        if (worklogPromises.length >= coreConfig.promiseQuantity) {
-          const resolvedPromise = await Promise.all(worklogPromises);
-          worklogsList.push(...resolvedPromise);
-          worklogPromises = [];
+      let total = 0;
+      try {
+        for (const [integratedTaskId] of mappedIssues) {
+          const fields = 'issueId';
+          const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${integratedTaskId}/worklog`;
+          const config = {
+            method: 'get',
+            url,
+            headers: {
+              Authorization: `Bearer ${updated_integration?.accessToken}`,
+              'Content-Type': 'application/json',
+              fields,
+            },
+          };
+          const res = axios(config);
+          worklogPromises.push(res);
+          if (worklogPromises.length >= coreConfig.promiseQuantity) {
+            total += coreConfig.promiseQuantity;
+            const resolvedPromise = await Promise.all(worklogPromises);
+            worklogsList.push(...resolvedPromise);
+            worklogPromises = [];
+          }
         }
+      } catch (error) {
+        console.log(total, mappedIssues.size);
+        console.log(
+          '🚀 ~ file: tasks.service.ts:366 ~ syncTasks ~ error:',
+          error,
+        );
       }
+
       if (worklogPromises.length) {
         const resolvedPromise = await Promise.all(worklogPromises);
         worklogsList.push(...resolvedPromise);
@@ -388,13 +398,21 @@ export class TasksService {
             });
           });
       }
+      try {
+        await Promise.allSettled([
+          await this.prisma.session.createMany({
+            data: sessionArray,
+          }),
+          await this.syncCall(StatusEnum.DONE, user.id),
+        ]);
+      } catch (error) {
+        console.log(
+          '🚀 ~ file: tasks.service.ts:410 ~ syncTasks ~ error:',
+          error,
+        );
+        console.log('Error creating sessions');
+      }
 
-      await Promise.allSettled([
-        await this.prisma.session.createMany({
-          data: sessionArray,
-        }),
-        await this.syncCall(StatusEnum.DONE, user.id),
-      ]);
       try {
         const notification = await this.prisma.notification.create({
           data: {
@@ -818,58 +836,53 @@ export class TasksService {
     const updated_integration = await this.updateIntegration(user);
     // let statusList: any;
     const getStatusListUrl = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/status`;
+    const getProjectListUrl = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/project`;
+
     try {
       const { data: statusList } = await axios.get(getStatusListUrl, {
         headers: {
           Authorization: `Bearer ${updated_integration?.accessToken}`,
         },
       });
-      // console.log(
-      //   '🚀 ~ file: jira.service.ts:193 ~ setProjectStatuses ~ statusList:',
-      //   statusList,
-      // );
-      // statusList.map((el: any) => {
-      //   if(!el.scope) console.log(el);
-      //   console.log(el.scope);
-      // });
+      const { data: projectList } = await axios.get(getProjectListUrl, {
+        headers: {
+          Authorization: `Bearer ${updated_integration?.accessToken}`,
+        },
+      });
 
       const projectIdList = new Set();
-      const projectStatusArray: any[] = [];
+      const projectListArray: any[] = [];
       const statusArray: StatusDetail[] = [];
-      for (const status of statusList) {
-        const projectId = status?.scope?.project?.id;
+      for (const project of projectList) {
+        const { id: projectId, key: projectKey, name: projectName } = project;
         if (projectId) {
           if (!projectIdList.has(projectId)) {
             projectIdList.add(projectId);
-            console.log(
-              '🚀 ~ file: jira.service.ts:210 ~ setProjectStatuses ~ projectId:',
+            projectListArray.push({
               projectId,
-            );
-            projectStatusArray.push({
-              projectId,
+              projectKey,
+              projectName,
               integrationID: updated_integration.id,
             });
           }
         }
       }
-      console.log(
-        '🚀 ~ file: jira.service.ts:214 ~ setProjectStatuses ~ projectStatusArray:',
-        projectStatusArray.length,
-        statusList.length,
-      );
       await this.prisma.projects.createMany({
-        data: projectStatusArray,
+        data: projectListArray,
       });
       const projectsList = await this.prisma.projects.findMany({
         where: { integrationID: updated_integration.id },
       });
+      const projectsWithoutStatuses = new Set();
       const mappedProjects = new Map<string, number>();
       projectsList.map((project: any) => {
+        projectsWithoutStatuses.add(project.projectId);
         mappedProjects.set(project.projectId, project.id);
       });
       for (const status of statusList) {
         const { name, untranslatedName, id, statusCategory } = status;
         const projectId = status?.scope?.project?.id;
+        projectsWithoutStatuses.delete(projectId);
         const statusProjectId = mappedProjects.get(projectId);
         const statusDetail: any = {
           name,
@@ -884,19 +897,37 @@ export class TasksService {
         };
         statusProjectId && statusArray.push(statusDetail);
       }
-
-      console.log(
-        '🚀 ~ file: jira.service.ts:255 ~ setProjectStatuses ~ statusArray:',
-        statusArray,
-      );
+      if (projectsWithoutStatuses.size > 0) {
+        for (const projectId of projectsWithoutStatuses) {
+          const getStatusByProjectIdUrl = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/project/${projectId}/statuses`;
+          const { data: res } = await axios.get(getStatusByProjectIdUrl, {
+            headers: {
+              Authorization: `Bearer ${updated_integration?.accessToken}`,
+            },
+          });
+          const StatusByProjectList = res.length > 0 ? res[0].statuses : [];
+          for (const status of StatusByProjectList) {
+            const { name, untranslatedName, id, statusCategory } = status;
+            const statusProjectId = mappedProjects.get(projectId as string);
+            const statusDetail: any = {
+              name,
+              untranslatedName,
+              statusId: id,
+              statusCategoryId: `${statusCategory.id}`,
+              statusCategoryName: statusCategory.name
+                .replace(' ', '_')
+                .toUpperCase(),
+              projectId: statusProjectId,
+              transitionId: null,
+            };
+            statusProjectId && statusArray.push(statusDetail);
+          }
+        }
+      }
       try {
-        const tmp = await this.prisma.statusDetail.createMany({
+        await this.prisma.statusDetail.createMany({
           data: statusArray,
         });
-        console.log(
-          '🚀 ~ file: jira.service.ts:260 ~ setProjectStatuses ~ tmp:',
-          tmp,
-        );
       } catch (error) {
         console.log(
           '🚀 ~ file: jira.service.ts:261 ~ setProjectStatuses ~ error:',
@@ -907,11 +938,15 @@ export class TasksService {
       // return await this.getProjectStatuses(user);
       // await Promise.allSettled([
       //   await this.prisma.projects.createMany({
-      //     data: projectStatusArray,
+      //     data: projectListArray,
       //   }),
       //   await this.prisma.statusDetail.createMany({ data: statusArray }),
       // ]);
     } catch (error) {
+      console.log(
+        '🚀 ~ file: tasks.service.ts:945 ~ setProjectStatuses ~ error:',
+        error,
+      );
       return error;
     }
   }
