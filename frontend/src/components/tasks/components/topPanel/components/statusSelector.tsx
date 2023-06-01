@@ -22,9 +22,9 @@ type TagProps = {
   onClose: any;
 };
 const StatusSelectorComponent = ({ status, setStatus }: Props) => {
-  const defaultValues = [
-    { name: "To Do", statusCategoryName: "TO_DO" },
-    { name: "In Progress", statusCategoryName: "IN_PROGRESS" },
+  const defaultValues: any = [
+    // { name: "To Do", statusCategoryName: "TO_DO" },
+    // { name: "In Progress", statusCategoryName: "IN_PROGRESS" },
   ];
   const statuses = useAppSelector(
     (state: RootState) => state.projectList.statuses
@@ -38,7 +38,7 @@ const StatusSelectorComponent = ({ status, setStatus }: Props) => {
       })
     : [];
   if (Options?.length === 0) {
-    defaultValues.forEach((val) => {
+    defaultValues.forEach((val: any) => {
       Options.push({
         value: JSON.stringify(val),
         label: val.name,
