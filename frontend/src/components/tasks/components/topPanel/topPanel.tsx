@@ -34,8 +34,8 @@ const TopPanel = ({
 }: Props) => {
   const [searchText, setSearchText] = useState("");
   const [status, setStatus] = useState<string[]>([
-    '{"name":"To Do","statusCategoryName":"TO_DO"}',
-    '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
+    // '{"name":"To Do","statusCategoryName":"TO_DO"}',
+    // '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
   ]);
   const [priority, setPriority] = useState([]);
   const [active, setActive] = useState("");

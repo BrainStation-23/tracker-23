@@ -33,7 +33,10 @@ const StatusDropdownComponent = ({
     (state: RootState) => state.projectList.projects
   );
 
-  const statuses: StatusType[] = getProjectStatusList(projects, task.projectId);
+  const statuses: StatusType[] = getProjectStatusList(
+    projects,
+    task.projectId ? task.projectId : 0
+  );
   const statusComponent = (status: StatusType, selectedStatus: StatusType) => {
     return {
       key: `${Math.random()}`,
