@@ -516,7 +516,7 @@ export class TasksService {
 
   async updateIssueStatus(user: User, taskId: string, status: string) {
     try {
-      const taskIntegration = await this.prisma.task.findFirst({
+      const task = await this.prisma.task.findFirst({
         where: {
           userId: user.id,
           id: Number(taskId),
@@ -527,97 +527,92 @@ export class TasksService {
         },
       });
       const updated_integration = await this.updateIntegration(user);
-      if (taskIntegration && taskIntegration.projectId) {
-        if (taskIntegration?.projectId === null) {
-          const updatedTask = await this.prisma.task.update({
-            where: {
-              id: Number(taskId),
-            },
-            data: {
-              status: status,
-              statusCategoryName: getStatusCategoryName(status),
-            },
-          });
-          return updatedTask;
-        } else {
-          const statuses: StatusDetail[] = taskIntegration?.projectId
-            ? await this.prisma.statusDetail.findMany({
-                where: {
-                  projectId: taskIntegration?.projectId,
-                },
-              })
-            : [];
-          const statusNames = statuses?.map((status) => status.name);
-          const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${taskIntegration?.integratedTaskId}/transitions`;
-          if (statuses[0].transitionId === null) {
-            const config = {
-              method: 'get',
-              url,
-              headers: {
-                Authorization: `Bearer ${updated_integration?.accessToken}`,
-                'Content-Type': 'application/json',
+      if (task?.projectId === null) {
+        const updatedTask = await this.prisma.task.update({
+          where: {
+            id: Number(taskId),
+          },
+          data: {
+            status: status,
+            statusCategoryName: getStatusCategoryName(status),
+          },
+        });
+        return updatedTask;
+      } else if (task && task.projectId) {
+        const statuses: StatusDetail[] = task?.projectId
+          ? await this.prisma.statusDetail.findMany({
+              where: {
+                projectId: task?.projectId,
               },
-            };
-            const { transitions } = (await axios(config)).data;
-            for (const transition of transitions) {
-              if (
-                taskIntegration.projectId &&
-                statusNames.includes(transition.name)
-              ) {
-                await this.prisma.statusDetail.update({
-                  where: {
-                    tempStatusDetailIdentifier: {
-                      name: transition.name,
-                      projectId: taskIntegration.projectId,
-                    },
-                  },
-                  data: { transitionId: transition.id },
-                });
-              }
-            }
-          }
-
-          const statusDetails = await this.prisma.statusDetail.findFirst({
-            where: {
-              projectId: taskIntegration?.projectId,
-              name: status,
-            },
-          });
-
-          const statusBody = JSON.stringify({
-            transition: {
-              id: statusDetails?.transitionId,
-            },
-          });
+            })
+          : [];
+        const statusNames = statuses?.map((status) => status.name);
+        const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}/transitions`;
+        if (statuses[0].transitionId === null) {
           const config = {
-            method: 'post',
+            method: 'get',
             url,
             headers: {
               Authorization: `Bearer ${updated_integration?.accessToken}`,
               'Content-Type': 'application/json',
             },
-            data: statusBody,
           };
-          const updatedIssue = await axios(config);
-          const updatedTask =
-            updatedIssue &&
-            (await this.prisma.task.update({
-              where: {
-                id: Number(taskId),
-              },
-              data: {
-                status: status,
-                statusCategoryName: statusDetails?.statusCategoryName,
-              },
-            }));
-          if (!updatedTask) {
-            throw new APIException(
-              'Can not update issue status 1',
-              HttpStatus.BAD_REQUEST,
-            );
+          const { transitions } = (await axios(config)).data;
+          for (const transition of transitions) {
+            if (task.projectId && statusNames.includes(transition.name)) {
+              await this.prisma.statusDetail.update({
+                where: {
+                  tempStatusDetailIdentifier: {
+                    name: transition.name,
+                    projectId: task.projectId,
+                  },
+                },
+                data: { transitionId: transition.id },
+              });
+            }
           }
-          return updatedTask;
         }
+
+        const statusDetails = await this.prisma.statusDetail.findFirst({
+          where: {
+            projectId: task?.projectId,
+            name: status,
+          },
+        });
+
+        const statusBody = JSON.stringify({
+          transition: {
+            id: statusDetails?.transitionId,
+          },
+        });
+        const config = {
+          method: 'post',
+          url,
+          headers: {
+            Authorization: `Bearer ${updated_integration?.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          data: statusBody,
+        };
+        const updatedIssue = await axios(config);
+        const updatedTask =
+          updatedIssue &&
+          (await this.prisma.task.update({
+            where: {
+              id: Number(taskId),
+            },
+            data: {
+              status: status,
+              statusCategoryName: statusDetails?.statusCategoryName,
+            },
+          }));
+        if (!updatedTask) {
+          throw new APIException(
+            'Can not update issue status 1',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        return updatedTask;
       } else
         throw new APIException('No Integrations Found', HttpStatus.BAD_REQUEST);
     } catch (err) {

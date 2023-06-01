@@ -184,12 +184,14 @@ export class JiraService {
       where: { userId: user.id, type: IntegrationType.JIRA },
     });
     try {
-      const projects = await this.prisma.projects.findMany({
-        where: { integrationID: jiraIntegration?.id },
-        include: {
-          statuses: true,
-        },
-      });
+      const projects = jiraIntegration?.id
+        ? await this.prisma.projects.findMany({
+            where: { integrationID: jiraIntegration.id },
+            include: {
+              statuses: true,
+            },
+          })
+        : [];
       projects.push({
         id: 0,
         projectId: 'None',
