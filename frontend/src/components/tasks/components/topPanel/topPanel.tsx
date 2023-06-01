@@ -1,7 +1,7 @@
 import FilterIconSvg from "@/assets/svg/filterIconSvg";
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
 import SortIconSvg from "@/assets/svg/sortIconSvg";
-import { Input, Select } from "antd";
+import { Dropdown, Input, MenuProps, Select } from "antd";
 import { TaskDto } from "models/tasks";
 import { useState } from "react";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
@@ -39,6 +39,7 @@ const TopPanel = ({
   ]);
   const [priority, setPriority] = useState([]);
   const [active, setActive] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
     getDateRangeArray("this-week")
   );
@@ -146,6 +147,16 @@ const TopPanel = ({
     //   title: "Progress",
     // },
   ];
+  const items: MenuProps["items"] = filterOptions.map((option, index) => {
+    return {
+      label: option,
+      key: index,
+    };
+  });
+  const menuProps = {
+    items,
+    onClick: (item: any) => {},
+  };
   return (
     <div className="my-5 flex w-full justify-between">
       <div className="flex gap-3">
@@ -199,15 +210,28 @@ const TopPanel = ({
               // backgroundColor: "#00A3DE",
             }}
           >
-            <div
-              className="flex"
-              onClick={() =>
-                active === "Filter" ? setActive("") : setActive("Filter")
-              }
+            <Dropdown
+              menu={menuProps}
+              placement="bottomRight"
+              open={dropdownOpen}
+              onOpenChange={(open) => {
+                setDropdownOpen(open);
+              }}
+              trigger={["click"]}
+              className="transition-all delay-1000 duration-1000"
+              overlayClassName="duration-1000 delay-1000 transition-all w-[300px]"
             >
-              <FilterIconSvg />
-              <span className="font-normal">Filter</span>
-            </div>
+              <div
+                className="flex"
+                // onClick={() =>
+                //   active === "Filter" ? setActive("") : setActive("Filter")
+                // }
+              >
+                <FilterIconSvg />
+                <span className="font-normal">Filter</span>
+              </div>
+            </Dropdown>
+
             <div
               className={`${active === "Filter" ? "duration-500" : "hidden h-0"}
               absolute  top-[25px] right-0 z-50 flex

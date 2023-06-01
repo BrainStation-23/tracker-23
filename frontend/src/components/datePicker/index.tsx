@@ -41,7 +41,6 @@ const DateRangePicker = ({ setSelectedDate }: any) => {
   const menuProps = {
     items,
     onClick: (val: any) => {
-      console.log(val);
       setDropdownText(getDateRangeArray(val.key));
       setSelectedDate(getDateRangeArray(val.key));
       setDropdownOpen(false);

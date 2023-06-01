@@ -47,7 +47,7 @@ const SideMenu = () => {
               router.push("/");
             }}
           >
-            <div className="">
+            <div className="cursor-pointer">
               <BSLogoSvg />
             </div>
           </div>

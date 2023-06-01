@@ -52,7 +52,6 @@ const ImportSection = () => {
     getIntegrations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  console.log(integratedTypes);
 
   return (
     <div className="flex w-full flex-col gap-2">

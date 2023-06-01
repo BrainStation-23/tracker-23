@@ -110,7 +110,6 @@ const Line = ({ data }: any) => {
     }
     //  [id, data, chartData]
   );
-  // console.log("🚀 ~ file: MultiValueAxesChart.tsx:96 ~ Line ~ data:", data);
   return (
     <div
       // className="bg-red-500"
@@ -146,9 +145,5 @@ export default Line;
 //       Estimate: Estimate,
 //     });
 //   }
-//   console.log(
-//     "🚀 ~ file: MultiValueAxesChart.tsx:108 ~ generateChartData ~ chartData:",
-//     chartData
-//   );
 //   return chartData;
 // }

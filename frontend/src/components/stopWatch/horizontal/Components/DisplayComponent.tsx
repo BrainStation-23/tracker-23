@@ -11,7 +11,6 @@ function DisplayComponent(props: any) {
       );
     }
   };
-  // console.log(props.sessionTime);
   return (
     <div className="col-span-5 m-auto text-center text-2xl font-bold">
       <Tooltip placement="left" title={"Current Session Time"} color="blue">

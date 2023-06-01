@@ -32,10 +32,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
     setCreatingTask(true);
     const formattedValues: CreateTaskDto = getFormattedValues(values);
     const res = await createTask(formattedValues);
-    console.log(
-      "🚀 ~ file: CreateTaskComponent copy.tsx:23 ~ onFinish ~ res",
-      res
-    );
+
     setCreatingTask(false);
   };
 

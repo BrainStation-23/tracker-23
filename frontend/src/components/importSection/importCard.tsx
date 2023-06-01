@@ -25,8 +25,6 @@ const ImportCard = ({
   handleDeleteIntegration,
   installed = false,
 }: Props) => {
-  console.log("🚀 ~ file: importCard.tsx:19 ~ data:", data);
-  console.log("🚀 ~ file: importCard.tsx:5 ~ ImportCard ~ selected:", selected);
   useEffect(() => {}, []);
 
   return (
@@ -64,10 +62,7 @@ const ImportCard = ({
               } else {
                 try {
                   const response = await userAPI.getJiraLink();
-                  console.log(
-                    "🚀 ~ file: index.tsx:26 ~ handleOnclick ~ response:",
-                    response
-                  );
+
                   window.open(response, "_self");
                 } catch (error) {}
               }

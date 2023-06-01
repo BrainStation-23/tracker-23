@@ -11,7 +11,6 @@ function DisplayComponent(props: any) {
       );
     }
   };
-  // console.log(props.sessionTime);
   return (
     <div className=" col-span-5 m-auto text-center font-semibold">
       <Tooltip placement="bottom" title={"Total Spent Time"} color="blue">

@@ -70,7 +70,6 @@ const TaskDetailsModal = ({
     };
     const res = await userAPI.updateSession(sessionID, tmp);
     if (res) {
-      console.log("🚀 ~ file: sessions.tsx:44 ~ onFinish ~ res:", res);
       handleUpdateSession(task, res);
       message.success("Session Updated");
       return true;

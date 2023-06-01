@@ -2,6 +2,7 @@ import {
   Button,
   Table,
   TablePaginationConfig,
+  Tooltip,
   Typography,
   message,
 } from "antd";
@@ -57,25 +58,29 @@ const TableComponent = ({
           <div className="flex items-center gap-2" aria-disabled="true">
             {
               // task.status !== "DONE" &&
-              <>
+              <div className="cursor-pointer">
                 {runningTask?.id != task.id ? (
-                  <div
-                    onClick={() => {
-                      !sessionActionLoading && startSession(task);
-                    }}
-                  >
-                    <PlayIconSvg />
-                  </div>
+                  <Tooltip title="Click To Start Task">
+                    <div
+                      onClick={() => {
+                        !sessionActionLoading && startSession(task);
+                      }}
+                    >
+                      <PlayIconSvg />
+                    </div>
+                  </Tooltip>
                 ) : (
-                  <div
-                    onClick={() => {
-                      !sessionActionLoading && stopSession(task);
-                    }}
-                  >
-                    <PauseIconSvg />
-                  </div>
+                  <Tooltip title="Click To Stop Task">
+                    <div
+                      onClick={() => {
+                        !sessionActionLoading && stopSession(task);
+                      }}
+                    >
+                      <PauseIconSvg />
+                    </div>
+                  </Tooltip>
                 )}
-              </>
+              </div>
             }
             {/* {task.status === "DONE" && <div className="w-[34px]"></div>} */}
             <div className="flex flex-col gap-2">

@@ -18,17 +18,9 @@ function ReactStopWatchCopy({ task }: any) {
 
   const startSession = async () => {
     console.log("start");
-    // const res = await userAPI.createSession(task.id);
-    // res && addSession(res);
-    // res && message.success("Session Started");
-    // console.log("🚀 ~ file: reactStopWatch.tsx:19 ~ startSession ~ res", res);
   };
   const stopSession = async () => {
     console.log("stop");
-    // const res = await userAPI.stopSession(task.id);
-    // res && addEndTime(res);
-    // res && message.success("Session Ended");
-    // console.log("🚀 ~ file: reactStopWatch.tsx:19 ~ startSession ~ res", res);
   };
 
   const start = async () => {
@@ -42,7 +34,6 @@ function ReactStopWatchCopy({ task }: any) {
     setStatus(1);
     setInterv(setInterval(run, 100));
   };
-  // console.log(time);
   var updatedMs = time.ms,
     updatedS = time.s,
     updatedM = time.m,
@@ -98,7 +89,6 @@ function ReactStopWatchCopy({ task }: any) {
   const reset = () => {
     clearInterval(interv);
     setStatus(0);
-    // setTime({ ms: 0, s: 0, m: 0, h: 0 });
   };
 
   const resume = () => start();
@@ -126,10 +116,6 @@ function ReactStopWatchCopy({ task }: any) {
       }
     }
     setTime(initialTime);
-    // console.log(
-    //   "🚀 ~ file: reactStopWatch.tsx:122 ~ useEffect ~ initialTime",
-    //   initialTime
-    // );
 
     sessions?.forEach((session: any) => {
       if (session.startTime && !session.endTime) {
@@ -157,12 +143,7 @@ function ReactStopWatchCopy({ task }: any) {
         setResumeTime(true);
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // useEffect(() => {
-  //   if (resumeTime) resumeTimeFunction();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [resumeTime]);
   useEffect(() => {
     if (runningTask?.id !== task.id) {
       reset();
