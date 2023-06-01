@@ -3,7 +3,7 @@ import {
   Controller,
   Delete,
   Get,
-  Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -11,7 +11,8 @@ import { JwtAuthGuard } from 'src/guard';
 import { WebhooksService } from './webhooks.service';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
-import { RegisterWebhookDto } from './dto.ts';
+import { RegisterWebhookDto, extendWebhookLifeReqDto } from './dto.ts';
+import { deleteWebhookDto } from './dto.ts/deleteWebhook.dto';
 @Controller('webhook')
 export class WebhooksController {
   constructor(private webhooksService: WebhooksService) {}
@@ -32,7 +33,10 @@ export class WebhooksController {
 
   @Delete('delete')
   @UseGuards(JwtAuthGuard)
-  async deleteWebhook(@GetUser() user: User, @Body() reqBody: any) {
+  async deleteWebhook(
+    @GetUser() user: User,
+    @Body() reqBody: deleteWebhookDto,
+  ) {
     return this.webhooksService.deleteWebhook(user, reqBody);
   }
 
@@ -46,5 +50,15 @@ export class WebhooksController {
   @UseGuards(JwtAuthGuard)
   async getWebhooks(@GetUser() user: User) {
     return this.webhooksService.getWebhooks(user);
+  }
+
+  @Patch('extend-life')
+  @UseGuards(JwtAuthGuard)
+  async extendWebhookLife(
+    @GetUser() user: User,
+    @Body() reqBody: extendWebhookLifeReqDto,
+  ) {
+    console.log(reqBody);
+    return this.webhooksService.extendWebhookLife(user, reqBody);
   }
 }
