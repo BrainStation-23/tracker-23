@@ -162,8 +162,8 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
           Export to Excel
         </div> */}
         <Button
-          type="default"
-          className="rounded-md bg-[#016C37] text-white hover:bg-[#1F9B60]"
+          type="ghost"
+          className="rounded-md bg-[#016C37] text-white hover:bg-[#1d8b56] hover:text-white"
           icon={<DownloadOutlined />}
           loading={downloading}
           onClick={() => excelExport()}
