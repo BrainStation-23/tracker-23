@@ -6,14 +6,16 @@ import axios from 'axios';
 import { lastValueFrom } from 'rxjs';
 import { APIException } from 'src/internal/exception/api.exception';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { RegisterWebhookDto } from './dto.ts';
-
+import { RegisterWebhookDto, extendWebhookLifeReqDto } from './dto.ts';
+import { SessionsService } from 'src/sessions/sessions.service';
+import { deleteWebhookDto } from './dto.ts/deleteWebhook.dto.js';
 @Injectable()
 export class WebhooksService {
   constructor(
     private config: ConfigService,
     private prisma: PrismaService,
     private httpService: HttpService,
+    private sessionService: SessionsService, // private tasksService: TasksService,
   ) {}
 
   async getWebhooks(user: User) {
@@ -71,7 +73,6 @@ export class WebhooksService {
     const doesExistWebhook = await this.prisma.webhook.findUnique({
       where: {
         webhookIdentifier: {
-          projectKey,
           webhookId,
           siteUrl,
         },
@@ -173,11 +174,12 @@ export class WebhooksService {
           where: {
             siteUrl: updated_integration.site,
             projectKey: {
-              hasSome: reqBody.projectName.map((key) => key),
+              hasSome: [...reqBody.projectName.map((key) => key)],
             },
           },
         }));
-      if (doesExist && doesExist[0]) {
+      // console.log([...reqBody.projectName.map((key) => key)]);
+      if (doesExist && doesExist.length) {
         throw new APIException(
           'Already one of the project has webhook registered!',
           HttpStatus.INTERNAL_SERVER_ERROR,
@@ -193,7 +195,7 @@ export class WebhooksService {
           },
         ],
       };
-      console.log(formateReqBody);
+      // console.log(formateReqBody);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook`;
       const config = {
         method: 'post',
@@ -206,6 +208,10 @@ export class WebhooksService {
       };
 
       const webhook = await (await axios(config)).data;
+
+      const currentDate = new Date(Date.now());
+      currentDate.setDate(currentDate.getDate() + 30);
+
       const localWebhook =
         webhook &&
         updated_integration.site &&
@@ -216,6 +222,7 @@ export class WebhooksService {
               webhook.webhookRegistrationResult[0].createdWebhookId,
             ),
             siteUrl: updated_integration.site,
+            expirationDate: currentDate,
           },
         }));
       return localWebhook;
@@ -228,9 +235,13 @@ export class WebhooksService {
     }
   }
 
-  async deleteWebhook(user: User, reqBody: any) {
+  async deleteWebhook(user: User, reqBody: deleteWebhookDto) {
     try {
       const updated_integration = await this.updateIntegration(user);
+      const jiraReqBody = {
+        webhookIds: [reqBody.webhookId],
+      };
+      console.log(jiraReqBody);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook`;
       const config = {
         method: 'delete',
@@ -239,11 +250,21 @@ export class WebhooksService {
           Authorization: `Bearer ${updated_integration?.accessToken}`,
           'Content-Type': 'application/json',
         },
-        data: reqBody,
+        data: jiraReqBody,
       };
 
       const webhook = (await axios(config)).status;
       console.log('deleted', webhook);
+      webhook == 202 &&
+        updated_integration.site &&
+        (await this.prisma.webhook.delete({
+          where: {
+            webhookIdentifier: {
+              webhookId: reqBody.webhookId,
+              siteUrl: updated_integration.site,
+            },
+          },
+        }));
       return webhook;
     } catch (err) {
       console.log(err.message);
@@ -274,6 +295,52 @@ export class WebhooksService {
       console.log(err.message);
       throw new APIException(
         err.message || 'Fetching problem to get failed webhook!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async extendWebhookLife(user: User, reqBody: extendWebhookLifeReqDto) {
+    try {
+      console.log(reqBody);
+      const body = {
+        webhookIds: [reqBody.webhookId],
+      };
+      console.log(body);
+      const updated_integration = await this.updateIntegration(user);
+      const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook/refresh`;
+      const config = {
+        method: 'put',
+        url,
+        headers: {
+          Authorization: `Bearer ${updated_integration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        data: body,
+      };
+
+      const webhook = (await axios(config)).data;
+      const time = new Date(
+        this.sessionService.getUtcTime(webhook.expirationDate),
+      );
+      const updatedLocal =
+        updated_integration.site &&
+        (await this.prisma.webhook.update({
+          where: {
+            webhookIdentifier: {
+              webhookId: reqBody.webhookId,
+              siteUrl: updated_integration.site,
+            },
+          },
+          data: {
+            expirationDate: time,
+          },
+        }));
+      console.log(updatedLocal);
+      return updatedLocal;
+    } catch (err) {
+      console.log(err.message);
+      throw new APIException(
+        err.message || 'Fetching problem to Extend webhook life!',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
