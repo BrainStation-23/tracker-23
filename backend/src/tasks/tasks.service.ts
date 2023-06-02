@@ -526,7 +526,6 @@ export class TasksService {
           projectId: true,
         },
       });
-      const updated_integration = await this.updateIntegration(user);
       if (task?.projectId === null) {
         const updatedTask = await this.prisma.task.update({
           where: {
@@ -539,6 +538,7 @@ export class TasksService {
         });
         return updatedTask;
       } else if (task && task.projectId) {
+        const updated_integration = await this.updateIntegration(user);
         const statuses: StatusDetail[] = task?.projectId
           ? await this.prisma.statusDetail.findMany({
               where: {
