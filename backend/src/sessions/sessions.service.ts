@@ -125,13 +125,26 @@ export class SessionsService {
       return null;
     }
 
-    this.addWorkLog(
+    const jiraSession = await this.addWorkLog(
       session.startTime,
       integratedTaskId as unknown as string,
       this.timeConverter(timeSpent),
       updated_integration,
     );
-    return { success: true, msg: 'successfully updated to jira' };
+    const localSession =
+      jiraSession &&
+      (await this.prisma.session.update({
+        where: { id: session.id },
+        data: {
+          authorId: updated_integration?.jiraAccountId
+            ? updated_integration?.jiraAccountId
+            : null,
+          integratedTaskId: jiraSession ? Number(jiraSession.issueId) : null,
+          worklogId: jiraSession ? Number(jiraSession.id) : null,
+        },
+      }));
+    if (!localSession) return null;
+    return { success: true, msg: 'Successfully Updated to jira' };
   }
 
   async updateIntegration(user: User) {
