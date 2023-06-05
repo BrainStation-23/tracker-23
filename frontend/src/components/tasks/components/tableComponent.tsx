@@ -84,7 +84,7 @@ const TableComponent = ({
             }
             {/* {task.status === "DONE" && <div className="w-[34px]"></div>} */}
             <div className="flex flex-col gap-2">
-              <Text className="w-[200px] " ellipsis={{ tooltip: task?.title }}>
+              <Text className="w-[180px] " ellipsis={{ tooltip: task?.title }}>
                 {/* <div>{task?.title}</div> */}
                 {task?.title}
               </Text>
@@ -149,8 +149,11 @@ const TableComponent = ({
                 backgroundColor: statusBorderColorEnum[task.statusCategoryName],
               }}
             />
-
-            <div>{task.status}</div>
+            <div className="max-w-[90px]">
+              <Text className="" ellipsis={{ tooltip: task?.status }}>
+                {task.status}
+              </Text>
+            </div>
           </div>
         </StatusDropdownComponent>
       ),
