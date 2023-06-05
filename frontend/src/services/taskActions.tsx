@@ -5,7 +5,7 @@ import {
   setLocalStorage,
 } from "@/storage/storage";
 import { message } from "antd";
-import { StatusDto, TaskDto } from "models/tasks";
+import { Session, StatusDto, TaskDto } from "models/tasks";
 
 export const updateTask = (task: any, taskName: string) => {
   try {
@@ -73,4 +73,11 @@ export const getProjectStatusList = (
       });
     }
   }
+};
+
+export const checkIfRunningTask = (sessions: Session[]) => {
+  for (const session of sessions) {
+    if (!session?.endTime) return true;
+  }
+  return false;
 };

@@ -27,6 +27,7 @@ import SessionStartWarning from "./components/warning";
 import { CreateTaskDto } from "models/tasks";
 import { setProjectsSlice, StatusType } from "@/storage/redux/projectsSlice";
 import { publicRoutes } from "utils/constants";
+import { checkIfRunningTask } from "@/services/taskActions";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -56,8 +57,8 @@ const TasksPage = () => {
     selectedDate: getDateRangeArray("this-week"),
     priority: [],
     status: [
-      '{"name":"To Do","statusCategoryName":"TO_DO"}',
-      '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
+      // '{"name":"To Do","statusCategoryName":"TO_DO"}',
+      // '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
     ],
   });
   const syncRunning = useAppSelector(
@@ -140,8 +141,15 @@ const TasksPage = () => {
           task.sessions && task.sessions[0]
             ? getFormattedTime(formatDate(task.sessions[0].startTime))
             : "Not Started";
+        task.sessions = task.sessions.sort((a: any, b: any) =>
+          a.endTime
+            ? new Date(a.endTime).getTime()
+            : 0 - b.endTime
+            ? new Date(b.endTime).getTime()
+            : 0
+        );
         const ended =
-          task.sessions && task.sessions[task.sessions?.length - 1]?.endTime
+          task.sessions && !checkIfRunningTask(task.sessions)
             ? getFormattedTime(
                 formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
               )
