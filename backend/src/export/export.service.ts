@@ -25,13 +25,64 @@ export class ExportService {
     }
 
     const rows = [];
-    data.forEach((doc) => {
-      rows.push(Object.values(doc));
+    data.forEach((doc: any) => {
+      const modifiedDoc = { ...doc };
+
+      // Format the sessions data to be user-friendly
+      const formattedSessions = doc.sessions.map((session: any) => {
+        return {
+          'Start Time': session.startTime,
+          'End Time': session.endTime,
+          Status: session.status,
+        };
+      });
+
+      modifiedDoc.sessions = formattedSessions;
+
+      rows.push(Object.values(modifiedDoc));
     });
     const book = new Workbook();
     const sheet = book.addWorksheet(`Sheet 1`);
-    rows.unshift(Object.keys(data[0]));
+    // Get the column names from the data structure
+    const columnNames = Object.keys(data[0]);
+
+    // Modify the column names as desired
+    const modifiedColumnNames = columnNames.map((name) => {
+      if (name === 'title') {
+        return 'Task Title';
+      } else if (name === 'description') {
+        return 'Description';
+      } else if (name === 'assigneeId') {
+        return 'Assignee ID';
+      } else if (name === 'projectName') {
+        return 'Project Name';
+      } else if (name === 'estimation') {
+        return 'Estimation';
+      } else if (name === 'status') {
+        return 'Status';
+      } else if (name === 'due') {
+        return 'Due Date';
+      } else if (name === 'priority') {
+        return 'Priority';
+      } else if (name === 'labels') {
+        return 'Labels';
+      } else if (name === 'createdAt') {
+        return 'Created At';
+      } else if (name === 'updatedAt') {
+        return 'Updated At';
+      } else if (name === 'userId') {
+        return 'User ID';
+      } else if (name === 'source') {
+        return 'Source';
+      } else if (name === 'sessions') {
+        return 'Sessions';
+      }
+      return name;
+    });
+    rows.unshift(modifiedColumnNames);
+
     sheet.addRows(rows);
+    sheet.getRow(1).font = { bold: true };
 
     const file: any = await new Promise((resolve) => {
       tmp.file(
