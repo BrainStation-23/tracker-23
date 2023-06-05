@@ -4,6 +4,7 @@ import TasksIconSvg from "@/assets/svg/tasksIconSvg";
 import DashboardIconSvg from "@/assets/svg/dashboardIconSvg";
 import ExportsIconSvg from "@/assets/svg/ExportsIconSvg";
 import IntegrationIconSvg from "@/assets/svg/IntegrationIconSvg";
+import { BulbOutlined } from "@ant-design/icons";
 
 const SideMenu = () => {
   const router = useRouter();
@@ -15,7 +16,9 @@ const SideMenu = () => {
           active ? "bg-[#ECECED] text-black" : ""
         }`}
         onClick={() => {
-          router.push(option.link);
+          option.link === "suggestion"
+            ? window.open("https://tracker23.nolt.io/")
+            : router.push(option.link);
         }}
       >
         <div
@@ -83,6 +86,11 @@ export const sideMenuOptions = [
     title: "Exports",
     icon: <ExportsIconSvg />,
     // icon: <TiExport className="h-6 w-6" />,
+  },
+  {
+    link: "suggestion",
+    title: "Suggestion/Support",
+    icon: <BulbOutlined style={{ fontSize: "24px" }} />,
   },
   // { link: "/onBoarding", title: "OnBoarding Page" },
 ];
