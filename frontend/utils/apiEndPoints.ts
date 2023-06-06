@@ -19,5 +19,6 @@ export const apiEndPoints = {
   spentTimePerDay: `/tasks/spent-time/per-day`,
   addWorkLog: `/sessions/add-work-log`,
   updateTaskStatus: `/tasks/update/status`,
+  updateTaskEstimation: `/tasks/update/estimation`,
   projectWiseStatus: `/integrations/jira/projects`,
 };

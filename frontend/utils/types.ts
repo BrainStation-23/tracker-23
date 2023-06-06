@@ -3,6 +3,7 @@ import { LoginDto, LoginResponseDto } from "models/auth";
 import {
   AddWorkLogParams,
   CreateTaskDto,
+  UpdateTaskEstimationParams,
   UpdateTaskStatusParams,
 } from "models/tasks";
 
@@ -32,6 +33,10 @@ export interface apiFunction {
   getSpentTimePerDay: (dates?: any) => Promise<any>;
   addManualWorkLog: (data: AddWorkLogParams) => Promise<any>;
   updateTaskSTatus: (taskId: any, data: UpdateTaskStatusParams) => Promise<any>;
+  updateTaskEstimation: (
+    taskId: any,
+    data: UpdateTaskEstimationParams
+  ) => Promise<any>;
   pinTask: (taskId: any, pinned: boolean) => Promise<any>;
   getProjectWiseStatus: () => Promise<any>;
   getNotifications: () => Promise<any>;

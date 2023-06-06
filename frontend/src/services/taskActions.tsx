@@ -6,6 +6,13 @@ import {
 } from "@/storage/storage";
 import { message } from "antd";
 import { Session, StatusDto, TaskDto } from "models/tasks";
+import {
+  formatDate,
+  getFormattedTime,
+  getFormattedTotalTime,
+  getTotalSpentTime,
+} from "./timeActions";
+import { setRunningTaskHook } from "@/hooks/taskHooks";
 
 export const updateTask = (task: any, taskName: string) => {
   try {
@@ -80,4 +87,54 @@ export const checkIfRunningTask = (sessions: Session[]) => {
     if (!session?.endTime) return true;
   }
   return false;
+};
+
+export const getFormattedTasks = (tasks: TaskDto[]) => {
+  const tmpTasks = tasks.map((task: TaskDto) => {
+    task.sessions = task.sessions.sort(function compareFn(a: any, b: any) {
+      return a.id - b.id;
+    });
+    const started =
+      task.sessions && task.sessions[0]
+        ? getFormattedTime(formatDate(task.sessions[0].startTime))
+        : "Not Started";
+    task.sessions = task.sessions.sort((a: any, b: any) =>
+      a.endTime
+        ? new Date(a.endTime).getTime()
+        : 0 - b.endTime
+        ? new Date(b.endTime).getTime()
+        : 0
+    );
+    const ended =
+      task.sessions && !checkIfRunningTask(task.sessions)
+        ? getFormattedTime(
+            formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
+          )
+        : task.sessions[0]
+        ? "Running"
+        : "Not Started";
+    if (ended === "Running") setRunningTaskHook(task);
+    const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
+    return {
+      ...task,
+      id: task.id,
+      title: task?.title,
+      description: task.description,
+      estimation: task.estimation,
+      startTime: formatDate(task.sessions[0]?.startTime),
+      endTime: formatDate(task.sessions[task.sessions?.length - 1]?.endTime),
+      started: started,
+      created: getFormattedTime(formatDate(task.createdAt)),
+      ended: ended,
+      total: total,
+      percentage: task.estimation
+        ? Math.round(
+            getTotalSpentTime(task.sessions) / (task.estimation * 36000)
+          )
+        : -1,
+      totalSpent: getTotalSpentTime(task.sessions),
+      priority: task.priority,
+    };
+  });
+  return tmpTasks;
 };

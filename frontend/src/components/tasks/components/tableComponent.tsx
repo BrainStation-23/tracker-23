@@ -42,12 +42,12 @@ const TableComponent = ({
   deleteTask,
   startSession,
   stopSession,
-  setReload,
-  reload,
   setManualTimeEntryModalOpen,
   sessionActionLoading,
   setLoading,
   handleStatusChange,
+  handleEstimationChange,
+  handlePinTask,
 }: any) => {
   const columns: any = [
     {
@@ -234,13 +234,7 @@ const TableComponent = ({
       dataIndex: "estimation",
       key: "estimation",
       render: (_: any, task: TaskDto) => (
-        <EstimationComponent {...{ task }}>
-          {task.estimation ? (
-            <div className="text-center">{task.estimation}hrs</div>
-          ) : (
-            <div className="text-center">---</div>
-          )}
-        </EstimationComponent>
+        <EstimationComponent {...{ task, handleEstimationChange }} />
       ),
       sorter: (a: any, b: any) => a.estimation - b.estimation,
     },
@@ -313,14 +307,11 @@ const TableComponent = ({
     setSelectedTask(task);
   };
   const handlePin = async (task: TaskDto) => {
-    task.pinned
-      ? (tableParams.pagination.total = tableParams.pagination.total - 1)
-      : (tableParams.pagination.total = tableParams.pagination.total + 1);
-    const res = await userAPI.pinTask(task.id, !task.pinned);
-    if (res) message.success("Task Pinned");
-    task.pinned = !task.pinned;
-
-    setReload(!reload);
+    const res = handlePinTask(task);
+    if (res)
+      task.pinned
+        ? (tableParams.pagination.total = tableParams.pagination.total - 1)
+        : (tableParams.pagination.total = tableParams.pagination.total + 1);
   };
 
   const getRowClassName = (task: TaskDto, index: any) => {
