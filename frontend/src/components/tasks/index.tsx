@@ -225,6 +225,12 @@ const TasksPage = () => {
       if (!task.sessions) task.sessions = [];
       task.sessions?.push(session);
       session && message.success("Work log added");
+      if (session) {
+        const tmp = tasks.map((t) =>
+          t.id === task.id ? { ...task, sessions: [...task.sessions] } : t
+        );
+        setTasks(tmp);
+      }
       setReload(!reload);
     } else message.error("Work log add Failed");
     setManualTimeEntryModalOpen(false);
@@ -236,7 +242,7 @@ const TasksPage = () => {
         (session: any) => session.id != sessionId
       );
       setReload(!reload);
-    } else message.error("Work log add Failed");
+    } else message.error("Work log delete Failed");
     // setManualTimeEntryModalOpen(false);
   };
 
@@ -293,7 +299,6 @@ const TasksPage = () => {
           else return tmpTask;
         })
       );
-      // message.error("Session Ending Failed");
     }
     setRunningTask(null);
     setSessionActionLoading(false);

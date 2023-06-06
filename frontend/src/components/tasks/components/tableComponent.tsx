@@ -217,7 +217,7 @@ const TableComponent = ({
         runningTask?.id !== task.id ? (
           <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
         ) : (
-          <Stopwatch milliseconds={getTotalSpentTime(task.sessions)} />
+          <Stopwatch milliseconds={getTotalSpentTime(task.sessions)} task={task} />
           // <StopWatchTabular
           //   task={task}
           //   // sessions={task.sessions}

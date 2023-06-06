@@ -11,6 +11,7 @@ const ProgressComponent = ({ task }: Props) => {
   const totalSpent = getTotalSpentTime(task.sessions);
   const [time, setTime] = useState(totalSpent);
   useEffect(() => {
+    setTime(getTotalSpentTime(task.sessions));
     let interval: any = null;
     interval = setInterval(() => {
       task.percentage = task.estimation
@@ -20,7 +21,7 @@ const ProgressComponent = ({ task }: Props) => {
     }, 1000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [task.sessions, task.estimation]);
   return (
     <div className="flex w-max gap-3">
       <div style={{ width: 80 }}>
