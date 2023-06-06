@@ -624,6 +624,85 @@ export class TasksService {
     }
   }
 
+  async updateIssueEstimation(user: User, taskId: string, estimation: number) {
+    try {
+      const task = await this.prisma.task.findFirst({
+        where: {
+          userId: user.id,
+          id: Number(taskId),
+        },
+        select: {
+          integratedTaskId: true,
+          projectId: true,
+        },
+      });
+      if (task?.projectId === null) {
+        const updatedTask = await this.prisma.task.update({
+          where: {
+            id: Number(taskId),
+          },
+          data: {
+            estimation: estimation,
+          },
+        });
+        return updatedTask;
+      } else if (task && task.projectId) {
+        const updated_integration = await this.updateIntegration(user);
+
+        const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}`;
+
+        const estimationBody = JSON.stringify({
+          update: {
+            timetracking: [
+              {
+                edit: {
+                  originalEstimate: estimation + 'h',
+                },
+              },
+            ],
+          },
+        });
+        console.log(
+          '🚀 ~ file: tasks.service.ts:661 ~ TasksService ~ updateIssueEstimation ~ esmationBody:',
+          estimationBody,
+        );
+        const config = {
+          method: 'put',
+          url,
+          headers: {
+            Authorization: `Bearer ${updated_integration?.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          data: estimationBody,
+        };
+        const updatedIssue = await axios(config);
+        const updatedTask =
+          updatedIssue &&
+          (await this.prisma.task.update({
+            where: {
+              id: Number(taskId),
+            },
+            data: {
+              estimation: estimation,
+            },
+          }));
+        if (!updatedTask) {
+          throw new APIException(
+            'Can not update issue estimation',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        return updatedTask;
+      } else
+        throw new APIException('No Integrations Found', HttpStatus.BAD_REQUEST);
+    } catch (err) {
+      console.log(err.message);
+      throw new APIException(
+        'Can not update issue status',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
   // This api doesn't in use
   async addWorkLog(
     user: User,
