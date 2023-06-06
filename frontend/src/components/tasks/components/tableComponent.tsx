@@ -31,6 +31,7 @@ import StaticProgressComponent from "./progressComponentStatic";
 import TimeDisplayComponent from "./timeDisplayComponent";
 import StatusDropdownComponent from "./statusDropdown";
 import { userAPI } from "APIs";
+import EstimationComponent from "./estimationComponent";
 
 const { Text } = Typography;
 const TableComponent = ({
@@ -232,12 +233,15 @@ const TableComponent = ({
       title: "Estimation",
       dataIndex: "estimation",
       key: "estimation",
-      render: (_: any, task: TaskDto) =>
-        task.estimation ? (
-          <div className="text-center">{task.estimation}hrs</div>
-        ) : (
-          <div className="text-center">---</div>
-        ),
+      render: (_: any, task: TaskDto) => (
+        <EstimationComponent {...{ task }}>
+          {task.estimation ? (
+            <div className="text-center">{task.estimation}hrs</div>
+          ) : (
+            <div className="text-center">---</div>
+          )}
+        </EstimationComponent>
+      ),
       sorter: (a: any, b: any) => a.estimation - b.estimation,
     },
     {
