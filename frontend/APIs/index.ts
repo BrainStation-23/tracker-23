@@ -30,6 +30,7 @@ import {
   syncStatusRest,
   syncTasksRest,
   updateSessionRest,
+  updateTaskEstimationRest,
   updateTaskSTatusRest,
 } from "./restApi";
 
@@ -63,6 +64,7 @@ const graphqlApi: apiFunction = {
   updateSession: updateSessionRest,
   markNotificationSeen: markNotificationSeenRest,
   markAllNotificationsSeen: markAllNotificationsSeenRest,
+  updateTaskEstimation: updateTaskEstimationRest,
 };
 
 const restApi: apiFunction = {
@@ -95,6 +97,7 @@ const restApi: apiFunction = {
   updateSession: updateSessionRest,
   markNotificationSeen: markNotificationSeenRest,
   markAllNotificationsSeen: markAllNotificationsSeenRest,
+  updateTaskEstimation: updateTaskEstimationRest,
 };
 
 export const userAPI: apiFunction =

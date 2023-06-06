@@ -295,7 +295,6 @@ const TasksPage = () => {
       );
       // message.error("Session Ending Failed");
     }
-    setReload(!reload);
     setRunningTask(null);
     setSessionActionLoading(false);
   };
@@ -327,6 +326,33 @@ const TasksPage = () => {
     }
     setReload(!reload);
     setLoading(false);
+  };
+
+  const handleEstimationChange = async (task: TaskDto, value: number) => {
+    setLoading(true);
+    const res = await userAPI.updateTaskEstimation(task.id, {
+      estimation: value,
+    });
+    if (res) {
+      const tmp = tasks.map((t) =>
+        t.id === task.id ? { ...task, estimation: value } : t
+      );
+      setTasks(tmp);
+    }
+    setLoading(false);
+  };
+
+  const handlePinTask = async (task: TaskDto) => {
+    setLoading(true);
+    const res = await userAPI.pinTask(task.id, !task.pinned);
+    if (res) message.success("Task Pinned");
+    const tmp = tasks.map((t) =>
+      t.id === task.id ? { ...task, pinned: !task.pinned } : t
+    );
+    setTasks(tmp);
+    setLoading(false);
+    if (res) return true;
+    else return false;
   };
 
   useEffect(() => {
@@ -425,6 +451,8 @@ const TasksPage = () => {
                     sessionActionLoading,
                     setLoading,
                     handleStatusChange,
+                    handleEstimationChange,
+                    handlePinTask,
                   }}
                 />
               </div>
@@ -450,6 +478,8 @@ const TasksPage = () => {
                   sessionActionLoading,
                   setLoading,
                   handleStatusChange,
+                  handleEstimationChange,
+                  handlePinTask,
                 }}
               />
             </div>

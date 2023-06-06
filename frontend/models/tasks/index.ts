@@ -73,6 +73,10 @@ export interface UpdateTaskStatusParams {
   status: StatusType;
 }
 
+export interface UpdateTaskEstimationParams {
+  estimation: number;
+}
+
 export type StatusDto = "TO_DO" | "IN_PROGRESS" | "DONE";
 export type PriorityDto = "HIGH" | "MEDIUM" | "LOW";
 export type FrequencyDto = "DAILY" | "WEEKLY" | "BI-WEEKLY";

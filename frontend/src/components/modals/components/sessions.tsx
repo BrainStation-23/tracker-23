@@ -76,6 +76,7 @@ const Sessions = ({
 
           return (
             <Form
+              key={session.id}
               form={form}
               // name="control-hooks"
               onFinish={onFinish}

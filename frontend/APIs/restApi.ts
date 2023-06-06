@@ -5,16 +5,22 @@ import { LoginDto, LoginResponseDto, RegisterDto } from "models/auth";
 import {
   AddWorkLogParams,
   CreateTaskDto,
+  UpdateTaskEstimationParams,
   UpdateTaskStatusParams,
 } from "models/tasks";
 import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
 import { GetCookie, RemoveCookie, SetCookie } from "@/services/cookie.service";
-import { getLabels, getStringFromArray } from "@/services/taskActions";
+import {
+  getFormattedTasks,
+  getLabels,
+  getStringFromArray,
+} from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
+import { setTasksSliceHook } from "@/hooks/taskHooks";
 
 export async function loginRest(
   data: LoginDto
@@ -104,6 +110,8 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
         (status && status.length > 0 ? `&status=${status}` : "")
     );
     const sortedTasks = sortByStatus(res.data);
+    // const sortedTasks = sortByStatus(getFormattedTasks(res.data));
+    // setTasksSliceHook(sortedTasks);
     return sortedTasks;
   } catch (error: any) {
     // if (error?.response?.status === 401) {
@@ -279,6 +287,21 @@ export async function updateTaskSTatusRest(
     const res = await axios.patch(
       `${apiEndPoints.updateTaskStatus}/${taskId}`,
       { status: data.status.name }
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function updateTaskEstimationRest(
+  taskId: any,
+  data: UpdateTaskEstimationParams
+) {
+  try {
+    const res = await axios.patch(
+      `${apiEndPoints.updateTaskEstimation}/${taskId}`,
+      { estimation: data.estimation }
     );
     return res.data;
   } catch (error: any) {
