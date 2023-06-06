@@ -15,8 +15,8 @@ const TrelloLogoSvg = () => {
         y1="100%"
         y2="0%"
       >
-        <stop offset="0" stop-color="#0052cc"></stop>
-        <stop offset="1" stop-color="#2684ff"></stop>
+        <stop offset="0" stopColor="#0052cc"></stop>
+        <stop offset="1" stopColor="#2684ff"></stop>
       </linearGradient>
       <g fill="none" fill-rule="evenodd">
         <path

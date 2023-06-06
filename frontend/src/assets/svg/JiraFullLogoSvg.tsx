@@ -32,8 +32,8 @@ const JiraLogoFullSvg = () => {
           y2="30.99"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0.18" stop-color="#0052cc" />
-          <stop offset="1" stop-color="#2684ff" />
+          <stop offset="0.18" stopColor="#0052cc" />
+          <stop offset="1" stopColor="#2684ff" />
         </linearGradient>
         <linearGradient
           id="linear-gradient-2"
