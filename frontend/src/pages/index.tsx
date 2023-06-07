@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { menuOptions } from "utils/constants";
+import GlobalMOdal from "@/components/modals/globalModal";
+import { useState } from "react";
+import { Button, Modal } from "antd";
 
 export default function Home() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <div className="mx-auto mt-5 w-max">
       <h1 className="text-3xl font-bold ">Welcome!!</h1>
@@ -12,6 +16,56 @@ export default function Home() {
           </Link>
         ))}
       </h1>
+      <Button onClick={() => setIsModalOpen(!isModalOpen)}>
+        Click to see Demo
+      </Button>
+      <Modal
+        // title={"title"}
+        open={isModalOpen}
+        // onOk={handleOk}
+        onCancel={() => setIsModalOpen(false)}
+        width={"full"}
+        className="inset-0 top-6 my-auto h-min w-[calc(100vw-100px)] bg-gray-400 p-0"
+        footer={null}
+        style={{
+          width: "calc(100vw-100px)",
+          // height: "calc(90vh)",
+        }}
+      >
+        <div className="m-auto h-min w-min">
+          <iframe
+            src="https://demo.arcade.software/x7mVsaFBX4EIrgV76AQH?embed"
+            frameBorder="0"
+            loading="lazy"
+            className="border-2 rounded-lg border-black m-0"
+            allowFullScreen
+            style={{
+              width: "calc(84vw)",
+              height: "calc(90vh)",
+              colorScheme: "dark",
+            }}
+            title="Tracker23 Demo"
+          ></iframe>
+        </div>
+      </Modal>
+      {/* <div>
+        <iframe
+          src="https://demo.arcade.software/x7mVsaFBX4EIrgV76AQH?embed"
+          frameBorder="0"
+          loading="lazy"
+          // className="h-screen-30px"
+          allowFullScreen
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "calc(90vw)",
+            height: "calc(90vh)",
+            colorScheme: "light",
+          }}
+          title="Tracker23 Demo"
+        ></iframe>
+      </div> */}
     </div>
   );
 }
