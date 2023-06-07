@@ -1,5 +1,8 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
+// npx prisma migrate dev
+// npx prisma migrate reset --force
+// npx prisma studio
 
 generator client {
   provider = "prisma-client-js"
@@ -43,6 +46,7 @@ model User {
   userAccounts  UserAccount[]
   accounts      Account[]
   tasks         Task[]
+  projectIds   Int[]
   integrations  Integration[]
   notifications Notification[]
 }
@@ -167,13 +171,35 @@ model callSync {
 }
 
 model webhook {
-  id         Int      @id @default(autoincrement())
-  projectKey String[]
-  webhookId  Int
-  siteUrl    String
+  id             Int      @id @default(autoincrement())
+  projectKey     String[]
+  webhookId      Int
+  siteUrl        String
   expirationDate DateTime
 
   @@unique([webhookId, siteUrl], name: "webhookIdentifier")
+}
+
+model Sprint {
+  id           Int          @id @default(autoincrement())
+  jiraSprintId Int
+  userId       Int
+  sprintTask   SprintTask[]
+  state        String
+  name         String
+  startDate    DateTime?
+  endDate      DateTime?
+  completeDate DateTime?
+}
+
+model SprintTask {
+  id       Int    @id @default(autoincrement())
+  sprint   Sprint @relation(fields: [sprintId], references: [id], onDelete: Cascade)
+  sprintId Int
+  taskId   Int
+  userId   Int
+
+  @@unique([sprintId, taskId, userId], name: "sprintTaskIdentifier")
 }
 
 enum Priority {

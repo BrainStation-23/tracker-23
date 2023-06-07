@@ -6,9 +6,9 @@ import axios from 'axios';
 import { lastValueFrom } from 'rxjs';
 import { APIException } from 'src/internal/exception/api.exception';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { RegisterWebhookDto, extendWebhookLifeReqDto } from './dto.ts';
+import { RegisterWebhookDto, extendWebhookLifeReqDto } from './dto/index.js';
 import { SessionsService } from 'src/sessions/sessions.service';
-import { deleteWebhookDto } from './dto.ts/deleteWebhook.dto.js';
+import { deleteWebhookDto } from './dto/deleteWebhook.dto.js';
 @Injectable()
 export class WebhooksService {
   constructor(
