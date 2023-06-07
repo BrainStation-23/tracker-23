@@ -76,9 +76,11 @@ model Integration {
 }
 
 model Projects {
-  id        Int            @id @default(autoincrement())
-  projectId String
-  statuses  StatusDetail[]
+  id          Int            @id @default(autoincrement())
+  projectId   String
+  projectName String?
+  projectKey  String?
+  statuses    StatusDetail[]
 
   integration   Integration? @relation(fields: [integrationID], references: [id], onDelete: Cascade)
   integrationID Int?

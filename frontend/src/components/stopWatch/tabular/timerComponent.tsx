@@ -1,17 +1,21 @@
+import { getTotalSpentTime } from "@/services/timeActions";
+import { TaskDto } from "models/tasks";
 import React, { useState, useEffect } from "react";
 type Props = {
   milliseconds: number;
+  task?: TaskDto;
 };
-function Stopwatch({ milliseconds }: Props) {
+function Stopwatch({ milliseconds, task }: Props) {
   const [time, setTime] = useState(milliseconds);
 
   useEffect(() => {
+    task?.sessions && setTime(getTotalSpentTime(task?.sessions));
     let interval: any = null;
     interval = setInterval(() => {
       setTime((time) => time + 1000);
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [task?.sessions]);
 
   const formatTime = (time: number) => {
     const hours = Math.floor(time / 3600000).toString();

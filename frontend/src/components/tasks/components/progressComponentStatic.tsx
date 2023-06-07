@@ -10,7 +10,9 @@ type Props = {
 const StaticProgressComponent = ({ task }: Props) => {
   const totalSpent = getTotalSpentTime(task.sessions);
   const [time, setTime] = useState(totalSpent);
-
+  useEffect(() => {
+    setTime(getTotalSpentTime(task.sessions));
+  }, [task.sessions]);
   return (
     <div className="flex w-max gap-3">
       <div style={{ width: 80 }}>

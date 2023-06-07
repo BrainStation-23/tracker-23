@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import {
   CreateTaskDto,
+  EstimationReqBodyDto,
   GetTaskQuery,
   StatusReqBodyDto,
   TimeSpentReqBodyDto,
@@ -86,6 +87,19 @@ export class TasksController {
       user,
       taskId,
       statusReqBody.status,
+    );
+  }
+  @Patch('update/estimation/:taskId')
+  @UseGuards(JwtAuthGuard)
+  async updateIssueEstimation(
+    @GetUser() user: User,
+    @Param('taskId') taskId: string,
+    @Body() estimationReqBody: EstimationReqBodyDto,
+  ) {
+    return this.tasksService.updateIssueEstimation(
+      user,
+      taskId,
+      estimationReqBody.estimation,
     );
   }
 

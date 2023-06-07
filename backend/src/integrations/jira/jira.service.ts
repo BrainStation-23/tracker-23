@@ -168,7 +168,7 @@ export class JiraService {
           HttpStatus.BAD_REQUEST,
         );
       }
-
+      await this.tasksService.setProjectStatuses(user);
       this.tasksService.syncTasks(user);
       return { message: `Integration successful in ${integration.site}` };
     } catch (err) {
@@ -184,15 +184,19 @@ export class JiraService {
       where: { userId: user.id, type: IntegrationType.JIRA },
     });
     try {
-      const statuses = await this.prisma.projects.findMany({
-        where: { integrationID: jiraIntegration?.id },
-        include: {
-          statuses: true,
-        },
-      });
-      statuses.push({
+      const projects = jiraIntegration?.id
+        ? await this.prisma.projects.findMany({
+            where: { integrationID: jiraIntegration.id },
+            include: {
+              statuses: true,
+            },
+          })
+        : [];
+      projects.push({
         id: 0,
         projectId: 'None',
+        projectKey: 'None',
+        projectName: 'T23',
         integrationID: -1,
         statuses: [
           {
@@ -227,12 +231,9 @@ export class JiraService {
           },
         ],
       });
-      return statuses;
+      return projects;
     } catch (error) {
-      throw new APIException(
-        'Can not get Project Statuses',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new APIException('Can not get Projects', HttpStatus.BAD_REQUEST);
     }
   }
 }

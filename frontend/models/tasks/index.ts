@@ -37,7 +37,7 @@ export type TaskDto = {
   priority: PriorityDto;
   labels: string[];
   createdAt: string;
-  sessions: any;
+  sessions: Session[];
   updatedAt: string;
   userId: any;
   pinned: boolean;
@@ -52,6 +52,18 @@ export interface TableParams {
   filters?: Record<string, FilterValue>;
 }
 
+export interface Session {
+  id: number;
+  startTime: string;
+  endTime: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  authorId: string;
+  taskId: number;
+  integratedTaskId: number;
+  worklogId: number;
+}
 export interface AddWorkLogParams {
   startTime: Date;
   endTime: Date;
@@ -59,6 +71,10 @@ export interface AddWorkLogParams {
 }
 export interface UpdateTaskStatusParams {
   status: StatusType;
+}
+
+export interface UpdateTaskEstimationParams {
+  estimation: number;
 }
 
 export type StatusDto = "TO_DO" | "IN_PROGRESS" | "DONE";

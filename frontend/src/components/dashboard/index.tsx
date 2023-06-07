@@ -292,7 +292,18 @@ const Dashboard = () => {
         setRunningTask(null);
       session && message.success("Session Ended");
       setReload(!reload);
-    } else message.error("Session Ending Failed");
+    } else {
+      task.sessions = task.sessions?.filter(
+        (_session: any) => _session.endTime
+      );
+      setRunningTask(null);
+      setTasks(
+        tasks?.map((tmpTask) => {
+          if (tmpTask?.id === task?.id) return { ...task };
+          else return tmpTask;
+        })
+      );
+    }
   };
   const columns: any = [
     {

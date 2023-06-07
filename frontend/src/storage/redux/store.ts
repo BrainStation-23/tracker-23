@@ -3,6 +3,7 @@ import syncReducer from "./syncSlice";
 import projectsReducer from "./projectsSlice";
 import integrationsReducer from "./integrationsSlice";
 import notificationsReducer from "./notificationsSlice";
+import tasksReducer from "./tasksSlice";
 // ...
 
 export const store = configureStore({
@@ -11,6 +12,7 @@ export const store = configureStore({
     projectList: projectsReducer,
     integrations: integrationsReducer,
     notificationsSlice: notificationsReducer,
+    tasksSlice: tasksReducer,
   },
 });
 

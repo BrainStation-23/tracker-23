@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString, Min } from 'class-validator';
 import { StatusEnum } from './getTask.dto';
 
 export class UpdatePinDto {
@@ -11,6 +11,11 @@ export class StatusReqBodyDto {
   status: StatusEnum;
 }
 
+export class EstimationReqBodyDto {
+  @Min(0)
+  @IsNotEmpty()
+  estimation: number;
+}
 export class TimeSpentReqBodyDto {
   @IsString()
   @IsNotEmpty()

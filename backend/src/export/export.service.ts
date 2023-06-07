@@ -25,13 +25,64 @@ export class ExportService {
     }
 
     const rows = [];
-    data.forEach((doc) => {
-      rows.push(Object.values(doc));
+    data.forEach((doc: any) => {
+      const modifiedDoc = { ...doc };
+
+      // Format the sessions data to be user-friendly
+      const formattedSessions = doc.sessions.map((session: any) => {
+        return {
+          'Start Time': session.startTime,
+          'End Time': session.endTime,
+          Status: session.status,
+        };
+      });
+
+      modifiedDoc.sessions = formattedSessions;
+
+      rows.push(Object.values(modifiedDoc));
     });
     const book = new Workbook();
     const sheet = book.addWorksheet(`Sheet 1`);
-    rows.unshift(Object.keys(data[0]));
+    // Get the column names from the data structure
+    const columnNames = Object.keys(data[0]);
+
+    // Modify the column names as desired
+    const modifiedColumnNames = columnNames.map((name) => {
+      if (name === 'title') {
+        return 'Task Title';
+      } else if (name === 'description') {
+        return 'Description';
+      } else if (name === 'assigneeId') {
+        return 'Assignee ID';
+      } else if (name === 'projectName') {
+        return 'Project Name';
+      } else if (name === 'estimation') {
+        return 'Estimation';
+      } else if (name === 'status') {
+        return 'Status';
+      } else if (name === 'due') {
+        return 'Due Date';
+      } else if (name === 'priority') {
+        return 'Priority';
+      } else if (name === 'labels') {
+        return 'Labels';
+      } else if (name === 'createdAt') {
+        return 'Created At';
+      } else if (name === 'updatedAt') {
+        return 'Updated At';
+      } else if (name === 'userId') {
+        return 'User ID';
+      } else if (name === 'source') {
+        return 'Source';
+      } else if (name === 'sessions') {
+        return 'Sessions';
+      }
+      return name;
+    });
+    rows.unshift(modifiedColumnNames);
+
     sheet.addRows(rows);
+    sheet.getRow(1).font = { bold: true };
 
     const file: any = await new Promise((resolve) => {
       tmp.file(
@@ -58,16 +109,12 @@ export class ExportService {
     });
     res.download(file);
   }
-  async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
+  async getTasks(user: User, query: GetTaskQuery): Promise<any[]> {
     try {
       const { priority, status, text } = query;
-      console.log(
-        '🚀 ~ file: export.service.ts:43 ~ ExportService ~ getTasks ~ query:',
-        query,
-      );
       let { startDate, endDate } = query as unknown as GetTaskQuery;
 
-      const integrations = await this.prisma.integration.findMany({
+      const jiraIntegration = await this.prisma.integration.findFirst({
         where: { userId: user.id, type: IntegrationType.JIRA },
       });
 
@@ -76,13 +123,26 @@ export class ExportService {
 
       startDate = startDate && new Date(startDate);
       endDate = endDate && new Date(endDate);
+      if (endDate) {
+        const oneDay = 3600 * 24 * 1000;
+        endDate = new Date(endDate.getTime() + oneDay);
+      }
 
       const databaseQuery = {
         userId: user.id,
-        assigneeId: integrations[0].jiraAccountId,
+        OR: [
+          {
+            assigneeId: jiraIntegration?.jiraAccountId,
+            source: IntegrationType.JIRA,
+          },
+          {
+            source: IntegrationType.TRACKER23,
+          },
+        ],
         ...(startDate &&
           endDate && {
-            createdAt: { gte: startDate, lte: endDate },
+            createdAt: { lte: endDate },
+            updatedAt: { gte: startDate },
           }),
         ...(priority1 && { priority: { in: priority1 } }),
         ...(status1 && { status: { in: status1 } }),
@@ -93,13 +153,37 @@ export class ExportService {
           },
         }),
       };
-      const task = await this.prisma.task.findMany({
+
+      const tasks = await this.prisma.task.findMany({
         where: databaseQuery,
-        include: {
-          sessions: true,
+        select: {
+          title: true,
+          description: true,
+          assigneeId: true,
+          projectName: true,
+          estimation: true,
+          status: true,
+          due: true,
+          priority: true,
+          labels: true,
+          createdAt: true,
+          updatedAt: true,
+          userId: true,
+          source: true,
+          sessions: {
+            select: {
+              startTime: true,
+              endTime: true,
+              status: true,
+              createdAt: true,
+              updatedAt: true,
+              authorId: true,
+              worklogId: true,
+            },
+          },
         },
       });
-      return task;
+      return tasks;
     } catch (err) {
       console.log(err.message);
       return [];

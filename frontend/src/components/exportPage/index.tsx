@@ -251,10 +251,6 @@ const ExportPageComponent = () => {
     getTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
-  useEffect(() => {
-    if (tasks?.length <= 0) getTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div>

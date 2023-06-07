@@ -24,10 +24,10 @@ const MoreFunctionComponent = ({
 
   const items: MenuProps["items"] = [
     {
-      key: "entry",
+      key: "1",
       label: (
         <Button
-          className=" flex items-center gap-2 p-1 hover:bg-white"
+          className=" flex items-center gap-2 p-1"
           onClick={() => {
             handleAddManualWorkLog(task);
           }}
@@ -39,10 +39,10 @@ const MoreFunctionComponent = ({
       ),
     },
     {
-      key: "1",
+      key: "2",
       label: (
         <Button
-          className="flex w-full gap-2 p-1 hover:bg-white"
+          className="flex w-full gap-2 p-1"
           onClick={() => {
             deleteTask(task.id);
           }}
@@ -54,10 +54,10 @@ const MoreFunctionComponent = ({
       ),
     },
     {
-      key: "1",
+      key: "3",
       label: (
         <Button
-          className=" flex w-full gap-3 p-1 hover:bg-white"
+          className=" flex w-full gap-3 p-1"
           onClick={() => {
             handlePin(task);
           }}

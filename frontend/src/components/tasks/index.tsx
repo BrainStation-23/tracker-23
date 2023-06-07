@@ -27,6 +27,7 @@ import SessionStartWarning from "./components/warning";
 import { CreateTaskDto } from "models/tasks";
 import { setProjectsSlice, StatusType } from "@/storage/redux/projectsSlice";
 import { publicRoutes } from "utils/constants";
+import { checkIfRunningTask } from "@/services/taskActions";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -56,8 +57,8 @@ const TasksPage = () => {
     selectedDate: getDateRangeArray("this-week"),
     priority: [],
     status: [
-      '{"name":"To Do","statusCategoryName":"TO_DO"}',
-      '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
+      // '{"name":"To Do","statusCategoryName":"TO_DO"}',
+      // '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
     ],
   });
   const syncRunning = useAppSelector(
@@ -140,8 +141,15 @@ const TasksPage = () => {
           task.sessions && task.sessions[0]
             ? getFormattedTime(formatDate(task.sessions[0].startTime))
             : "Not Started";
+        task.sessions = task.sessions.sort((a: any, b: any) =>
+          a.endTime
+            ? new Date(a.endTime).getTime()
+            : 0 - b.endTime
+            ? new Date(b.endTime).getTime()
+            : 0
+        );
         const ended =
-          task.sessions && task.sessions[task.sessions?.length - 1]?.endTime
+          task.sessions && !checkIfRunningTask(task.sessions)
             ? getFormattedTime(
                 formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
               )
@@ -217,6 +225,12 @@ const TasksPage = () => {
       if (!task.sessions) task.sessions = [];
       task.sessions?.push(session);
       session && message.success("Work log added");
+      if (session) {
+        const tmp = tasks.map((t) =>
+          t.id === task.id ? { ...task, sessions: [...task.sessions] } : t
+        );
+        setTasks(tmp);
+      }
       setReload(!reload);
     } else message.error("Work log add Failed");
     setManualTimeEntryModalOpen(false);
@@ -228,7 +242,7 @@ const TasksPage = () => {
         (session: any) => session.id != sessionId
       );
       setReload(!reload);
-    } else message.error("Work log add Failed");
+    } else message.error("Work log delete Failed");
     // setManualTimeEntryModalOpen(false);
   };
 
@@ -285,9 +299,7 @@ const TasksPage = () => {
           else return tmpTask;
         })
       );
-      // message.error("Session Ending Failed");
     }
-    setReload(!reload);
     setRunningTask(null);
     setSessionActionLoading(false);
   };
@@ -319,6 +331,33 @@ const TasksPage = () => {
     }
     setReload(!reload);
     setLoading(false);
+  };
+
+  const handleEstimationChange = async (task: TaskDto, value: number) => {
+    setLoading(true);
+    const res = await userAPI.updateTaskEstimation(task.id, {
+      estimation: value,
+    });
+    if (res) {
+      const tmp = tasks.map((t) =>
+        t.id === task.id ? { ...task, estimation: value } : t
+      );
+      setTasks(tmp);
+    }
+    setLoading(false);
+  };
+
+  const handlePinTask = async (task: TaskDto) => {
+    setLoading(true);
+    const res = await userAPI.pinTask(task.id, !task.pinned);
+    if (res) message.success("Task Pinned");
+    const tmp = tasks.map((t) =>
+      t.id === task.id ? { ...task, pinned: !task.pinned } : t
+    );
+    setTasks(tmp);
+    setLoading(false);
+    if (res) return true;
+    else return false;
   };
 
   useEffect(() => {
@@ -361,7 +400,7 @@ const TasksPage = () => {
     let timeout: NodeJS.Timeout;
     timeout =
       !publicRoutes.some((route) => path.includes(route)) &&
-      setTimeout(getSyncStatus, 2000);
+      setTimeout(getSyncStatus, 5000);
     const cleanup = () => {
       clearTimeout(timeout);
     };
@@ -417,6 +456,8 @@ const TasksPage = () => {
                     sessionActionLoading,
                     setLoading,
                     handleStatusChange,
+                    handleEstimationChange,
+                    handlePinTask,
                   }}
                 />
               </div>
@@ -442,6 +483,8 @@ const TasksPage = () => {
                   sessionActionLoading,
                   setLoading,
                   handleStatusChange,
+                  handleEstimationChange,
+                  handlePinTask,
                 }}
               />
             </div>

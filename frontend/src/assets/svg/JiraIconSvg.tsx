@@ -16,8 +16,8 @@ const JiraIconSvg = () => {
         y1="218.63"
         y2="172.39"
       >
-        <stop offset=".18" stop-color="#0052cc" />
-        <stop offset="1" stop-color="#2684ff" />
+        <stop offset=".18" stopColor="#0052cc" />
+        <stop offset="1" stopColor="#2684ff" />
       </linearGradient>
       <linearGradient
         id="b"
