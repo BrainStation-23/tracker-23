@@ -84,7 +84,9 @@ export class TasksService {
           userId: user.id,
           OR: [
             {
-              assigneeId: jiraIntegration?.jiraAccountId,
+              assigneeId: jiraIntegration
+                ? jiraIntegration.jiraAccountId
+                : '-1',
               source: IntegrationType.JIRA,
             },
             {
@@ -479,6 +481,24 @@ export class TasksService {
         );
       }
     } catch (err) {
+      try {
+        const notification = await this.prisma.notification.create({
+          data: {
+            seen: false,
+            author: 'SYSTEM',
+            title: 'Sync Faild',
+            description: 'Sync Faild',
+            userId: user.id,
+          },
+        });
+        this.myGateway.sendNotification(`${user.id}`, notification);
+        await this.syncCall(StatusEnum.DONE, user.id);
+      } catch (error) {
+        console.log(
+          '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
+          error,
+        );
+      }
       console.log(err);
       throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
     }

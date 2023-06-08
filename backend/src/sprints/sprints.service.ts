@@ -48,7 +48,7 @@ export class SprintsService {
       },
     });
     if (!getUser) {
-      throw new APIException('', HttpStatus.BAD_REQUEST);
+      throw new APIException('User not found', HttpStatus.BAD_REQUEST);
     }
 
     for (let index = 0; index < getUser.projectIds.length; index++) {
