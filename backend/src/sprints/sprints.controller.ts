@@ -10,8 +10,8 @@ export class SprintsController {
   constructor(private sprintsService: SprintsService) {}
   @Post('issue-list')
   @UseGuards(JwtAuthGuard)
-  async getBoardList(@GetUser() user: User) {
-    return this.sprintsService.getBoardList(user);
+  async createSprintAndTask(@GetUser() user: User) {
+    return this.sprintsService.createSprintAndTask(user);
   }
 
   @Get('sprint-list')

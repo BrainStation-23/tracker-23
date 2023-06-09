@@ -273,12 +273,10 @@ export class TasksService {
       };
       // headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
       let worklogPromises: Promise<any>[] = [];
-      const projectIdList = new Set();
       // let taskPromises: Promise<any>[] = [];
       const taskList: any[] = [],
         worklogsList: any[] = [],
-        sessionArray: any[] = [],
-        projectIds: any[] = [];
+        sessionArray: any[] = [];
       if (res) {
         res.json(await this.syncCall(StatusEnum.IN_PROGRESS, user.id));
       } else {
@@ -351,20 +349,10 @@ export class TasksService {
           updatedAt: new Date(integratedTask.updated),
           source: IntegrationType.JIRA,
         });
-
-        const projectId = integratedTask.project.id;
-        if (
-          updated_integration.jiraAccountId ===
-            integratedTask.assignee?.accountId &&
-          !projectIdList.has(projectId)
-        ) {
-          projectIdList.add(projectId);
-          projectIds.push(Number(projectId));
-        }
       }
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [t, tasks, updatedUser] = await Promise.all([
+      const [t, tasks] = await Promise.all([
         await this.prisma.task.createMany({
           data: taskList,
         }),
@@ -375,12 +363,6 @@ export class TasksService {
           select: {
             id: true,
             integratedTaskId: true,
-          },
-        }),
-        await this.prisma.user.update({
-          where: { id: user.id },
-          data: {
-            projectIds: { set: projectIds },
           },
         }),
       ]);
@@ -492,7 +474,7 @@ export class TasksService {
           },
         });
         this.myGateway.sendNotification(`${user.id}`, notification);
-        await this.syncCall(StatusEnum.DONE, user.id);
+        await this.syncCall(StatusEnum.FAILED, user.id);
       } catch (error) {
         console.log(
           '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
