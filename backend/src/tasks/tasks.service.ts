@@ -32,9 +32,34 @@ export class TasksService {
     private myGateway: MyGateway,
   ) {}
 
+  async getSprintTasks(user: User, sprintId: string) {
+    try {
+      const getSprintTasks = await this.prisma.sprintTask.findMany({
+        where: {
+          userId: user.id,
+          sprintId: Number(sprintId),
+        },
+      });
+
+      const taskIds: number[] = [];
+      for (let index = 0; index < getSprintTasks.length; index++) {
+        const val = getSprintTasks[index];
+        taskIds.push(val.taskId);
+      }
+
+      return await this.prisma.task.findMany({
+        where: {
+          id: { in: taskIds },
+        },
+      });
+    } catch (error) {
+      return [];
+    }
+  }
+
   async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
     try {
-      const { priority, status, text } = query;
+      const { priority, status, text, sprintId } = query;
       let { startDate, endDate } = query as unknown as GetTaskQuery;
 
       const jiraIntegration = await this.prisma.integration.findFirst({
@@ -50,39 +75,46 @@ export class TasksService {
         const oneDay = 3600 * 24 * 1000;
         endDate = new Date(endDate.getTime() + oneDay);
       }
+      let tasks: Task[] = [];
 
-      const databaseQuery = {
-        userId: user.id,
-        OR: [
-          {
-            assigneeId: jiraIntegration?.jiraAccountId,
-            source: IntegrationType.JIRA,
-          },
-          {
-            source: IntegrationType.TRACKER23,
-          },
-        ],
-        ...(startDate &&
-          endDate && {
-            createdAt: { lte: endDate },
-            updatedAt: { gte: startDate },
+      if (sprintId) {
+        tasks = await this.getSprintTasks(user, sprintId);
+      } else {
+        const databaseQuery = {
+          userId: user.id,
+          OR: [
+            {
+              assigneeId: jiraIntegration
+                ? jiraIntegration.jiraAccountId
+                : '-1',
+              source: IntegrationType.JIRA,
+            },
+            {
+              source: IntegrationType.TRACKER23,
+            },
+          ],
+          ...(startDate &&
+            endDate && {
+              createdAt: { lte: endDate },
+              updatedAt: { gte: startDate },
+            }),
+          ...(priority1 && { priority: { in: priority1 } }),
+          ...(status1 && { status: { in: status1 } }),
+          ...(text && {
+            title: {
+              contains: text,
+              mode: 'insensitive',
+            },
           }),
-        ...(priority1 && { priority: { in: priority1 } }),
-        ...(status1 && { status: { in: status1 } }),
-        ...(text && {
-          title: {
-            contains: text,
-            mode: 'insensitive',
-          },
-        }),
-      };
+        };
 
-      const tasks = await this.prisma.task.findMany({
-        where: databaseQuery,
-        include: {
-          sessions: true,
-        },
-      });
+        tasks = await this.prisma.task.findMany({
+          where: databaseQuery,
+          include: {
+            sessions: true,
+          },
+        });
+      }
       return tasks;
     } catch (err) {
       // console.log(err.message);
@@ -241,10 +273,12 @@ export class TasksService {
       };
       // headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
       let worklogPromises: Promise<any>[] = [];
+      const projectIdList = new Set();
       // let taskPromises: Promise<any>[] = [];
       const taskList: any[] = [],
         worklogsList: any[] = [],
-        sessionArray: any[] = [];
+        sessionArray: any[] = [],
+        projectIds: any[] = [];
       if (res) {
         res.json(await this.syncCall(StatusEnum.IN_PROGRESS, user.id));
       } else {
@@ -317,10 +351,20 @@ export class TasksService {
           updatedAt: new Date(integratedTask.updated),
           source: IntegrationType.JIRA,
         });
+
+        const projectId = integratedTask.project.id;
+        if (
+          updated_integration.jiraAccountId ===
+            integratedTask.assignee?.accountId &&
+          !projectIdList.has(projectId)
+        ) {
+          projectIdList.add(projectId);
+          projectIds.push(Number(projectId));
+        }
       }
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [t, tasks] = await Promise.all([
+      const [t, tasks, updatedUser] = await Promise.all([
         await this.prisma.task.createMany({
           data: taskList,
         }),
@@ -331,6 +375,12 @@ export class TasksService {
           select: {
             id: true,
             integratedTaskId: true,
+          },
+        }),
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: {
+            projectIds: { set: projectIds },
           },
         }),
       ]);
@@ -431,6 +481,24 @@ export class TasksService {
         );
       }
     } catch (err) {
+      try {
+        const notification = await this.prisma.notification.create({
+          data: {
+            seen: false,
+            author: 'SYSTEM',
+            title: 'Sync Faild',
+            description: 'Sync Faild',
+            userId: user.id,
+          },
+        });
+        this.myGateway.sendNotification(`${user.id}`, notification);
+        await this.syncCall(StatusEnum.DONE, user.id);
+      } catch (error) {
+        console.log(
+          '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
+          error,
+        );
+      }
       console.log(err);
       throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
     }

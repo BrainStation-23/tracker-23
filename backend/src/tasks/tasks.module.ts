@@ -10,5 +10,6 @@ import { JwtService } from '@nestjs/jwt';
   imports: [HttpModule.register({})],
   providers: [TasksService, MyGateway, AuthService, JwtService],
   controllers: [TasksController],
+  exports: [TasksService],
 })
 export class TasksModule {}
