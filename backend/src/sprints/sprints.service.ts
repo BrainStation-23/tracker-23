@@ -1,12 +1,11 @@
 import { HttpService } from '@nestjs/axios';
-import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IntegrationType, User } from '@prisma/client';
 import axios from 'axios';
-import { APIException } from 'src/internal/exception/api.exception';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TasksService } from 'src/tasks/tasks.service';
 import { GetSprintListQueryDto } from './dto';
+import { Injectable } from '@nestjs/common';
 @Injectable()
 export class SprintsService {
   constructor(
@@ -16,7 +15,7 @@ export class SprintsService {
     private taskService: TasksService,
   ) {}
 
-  async getBoardList(user: User) {
+  async createSprintAndTask(user: User) {
     const sprint_list: any[] = [];
     const issue_list: any[] = [];
     const validSprint: any[] = [];
@@ -36,26 +35,46 @@ export class SprintsService {
     };
     const boardList = await (await axios(config)).data;
 
-    const mappedProjectId = new Map<number, number>();
+    const mappedBoardId = new Map<number, number>();
     for (let index = 0; index < boardList.total; index++) {
       const board = boardList.values[index];
-      mappedProjectId.set(Number(board.location.projectId), Number(board.id));
-    }
-    const getUser = await this.prisma.user.findUnique({
-      where: { id: user.id },
-      select: {
-        projectIds: true,
-      },
-    });
-    if (!getUser) {
-      throw new APIException('User not found', HttpStatus.BAD_REQUEST);
+      mappedBoardId.set(Number(board.location.projectId), Number(board.id));
     }
 
-    for (let index = 0; index < getUser.projectIds.length; index++) {
-      const projectId = getUser.projectIds[index];
-      console.log(projectId);
-      const boardId = mappedProjectId.get(projectId);
-      console.log(boardId);
+    const task_list = await this.prisma.task.findMany({
+      where: {
+        userId: user.id,
+        source: IntegrationType.JIRA,
+      },
+    });
+
+    const projectIdList = new Set();
+    const projectIds: any[] = [];
+    for (let index = 0; index < task_list.length; index++) {
+      const projectId = task_list[index].projectId;
+      if (
+        updated_integration.jiraAccountId === task_list[index].assigneeId &&
+        !projectIdList.has(projectId)
+      ) {
+        projectIdList.add(projectId);
+        projectIds.push(Number(projectId));
+      }
+    }
+
+    //Relation between ProjectId and local project id
+    const project_list = await this.prisma.projects.findMany({
+      where: { integrationID: updated_integration.id },
+    });
+    const mappedProjectId = new Map<number, number>();
+    project_list.map((project: any) => {
+      mappedProjectId.set(Number(project.id), Number(project.projectId));
+    });
+
+    for (let index = 0; index < projectIds.length; index++) {
+      const projectId = mappedProjectId.get(projectIds[index]);
+      // console.log(projectId);
+      const boardId = projectId && mappedBoardId.get(projectId);
+      // console.log(boardId);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/agile/1.0/board/${boardId}/sprint`;
       const config = {
         method: 'get',
@@ -120,7 +139,7 @@ export class SprintsService {
     //Get all task related to the sprint
     const resolvedPromise = await Promise.all(issuePromises);
 
-    const [deS, crtSprnt, sprints, tasks] = await Promise.all([
+    const [deS, crtSprnt, sprints] = await Promise.all([
       await this.prisma.sprint.deleteMany({
         where: {
           userId: user.id,
@@ -132,16 +151,6 @@ export class SprintsService {
       await this.prisma.sprint.findMany({
         where: {
           userId: user.id,
-        },
-      }),
-      await this.prisma.task.findMany({
-        where: {
-          source: IntegrationType.JIRA,
-          userId: user.id,
-        },
-        select: {
-          id: true,
-          integratedTaskId: true,
         },
       }),
     ]);
@@ -157,8 +166,11 @@ export class SprintsService {
 
     //relation between taskId and integratedTaskId
     const mappedTaskId = new Map<number, number>();
-    for (let index = 0; index < tasks.length; index++) {
-      mappedTaskId.set(Number(tasks[index].integratedTaskId), tasks[index].id);
+    for (let index = 0; index < task_list.length; index++) {
+      mappedTaskId.set(
+        Number(task_list[index].integratedTaskId),
+        task_list[index].id,
+      );
     }
 
     resolvedPromise.map((res: any) => {

@@ -10,6 +10,7 @@ export enum StatusEnum {
   TODO = 'TODO',
   IN_PROGRESS = 'IN_PROGRESS',
   DONE = 'DONE',
+  FAILED = 'FAILED',
 }
 export class GetTaskQuery {
   @IsString()
