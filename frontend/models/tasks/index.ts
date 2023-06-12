@@ -76,6 +76,16 @@ export interface UpdateTaskStatusParams {
 export interface UpdateTaskEstimationParams {
   estimation: number;
 }
+export interface SprintDto {
+  id: number;
+  jiraSprintId: number;
+  userId: number;
+  state: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  completeDate: string;
+}
 
 export type StatusDto = "TO_DO" | "IN_PROGRESS" | "DONE";
 export type PriorityDto = "HIGH" | "MEDIUM" | "LOW";

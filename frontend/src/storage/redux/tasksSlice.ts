@@ -1,14 +1,16 @@
-import { TaskDto } from "./../../../models/tasks/index";
+import { SprintDto, TaskDto } from "./../../../models/tasks/index";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface TasksState {
   tasks: TaskDto[];
   runningTask: TaskDto | null;
+  sprintList: SprintDto[];
 }
 
 const initialState: TasksState = {
   tasks: [],
   runningTask: null,
+  sprintList: [],
 };
 
 const tasksSlice = createSlice({
@@ -60,6 +62,12 @@ const tasksSlice = createSlice({
     resetRunningTaskReducer: (state) => {
       state.runningTask = null;
     },
+    setSprintListReducer: (state, action: PayloadAction<SprintDto[]>) => {
+      state.sprintList = action.payload;
+    },
+    resetSprintListReducer: (state) => {
+      state.sprintList = [];
+    },
   },
 });
 
@@ -72,6 +80,8 @@ export const {
   updatePinnedStatusReducer,
   setRunningTaskReducer,
   resetRunningTaskReducer,
+  setSprintListReducer,
+  resetSprintListReducer,
 } = tasksSlice.actions;
 
 export default tasksSlice.reducer;

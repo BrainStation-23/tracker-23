@@ -28,6 +28,7 @@ import { CreateTaskDto } from "models/tasks";
 import { setProjectsSlice, StatusType } from "@/storage/redux/projectsSlice";
 import { publicRoutes } from "utils/constants";
 import { checkIfRunningTask } from "@/services/taskActions";
+import { setSprintListReducer } from "@/storage/redux/tasksSlice";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -60,6 +61,7 @@ const TasksPage = () => {
       // '{"name":"To Do","statusCategoryName":"TO_DO"}',
       // '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
     ],
+    sprints: [],
   });
   const syncRunning = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
@@ -360,6 +362,12 @@ const TasksPage = () => {
     else return false;
   };
 
+  const getSprintList = async () => {
+    const res = await userAPI.getJiraSprints();
+    console.log("🚀 ~ file: index.tsx:365 ~ getSprintList ~ res:", res);
+    if (res?.length > 0) dispatch(setSprintListReducer(res));
+  };
+
   useEffect(() => {
     if (tasks) {
       tasks.map((task) => {
@@ -368,6 +376,7 @@ const TasksPage = () => {
         }
       });
     }
+    getSprintList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -388,6 +397,7 @@ const TasksPage = () => {
   const path = router.asPath;
   useEffect(() => {
     const getSyncStatus = async () => {
+      getTasks();
       const res = await userAPI.syncStatus();
       res && dispatch(setSyncStatus(res));
       if (res.status === "IN_PROGRESS") {
@@ -407,6 +417,37 @@ const TasksPage = () => {
 
     return cleanup;
   }, [publicRoutes.some((route) => path.includes(route))]);
+
+  useEffect(() => {
+    let myTimeout: NodeJS.Timeout;
+
+    const getSyncStatus = async () => {
+      const res = await userAPI.syncStatus();
+      res && dispatch(setSyncStatus(res));
+      if (res.status === "IN_PROGRESS") {
+        getTasks();
+        dispatch(setSyncRunning(true));
+        myTimeout = setTimeout(getSyncStatus, 5000);
+      } else if (res.status === "DONE") {
+        syncing && message.success("Sync Completed");
+        dispatch(setSyncRunning(false));
+      }
+    };
+
+    if (!publicRoutes.includes(router.pathname)) {
+      console.log(router.pathname);
+      if (syncing) {
+        myTimeout = setTimeout(getSyncStatus, 5000);
+      }
+    }
+
+    const cleanup = () => {
+      clearTimeout(myTimeout);
+    };
+
+    return cleanup;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, syncing, router]);
   return (
     <TaskContext.Provider
       value={{

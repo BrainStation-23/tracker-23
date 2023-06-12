@@ -94,13 +94,20 @@ export async function deleteTaskRest(taskId: any) {
 }
 
 export async function getTasksRest(searchParams: SearchParamsModel) {
+  console.log(
+    "🚀 ~ file: restApi.ts:97 ~ getTasksRest ~ searchParams:",
+    searchParams
+  );
+  const { sprints } = searchParams;
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
   try {
     const res = await axios.get(
       apiEndPoints.tasks +
         "?" +
-        (searchParams?.selectedDate?.length === 2
+        (sprints?.length > 0
+          ? `sprintId=${sprints}`
+          : searchParams?.selectedDate?.length === 2
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
         (searchParams?.searchText && searchParams?.searchText.length > 0
@@ -373,6 +380,15 @@ export async function updateSessionRest(
       `${apiEndPoints.updateSession}${sessionId}`,
       data
     );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getJiraSprintsRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.jiraSprints}`);
     return res.data;
   } catch (error: any) {
     return false;

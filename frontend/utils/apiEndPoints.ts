@@ -21,4 +21,5 @@ export const apiEndPoints = {
   updateTaskStatus: `/tasks/update/status`,
   updateTaskEstimation: `/tasks/update/estimation`,
   projectWiseStatus: `/integrations/jira/projects`,
+  jiraSprints: `/sprints/sprint-list`,
 };
