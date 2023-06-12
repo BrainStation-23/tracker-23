@@ -491,8 +491,8 @@ export class TasksService {
           data: {
             seen: false,
             author: 'SYSTEM',
-            title: 'Sync Faild',
-            description: 'Sync Faild',
+            title: 'Sync Failed',
+            description: 'Sync Failed',
             userId: user.id,
           },
         });
@@ -1173,6 +1173,7 @@ export class TasksService {
 
     const sprintResponses = await Promise.all(
       sprintPromises.map((p) =>
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         p.catch((err) => {
           console.error('This board has no sprint!');
         }),
@@ -1222,7 +1223,8 @@ export class TasksService {
     //Get all task related to the sprint
     const resolvedPromise = await Promise.all(issuePromises);
 
-    const [deS, crtSprnt, sprints] = await Promise.all([
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [deS, crtSprint, sprints] = await Promise.all([
       await this.prisma.sprint.deleteMany({
         where: {
           userId: user.id,
@@ -1272,6 +1274,7 @@ export class TasksService {
       });
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [CST, sprintTasks] = await Promise.all([
       await this.prisma.sprintTask.createMany({
         data: issue_list,

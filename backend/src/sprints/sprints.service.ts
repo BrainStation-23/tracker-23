@@ -23,6 +23,7 @@ export class SprintsService {
     const sprintPromises: Promise<any>[] = [];
     const issuePromises: Promise<any>[] = [];
     const updated_integration = await this.taskService.updateIntegration(user);
+    if (!updated_integration) return null;
     // console.log(formateReqBody);
     const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/agile/1.0/board`;
     const config = {
@@ -90,6 +91,7 @@ export class SprintsService {
 
     const sprintResponses = await Promise.all(
       sprintPromises.map((p) =>
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         p.catch((err) => {
           console.error('This board has no sprint!');
         }),
@@ -139,7 +141,8 @@ export class SprintsService {
     //Get all task related to the sprint
     const resolvedPromise = await Promise.all(issuePromises);
 
-    const [deS, crtSprnt, sprints] = await Promise.all([
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [deS, crtSprint, sprints] = await Promise.all([
       await this.prisma.sprint.deleteMany({
         where: {
           userId: user.id,
@@ -189,6 +192,7 @@ export class SprintsService {
       });
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [DST, CST, sprintTasks] = await Promise.all([
       await this.prisma.sprintTask.deleteMany({
         where: {
@@ -210,6 +214,12 @@ export class SprintsService {
   }
 
   async getSprintList(user: User, reqBody: GetSprintListQueryDto) {
+    const tmpSprints = await this.prisma.sprint.findMany({
+      where: {
+        userId: user.id,
+      },
+    });
+    if (tmpSprints.length === 0) await this.createSprintAndTask(user);
     try {
       const st = reqBody.state as unknown as string;
       const array =
