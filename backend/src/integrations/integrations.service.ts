@@ -25,9 +25,16 @@ export class IntegrationsService {
       const deletedIntegration = await this.prisma.integration.delete({
         where: { id },
       });
-      await this.prisma.task.deleteMany({
-        where: { userId: user.id, source: deletedIntegration.type },
-      });
+      await Promise.all([
+        await this.prisma.task.deleteMany({
+          where: { userId: user.id, source: deletedIntegration.type },
+        }),
+        await this.prisma.sprint.deleteMany({
+          where: {
+            userId: user.id,
+          },
+        }),
+      ]);
       return { message: 'Successfully user integration deleted' };
     } catch (err) {
       console.log(err.message);

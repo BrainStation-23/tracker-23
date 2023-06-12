@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export enum PriorityEnum {
   HIGH = 'HIGH',
@@ -33,5 +33,5 @@ export class GetTaskQuery {
 
   @IsString()
   @IsOptional()
-  sprintId: string;
+  sprintId: string[];
 }
