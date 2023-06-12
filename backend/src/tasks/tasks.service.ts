@@ -32,26 +32,32 @@ export class TasksService {
     private myGateway: MyGateway,
   ) {}
 
-  async getSprintTasks(user: User, sprintId: string) {
+  async getSprintTasks(user: User, jiraAccountId: string, sprintIds: string[]) {
     try {
       const getSprintTasks = await this.prisma.sprintTask.findMany({
         where: {
           userId: user.id,
-          sprintId: Number(sprintId),
+          sprintId: { in: sprintIds.map((id) => Number(id)) },
         },
       });
-
       const taskIds: number[] = [];
       for (let index = 0; index < getSprintTasks.length; index++) {
         const val = getSprintTasks[index];
         taskIds.push(val.taskId);
       }
-
+      // console.log(taskIds);
       return await this.prisma.task.findMany({
         where: {
+          assigneeId: jiraAccountId,
+          source: IntegrationType.JIRA,
           id: { in: taskIds },
         },
+        include: {
+          sessions: true,
+        },
       });
+      // console.log(task.length);
+      // return task;
     } catch (error) {
       return [];
     }
@@ -59,8 +65,18 @@ export class TasksService {
 
   async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
     try {
-      const { priority, status, text, sprintId } = query;
+      const { priority, status, text } = query;
+      const sprintIds = query.sprintId as unknown as string;
+      // console.log(sprintIds);
       let { startDate, endDate } = query as unknown as GetTaskQuery;
+
+      const sprintIdArray =
+        sprintIds &&
+        sprintIds
+          .slice(1, -1)
+          .split(',')
+          .map((item) => item.trim());
+      // console.log(sprintIdArray);
 
       const jiraIntegration = await this.prisma.integration.findFirst({
         where: { userId: user.id, type: IntegrationType.JIRA },
@@ -77,8 +93,9 @@ export class TasksService {
       }
       let tasks: Task[] = [];
 
-      if (sprintId) {
-        tasks = await this.getSprintTasks(user, sprintId);
+      if (sprintIdArray && sprintIdArray[0]) {
+        const inttegrationId = jiraIntegration?.jiraAccountId ?? '-1';
+        tasks = await this.getSprintTasks(user, inttegrationId, sprintIdArray);
       } else {
         const databaseQuery = {
           userId: user.id,
@@ -446,7 +463,10 @@ export class TasksService {
           console.log('Error creating sessions');
         }
       }
-      await this.syncCall(StatusEnum.DONE, user.id);
+      const done = await this.syncCall(StatusEnum.DONE, user.id);
+      if (done) {
+        this.createSprintAndTask(user);
+      }
 
       try {
         const notification = await this.prisma.notification.create({
@@ -1076,6 +1096,195 @@ export class TasksService {
       );
       return error;
     }
+  }
+
+  async createSprintAndTask(user: User) {
+    const sprint_list: any[] = [];
+    const issue_list: any[] = [];
+    const validSprint: any[] = [];
+    const toBeUpdated: any[] = [];
+    const sprintPromises: Promise<any>[] = [];
+    const issuePromises: Promise<any>[] = [];
+    const updated_integration = await this.updateIntegration(user);
+    // console.log(formateReqBody);
+    const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/agile/1.0/board`;
+    const config = {
+      method: 'get',
+      url,
+      headers: {
+        Authorization: `Bearer ${updated_integration?.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    };
+    const boardList = await (await axios(config)).data;
+
+    const mappedBoardId = new Map<number, number>();
+    for (let index = 0; index < boardList.total; index++) {
+      const board = boardList.values[index];
+      mappedBoardId.set(Number(board.location.projectId), Number(board.id));
+    }
+
+    const task_list = await this.prisma.task.findMany({
+      where: {
+        userId: user.id,
+        source: IntegrationType.JIRA,
+      },
+    });
+
+    const projectIdList = new Set();
+    const projectIds: any[] = [];
+    for (let index = 0; index < task_list.length; index++) {
+      const projectId = task_list[index].projectId;
+      if (
+        updated_integration.jiraAccountId === task_list[index].assigneeId &&
+        !projectIdList.has(projectId)
+      ) {
+        projectIdList.add(projectId);
+        projectIds.push(Number(projectId));
+      }
+    }
+
+    //Relation between ProjectId and local project id
+    const project_list = await this.prisma.projects.findMany({
+      where: { integrationID: updated_integration.id },
+    });
+    const mappedProjectId = new Map<number, number>();
+    project_list.map((project: any) => {
+      mappedProjectId.set(Number(project.id), Number(project.projectId));
+    });
+
+    for (let index = 0; index < projectIds.length; index++) {
+      const projectId = mappedProjectId.get(projectIds[index]);
+      // console.log(projectId);
+      const boardId = projectId && mappedBoardId.get(projectId);
+      // console.log(boardId);
+      const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/agile/1.0/board/${boardId}/sprint`;
+      const config = {
+        method: 'get',
+        url,
+        headers: {
+          Authorization: `Bearer ${updated_integration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      };
+      const res = axios(config);
+      sprintPromises.push(res);
+    }
+
+    const sprintResponses = await Promise.all(
+      sprintPromises.map((p) =>
+        p.catch((err) => {
+          console.error('This board has no sprint!');
+        }),
+      ),
+    );
+    sprintResponses.map((res) => {
+      res &&
+        res.data &&
+        res.data.values.map((val: any) => {
+          if (val) {
+            // console.log(val);
+            validSprint.push(val);
+            if (val.startDate && val.endDate && val.completeDate) {
+              sprint_list.push({
+                jiraSprintId: Number(val.id),
+                userId: user.id,
+                state: val.state,
+                name: val.name,
+                startDate: new Date(val.startDate),
+                endDate: new Date(val.startDate),
+                completeDate: new Date(val.startDate),
+              });
+            } else {
+              toBeUpdated.push(val.id);
+              sprint_list.push({
+                jiraSprintId: Number(val.id),
+                userId: user.id,
+                state: val.state,
+                name: val.name,
+              });
+            }
+
+            const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/agile/1.0/sprint/${val.id}/issue`;
+            const config = {
+              method: 'get',
+              url,
+              headers: {
+                Authorization: `Bearer ${updated_integration?.accessToken}`,
+                'Content-Type': 'application/json',
+              },
+            };
+            const res = axios(config);
+            issuePromises.push(res);
+          }
+        });
+    });
+    //Get all task related to the sprint
+    const resolvedPromise = await Promise.all(issuePromises);
+
+    const [deS, crtSprnt, sprints] = await Promise.all([
+      await this.prisma.sprint.deleteMany({
+        where: {
+          userId: user.id,
+        },
+      }),
+      await this.prisma.sprint.createMany({
+        data: sprint_list,
+      }),
+      await this.prisma.sprint.findMany({
+        where: {
+          userId: user.id,
+        },
+      }),
+    ]);
+
+    //relation between sprintId and jiraSprintId
+    const mappedSprintId = new Map<number, number>();
+    for (let index = 0; index < sprints.length; index++) {
+      mappedSprintId.set(
+        Number(sprints[index].jiraSprintId),
+        sprints[index].id,
+      );
+    }
+
+    //relation between taskId and integratedTaskId
+    const mappedTaskId = new Map<number, number>();
+    for (let index = 0; index < task_list.length; index++) {
+      mappedTaskId.set(
+        Number(task_list[index].integratedTaskId),
+        task_list[index].id,
+      );
+    }
+
+    resolvedPromise.map((res: any) => {
+      const urlArray = res.config.url.split('/');
+      const jiraSprintId = urlArray[urlArray.length - 2];
+      const sprintId = mappedSprintId.get(Number(jiraSprintId));
+
+      res.data.issues.map((nestedRes: any) => {
+        const taskId = mappedTaskId.get(Number(nestedRes.id));
+
+        issue_list.push({
+          sprintId: sprintId,
+          taskId: taskId,
+          userId: user.id,
+        });
+      });
+    });
+
+    const [CST, sprintTasks] = await Promise.all([
+      await this.prisma.sprintTask.createMany({
+        data: issue_list,
+      }),
+
+      await this.prisma.sprintTask.findMany({
+        where: {
+          userId: user.id,
+        },
+      }),
+    ]);
+
+    // return { total: sprintTasks.length, sprintTasks };
   }
 }
 
