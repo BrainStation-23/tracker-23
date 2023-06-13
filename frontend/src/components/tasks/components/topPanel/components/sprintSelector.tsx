@@ -4,6 +4,7 @@ import { RootState } from "@/storage/redux/store";
 import { Select } from "antd";
 import { SprintDto } from "models/tasks";
 import { useEffect, useState } from "react";
+import { GiSprint } from "react-icons/gi";
 type Props = {
   sprints: any[];
   setSprints: Function;
@@ -82,7 +83,7 @@ const SprintSelectorComponent = ({ sprints, setSprints }: Props) => {
       // }}
       // onClick={() => setActive("Sort")}
     >
-      {/* <SortSprintIconSvg /> */}
+      <GiSprint size={24} />
       {/* <span className="font-normal">Sprint</span> */}
       <Select
         placeholder="Select Sprint"

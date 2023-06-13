@@ -94,11 +94,7 @@ export async function deleteTaskRest(taskId: any) {
 }
 
 export async function getTasksRest(searchParams: SearchParamsModel) {
-  console.log(
-    "🚀 ~ file: restApi.ts:97 ~ getTasksRest ~ searchParams:",
-    searchParams
-  );
-  const { sprints } = searchParams;
+  const sprints = searchParams?.sprints;
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
   try {

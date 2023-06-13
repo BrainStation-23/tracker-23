@@ -3,5 +3,5 @@ export interface SearchParamsModel {
   selectedDate?: any;
   priority?: string[];
   status?: string[];
-  sprints?: any[];
+  sprints?: number[];
 }
