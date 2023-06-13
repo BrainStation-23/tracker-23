@@ -1,10 +1,12 @@
 import { Button, Empty, message, Spin } from "antd";
 import { userAPI } from "APIs";
-import { StatusDto, TaskDto } from "models/tasks";
+import { CreateTaskDto, TaskDto } from "models/tasks";
 import { useRouter } from "next/router";
 import { createContext, useEffect, useState } from "react";
+import { publicRoutes } from "utils/constants";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
+import { checkIfRunningTask } from "@/services/taskActions";
 import {
   formatDate,
   getFormattedTime,
@@ -12,9 +14,10 @@ import {
   getTotalSpentTime,
 } from "@/services/timeActions";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
+import { setProjectsSlice, StatusType } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
-import { getLocalStorage, setLocalStorage } from "@/storage/storage";
+import { setSprintListReducer } from "@/storage/redux/tasksSlice";
 
 import { getDateRangeArray } from "../datePicker";
 import GlobalModal from "../modals/globalModal";
@@ -24,11 +27,6 @@ import ManualTimeEntry from "./components/manualTimeEntry";
 import TableComponent from "./components/tableComponent";
 import TopPanel from "./components/topPanel/topPanel";
 import SessionStartWarning from "./components/warning";
-import { CreateTaskDto } from "models/tasks";
-import { setProjectsSlice, StatusType } from "@/storage/redux/projectsSlice";
-import { publicRoutes } from "utils/constants";
-import { checkIfRunningTask } from "@/services/taskActions";
-import { setSprintListReducer } from "@/storage/redux/tasksSlice";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -40,6 +38,12 @@ export const TaskContext = createContext<any>({
 
 const TasksPage = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const syncRunning = useAppSelector(
+    (state: RootState) => state.syncStatus.syncRunning
+  );
+
   const [viewModalOpen, setViewModalOpen] = useState<boolean>(false);
   const [sessionActionLoading, setSessionActionLoading] =
     useState<boolean>(false);
@@ -63,9 +67,6 @@ const TasksPage = () => {
     ],
     sprints: [],
   });
-  const syncRunning = useAppSelector(
-    (state: RootState) => state.syncStatus.syncRunning
-  );
   const [reload, setReload] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
   const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
@@ -191,25 +192,6 @@ const TasksPage = () => {
       setLoading(false);
     }
   };
-  const dispatch = useAppDispatch();
-  const syncTasks = async () => {
-    // setLoading(true);
-    message.success("Syncing");
-    let pinnedTasks = getLocalStorage("pinnedTasks");
-    if (!pinnedTasks) pinnedTasks = [];
-    try {
-      dispatch(setSyncRunning(true));
-      const res = await userAPI.syncTasks();
-      res && dispatch(setSyncStatus(res));
-      if (res.status === "IN_PROGRESS") {
-        dispatch(setSyncRunning(true));
-      } else if (res.status === "DONE") {
-        dispatch(setSyncRunning(false));
-      }
-    } catch (error) {
-      message.error("Error syncing tasks");
-    }
-  };
   const handleSessionStart = async (task: TaskDto) => {
     const session = await userAPI.createSession(task.id);
     if (session) {
@@ -276,8 +258,6 @@ const TasksPage = () => {
         if (_session.id === session.id) return session;
         else return _session;
       });
-      const st: any = formatDate(session.endTime);
-      const en: any = formatDate(session.startTime);
 
       (task.percentage = task.estimation
         ? Math.round(
@@ -317,6 +297,7 @@ const TasksPage = () => {
     if (!loading && !syncRunning) {
       getProjects();
       getTasks();
+      getSprintList();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncRunning]);
@@ -391,19 +372,16 @@ const TasksPage = () => {
   const getPinnedTasks = () => {
     return tasks.filter((task) => task.pinned);
   };
-  const [syncing, setSyncing] = useState(
-    useAppSelector((state: RootState) => state.syncStatus.syncRunning)
-  );
+
   const path = router.asPath;
   useEffect(() => {
     const getSyncStatus = async () => {
-      getTasks();
       const res = await userAPI.syncStatus();
       res && dispatch(setSyncStatus(res));
       if (res.status === "IN_PROGRESS") {
         dispatch(setSyncRunning(true));
       } else if (res.status === "DONE") {
-        syncing && message.success("Sync Completed");
+        syncRunning && message.success("Sync Completed");
         dispatch(setSyncRunning(false));
       }
     };
@@ -422,21 +400,21 @@ const TasksPage = () => {
     let myTimeout: NodeJS.Timeout;
 
     const getSyncStatus = async () => {
-      const res = await userAPI.syncStatus();
-      res && dispatch(setSyncStatus(res));
-      if (res.status === "IN_PROGRESS") {
+      if (syncRunning) {
         getTasks();
         dispatch(setSyncRunning(true));
-        myTimeout = setTimeout(getSyncStatus, 5000);
-      } else if (res.status === "DONE") {
-        syncing && message.success("Sync Completed");
+        myTimeout = setTimeout(getSyncStatus, 15000);
+      } else {
+        syncRunning && message.success("Sync Completed");
+        getTasks();
+        getSprintList();
         dispatch(setSyncRunning(false));
       }
     };
 
     if (!publicRoutes.includes(router.pathname)) {
       console.log(router.pathname);
-      if (syncing) {
+      if (syncRunning) {
         myTimeout = setTimeout(getSyncStatus, 5000);
       }
     }
@@ -447,7 +425,12 @@ const TasksPage = () => {
 
     return cleanup;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, syncing, router]);
+  }, [
+    dispatch,
+    syncRunning,
+    router,
+    publicRoutes.some((route) => path.includes(route)),
+  ]);
   return (
     <TaskContext.Provider
       value={{

@@ -35,17 +35,21 @@ const JiraCallBack = () => {
   useEffect(() => {
     const code = router.query.code;
     if (typeof code === "string") codeFound(code);
+    if (router.query.error) router.push("/integrations");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
   const handleCancel = () => {
     router.push("/integrations");
   };
+  let tip = "";
+  if (router.query.code) tip = "Integrating Jira";
+  if (router.query.error) tip = "Cancelling Integration";
   return (
     <>
       <div className="flex w-full justify-center p-40">
         <Spin
           spinning={isSpinning}
-          tip="Integrating Jira"
+          tip={tip}
           size="large"
           className="scale-150"
         ></Spin>
