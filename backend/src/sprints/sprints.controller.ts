@@ -22,4 +22,13 @@ export class SprintsController {
   ) {
     return this.sprintsService.getSprintList(user, reqBody);
   }
+
+  @Get('active-sprintTasks')
+  @UseGuards(JwtAuthGuard)
+  async getActiveSprintTasks(
+    @GetUser() user: User,
+    @Query() reqBody: GetSprintListQueryDto,
+  ) {
+    return this.sprintsService.getActiveSprintTasks(user, reqBody);
+  }
 }

@@ -239,4 +239,35 @@ export class SprintsService {
       return [];
     }
   }
+
+  async getActiveSprintTasks(user: User, reqBody: GetSprintListQueryDto) {
+    const tmpSprints = await this.prisma.sprint.findMany({
+      where: {
+        userId: user.id,
+      },
+    });
+    if (tmpSprints.length === 0) await this.createSprintAndTask(user);
+    try {
+      const integration = await this.taskService.updateIntegration(user);
+      const st = reqBody.state as unknown as string;
+      const array = st && st.split(',').map((item) => item.trim());
+      // console.log(array);
+
+      const sprints = await this.prisma.sprint.findMany({
+        where: {
+          userId: user.id,
+          state: { in: array },
+        },
+      });
+      const sprintIds = sprints.map((sprint) => sprint.id);
+      const inttegrationId = integration?.jiraAccountId ?? '-1';
+      return await this.taskService.getSprintTasks(
+        user,
+        inttegrationId,
+        sprintIds,
+      );
+    } catch (error) {
+      return [];
+    }
+  }
 }

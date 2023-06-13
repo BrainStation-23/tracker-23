@@ -32,7 +32,7 @@ export class TasksService {
     private myGateway: MyGateway,
   ) {}
 
-  async getSprintTasks(user: User, jiraAccountId: string, sprintIds: string[]) {
+  async getSprintTasks(user: User, jiraAccountId: string, sprintIds: number[]) {
     try {
       const getSprintTasks = await this.prisma.sprintTask.findMany({
         where: {
@@ -46,7 +46,7 @@ export class TasksService {
         taskIds.push(val.taskId);
       }
       // console.log(taskIds);
-      return await this.prisma.task.findMany({
+      const tasks = await this.prisma.task.findMany({
         where: {
           assigneeId: jiraAccountId,
           source: IntegrationType.JIRA,
@@ -56,8 +56,8 @@ export class TasksService {
           sessions: true,
         },
       });
-      // console.log(task.length);
-      // return task;
+      console.log(tasks.length);
+      return tasks;
     } catch (error) {
       return [];
     }
@@ -71,11 +71,7 @@ export class TasksService {
       let { startDate, endDate } = query as unknown as GetTaskQuery;
 
       const sprintIdArray =
-        sprintIds &&
-        sprintIds
-          .slice(1, -1)
-          .split(',')
-          .map((item) => item.trim());
+        sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
       // console.log(sprintIdArray);
 
       const jiraIntegration = await this.prisma.integration.findFirst({
@@ -93,7 +89,7 @@ export class TasksService {
       }
       let tasks: Task[] = [];
 
-      if (sprintIdArray && sprintIdArray[0]) {
+      if (sprintIdArray && sprintIdArray.length) {
         const inttegrationId = jiraIntegration?.jiraAccountId ?? '-1';
         tasks = await this.getSprintTasks(user, inttegrationId, sprintIdArray);
       } else {
