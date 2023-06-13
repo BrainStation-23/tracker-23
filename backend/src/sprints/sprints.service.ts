@@ -248,7 +248,12 @@ export class SprintsService {
     });
     if (tmpSprints.length === 0) await this.createSprintAndTask(user);
     try {
-      const integration = await this.taskService.updateIntegration(user);
+      const updated_integration = await this.taskService.updateIntegration(
+        user,
+      );
+      const { priority, status, text } = reqBody;
+      const priority1: any = (priority as unknown as string)?.split(',');
+      const status1: any = (status as unknown as string)?.split(',');
       const st = reqBody.state as unknown as string;
       const array = st && st.split(',').map((item) => item.trim());
       // console.log(array);
@@ -260,12 +265,27 @@ export class SprintsService {
         },
       });
       const sprintIds = sprints.map((sprint) => sprint.id);
-      const inttegrationId = integration?.jiraAccountId ?? '-1';
-      return await this.taskService.getSprintTasks(
-        user,
-        inttegrationId,
-        sprintIds,
-      );
+      const inttegrationId = updated_integration?.jiraAccountId ?? '-1';
+      const taskIds = await this.taskService.getSprintTasks(user, sprintIds);
+
+      return await this.prisma.task.findMany({
+        where: {
+          assigneeId: inttegrationId,
+          source: IntegrationType.JIRA,
+          id: { in: taskIds },
+          ...(priority1 && { priority: { in: priority1 } }),
+          ...(status1 && { status: { in: status1 } }),
+          ...(text && {
+            title: {
+              contains: text,
+              mode: 'insensitive',
+            },
+          }),
+        },
+        include: {
+          sessions: true,
+        },
+      });
     } catch (error) {
       return [];
     }

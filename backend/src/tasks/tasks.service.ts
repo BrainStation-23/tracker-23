@@ -32,7 +32,7 @@ export class TasksService {
     private myGateway: MyGateway,
   ) {}
 
-  async getSprintTasks(user: User, jiraAccountId: string, sprintIds: number[]) {
+  async getSprintTasks(user: User, sprintIds: number[]) {
     try {
       const getSprintTasks = await this.prisma.sprintTask.findMany({
         where: {
@@ -45,19 +45,7 @@ export class TasksService {
         const val = getSprintTasks[index];
         taskIds.push(val.taskId);
       }
-      // console.log(taskIds);
-      const tasks = await this.prisma.task.findMany({
-        where: {
-          assigneeId: jiraAccountId,
-          source: IntegrationType.JIRA,
-          id: { in: taskIds },
-        },
-        include: {
-          sessions: true,
-        },
-      });
-      console.log(tasks.length);
-      return tasks;
+      return taskIds;
     } catch (error) {
       return [];
     }
@@ -91,7 +79,27 @@ export class TasksService {
 
       if (sprintIdArray && sprintIdArray.length) {
         const inttegrationId = jiraIntegration?.jiraAccountId ?? '-1';
-        tasks = await this.getSprintTasks(user, inttegrationId, sprintIdArray);
+        const taskIds = await this.getSprintTasks(user, sprintIdArray);
+        console.log(taskIds);
+
+        return await this.prisma.task.findMany({
+          where: {
+            assigneeId: inttegrationId,
+            source: IntegrationType.JIRA,
+            id: { in: taskIds },
+            ...(priority1 && { priority: { in: priority1 } }),
+            ...(status1 && { status: { in: status1 } }),
+            ...(text && {
+              title: {
+                contains: text,
+                mode: 'insensitive',
+              },
+            }),
+          },
+          include: {
+            sessions: true,
+          },
+        });
       } else {
         const databaseQuery = {
           userId: user.id,
