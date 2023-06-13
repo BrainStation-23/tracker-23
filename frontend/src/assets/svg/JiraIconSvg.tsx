@@ -1,7 +1,7 @@
 const JiraIconSvg = () => {
   return (
     <svg
-      height=""
+      height="15"
       viewBox="2.59 0 214.09101008 224"
       width="15"
       xmlns="http://www.w3.org/2000/svg"

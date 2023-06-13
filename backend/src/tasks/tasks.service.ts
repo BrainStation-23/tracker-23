@@ -32,7 +32,7 @@ export class TasksService {
     private myGateway: MyGateway,
   ) {}
 
-  async getSprintTasks(user: User, jiraAccountId: string, sprintIds: string[]) {
+  async getSprintTasks(user: User, jiraAccountId: string, sprintIds: number[]) {
     try {
       const getSprintTasks = await this.prisma.sprintTask.findMany({
         where: {
@@ -46,7 +46,7 @@ export class TasksService {
         taskIds.push(val.taskId);
       }
       // console.log(taskIds);
-      return await this.prisma.task.findMany({
+      const tasks = await this.prisma.task.findMany({
         where: {
           assigneeId: jiraAccountId,
           source: IntegrationType.JIRA,
@@ -56,8 +56,8 @@ export class TasksService {
           sessions: true,
         },
       });
-      // console.log(task.length);
-      // return task;
+      console.log(tasks.length);
+      return tasks;
     } catch (error) {
       return [];
     }
@@ -71,11 +71,7 @@ export class TasksService {
       let { startDate, endDate } = query as unknown as GetTaskQuery;
 
       const sprintIdArray =
-        sprintIds &&
-        sprintIds
-          .slice(1, -1)
-          .split(',')
-          .map((item) => item.trim());
+        sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
       // console.log(sprintIdArray);
 
       const jiraIntegration = await this.prisma.integration.findFirst({
@@ -93,7 +89,7 @@ export class TasksService {
       }
       let tasks: Task[] = [];
 
-      if (sprintIdArray && sprintIdArray[0]) {
+      if (sprintIdArray && sprintIdArray.length) {
         const inttegrationId = jiraIntegration?.jiraAccountId ?? '-1';
         tasks = await this.getSprintTasks(user, inttegrationId, sprintIdArray);
       } else {
@@ -491,8 +487,8 @@ export class TasksService {
           data: {
             seen: false,
             author: 'SYSTEM',
-            title: 'Sync Faild',
-            description: 'Sync Faild',
+            title: 'Sync Failed',
+            description: 'Sync Failed',
             userId: user.id,
           },
         });
@@ -1173,6 +1169,7 @@ export class TasksService {
 
     const sprintResponses = await Promise.all(
       sprintPromises.map((p) =>
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         p.catch((err) => {
           console.error('This board has no sprint!');
         }),
@@ -1222,7 +1219,8 @@ export class TasksService {
     //Get all task related to the sprint
     const resolvedPromise = await Promise.all(issuePromises);
 
-    const [deS, crtSprnt, sprints] = await Promise.all([
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [deS, crtSprint, sprints] = await Promise.all([
       await this.prisma.sprint.deleteMany({
         where: {
           userId: user.id,
@@ -1272,6 +1270,7 @@ export class TasksService {
       });
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [CST, sprintTasks] = await Promise.all([
       await this.prisma.sprintTask.createMany({
         data: issue_list,
