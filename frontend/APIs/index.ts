@@ -12,6 +12,7 @@ import {
   exportTasksRest,
   getIntegrationsRest,
   getJiraLinkRest,
+  getJiraSprintsRest,
   getNotificationsRest,
   getProjectWiseHourRest,
   getProjectWiseStatusRest,
@@ -65,6 +66,7 @@ const graphqlApi: apiFunction = {
   markNotificationSeen: markNotificationSeenRest,
   markAllNotificationsSeen: markAllNotificationsSeenRest,
   updateTaskEstimation: updateTaskEstimationRest,
+  getJiraSprints: getJiraSprintsRest,
 };
 
 const restApi: apiFunction = {
@@ -98,6 +100,7 @@ const restApi: apiFunction = {
   markNotificationSeen: markNotificationSeenRest,
   markAllNotificationsSeen: markAllNotificationsSeenRest,
   updateTaskEstimation: updateTaskEstimationRest,
+  getJiraSprints: getJiraSprintsRest,
 };
 
 export const userAPI: apiFunction =

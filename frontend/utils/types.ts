@@ -44,4 +44,5 @@ export interface apiFunction {
   markAllNotificationsSeen: () => Promise<any>;
   deleteSession: (sessionId: number) => Promise<any>;
   updateSession: (sessionId: number, data: AddWorkLogParams) => Promise<any>;
+  getJiraSprints: () => Promise<any>;
 }

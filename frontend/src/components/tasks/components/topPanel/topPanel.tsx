@@ -1,17 +1,17 @@
+import { Dropdown, Input, MenuProps } from "antd";
+import { debounce } from "lodash";
+import { SprintDto, TaskDto } from "models/tasks";
+import { useEffect, useState } from "react";
+
 import FilterIconSvg from "@/assets/svg/filterIconSvg";
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
-import SortIconSvg from "@/assets/svg/sortIconSvg";
-import { Dropdown, Input, MenuProps, Select } from "antd";
-import { TaskDto } from "models/tasks";
-import { useState } from "react";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
-import { useEffect } from "react";
-import StatusSelectorComponent from "./components/statusSelector";
-import PrioritySelectorComponent from "./components/prioritySelector";
-import { debounce } from "lodash";
-import { StatusType } from "@/storage/redux/projectsSlice";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
+
+import PrioritySelectorComponent from "./components/prioritySelector";
+import SprintSelectorComponent from "./components/sprintSelector";
+import StatusSelectorComponent from "./components/statusSelector";
 
 type Props = {
   tasks: TaskDto[];
@@ -23,6 +23,7 @@ type Props = {
     selectedDate: any;
     priority: string[];
     status: string[];
+    sprints: SprintDto[];
   };
 };
 const TopPanel = ({
@@ -38,6 +39,7 @@ const TopPanel = ({
     // '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
   ]);
   const [priority, setPriority] = useState([]);
+  const [sprints, setSprints] = useState([]);
   const [active, setActive] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
@@ -45,6 +47,10 @@ const TopPanel = ({
   );
   const statuses = useAppSelector(
     (state: RootState) => state.projectList.statuses
+  );
+
+  const sprintList = useAppSelector(
+    (state: RootState) => state.tasksSlice.sprintList
   );
   const totalPinned = tasks?.filter((task) => task.pinned)?.length;
   const tabs = ["All", "Pin"];
@@ -108,6 +114,7 @@ const TopPanel = ({
       selectedDate: selectedDate,
       priority: priority,
       status: status,
+      sprints: sprints,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
@@ -123,11 +130,22 @@ const TopPanel = ({
         selectedDate: selectedDate,
         priority: priority,
         status: status,
+        sprints: sprints,
+      });
+    } else if (
+      JSON.stringify(sprints) != JSON.stringify(searchParams.sprints)
+    ) {
+      setSearchParams({
+        searchText: searchText,
+        selectedDate: selectedDate,
+        priority: priority,
+        status: status,
+        sprints: sprints,
       });
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate, priority, status]);
+  }, [selectedDate, priority, status, sprints]);
   const filterOptions = [
     // {
     //   icon: <SortNameIconSvg />,
@@ -147,6 +165,10 @@ const TopPanel = ({
     //   title: "Progress",
     // },
   ];
+  if (sprintList.length > 0)
+    filterOptions.push(
+      <SprintSelectorComponent {...{ sprints, setSprints }} />
+    );
   const items: MenuProps["items"] = filterOptions.map((option, index) => {
     return {
       label: option,
