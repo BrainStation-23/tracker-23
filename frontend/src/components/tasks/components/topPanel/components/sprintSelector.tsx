@@ -20,21 +20,21 @@ const SprintSelectorComponent = ({ sprints, setSprints }: Props) => {
   const sprintList = useAppSelector(
     (state: RootState) => state.tasksSlice.sprintList
   );
-  const Options = sprintList
-    ? sprintList?.map((st) => {
-        return {
-          value: st.id,
-          label: st.name,
-        };
-      })
-    : [];
+  const Options: { value: number; label: string }[] = [];
+  for (const st of sprintList) {
+    Options.push({
+      value: st.id,
+      label: st.name,
+    });
+  }
+
   if (Options?.length === 0) {
-    defaultValues?.forEach((val: any) => {
+    for (const val of defaultValues) {
       Options.push({
         value: val.id,
         label: val.name,
       });
-    });
+    }
   }
   // const tagRender = (props: TagProps) => {
   //   const { label, value, closable, onClose } = props;
@@ -69,9 +69,9 @@ const SprintSelectorComponent = ({ sprints, setSprints }: Props) => {
   useEffect(() => {
     const tmpArray: any[] = [];
     sprints?.map((st) => {
-      Options?.map((option) => {
+      for (const option of Options) {
         if (option.label === JSON.parse(st).label) tmpArray.push(option.value);
-      });
+      }
     });
   }, [sprints]);
   return (
@@ -97,10 +97,6 @@ const SprintSelectorComponent = ({ sprints, setSprints }: Props) => {
         // options={[
         // ]}
         onChange={(value) => {
-          console.log(
-            "🚀 ~ file: sprintSeletor.tsx:111 ~ SprintSelectorComponent ~ value:",
-            value
-          );
           setSprints(value);
         }}
       />
