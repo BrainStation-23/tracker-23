@@ -189,7 +189,7 @@ const TopPanel = ({
         })}
       </div>
       <div className="flex items-center gap-12">
-        <DateRangePicker {...{ setSelectedDate }} />
+        {!(sprints?.length > 0) && <DateRangePicker {...{ setSelectedDate }} />}
         <Input
           placeholder="Search"
           prefix={<SearchIconSvg />}
