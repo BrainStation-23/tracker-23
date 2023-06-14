@@ -38,6 +38,8 @@ export const TaskContext = createContext<any>({
 
 const TasksPage = () => {
   const router = useRouter();
+  const path = router.asPath;
+
   const dispatch = useAppDispatch();
 
   const syncRunning = useAppSelector(
@@ -68,6 +70,7 @@ const TasksPage = () => {
     sprints: [],
   });
   const [reload, setReload] = useState(false);
+  const [needNewTasks, setNeedNewTasks] = useState(0);
   const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
   const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
   const createTask = async (data: CreateTaskDto) => {
@@ -192,6 +195,64 @@ const TasksPage = () => {
       setLoading(false);
     }
   };
+
+  const getSyncingTasks = async () => {
+    try {
+      const res = await userAPI.getTasks(searchParams);
+      const tmpTasks = res.map((task: TaskDto) => {
+        task.sessions = task.sessions.sort(function compareFn(a: any, b: any) {
+          return a.id - b.id;
+        });
+        const started =
+          task.sessions && task.sessions[0]
+            ? getFormattedTime(formatDate(task.sessions[0].startTime))
+            : "Not Started";
+        task.sessions = task.sessions.sort((a: any, b: any) =>
+          a.endTime
+            ? new Date(a.endTime).getTime()
+            : 0 - b.endTime
+            ? new Date(b.endTime).getTime()
+            : 0
+        );
+        const ended =
+          task.sessions && !checkIfRunningTask(task.sessions)
+            ? getFormattedTime(
+                formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
+              )
+            : task.sessions[0]
+            ? "Running"
+            : "Not Started";
+        if (ended === "Running") setRunningTask(task);
+        const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
+        return {
+          ...task,
+          id: task.id,
+          title: task?.title,
+          description: task.description,
+          estimation: task.estimation,
+          startTime: formatDate(task.sessions[0]?.startTime),
+          endTime: formatDate(
+            task.sessions[task.sessions?.length - 1]?.endTime
+          ),
+          started: started,
+          created: getFormattedTime(formatDate(task.createdAt)),
+          ended: ended,
+          total: total,
+          percentage: task.estimation
+            ? Math.round(
+                getTotalSpentTime(task.sessions) / (task.estimation * 36000)
+              )
+            : -1,
+          totalSpent: getTotalSpentTime(task.sessions),
+          priority: task.priority,
+        };
+      });
+      setTasks(tmpTasks || []);
+    } catch (error) {
+      console.log("🚀 ~ file: index.tsx:176 ~ getTasks ~ error:", error);
+      message.error("Error getting tasks");
+    }
+  };
   const handleSessionStart = async (task: TaskDto) => {
     const session = await userAPI.createSession(task.id);
     if (session) {
@@ -289,18 +350,6 @@ const TasksPage = () => {
     const res = await userAPI.getProjectWiseStatus();
     res?.length > 0 && dispatch(setProjectsSlice(res));
   };
-  useEffect(() => {
-    !loading && getTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
-  useEffect(() => {
-    if (!loading && !syncRunning) {
-      getProjects();
-      getTasks();
-      getSprintList();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [syncRunning]);
 
   const handleStatusChange = async (task: TaskDto, value: StatusType) => {
     setLoading(true);
@@ -348,6 +397,11 @@ const TasksPage = () => {
     console.log("🚀 ~ file: index.tsx:365 ~ getSprintList ~ res:", res);
     if (res?.length > 0) dispatch(setSprintListReducer(res));
   };
+  const syncFunction = async () => {
+    dispatch(setSyncRunning(true));
+    const res = await userAPI.syncStatus();
+    res && dispatch(setSyncStatus(res));
+  };
 
   useEffect(() => {
     if (tasks) {
@@ -361,19 +415,24 @@ const TasksPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const syncFunction = async () => {
-    dispatch(setSyncRunning(true));
-    const res = await userAPI.syncStatus();
-    res && dispatch(setSyncStatus(res));
-  };
-
   useEffect(() => {}, [reload, runningTask]);
 
   const getPinnedTasks = () => {
     return tasks.filter((task) => task.pinned);
   };
 
-  const path = router.asPath;
+  useEffect(() => {
+    !loading && getTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+  useEffect(() => {
+    if (!loading && !syncRunning) {
+      getProjects();
+      getTasks();
+      getSprintList();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncRunning]);
   useEffect(() => {
     const getSyncStatus = async () => {
       const res = await userAPI.syncStatus();
@@ -401,14 +460,11 @@ const TasksPage = () => {
 
     const getSyncStatus = async () => {
       if (syncRunning) {
-        getTasks();
-        dispatch(setSyncRunning(true));
-        myTimeout = setTimeout(getSyncStatus, 15000);
+        getSyncingTasks();
       } else {
-        syncRunning && message.success("Sync Completed");
+        message.success("Sync Completed");
         getTasks();
         getSprintList();
-        dispatch(setSyncRunning(false));
       }
     };
 
