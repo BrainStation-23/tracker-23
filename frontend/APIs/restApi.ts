@@ -127,12 +127,15 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
 
 export async function exportTasksRest(searchParams: SearchParamsModel) {
   const status = getStringFromArray(searchParams?.status);
+  const sprints = searchParams?.sprints;
   const priority = getStringFromArray(searchParams?.priority);
   try {
     const res = await axios.get(
       apiEndPoints.export +
         "?" +
-        (searchParams?.selectedDate?.length === 2
+        (sprints?.length > 0
+          ? `sprintId=${sprints}`
+          : searchParams?.selectedDate?.length === 2
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
         (searchParams?.searchText && searchParams?.searchText.length > 0

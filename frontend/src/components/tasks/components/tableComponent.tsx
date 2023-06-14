@@ -267,7 +267,7 @@ const TableComponent = ({
     //   render: (_, { tags }) => (
     //     <>
     //       {tags.map((tag) => {
-    //         let color = tag.length > 5 ? "geekblue" : "green";
+    //         let color = tag.length > 5 ? "blue" : "green";
     //         if (tag === "loser") {
     //           color = "volcano";
     //         }

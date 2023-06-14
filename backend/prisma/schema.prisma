@@ -46,7 +46,7 @@ model User {
   userAccounts  UserAccount[]
   accounts      Account[]
   tasks         Task[]
-  projectIds   Int[]
+  projectIds    Int[]
   integrations  Integration[]
   notifications Notification[]
 }
