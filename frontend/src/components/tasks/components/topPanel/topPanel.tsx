@@ -12,19 +12,14 @@ import { RootState } from "@/storage/redux/store";
 import PrioritySelectorComponent from "./components/prioritySelector";
 import SprintSelectorComponent from "./components/sprintSelector";
 import StatusSelectorComponent from "./components/statusSelector";
+import { SearchParamsModel } from "models/apiParams";
 
 type Props = {
   tasks: TaskDto[];
   activeTab: string;
   setActiveTab: Function;
   setSearchParams: Function;
-  searchParams: {
-    searchText: string;
-    selectedDate: any;
-    priority: string[];
-    status: string[];
-    sprints: SprintDto[];
-  };
+  searchParams: SearchParamsModel;
 };
 const TopPanel = ({
   tasks,

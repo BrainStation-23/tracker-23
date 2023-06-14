@@ -1,7 +1,6 @@
 import FilterIconSvg from "@/assets/svg/filterIconSvg";
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
-import SortIconSvg from "@/assets/svg/sortIconSvg";
-import { Button, Input, message } from "antd";
+import { Button, Dropdown, Input, MenuProps, message } from "antd";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
@@ -9,23 +8,36 @@ import { DownloadOutlined } from "@ant-design/icons";
 import StatusSelectorComponent from "@/components/tasks/components/topPanel/components/statusSelector";
 import PrioritySelectorComponent from "@/components/tasks/components/topPanel/components/prioritySelector";
 import { userAPI } from "APIs";
+import SprintSelectorComponent from "@/components/tasks/components/topPanel/components/sprintSelector";
+import { useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
+import { debounce } from "lodash";
 
 type Props = {
   tasks: TaskDto[];
   setSearchParams: Function;
 };
 const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
+  const sprintList = useAppSelector(
+    (state: RootState) => state.tasksSlice.sprintList
+  );
+  const [selectedDate, setSelectedDate] = useState(
+    getDateRangeArray("this-week")
+  );
   const [searchText, setSearchText] = useState("");
   const [downloading, setDownloading] = useState<boolean>(false);
   const [status, setStatus] = useState([]);
   const [priority, setPriority] = useState([]);
+  const [sprints, setSprints] = useState([]);
   const [active, setActive] = useState("");
-  const [selectedDate, setSelectedDate] = useState(
-    getDateRangeArray("this-week")
-  );
 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const handleInputChange = (event: any) => {
+    setSearchText(event.target.value);
+  };
   // const handleOnClick = () => {};
-
+  const debouncedHandleInputChange = debounce(handleInputChange, 500);
   const excelExport = async () => {
     setDownloading(true);
     try {
@@ -34,21 +46,26 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
         selectedDate: selectedDate,
         priority: priority,
         status: status,
+        sprints: sprints,
       });
-      const blob = new Blob([res], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      const fileName = "exportedData.xlsx";
-      link.setAttribute("download", fileName); // Specify the desired file name
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      message.success("Exported to " + fileName);
-      // Use FileSaver.js to save the Blob as a file
-      // saveAs(blob, "exported_data.xlsx");
+      if (!res) {
+        message.error("Export Failed");
+      } else {
+        const blob = new Blob([res], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        const fileName = "exportedData.xlsx";
+        link.setAttribute("download", fileName); // Specify the desired file name
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        message.success("Exported to " + fileName);
+        // Use FileSaver.js to save the Blob as a file
+        // saveAs(blob, "exported_data.xlsx");
+      }
     } catch (error) {
       message.error("Export Failed");
     }
@@ -74,26 +91,42 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
     //   title: "Progress",
     // },
   ];
+  if (sprintList.length > 0)
+    filterOptions.push(
+      <SprintSelectorComponent {...{ sprints, setSprints }} />
+    );
   useEffect(() => {
     setSearchParams({
       searchText: searchText,
       selectedDate: selectedDate,
       priority: priority,
       status: status,
+      sprints: sprints,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchText, selectedDate, priority, status]);
+  }, [searchText, selectedDate, priority, status, sprints]);
+  const items: MenuProps["items"] = filterOptions.map((option, index) => {
+    return {
+      label: option,
+      key: index,
+    };
+  });
+  const menuProps = {
+    items,
+    onClick: (item: any) => {},
+  };
   return (
     <div className="my-5 flex w-full justify-between">
       <div>
-        <DateRangePicker {...{ setSelectedDate }} />
+        {!(sprints?.length > 0) && <DateRangePicker {...{ setSelectedDate }} />}
       </div>
       <div className="flex gap-8">
         <Input
           placeholder="Search"
           prefix={<SearchIconSvg />}
-          onChange={(e) => {
-            setSearchText(e.target.value);
+          onChange={(event) => {
+            event.persist();
+            debouncedHandleInputChange(event);
           }}
           allowClear
         />
@@ -116,7 +149,6 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
             <SortIconSvg />
             <span className="font-normal">Sort</span>
           </div> */}
-
           <div
             className={`relative flex cursor-pointer gap-2 text-[#00A3DE] ${
               active === "Filter" ? "" : "grayscale"
@@ -126,25 +158,34 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
               // backgroundColor: "#00A3DE",
             }}
           >
-            <div
-              className="flex"
-              onClick={() =>
-                active === "Filter" ? setActive("") : setActive("Filter")
-              }
+            <Dropdown
+              menu={menuProps}
+              placement="bottomRight"
+              open={dropdownOpen}
+              onOpenChange={(open) => {
+                setDropdownOpen(open);
+              }}
+              trigger={["click"]}
+              className="transition-all delay-1000 duration-1000"
+              overlayClassName="duration-1000 delay-1000 transition-all w-[300px]"
             >
-              <FilterIconSvg />
-              <span className="font-normal">Filter</span>
-            </div>
+              <div
+                className="flex"
+                // onClick={() =>
+                //   active === "Filter" ? setActive("") : setActive("Filter")
+                // }
+              >
+                <FilterIconSvg />
+                <span className="font-normal">Filter</span>
+              </div>
+            </Dropdown>
+
             <div
               className={`${active === "Filter" ? "duration-500" : "hidden h-0"}
-              absolute  top-8 right-0 z-50 flex
-              w-[230px] flex-col gap-2 p-6  `}
+              absolute  top-[25px] right-0 z-50 flex
+              w-[320px] flex-col gap-2 p-6`}
               style={{
-                /* White */
-
                 background: "#FFFFFF",
-                /* SH-2 */
-
                 boxShadow:
                   "0px 2px 6px rgba(24, 24, 28, 0.08), 0px 41px 32px -23px rgba(24, 24, 28, 0.06)",
                 borderRadius: "12px",

@@ -1,26 +1,28 @@
-import { Empty, Spin, Table, message, Input } from "antd";
-import React, { useEffect, useState } from "react";
-import {
-  formatDate,
-  getFormattedTotalTime,
-  getTotalSpentTime,
-} from "@/services/timeActions";
-
-import type { TableProps } from "antd/es/table";
-import { TaskDto } from "models/tasks";
-import { getFormattedTime } from "../../services/timeActions";
+import { Empty, Input, message, Spin, Table } from "antd";
 import { userAPI } from "APIs";
-import DateRangePicker, { getDateRangeArray } from "../datePicker";
+import { TaskDto } from "models/tasks";
+import React, { useEffect, useState } from "react";
 import {
   PriorityBGColorEnum,
   PriorityBorderColorEnum,
   statusBGColorEnum,
   statusBorderColorEnum,
   taskPriorityEnum,
-  taskStatusEnum,
 } from "utils/constants";
+
+import {
+  formatDate,
+  getFormattedTotalTime,
+  getTotalSpentTime,
+} from "@/services/timeActions";
+import { useAppDispatch } from "@/storage/redux";
+import { setSprintListReducer } from "@/storage/redux/tasksSlice";
+
+import { getFormattedTime } from "../../services/timeActions";
+import { getDateRangeArray } from "../datePicker";
 import TopPanelExportPage from "./components/topPanelExportPage";
-import { DownloadOutlined } from "@ant-design/icons";
+
+import type { TableProps } from "antd/es/table";
 const { Search } = Input;
 interface DataType {
   key: string;
@@ -47,11 +49,9 @@ const columns: any = [
       if (a.title === b.title) {
         return 0;
       }
-
       if (a.title > b.title) {
         return 1;
       }
-
       return -1;
     },
     align: "center",
@@ -191,6 +191,7 @@ const columns: any = [
 ];
 
 const ExportPageComponent = () => {
+  const dispatch = useAppDispatch();
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchParams, setSearchParams] = useState({
@@ -238,7 +239,11 @@ const ExportPageComponent = () => {
       setLoading(false);
     }
   };
-
+  const getSprintList = async () => {
+    const res = await userAPI.getJiraSprints();
+    console.log("🚀 ~ file: index.tsx:365 ~ getSprintList ~ res:", res);
+    if (res?.length > 0) dispatch(setSprintListReducer(res));
+  };
   const onChange: TableProps<any>["onChange"] = (
     pagination,
     filters,
@@ -251,6 +256,9 @@ const ExportPageComponent = () => {
     getTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+  useEffect(() => {
+    getSprintList();
+  }, []);
 
   return (
     <div>
