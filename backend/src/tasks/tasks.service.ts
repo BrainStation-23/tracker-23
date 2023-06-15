@@ -476,7 +476,7 @@ export class TasksService {
       }
       const done = await this.syncCall(StatusEnum.DONE, user.id);
       if (done) {
-        this.createSprintAndTask(user);
+        await this.createSprintAndTask(user);
       }
 
       try {

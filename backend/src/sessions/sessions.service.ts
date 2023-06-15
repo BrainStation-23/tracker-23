@@ -55,11 +55,7 @@ export class SessionsService {
   async stopSession(user: User, taskId: number) {
     const task = await this.validateTaskAccess(user, taskId);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const statusUpdatedTask = this.tasksService.updateIssueStatus(
-      user,
-      taskId + '',
-      task.status + '',
-    );
+    this.tasksService.updateIssueStatus(user, taskId + '', task.status + '');
     const activeSession = await this.prisma.session.findFirst({
       where: { taskId, endTime: null },
     });
@@ -67,7 +63,17 @@ export class SessionsService {
     if (!activeSession) {
       throw new BadRequestException('No active session');
     }
+    const timeSpent = Math.ceil(
+      (new Date(Date.now()).getTime() - activeSession.startTime.getTime()) /
+        1000,
+    );
+    if (timeSpent < 60) {
+      throw new BadRequestException({
+        message: 'Session canceled due to insufficient time',
+      });
+    }
     const updated_session = await this.stopSessionUtil(activeSession.id);
+
     if (task.integratedTaskId) {
       const session = await this.logToIntegrations(
         user,
