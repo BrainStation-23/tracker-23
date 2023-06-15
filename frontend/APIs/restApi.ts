@@ -393,3 +393,15 @@ export async function getJiraSprintsRest() {
     return false;
   }
 }
+
+export async function getJiraActiveSprintTasksRest() {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.activeSprintTasks}/?state=${["active"]}`
+      // `${apiEndPoints.activeSprintTasks}/?state=${["closed"]}`
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}

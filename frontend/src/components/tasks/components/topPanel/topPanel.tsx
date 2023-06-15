@@ -16,6 +16,7 @@ import { SearchParamsModel } from "models/apiParams";
 
 type Props = {
   tasks: TaskDto[];
+  activeSprintTasks: TaskDto[];
   activeTab: string;
   setActiveTab: Function;
   setSearchParams: Function;
@@ -23,6 +24,7 @@ type Props = {
 };
 const TopPanel = ({
   tasks,
+  activeSprintTasks,
   activeTab,
   setActiveTab,
   setSearchParams,
@@ -48,7 +50,7 @@ const TopPanel = ({
     (state: RootState) => state.tasksSlice.sprintList
   );
   const totalPinned = tasks?.filter((task) => task.pinned)?.length;
-  const tabs = ["All", "Pin"];
+  const tabs = ["All", "Pin", "ActiveSprint"];
   const activeButton = (tab: string, setActiveTab: Function) => (
     <div
       key={Math.random()}
@@ -67,7 +69,11 @@ const TopPanel = ({
           color: "white",
         }}
       >
-        {tab === tabs[1] ? totalPinned : tasks?.length}
+        {tab === "Pin"
+          ? totalPinned
+          : tab === "ActiveSprint"
+          ? activeSprintTasks?.length
+          : tasks?.length}
       </div>
       <div className="text-[15px]">{tab}</div>
     </div>
@@ -92,7 +98,11 @@ const TopPanel = ({
           color: "black",
         }}
       >
-        {tab === tabs[1] ? totalPinned : tasks?.length}
+        {tab === "Pin"
+          ? totalPinned
+          : tab === "ActiveSprint"
+          ? activeSprintTasks?.length
+          : tasks?.length}
       </div>
       <div className="text-[15px] text-[#4D4E55]">{tab}</div>
     </div>
