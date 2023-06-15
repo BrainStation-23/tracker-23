@@ -55,6 +55,7 @@ const TasksPage = () => {
   const [warningModalOpen, setWarningModalOpen] = useState<boolean>(false);
   const [warningData, setWarningData] = useState<any>([]);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
+  const [activeSprintTasks, setActiveSprintTasks] = useState<TaskDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(
     router.query.tab === "pin" ? "Pin" : "All"
@@ -70,7 +71,6 @@ const TasksPage = () => {
     sprints: [],
   });
   const [reload, setReload] = useState(false);
-  const [needNewTasks, setNeedNewTasks] = useState(0);
   const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
   const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
   const createTask = async (data: CreateTaskDto) => {
@@ -397,6 +397,59 @@ const TasksPage = () => {
     console.log("🚀 ~ file: index.tsx:365 ~ getSprintList ~ res:", res);
     if (res?.length > 0) dispatch(setSprintListReducer(res));
   };
+
+  const getActiveSprintTasks = async () => {
+    const res = await userAPI.getJiraActiveSprintTasks();
+    const tmpTasks = res.map((task: TaskDto) => {
+      task.sessions = task.sessions.sort(function compareFn(a: any, b: any) {
+        return a.id - b.id;
+      });
+      const started =
+        task.sessions && task.sessions[0]
+          ? getFormattedTime(formatDate(task.sessions[0].startTime))
+          : "Not Started";
+      task.sessions = task.sessions.sort((a: any, b: any) =>
+        a.endTime
+          ? new Date(a.endTime).getTime()
+          : 0 - b.endTime
+          ? new Date(b.endTime).getTime()
+          : 0
+      );
+      const ended =
+        task.sessions && !checkIfRunningTask(task.sessions)
+          ? getFormattedTime(
+              formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
+            )
+          : task.sessions[0]
+          ? "Running"
+          : "Not Started";
+      if (ended === "Running") setRunningTask(task);
+      const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
+      return {
+        ...task,
+        id: task.id,
+        title: task?.title,
+        description: task.description,
+        estimation: task.estimation,
+        startTime: formatDate(task.sessions[0]?.startTime),
+        endTime: formatDate(task.sessions[task.sessions?.length - 1]?.endTime),
+        started: started,
+        created: getFormattedTime(formatDate(task.createdAt)),
+        ended: ended,
+        total: total,
+        percentage: task.estimation
+          ? Math.round(
+              getTotalSpentTime(task.sessions) / (task.estimation * 36000)
+            )
+          : -1,
+        totalSpent: getTotalSpentTime(task.sessions),
+        priority: task.priority,
+      };
+    });
+    setActiveSprintTasks(tmpTasks || []);
+    console.log("🚀 ~ file: index.tsx:403 ~ getActiveSprintTasks ~ res:", res);
+    // if (res?.length > 0) dispatch(setSprintListReducer(res));
+  };
   const syncFunction = async () => {
     dispatch(setSyncRunning(true));
     const res = await userAPI.syncStatus();
@@ -412,6 +465,7 @@ const TasksPage = () => {
       });
     }
     getSprintList();
+    getActiveSprintTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -423,6 +477,7 @@ const TasksPage = () => {
 
   useEffect(() => {
     !loading && getTasks();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
   useEffect(() => {
@@ -430,6 +485,7 @@ const TasksPage = () => {
       getProjects();
       getTasks();
       getSprintList();
+      getActiveSprintTasks();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncRunning]);
@@ -465,6 +521,7 @@ const TasksPage = () => {
         message.success("Sync Completed");
         getTasks();
         getSprintList();
+        getActiveSprintTasks();
       }
     };
 
@@ -514,7 +571,14 @@ const TasksPage = () => {
           </div>
         </div>
         <TopPanel
-          {...{ tasks, activeTab, setActiveTab, searchParams, setSearchParams }}
+          {...{
+            tasks,
+            activeSprintTasks,
+            activeTab,
+            setActiveTab,
+            searchParams,
+            setSearchParams,
+          }}
         />
 
         <Spin spinning={loading}>
@@ -546,10 +610,38 @@ const TasksPage = () => {
             ) : (
               <Empty description="No tasks" />
             )
-          ) : getPinnedTasks().length ? (
+          ) : activeTab === "Pin" ? (
+            getPinnedTasks().length ? (
+              <div className="text-xs font-medium">
+                <TableComponent
+                  tasks={getPinnedTasks()}
+                  {...{
+                    runningTask,
+                    setSelectedTask,
+                    setTaskViewModalOpen,
+                    setManualTimeEntryModalOpen,
+                    deleteTask,
+                    startSession,
+                    stopSession,
+                    setReload,
+                    reload,
+                    sessionActionLoading,
+                    setLoading,
+                    handleStatusChange,
+                    handleEstimationChange,
+                    handlePinTask,
+                  }}
+                />
+              </div>
+            ) : loading ? (
+              <Empty description="Getting tasks" />
+            ) : (
+              <Empty description="No pinned tasks" />
+            )
+          ) : activeSprintTasks?.length ? (
             <div className="text-xs font-medium">
               <TableComponent
-                tasks={getPinnedTasks()}
+                tasks={activeSprintTasks}
                 {...{
                   runningTask,
                   setSelectedTask,
@@ -571,7 +663,7 @@ const TasksPage = () => {
           ) : loading ? (
             <Empty description="Getting tasks" />
           ) : (
-            <Empty description="No pinned tasks" />
+            <Empty description="No tasks in Active Sprints" />
           )}
         </Spin>
 

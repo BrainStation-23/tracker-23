@@ -11,6 +11,7 @@ import {
   deleteTaskRest,
   exportTasksRest,
   getIntegrationsRest,
+  getJiraActiveSprintTasksRest,
   getJiraLinkRest,
   getJiraSprintsRest,
   getNotificationsRest,
@@ -67,6 +68,7 @@ const graphqlApi: apiFunction = {
   markAllNotificationsSeen: markAllNotificationsSeenRest,
   updateTaskEstimation: updateTaskEstimationRest,
   getJiraSprints: getJiraSprintsRest,
+  getJiraActiveSprintTasks: getJiraActiveSprintTasksRest,
 };
 
 const restApi: apiFunction = {
@@ -101,6 +103,7 @@ const restApi: apiFunction = {
   markAllNotificationsSeen: markAllNotificationsSeenRest,
   updateTaskEstimation: updateTaskEstimationRest,
   getJiraSprints: getJiraSprintsRest,
+  getJiraActiveSprintTasks: getJiraActiveSprintTasksRest,
 };
 
 export const userAPI: apiFunction =
