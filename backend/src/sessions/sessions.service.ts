@@ -68,6 +68,7 @@ export class SessionsService {
         1000,
     );
     if (timeSpent < 60) {
+      await this.deleteSession(user, activeSession.id + '');
       throw new BadRequestException({
         message: 'Session canceled due to insufficient time',
       });
