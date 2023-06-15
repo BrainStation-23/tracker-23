@@ -251,6 +251,7 @@ export class SprintsService {
       const updated_integration = await this.taskService.updateIntegration(
         user,
       );
+      if (!updated_integration) return [];
       const { priority, status, text } = reqBody;
       const priority1: any = (priority as unknown as string)?.split(',');
       const status1: any = (status as unknown as string)?.split(',');

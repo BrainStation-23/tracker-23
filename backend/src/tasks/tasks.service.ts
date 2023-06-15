@@ -288,6 +288,7 @@ export class TasksService {
     ///////////////////////////////
     try {
       const updated_integration = await this.updateIntegration(user);
+      if (!updated_integration) return [];
       const headers: any = {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${updated_integration.accessToken}`,
@@ -400,6 +401,7 @@ export class TasksService {
         }
         let total = 0;
         try {
+          console.log('Hello from line 1 worklog');
           for (const [integratedTaskId] of mappedIssues) {
             const fields = 'issueId';
             const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${integratedTaskId}/worklog`;
@@ -417,9 +419,19 @@ export class TasksService {
             if (worklogPromises.length >= coreConfig.promiseQuantity) {
               total += coreConfig.promiseQuantity;
               const resolvedPromise = await Promise.all(worklogPromises);
+              console.log(
+                'Hello from log no 2 worklog',
+                resolvedPromise.length,
+              );
               worklogsList.push(...resolvedPromise);
               worklogPromises = [];
             }
+          }
+
+          if (worklogPromises.length) {
+            const resolvedPromise = await Promise.all(worklogPromises);
+            worklogsList.push(...resolvedPromise);
+            console.log('Hello from log final worklog', resolvedPromise.length);
           }
         } catch (error) {
           console.log(total, mappedIssues.size);
@@ -427,11 +439,6 @@ export class TasksService {
             '🚀 ~ file: tasks.service.ts:366 ~ syncTasks ~ error:',
             error,
           );
-        }
-
-        if (worklogPromises.length) {
-          const resolvedPromise = await Promise.all(worklogPromises);
-          worklogsList.push(...resolvedPromise);
         }
 
         for (let index = 0; index < worklogsList.length; index++) {
@@ -958,9 +965,9 @@ export class TasksService {
     const integration = await this.prisma.integration.findFirst({
       where: { userId: user.id, type: IntegrationType.JIRA },
     });
-    if (!integration) {
-      throw new APIException('You have no integration', HttpStatus.BAD_REQUEST);
-    }
+    // if (!integration) {
+    //   throw new APIException('You have no integration', HttpStatus.BAD_REQUEST);
+    // }
 
     const data = {
       grant_type: 'refresh_token',
