@@ -254,6 +254,9 @@ const TasksPage = () => {
         };
       });
       setTasks(tmpTasks || []);
+      message.success(
+        "We're retrieving your data and have obtained a portion already. More is on the way. Thank you for your patience."
+      );
     } catch (error) {
       console.log("🚀 ~ file: index.tsx:176 ~ getTasks ~ error:", error);
       message.error("Error getting tasks");
