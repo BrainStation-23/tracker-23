@@ -72,11 +72,20 @@ export const getProjectStatusList = (
   if (!projects) return [];
   for (const project of projects) {
     if (project.id === projectId) {
-      return project.statuses?.map((status) => {
+      const tmpArray = project.statuses?.map((status) => {
         return {
           name: status.name,
           statusCategoryName: status.statusCategoryName as StatusDto,
         };
+      });
+      return tmpArray.sort((a, b) => {
+        const order = {
+          TO_DO: 1,
+          IN_PROGRESS: 2,
+          DONE: 3,
+        };
+
+        return order[a.statusCategoryName] - order[b.statusCategoryName];
       });
     }
   }
