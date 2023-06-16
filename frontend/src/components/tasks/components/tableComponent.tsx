@@ -85,11 +85,18 @@ const TableComponent = ({
             }
             {/* {task.status === "DONE" && <div className="w-[34px]"></div>} */}
             <div className="flex flex-col gap-2">
-              <Text className="w-[180px] " ellipsis={{ tooltip: task?.title }}>
+              <Text
+                className="w-[180px] cursor-pointer"
+                ellipsis={{ tooltip: task?.title }}
+                onClick={() => {
+                  setSelectedTask(task);
+                  setTaskViewModalOpen(true);
+                }}
+              >
                 {/* <div>{task?.title}</div> */}
                 {task?.title}
               </Text>
-              <div className="flex gap-2">
+              <div className="flex cursor-pointer gap-2">
                 {task.projectName && (
                   <div
                     className="w-max bg-[#4D4E55] px-2 py-0.5 text-xs font-medium"
@@ -217,7 +224,10 @@ const TableComponent = ({
         runningTask?.id !== task.id ? (
           <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
         ) : (
-          <Stopwatch milliseconds={getTotalSpentTime(task.sessions)} task={task} />
+          <Stopwatch
+            milliseconds={getTotalSpentTime(task.sessions)}
+            task={task}
+          />
           // <StopWatchTabular
           //   task={task}
           //   // sessions={task.sessions}
@@ -242,10 +252,10 @@ const TableComponent = ({
       title: "",
       dataIndex: "",
       key: "",
-
+      width: 70,
       render: (_: any, task: TaskDto) => (
         <div className="flex justify-end gap-2">
-          <Button
+          {/* <Button
             className="h-10 text-sm font-semibold"
             onClick={() => {
               setSelectedTask(task);
@@ -253,7 +263,7 @@ const TableComponent = ({
             }}
           >
             View
-          </Button>
+          </Button> */}
           <MoreFunctionComponent
             {...{ task, deleteTask, handlePin, handleAddManualWorkLog }}
           />
