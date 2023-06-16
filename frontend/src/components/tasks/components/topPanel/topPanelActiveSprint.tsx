@@ -1,6 +1,6 @@
 import { Dropdown, Input, MenuProps } from "antd";
 import { debounce } from "lodash";
-import { SprintDto, TaskDto } from "models/tasks";
+import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
 
 import FilterIconSvg from "@/assets/svg/filterIconSvg";
@@ -10,7 +10,6 @@ import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
 import PrioritySelectorComponent from "./components/prioritySelector";
-import SprintSelectorComponent from "./components/sprintSelector";
 import StatusSelectorComponent from "./components/statusSelector";
 import { SearchParamsModel } from "models/apiParams";
 
@@ -19,21 +18,24 @@ type Props = {
   activeSprintTasks: TaskDto[];
   activeTab: string;
   setActiveTab: Function;
-  setSearchParams: Function;
-  searchParams: SearchParamsModel;
+  setSearchParamsActiveSprint: Function;
+  searchParamsActiveSprint: SearchParamsModel;
 };
-const TopPanel = ({
+const TopPanelActiveSprint = ({
   tasks,
   activeSprintTasks,
   activeTab,
   setActiveTab,
-  setSearchParams,
-  searchParams,
+  setSearchParamsActiveSprint,
+  searchParamsActiveSprint,
 }: Props) => {
-  const [searchText, setSearchText] = useState(searchParams.searchText);
-  const [status, setStatus] = useState<string[]>(searchParams.status);
-  const [priority, setPriority] = useState(searchParams.priority);
-  const [sprints, setSprints] = useState(searchParams.sprints);
+  const [searchText, setSearchText] = useState(
+    searchParamsActiveSprint.searchText
+  );
+  const [status, setStatus] = useState<string[]>(
+    searchParamsActiveSprint.status
+  );
+  const [priority, setPriority] = useState(searchParamsActiveSprint.priority);
   const [active, setActive] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
@@ -43,9 +45,6 @@ const TopPanel = ({
     (state: RootState) => state.projectList.statuses
   );
 
-  const sprintList = useAppSelector(
-    (state: RootState) => state.tasksSlice.sprintList
-  );
   const totalPinned = tasks?.filter((task) => task.pinned)?.length;
   const tabs = ["All", "Pin", "ActiveSprint"];
   const activeButton = (tab: string, setActiveTab: Function) => (
@@ -112,58 +111,40 @@ const TopPanel = ({
   // useEffect(()=>)
   useEffect(() => {
     if (
-      JSON.stringify(searchParams) !==
+      JSON.stringify(searchParamsActiveSprint) !==
       JSON.stringify({
         searchText: searchText,
-        selectedDate: selectedDate,
         priority: priority,
         status: status,
-        sprints: sprints,
       })
     ) {
-      setSearchParams({
+      setSearchParamsActiveSprint({
         searchText: searchText,
-        selectedDate: selectedDate,
         priority: priority,
         status: status,
-        sprints: sprints,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
   useEffect(() => {
     if (
-      JSON.stringify(searchParams.priority) != JSON.stringify(priority) ||
-      JSON.stringify(searchParams.selectedDate) !=
-        JSON.stringify(selectedDate) ||
-      JSON.stringify(searchParams.status) != JSON.stringify(status)
-    ) {
-      setSearchParams({
+      JSON.stringify(searchParamsActiveSprint) !=
+      JSON.stringify({
         searchText: searchText,
-        selectedDate: selectedDate,
         priority: priority,
         status: status,
-        sprints: sprints,
-      });
-    } else if (
-      JSON.stringify(sprints) != JSON.stringify(searchParams.sprints)
+      })
     ) {
-      setSearchParams({
+      setSearchParamsActiveSprint({
         searchText: searchText,
-        selectedDate: selectedDate,
         priority: priority,
         status: status,
-        sprints: sprints,
       });
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate, priority, status, sprints]);
+  }, [selectedDate, priority, status]);
   const filterOptions = [
-    // {
-    //   icon: <SortNameIconSvg />,
-    //   title: "Name",
-    // },
     <PrioritySelectorComponent
       key={Math.random()}
       {...{ priority, setPriority }}
@@ -178,10 +159,6 @@ const TopPanel = ({
     //   title: "Progress",
     // },
   ];
-  if (sprintList.length > 0)
-    filterOptions.push(
-      <SprintSelectorComponent {...{ sprints, setSprints }} />
-    );
   const items: MenuProps["items"] = filterOptions.map((option, index) => {
     return {
       label: option,
@@ -202,7 +179,7 @@ const TopPanel = ({
         })}
       </div>
       <div className="flex items-center gap-12">
-        {!(sprints?.length > 0) && activeTab !== "ActiveSprint" && (
+        {activeTab !== "ActiveSprint" && (
           <DateRangePicker {...{ setSelectedDate }} />
         )}
         <Input
@@ -212,10 +189,6 @@ const TopPanel = ({
             event.persist();
             debouncedHandleInputChange(event);
           }}
-          // onChange={(e) => {
-          //   setSearchText(e.target.value);
-          //   // debouncedSetSearchParams();
-          // }}
           allowClear
         />
         <div
@@ -289,4 +262,4 @@ const TopPanel = ({
   );
 };
 
-export default TopPanel;
+export default TopPanelActiveSprint;

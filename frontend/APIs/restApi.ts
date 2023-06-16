@@ -394,10 +394,19 @@ export async function getJiraSprintsRest() {
   }
 }
 
-export async function getJiraActiveSprintTasksRest() {
+export async function getJiraActiveSprintTasksRest(
+  searchParams: SearchParamsModel
+) {
+  const status = getStringFromArray(getLabels(searchParams?.status));
+  const priority = getStringFromArray(searchParams?.priority);
   try {
     const res = await axios.get(
-      `${apiEndPoints.activeSprintTasks}/?state=${["active"]}`
+      `${apiEndPoints.activeSprintTasks}/?state=${["active"]}` +
+        (searchParams?.searchText && searchParams?.searchText.length > 0
+          ? `&text=${searchParams.searchText}`
+          : "") +
+        (priority && priority.length > 0 ? `&priority=${priority}` : "") +
+        (status && status.length > 0 ? `&status=${status}` : "")
       // `${apiEndPoints.activeSprintTasks}/?state=${["closed"]}`
     );
     return res.data;

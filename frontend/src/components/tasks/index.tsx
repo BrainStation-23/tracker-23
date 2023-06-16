@@ -27,6 +27,7 @@ import ManualTimeEntry from "./components/manualTimeEntry";
 import TableComponent from "./components/tableComponent";
 import TopPanel from "./components/topPanel/topPanel";
 import SessionStartWarning from "./components/warning";
+import TopPanelActiveSprint from "./components/topPanel/topPanelActiveSprint";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -69,6 +70,11 @@ const TasksPage = () => {
       // '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
     ],
     sprints: [],
+  });
+  const [searchParamsActiveSprint, setSearchParamsActiveSprint] = useState({
+    searchText: "",
+    priority: [],
+    status: [],
   });
   const [reload, setReload] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
@@ -399,56 +405,68 @@ const TasksPage = () => {
   };
 
   const getActiveSprintTasks = async () => {
-    const res = await userAPI.getJiraActiveSprintTasks();
-    const tmpTasks = res.map((task: TaskDto) => {
-      task.sessions = task.sessions.sort(function compareFn(a: any, b: any) {
-        return a.id - b.id;
-      });
-      const started =
-        task.sessions && task.sessions[0]
-          ? getFormattedTime(formatDate(task.sessions[0].startTime))
-          : "Not Started";
-      task.sessions = task.sessions.sort((a: any, b: any) =>
-        a.endTime
-          ? new Date(a.endTime).getTime()
-          : 0 - b.endTime
-          ? new Date(b.endTime).getTime()
-          : 0
+    setLoading(true);
+    try {
+      const res = await userAPI.getJiraActiveSprintTasks(
+        searchParamsActiveSprint
       );
-      const ended =
-        task.sessions && !checkIfRunningTask(task.sessions)
-          ? getFormattedTime(
-              formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
-            )
-          : task.sessions[0]
-          ? "Running"
-          : "Not Started";
-      if (ended === "Running") setRunningTask(task);
-      const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
-      return {
-        ...task,
-        id: task.id,
-        title: task?.title,
-        description: task.description,
-        estimation: task.estimation,
-        startTime: formatDate(task.sessions[0]?.startTime),
-        endTime: formatDate(task.sessions[task.sessions?.length - 1]?.endTime),
-        started: started,
-        created: getFormattedTime(formatDate(task.createdAt)),
-        ended: ended,
-        total: total,
-        percentage: task.estimation
-          ? Math.round(
-              getTotalSpentTime(task.sessions) / (task.estimation * 36000)
-            )
-          : -1,
-        totalSpent: getTotalSpentTime(task.sessions),
-        priority: task.priority,
-      };
-    });
-    setActiveSprintTasks(tmpTasks || []);
-    console.log("🚀 ~ file: index.tsx:403 ~ getActiveSprintTasks ~ res:", res);
-    // if (res?.length > 0) dispatch(setSprintListReducer(res));
+      const tmpTasks = res.map((task: TaskDto) => {
+        task.sessions = task.sessions.sort(function compareFn(a: any, b: any) {
+          return a.id - b.id;
+        });
+        const started =
+          task.sessions && task.sessions[0]
+            ? getFormattedTime(formatDate(task.sessions[0].startTime))
+            : "Not Started";
+        task.sessions = task.sessions.sort((a: any, b: any) =>
+          a.endTime
+            ? new Date(a.endTime).getTime()
+            : 0 - b.endTime
+            ? new Date(b.endTime).getTime()
+            : 0
+        );
+        const ended =
+          task.sessions && !checkIfRunningTask(task.sessions)
+            ? getFormattedTime(
+                formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
+              )
+            : task.sessions[0]
+            ? "Running"
+            : "Not Started";
+        if (ended === "Running") setRunningTask(task);
+        const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
+        return {
+          ...task,
+          id: task.id,
+          title: task?.title,
+          description: task.description,
+          estimation: task.estimation,
+          startTime: formatDate(task.sessions[0]?.startTime),
+          endTime: formatDate(
+            task.sessions[task.sessions?.length - 1]?.endTime
+          ),
+          started: started,
+          created: getFormattedTime(formatDate(task.createdAt)),
+          ended: ended,
+          total: total,
+          percentage: task.estimation
+            ? Math.round(
+                getTotalSpentTime(task.sessions) / (task.estimation * 36000)
+              )
+            : -1,
+          totalSpent: getTotalSpentTime(task.sessions),
+          priority: task.priority,
+        };
+      });
+      setActiveSprintTasks(tmpTasks || []);
+    } catch (error) {
+      console.log(
+        "🚀 ~ file: index.tsx:468 ~ getActiveSprintTasks ~ error:",
+        error
+      );
+    } finally {
+      setLoading(false);
+    }
   };
   const syncFunction = async () => {
     dispatch(setSyncRunning(true));
@@ -480,6 +498,10 @@ const TasksPage = () => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+  useEffect(() => {
+    !loading && getActiveSprintTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsActiveSprint]);
   useEffect(() => {
     if (!loading && !syncRunning) {
       getProjects();
@@ -570,16 +592,29 @@ const TasksPage = () => {
             </Button>
           </div>
         </div>
-        <TopPanel
-          {...{
-            tasks,
-            activeSprintTasks,
-            activeTab,
-            setActiveTab,
-            searchParams,
-            setSearchParams,
-          }}
-        />
+        {activeTab === "ActiveSprint" ? (
+          <TopPanelActiveSprint
+            {...{
+              tasks,
+              activeSprintTasks,
+              activeTab,
+              setActiveTab,
+              searchParamsActiveSprint,
+              setSearchParamsActiveSprint,
+            }}
+          />
+        ) : (
+          <TopPanel
+            {...{
+              tasks,
+              activeSprintTasks,
+              activeTab,
+              setActiveTab,
+              searchParams,
+              setSearchParams,
+            }}
+          />
+        )}
 
         <Spin spinning={loading}>
           {activeTab === "All" ? (
