@@ -33,7 +33,7 @@ jobs:
           ###### End of Repository/Build Configurations ######
         env:
           NEXT_PUBLIC_API_PREFIX_GRAPHQL: 'http://localhost:3000/graphql'
-          NEXT_PUBLIC_API_PREFIX_REST: 'https://logger-dw6j.onrender.com'
+          NEXT_PUBLIC_API_PREFIX_REST: 'https://tracker23.onrender.com'
           NEXT_PUBLIC_API_PREFIX_DEV: 'http://localhost:3000'
           NEXT_PUBLIC_API: 'REST'
 
