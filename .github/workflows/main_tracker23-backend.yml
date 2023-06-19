@@ -53,4 +53,4 @@ jobs:
           app-name: 'tracker23-backend'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_EFE63624A5F4499EB0CF4CE287B10BFA }}
-          package: .
+          package: ./backend
