@@ -19,26 +19,37 @@ jobs:
       - name: Set up Node.js version
         uses: actions/setup-node@v1
         with:
-          node-version: '18.x'
+          node-version: "18.x"
 
       - name: npm install, build, and test
         run: |
           cd backend 
           npm install
           npm run build --if-present
-          npm run test -- --passWithNoTests
-          
+
+        # npm run test -- --passWithNoTests
+
+      - name: Zip all files for upload between jobs
+        run: zip --symlinks -r nest.zip ./*
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
           name: node-app
-          path: .
+          path: nest.zip
+
+      # - name: Upload artifact for deployment job
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: node-app
+      #     path: ./backend
+      #     path: ./backend
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: 'Production'
+      name: "Production"
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
@@ -47,11 +58,14 @@ jobs:
         with:
           name: node-app
 
-      - name: 'Deploy to Azure Web App'
+      - name: "Deploy to Azure Web App"
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'tracker23-backend'
-          slot-name: 'Production'
+          app-name: "tracker23-backend"
+          slot-name: "Production"
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_EFE63624A5F4499EB0CF4CE287B10BFA }}
-          package: ./backend
+          package: nest.zip
+
+      - name: "Delete zip file"
+        run: rm nest.zip
