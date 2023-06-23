@@ -169,7 +169,7 @@ export class JiraService {
         );
       }
       await this.tasksService.setProjectStatuses(user);
-      this.tasksService.syncTasks(user);
+      // this.tasksService.syncTasks(user);
       return { message: `Integration successful in ${integration.site}` };
     } catch (err) {
       throw new APIException(
