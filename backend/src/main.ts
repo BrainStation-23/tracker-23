@@ -13,6 +13,7 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
     credentials: true,
   };
+  // app.enableCors(options);
   app.enableCors(options);
   app.useGlobalFilters(new AllExceptionsFilter());
   await app.listen(process.env.PORT || 8080);
