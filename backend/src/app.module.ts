@@ -16,16 +16,16 @@ import { TestModule } from './test/test.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TestModule
-    // AuthModule,
-    // PrismaModule,
-    // TasksModule,
-    // SessionsModule,
-    // IntegrationsModule,
-    // ExportModule,
-    // WebhooksModule,
-    // NotificationModule,
-    // SprintsModule,
+    TestModule,
+    AuthModule,
+    PrismaModule,
+    TasksModule,
+    SessionsModule,
+    IntegrationsModule,
+    ExportModule,
+    WebhooksModule,
+    NotificationModule,
+    SprintsModule,
   ],
 })
 export class AppModule {}
