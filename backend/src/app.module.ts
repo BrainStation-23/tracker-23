@@ -17,7 +17,7 @@ import { TestModule } from './test/test.module';
       isGlobal: true,
     }),
     TestModule,
-    AuthModule,
+    // AuthModule,
     PrismaModule,
     TasksModule,
     SessionsModule,
