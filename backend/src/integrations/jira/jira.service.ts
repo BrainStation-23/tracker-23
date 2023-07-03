@@ -169,6 +169,7 @@ export class JiraService {
         );
       }
       await this.tasksService.setProjectStatuses(user);
+      await this.tasksService.getProjectList(user);
       // this.tasksService.syncTasks(user);
       return { message: `Integration successful in ${integration.site}` };
     } catch (err) {
@@ -185,7 +186,7 @@ export class JiraService {
     });
     try {
       const projects = jiraIntegration?.id
-        ? await this.prisma.projects.findMany({
+        ? await this.prisma.project.findMany({
             where: { integrationID: jiraIntegration.id },
             include: {
               statuses: true,

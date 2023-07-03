@@ -63,7 +63,7 @@ export class SprintsService {
     }
 
     //Relation between ProjectId and local project id
-    const project_list = await this.prisma.projects.findMany({
+    const project_list = await this.prisma.project.findMany({
       where: { integrationID: updated_integration.id },
     });
     const mappedProjectId = new Map<number, number>();

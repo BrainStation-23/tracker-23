@@ -330,7 +330,7 @@ export class TasksService {
       // await this.setProjectStatuses(user);
 
       //Relation between projectId and local project id
-      const projectsList = await this.prisma.projects.findMany({
+      const projectsList = await this.prisma.project.findMany({
         where: { integrationID: updated_integration.id },
       });
       const mappedProjects = new Map<string, number>();
@@ -580,7 +580,7 @@ export class TasksService {
       // await this.setProjectStatuses(user);
 
       //Relation between projectId and local project id
-      const projectsList = await this.prisma.projects.findMany({
+      const projectsList = await this.prisma.project.findMany({
         where: { integrationID: updated_integration.id },
       });
       const mappedProjects = new Map<string, number>();
@@ -1302,14 +1302,16 @@ export class TasksService {
               projectKey,
               projectName,
               integrationID: updated_integration.id,
+              userId: user.id,
+              integrated: false,
             });
           }
         }
       }
-      await this.prisma.projects.createMany({
+      await this.prisma.project.createMany({
         data: projectListArray,
       });
-      const projectsList = await this.prisma.projects.findMany({
+      const projectsList = await this.prisma.project.findMany({
         where: { integrationID: updated_integration.id },
       });
       const projectsWithoutStatuses = new Set();
@@ -1376,7 +1378,7 @@ export class TasksService {
 
       // return await this.getProjectStatuses(user);
       // await Promise.allSettled([
-      //   await this.prisma.projects.createMany({
+      //   await this.prisma.project.createMany({
       //     data: projectListArray,
       //   }),
       //   await this.prisma.statusDetail.createMany({ data: statusArray }),
@@ -1438,7 +1440,7 @@ export class TasksService {
     }
 
     //Relation between ProjectId and local project id
-    const project_list = await this.prisma.projects.findMany({
+    const project_list = await this.prisma.project.findMany({
       where: { integrationID: updated_integration.id },
     });
     const mappedProjectId = new Map<number, number>();
@@ -1585,7 +1587,7 @@ export class TasksService {
 
   async getProjectList(user: User) {
     const update_integration = await this.updateIntegration(user);
-    return await this.prisma.projects.findMany({
+    return await this.prisma.project.findMany({
       where: {
         integrationID: update_integration?.id,
       },
