@@ -46,7 +46,7 @@ model User {
   userAccounts  UserAccount[]
   accounts      Account[]
   tasks         Task[]
-  projectIds    Int[]
+  projects      Projects[]
   integrations  Integration[]
   notifications Notification[]
 }
@@ -88,6 +88,8 @@ model Projects {
 
   integration   Integration? @relation(fields: [integrationID], references: [id], onDelete: Cascade)
   integrationID Int?
+  users          User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int?
   tasks         Task[]
 }
 
