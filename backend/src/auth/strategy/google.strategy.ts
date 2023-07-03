@@ -6,10 +6,15 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private config: ConfigService) {
+
+    console.log("clientID: config.get('GOOGLE_CLIENT_ID'===========>>>>>", config.get('GOOGLE_CLIENT_ID'))
+    console.log("clientSecret: config.get('GOOGLE_CLIENT_SECRET')'===========>>>>>", config.get('GOOGLE_CLIENT_SECRET'))
+    console.log("callbackURL: config.get('GOOGLE_CALLBACK_URL')'===========>>>>>", config.get('GOOGLE_CALLBACK_URL'))
+
     super({
-      clientID: config.get('GOOGLE_CLIENT_ID'),
-      clientSecret: config.get('GOOGLE_CLIENT_SECRET'),
-      callbackURL: config.get('GOOGLE_CALLBACK_URL'),
+      clientID: '855361554866-s7p0pluushdetqk6rc3fvlnchtt33v8p.apps.googleusercontent.com',
+      clientSecret: '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',
+      callbackURL: 'https://yellow-mushroom-074048700.3.azurestaticapps.net/socialLogin/redirect',
       scope: ['email', 'profile'],
     });
   }
