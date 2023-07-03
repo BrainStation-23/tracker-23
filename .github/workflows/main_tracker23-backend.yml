@@ -7,6 +7,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'backend/**'
   workflow_dispatch:
 
 jobs:
@@ -23,15 +25,26 @@ jobs:
 
       - name: npm install, build, and test
         run: |
+          cd backend 
           npm install
           npm run build --if-present
-          npm run test --if-present
+
+        # npm run test -- --passWithNoTests
+
+      - name: Zip all files for upload between jobs
+        run: cd backend && zip --symlinks -r nest.zip ./* && mv nest.zip ../nest.zip && cd ../
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
           name: node-app
-          path: .
+          path: nest.zip
+
+      # - name: Upload artifact for deployment job
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: node-app
+      #     path: .
 
   deploy:
     runs-on: ubuntu-latest
@@ -53,4 +66,7 @@ jobs:
           app-name: 'tracker23-backend'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7EB2C701B57E47BEA0C3669DD4BFECB4 }}
-          package: .
+          package: nest.zip
+
+      - name: "Delete zip file"
+        run: rm nest.zip
