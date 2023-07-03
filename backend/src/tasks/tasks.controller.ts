@@ -130,4 +130,20 @@ export class TasksController {
   async getAllStatus(@GetUser() user: User) {
     return this.tasksService.getAllStatus(user);
   }
+
+  @Get('project-tasks/:projectId')
+  @UseGuards(JwtAuthGuard)
+  async projectTasks(
+    @GetUser() user: User,
+    @Param('projectId') projectId: string,
+    @Response() res: any,
+  ) {
+    return this.tasksService.projectTasks(user, Number(projectId), res);
+  }
+
+  @Get('project-list')
+  @UseGuards(JwtAuthGuard)
+  async getProjectList(@GetUser() user: User) {
+    return this.tasksService.getProjectList(user);
+  }
 }
