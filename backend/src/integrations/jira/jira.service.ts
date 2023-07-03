@@ -198,6 +198,7 @@ export class JiraService {
         projectKey: 'None',
         projectName: 'T23',
         integrationID: -1,
+        userId: -1,
         statuses: [
           {
             id: 0,

@@ -90,7 +90,7 @@ model Project {
   integration   Integration? @relation(fields: [integrationID], references: [id], onDelete: Cascade)
   integrationID Int?
   tasks         Task[]
-  User          User?        @relation(fields: [userId], references: [id])
+  User          User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        Int?
 }
 
