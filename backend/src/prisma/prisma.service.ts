@@ -22,6 +22,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
         'AZURE_POSTGRESQL_PORT',
       )}/${config.get('AZURE_POSTGRESQL_DATABASE')}`;
     }
+    console.log(
+      '🚀 ~ file: prisma.service.ts:24 ~ PrismaService ~ url=`postgres://${config.get ~ url:',
+      url,
+    );
     super({
       datasources: {
         db: {
