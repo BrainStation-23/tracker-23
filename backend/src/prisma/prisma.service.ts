@@ -6,7 +6,12 @@ import { PrismaClient } from '@prisma/client';
 export class PrismaService extends PrismaClient implements OnModuleInit {
   // connection test
   async onModuleInit() {
-    await this.$connect();
+    try {
+      await this.$connect();
+      console.log('Database connection successful!');
+    } catch (error) {
+      console.error('Failed to connect to the database:', error);
+    }
   }
 
   constructor(config: ConfigService) {
