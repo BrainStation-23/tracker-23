@@ -28,9 +28,6 @@ jobs:
           npm run build --if-present
 
         # npm run test -- --passWithNoTests
-        
-      - name: Prisma migration
-        run: npx prisma migrate deploy --preview-feature
 
       - name: Zip all files for upload between jobs
         run: cd backend && zip --symlinks -r nest.zip ./* && mv nest.zip ../nest.zip && cd ../
