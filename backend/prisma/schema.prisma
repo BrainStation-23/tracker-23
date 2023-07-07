@@ -84,6 +84,7 @@ model Project {
   projectId   String
   projectName String?
   projectKey  String?
+  source      String
   integrated  Boolean        @default(false)
   statuses    StatusDetail[]
 
