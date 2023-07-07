@@ -414,3 +414,29 @@ export async function getJiraActiveSprintTasksRest(
     return false;
   }
 }
+
+export async function getAllProjectsRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.allProjects}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getProjectTasksRest(id: number) {
+  try {
+    const res = await axios.get(`${apiEndPoints.projectTasks}/${id}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function deleteProjectTasksRest(id: number) {
+  try {
+    const res = await axios.post(`${apiEndPoints.projectTasks}/${id}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
