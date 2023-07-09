@@ -325,7 +325,7 @@ export async function pinTaskRest(taskId: any, pinned: boolean) {
   }
 }
 
-export async function getProjectWiseStatusRest() {
+export async function getIntegratedProjectStatusesRest() {
   try {
     const res = await axios.get(`${apiEndPoints.projectWiseStatus}`);
     return res.data;

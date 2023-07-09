@@ -38,7 +38,7 @@ export interface apiFunction {
     data: UpdateTaskEstimationParams
   ) => Promise<any>;
   pinTask: (taskId: any, pinned: boolean) => Promise<any>;
-  getProjectWiseStatus: () => Promise<any>;
+  getIntegratedProjectStatuses: () => Promise<any>;
   getNotifications: () => Promise<any>;
   markNotificationSeen: (id: number) => Promise<any>;
   markAllNotificationsSeen: () => Promise<any>;
