@@ -1,14 +1,25 @@
-import { Module } from '@nestjs/common';
-import { TasksService } from './tasks.service';
-import { TasksController } from './tasks.controller';
-import { HttpModule } from '@nestjs/axios';
-import { MyGateway } from 'src/notifications/socketGateway';
 import { AuthService } from 'src/auth/auth.service';
+import { IntegrationsModule } from 'src/integrations/integrations.module';
+import { IntegrationsService } from 'src/integrations/integrations.service';
+import { MyGateway } from 'src/notifications/socketGateway';
+
+import { HttpModule } from '@nestjs/axios';
+import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
+import { SprintsModule } from '../sprints/sprints.module';
+import { TasksController } from './tasks.controller';
+import { TasksService } from './tasks.service';
+
 @Module({
-  imports: [HttpModule.register({})],
-  providers: [TasksService, MyGateway, AuthService, JwtService],
+  imports: [HttpModule.register({}), SprintsModule, IntegrationsModule],
+  providers: [
+    TasksService,
+    MyGateway,
+    AuthService,
+    JwtService,
+    IntegrationsService,
+  ],
   controllers: [TasksController],
   exports: [TasksService],
 })

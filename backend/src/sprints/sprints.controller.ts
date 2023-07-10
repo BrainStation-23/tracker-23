@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { SprintsService } from './sprints.service';
 import { JwtAuthGuard } from 'src/guard';
 import { GetUser } from 'src/decorator';
@@ -8,11 +8,6 @@ import { GetSprintListQueryDto } from './dto';
 @Controller('sprints')
 export class SprintsController {
   constructor(private sprintsService: SprintsService) {}
-  @Post('issue-list')
-  @UseGuards(JwtAuthGuard)
-  async createSprintAndTask(@GetUser() user: User) {
-    return this.sprintsService.createSprintAndTask(user);
-  }
 
   @Get('sprint-list')
   @UseGuards(JwtAuthGuard)

@@ -1,3 +1,6 @@
+import { GetUser } from 'src/decorator';
+import { JwtAuthGuard } from 'src/guard';
+
 import {
   Body,
   Controller,
@@ -13,6 +16,8 @@ import {
   Response,
   UseGuards,
 } from '@nestjs/common';
+import { Task, User } from '@prisma/client';
+
 import {
   CreateTaskDto,
   EstimationReqBodyDto,
@@ -22,9 +27,6 @@ import {
   UpdatePinDto,
 } from './dto';
 import { TasksService } from './tasks.service';
-import { Task, User } from '@prisma/client';
-import { JwtAuthGuard } from 'src/guard';
-import { GetUser } from 'src/decorator';
 
 @Controller('tasks')
 export class TasksController {
@@ -131,14 +133,24 @@ export class TasksController {
     return this.tasksService.getAllStatus(user);
   }
 
-  @Get('project-tasks/:projectId')
+  @Get('project-tasks/:id')
   @UseGuards(JwtAuthGuard)
-  async projectTasks(
+  async importProjectTasks(
     @GetUser() user: User,
-    @Param('projectId') projectId: string,
+    @Param('id') id: string,
     @Response() res: any,
   ) {
-    return this.tasksService.projectTasks(user, Number(projectId), res);
+    return this.tasksService.importProjectTasks(user, Number(id), res);
+  }
+
+  @Post('project-tasks/:id')
+  @UseGuards(JwtAuthGuard)
+  async deleteProjectTasks(
+    @GetUser() user: User,
+    @Param('id') id: string,
+    @Response() res: any,
+  ) {
+    return this.tasksService.deleteProjectTasks(user, Number(id), res);
   }
 
   @Get('project-list')
