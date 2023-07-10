@@ -1,30 +1,36 @@
-import { HttpService } from '@nestjs/axios';
-import { ConfigService } from '@nestjs/config';
-import { IntegrationType, User } from '@prisma/client';
 import axios from 'axios';
+import { IntegrationsService } from 'src/integrations/integrations.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { TasksService } from 'src/tasks/tasks.service';
-import { GetSprintListQueryDto } from './dto';
+
 import { Injectable } from '@nestjs/common';
+import { Integration, IntegrationType, User } from '@prisma/client';
+
+import { GetSprintListQueryDto } from './dto';
+
 @Injectable()
 export class SprintsService {
   constructor(
-    private config: ConfigService,
     private prisma: PrismaService,
-    private httpService: HttpService,
-    private taskService: TasksService,
+    private integrationsService: IntegrationsService,
   ) {}
 
-  async createSprintAndTask(user: User) {
+  async createSprintAndTask(user: User, integrationID: number) {
     const sprint_list: any[] = [];
     const issue_list: any[] = [];
     const validSprint: any[] = [];
     const toBeUpdated: any[] = [];
     const sprintPromises: Promise<any>[] = [];
     const issuePromises: Promise<any>[] = [];
-    const updated_integration = await this.taskService.updateIntegration(user);
-    if (!updated_integration) return null;
-    // console.log(formateReqBody);
+    const updated_integration =
+      await this.integrationsService.updateIntegration(user, integrationID);
+    if (!updated_integration) {
+      console.log(
+        '🚀 ~ file: sprints.service.ts:31 ~ SprintsService ~ createSprintAndTask ~ updated_integration:',
+        updated_integration,
+      );
+      return [];
+    }
+
     const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/agile/1.0/board`;
     const config = {
       method: 'get',
@@ -76,6 +82,9 @@ export class SprintsService {
       // console.log(projectId);
       const boardId = projectId && mappedBoardId.get(projectId);
       // console.log(boardId);
+      if (!boardId) {
+        continue;
+      }
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/agile/1.0/board/${boardId}/sprint`;
       const config = {
         method: 'get',
@@ -93,7 +102,12 @@ export class SprintsService {
       sprintPromises.map((p) =>
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         p.catch((err) => {
-          console.error('This board has no sprint!');
+          console.error(
+            '🚀 ~ file: tasks.service.ts:1544 ~ TasksService ~ createSprintAndTask ~ err:',
+            err.config.url,
+            err.message,
+            'This board has no sprint!',
+          );
         }),
       ),
     );
@@ -214,12 +228,6 @@ export class SprintsService {
   }
 
   async getSprintList(user: User, reqBody: GetSprintListQueryDto) {
-    const tmpSprints = await this.prisma.sprint.findMany({
-      where: {
-        userId: user.id,
-      },
-    });
-    if (tmpSprints.length === 0) await this.createSprintAndTask(user);
     try {
       const st = reqBody.state as unknown as string;
       const array =
@@ -241,17 +249,11 @@ export class SprintsService {
   }
 
   async getActiveSprintTasks(user: User, reqBody: GetSprintListQueryDto) {
-    const tmpSprints = await this.prisma.sprint.findMany({
-      where: {
-        userId: user.id,
-      },
-    });
-    if (tmpSprints.length === 0) await this.createSprintAndTask(user);
     try {
-      const updated_integration = await this.taskService.updateIntegration(
-        user,
-      );
-      if (!updated_integration) return [];
+      const integrations = await this.prisma.integration.findMany({
+        where: { userId: user.id },
+      });
+      if (!(integrations.length > 0)) return [];
       const { priority, status, text } = reqBody;
       const priority1: any = (priority as unknown as string)?.split(',');
       const status1: any = (status as unknown as string)?.split(',');
@@ -266,12 +268,14 @@ export class SprintsService {
         },
       });
       const sprintIds = sprints.map((sprint) => sprint.id);
-      const inttegrationId = updated_integration?.jiraAccountId ?? '-1';
-      const taskIds = await this.taskService.getSprintTasks(user, sprintIds);
+      const integrationIds = integrations.map(
+        (integration: Integration) => integration.jiraAccountId,
+      );
+      const taskIds = await this.getSprintTasksIds(user, sprintIds);
 
       return await this.prisma.task.findMany({
         where: {
-          assigneeId: inttegrationId,
+          assigneeId: { in: integrationIds },
           source: IntegrationType.JIRA,
           id: { in: taskIds },
           ...(priority1 && { priority: { in: priority1 } }),
@@ -287,6 +291,24 @@ export class SprintsService {
           sessions: true,
         },
       });
+    } catch (error) {
+      return [];
+    }
+  }
+  async getSprintTasksIds(user: User, sprintIds: number[]) {
+    try {
+      const getSprintTasks = await this.prisma.sprintTask.findMany({
+        where: {
+          userId: user.id,
+          sprintId: { in: sprintIds.map((id) => Number(id)) },
+        },
+      });
+      const taskIds: number[] = [];
+      for (let index = 0; index < getSprintTasks.length; index++) {
+        const val = getSprintTasks[index];
+        taskIds.push(val.taskId);
+      }
+      return taskIds;
     } catch (error) {
       return [];
     }
