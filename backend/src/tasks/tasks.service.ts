@@ -1,12 +1,23 @@
+import axios from 'axios';
+import { coreConfig } from 'config/core';
+import { Response } from 'express';
+import { lastValueFrom } from 'rxjs';
+import { IntegrationsService } from 'src/integrations/integrations.service';
+import { APIException } from 'src/internal/exception/api.exception';
+import { MyGateway } from 'src/notifications/socketGateway';
+import { PrismaService } from 'src/prisma/prisma.service';
+
+import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import {
+  Integration,
   IntegrationType,
   SessionStatus,
   StatusDetail,
   Task,
   User,
 } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+
 import {
   CreateTaskDto,
   GetTaskQuery,
@@ -14,21 +25,13 @@ import {
   TimeSpentReqBodyDto,
   UpdatePinDto,
 } from './dto';
-import { HttpService } from '@nestjs/axios';
-import { lastValueFrom } from 'rxjs';
-import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
-import { Response } from 'express';
-import { APIException } from 'src/internal/exception/api.exception';
-import { coreConfig } from 'config/core';
-import { MyGateway } from 'src/notifications/socketGateway';
 
 @Injectable()
 export class TasksService {
   constructor(
-    private config: ConfigService,
     private prisma: PrismaService,
     private httpService: HttpService,
+    private integrationsService: IntegrationsService,
     private myGateway: MyGateway,
   ) {}
 
@@ -267,14 +270,26 @@ export class TasksService {
     return await this.prisma.task.delete({ where: { id } });
   }
 
-  async projectTasks(user: User, projectId: number, res?: Response) {
+  async importProjectTasks(user: User, id: number, res?: Response) {
+    const project = await this.prisma.project.findFirst({
+      where: { id: id },
+      include: { integration: true },
+    });
+    if (!project) {
+      throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
+    }
+    const projectId = project?.projectId;
+    console.log(
+      '🚀 ~ file: tasks.service.ts:271 ~ TasksService ~ projectTasks ~ projectId:',
+      projectId,
+    );
     try {
       const notification = await this.prisma.notification.create({
         data: {
           seen: false,
           author: 'SYSTEM',
-          title: 'Sync Started',
-          description: 'Sync Started',
+          title: 'Importing Project',
+          description: 'Importing Project',
           userId: user.id,
         },
       });
@@ -288,7 +303,12 @@ export class TasksService {
     ///////////////////////////////
 
     console.log('hello first');
-    const updated_integration = await this.updateIntegration(user);
+    const updated_integration =
+      project.integrationID &&
+      (await this.integrationsService.updateIntegration(
+        user,
+        project.integrationID,
+      ));
     console.log('updated_integration', updated_integration);
     if (!updated_integration) {
       try {
@@ -296,8 +316,8 @@ export class TasksService {
           data: {
             seen: false,
             author: 'SYSTEM',
-            title: 'Sync Failed',
-            description: 'Sync Failed',
+            title: 'Project Import Failed',
+            description: 'Project Import Failed',
             userId: user.id,
           },
         });
@@ -321,22 +341,7 @@ export class TasksService {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${updated_integration.accessToken}`,
       };
-      // headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
-      if (res) {
-        res.json(await this.syncCall(StatusEnum.IN_PROGRESS, user.id));
-      } else {
-        await this.syncCall(StatusEnum.IN_PROGRESS, user.id);
-      }
-      // await this.setProjectStatuses(user);
 
-      //Relation between projectId and local project id
-      const projectsList = await this.prisma.project.findMany({
-        where: { integrationID: updated_integration.id },
-      });
-      const mappedProjects = new Map<string, number>();
-      projectsList.map((project: any) => {
-        mappedProjects.set(project.projectId, project.id);
-      });
       const url = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/search?jql=project=${projectId}&maxResults=1000`;
       const fields =
         'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority';
@@ -392,7 +397,7 @@ export class TasksService {
               ? integratedTask.timeoriginalestimate / 3600
               : null,
             projectName: integratedTask.project.name,
-            projectId: mappedProjects.get(integratedTask.project.id) ?? null,
+            projectId: project.id,
             status: taskStatus,
             statusCategoryName: integratedTask.status.statusCategory.name
               .replace(' ', '_')
@@ -429,7 +434,6 @@ export class TasksService {
         }
         let total = 0;
         try {
-          console.log('Hello from line 1 worklog');
           for (const [integratedTaskId] of mappedIssues) {
             const fields = 'issueId';
             const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${integratedTaskId}/worklog`;
@@ -447,10 +451,6 @@ export class TasksService {
             if (worklogPromises.length >= coreConfig.promiseQuantity) {
               total += coreConfig.promiseQuantity;
               const resolvedPromise = await Promise.all(worklogPromises);
-              console.log(
-                'Hello from log no 2 worklog',
-                resolvedPromise.length,
-              );
               worklogsList.push(...resolvedPromise);
               worklogPromises = [];
             }
@@ -459,7 +459,6 @@ export class TasksService {
           if (worklogPromises.length) {
             const resolvedPromise = await Promise.all(worklogPromises);
             worklogsList.push(...resolvedPromise);
-            console.log('Hello from log final worklog', resolvedPromise.length);
           }
         } catch (error) {
           console.log(total, mappedIssues.size);
@@ -501,20 +500,35 @@ export class TasksService {
       }
       const done = await this.syncCall(StatusEnum.DONE, user.id);
       if (done) {
-        await this.createSprintAndTask(user);
+        await this.createSprintAndTask(user, updated_integration.id);
       }
-
+      try {
+        const projectIntegrated = await this.prisma.project.update({
+          where: { id: id },
+          data: { integrated: true },
+        });
+        console.log(
+          '🚀 ~ file: tasks.service.ts:521 ~ TasksService ~ projectTasks ~ projectIntegrated:',
+          projectIntegrated,
+        );
+      } catch (error) {
+        console.log(
+          '🚀 ~ file: tasks.service.ts:521 ~ TasksService ~ projectTasks ~ error:',
+          error,
+        );
+      }
       try {
         const notification = await this.prisma.notification.create({
           data: {
             seen: false,
             author: 'SYSTEM',
-            title: 'Sync Completed',
-            description: 'Sync Completed',
+            title: 'Importing Project',
+            description: 'Importing Project',
             userId: user.id,
           },
         });
         this.myGateway.sendNotification(`${user.id}`, notification);
+        res?.json({ message: 'Project Imported' });
       } catch (error) {
         console.log(
           '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
@@ -527,13 +541,12 @@ export class TasksService {
           data: {
             seen: false,
             author: 'SYSTEM',
-            title: 'Sync Failed',
-            description: 'Sync Failed',
+            title: 'Importing Project Failed',
+            description: 'Importing Project Failed',
             userId: user.id,
           },
         });
         this.myGateway.sendNotification(`${user.id}`, notification);
-        await this.syncCall(StatusEnum.FAILED, user.id);
       } catch (error) {
         console.log(
           '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
@@ -545,7 +558,11 @@ export class TasksService {
     }
   }
 
+  // this will not work
   async syncTasks(user: User, res?: Response) {
+    console.log(
+      '🚀 ~ file: tasks.service.ts:557 ~ TasksService ~ syncTasks ~ syncTasks:',
+    );
     try {
       const notification = await this.prisma.notification.create({
         data: {
@@ -565,7 +582,8 @@ export class TasksService {
     }
     ///////////////////////////////
     try {
-      const updated_integration = await this.updateIntegration(user);
+      const updated_integration =
+        await this.integrationsService.updateIntegration(user, 6);
       if (!updated_integration) return [];
       const headers: any = {
         'Content-Type': 'application/json',
@@ -679,7 +697,6 @@ export class TasksService {
         }
         let total = 0;
         try {
-          console.log('Hello from line 1 worklog');
           for (const [integratedTaskId] of mappedIssues) {
             const fields = 'issueId';
             const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${integratedTaskId}/worklog`;
@@ -697,10 +714,6 @@ export class TasksService {
             if (worklogPromises.length >= coreConfig.promiseQuantity) {
               total += coreConfig.promiseQuantity;
               const resolvedPromise = await Promise.all(worklogPromises);
-              console.log(
-                'Hello from log no 2 worklog',
-                resolvedPromise.length,
-              );
               worklogsList.push(...resolvedPromise);
               worklogPromises = [];
             }
@@ -709,7 +722,7 @@ export class TasksService {
           if (worklogPromises.length) {
             const resolvedPromise = await Promise.all(worklogPromises);
             worklogsList.push(...resolvedPromise);
-            console.log('Hello from log final worklog', resolvedPromise.length);
+            // console.log('Hello from log final worklog', resolvedPromise.length);
           }
         } catch (error) {
           console.log(total, mappedIssues.size);
@@ -754,7 +767,7 @@ export class TasksService {
       }
       const done = await this.syncCall(StatusEnum.DONE, user.id);
       if (done) {
-        await this.createSprintAndTask(user);
+        // await this.createSprintAndTask(user);
       }
 
       try {
@@ -865,17 +878,6 @@ export class TasksService {
     }
   }
 
-  getTransitionId(status: string) {
-    switch (status) {
-      case 'DONE':
-        return '31';
-      case 'IN_PROGRESS':
-        return '21';
-      case 'TODO':
-        return '11';
-    }
-  }
-
   async updateIssueStatus(user: User, taskId: string, status: string) {
     try {
       const task = await this.prisma.task.findFirst({
@@ -900,7 +902,19 @@ export class TasksService {
         });
         return updatedTask;
       } else if (task && task.projectId) {
-        const updated_integration = await this.updateIntegration(user);
+        const project = await this.prisma.project.findFirst({
+          where: { id: task.projectId },
+          include: { integration: true },
+        });
+        if (!project)
+          throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+
+        const updated_integration =
+          project.integration?.id &&
+          (await this.integrationsService.updateIntegration(
+            user,
+            project.integration.id,
+          ));
         const statuses: StatusDetail[] = task?.projectId
           ? await this.prisma.statusDetail.findMany({
               where: {
@@ -908,6 +922,11 @@ export class TasksService {
               },
             })
           : [];
+        if (!updated_integration)
+          throw new APIException(
+            'Updating Integration Failed',
+            HttpStatus.BAD_REQUEST,
+          );
         const statusNames = statuses?.map((status) => status.name);
         const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}/transitions`;
         if (statuses[0].transitionId === null) {
@@ -915,7 +934,7 @@ export class TasksService {
             method: 'get',
             url,
             headers: {
-              Authorization: `Bearer ${updated_integration?.accessToken}`,
+              Authorization: `Bearer ${updated_integration.accessToken}`,
               'Content-Type': 'application/json',
             },
           };
@@ -1009,8 +1028,24 @@ export class TasksService {
         });
         return updatedTask;
       } else if (task && task.projectId) {
-        const updated_integration = await this.updateIntegration(user);
+        const project = await this.prisma.project.findFirst({
+          where: { id: task.projectId },
+          include: { integration: true },
+        });
+        if (!project)
+          throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
 
+        const updated_integration =
+          project.integration?.id &&
+          (await this.integrationsService.updateIntegration(
+            user,
+            project.integration.id,
+          ));
+        if (!updated_integration)
+          throw new APIException(
+            'Updating Integration Failed',
+            HttpStatus.BAD_REQUEST,
+          );
         const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}`;
 
         const estimationBody = JSON.stringify({
@@ -1072,7 +1107,9 @@ export class TasksService {
     timeSpentReqBody: TimeSpentReqBodyDto,
   ) {
     try {
-      const updated_integration = await this.updateIntegration(user);
+      // fix this incase u need this api
+      const updated_integration =
+        await this.integrationsService.updateIntegration(user, 7);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${issueId}/worklog`;
       const config = {
         method: 'post',
@@ -1237,41 +1274,9 @@ export class TasksService {
     }
   }
 
-  async updateIntegration(user: User) {
-    const tokenUrl = 'https://auth.atlassian.com/oauth/token';
-    const headers: any = { 'Content-Type': 'application/json' };
-    const integration = await this.prisma.integration.findFirst({
-      where: { userId: user.id, type: IntegrationType.JIRA },
-    });
-    if (!integration) {
-      return null;
-    }
-
-    const data = {
-      grant_type: 'refresh_token',
-      client_id: this.config.get('JIRA_CLIENT_ID'),
-      client_secret: this.config.get('JIRA_SECRET_KEY'),
-      refresh_token: integration?.refreshToken,
-    };
-
-    const tokenResp = (
-      await lastValueFrom(this.httpService.post(tokenUrl, data, headers))
-    ).data;
-
+  async setProjectStatuses(user: User, integration: Integration) {
     const updated_integration =
-      integration &&
-      (await this.prisma.integration.update({
-        where: { id: integration?.id },
-        data: {
-          accessToken: tokenResp.access_token,
-          refreshToken: tokenResp.refresh_token,
-        },
-      }));
-    return updated_integration;
-  }
-
-  async setProjectStatuses(user: User) {
-    const updated_integration = await this.updateIntegration(user);
+      await this.integrationsService.updateIntegration(user, integration.id);
     if (!updated_integration) return [];
     // let statusList: any;
     const getStatusListUrl = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/status`;
@@ -1299,8 +1304,11 @@ export class TasksService {
             projectIdList.add(projectId);
             projectListArray.push({
               projectId,
-              projectKey,
               projectName,
+              projectKey,
+              source: updated_integration
+                ? `${updated_integration.site}/browse/${projectKey}`
+                : '',
               integrationID: updated_integration.id,
               userId: user.id,
               integrated: false,
@@ -1392,15 +1400,22 @@ export class TasksService {
     }
   }
 
-  async createSprintAndTask(user: User) {
+  async createSprintAndTask(user: User, integrationID: number) {
     const sprint_list: any[] = [];
     const issue_list: any[] = [];
     const validSprint: any[] = [];
     const toBeUpdated: any[] = [];
     const sprintPromises: Promise<any>[] = [];
     const issuePromises: Promise<any>[] = [];
-    const updated_integration = await this.updateIntegration(user);
-    if (!updated_integration) return [];
+    const updated_integration =
+      await this.integrationsService.updateIntegration(user, integrationID);
+    if (!updated_integration) {
+      console.log(
+        '🚀 ~ file: sprints.service.ts:31 ~ SprintsService ~ createSprintAndTask ~ updated_integration:',
+        updated_integration,
+      );
+      return [];
+    }
     // console.log(formateReqBody);
     const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/agile/1.0/board`;
     const config = {
@@ -1453,6 +1468,9 @@ export class TasksService {
       // console.log(projectId);
       const boardId = projectId && mappedBoardId.get(projectId);
       // console.log(boardId);
+      if (!boardId) {
+        continue;
+      }
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/agile/1.0/board/${boardId}/sprint`;
       const config = {
         method: 'get',
@@ -1470,7 +1488,12 @@ export class TasksService {
       sprintPromises.map((p) =>
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         p.catch((err) => {
-          console.error('This board has no sprint!');
+          console.error(
+            '🚀 ~ file: tasks.service.ts:1544 ~ TasksService ~ createSprintAndTask ~ err:',
+            err.config.url,
+            err.message,
+            'This board has no sprint!',
+          );
         }),
       ),
     );
@@ -1570,7 +1593,12 @@ export class TasksService {
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [CST, sprintTasks] = await Promise.all([
+    const [DST, CST, sprintTasks] = await Promise.all([
+      await this.prisma.sprintTask.deleteMany({
+        where: {
+          userId: user.id,
+        },
+      }),
       await this.prisma.sprintTask.createMany({
         data: issue_list,
       }),
@@ -1582,16 +1610,71 @@ export class TasksService {
       }),
     ]);
 
-    // return { total: sprintTasks.length, sprintTasks };
+    return { total: sprintTasks.length, sprintTasks };
   }
 
   async getProjectList(user: User) {
-    const update_integration = await this.updateIntegration(user);
+    const integrationIds = (
+      await this.prisma.integration.findMany({
+        where: { userId: user.id },
+      })
+    )?.map((integration: Integration) => integration.id);
+    return await this.prisma.project.findMany({
+      where: {
+        integrationID: { in: integrationIds },
+      },
+    });
+  }
+
+  async getIntegrationProjectList(user: User, integrationId: number) {
+    const update_integration = await this.integrationsService.updateIntegration(
+      user,
+      integrationId,
+    );
     return await this.prisma.project.findMany({
       where: {
         integrationID: update_integration?.id,
       },
     });
+  }
+
+  async deleteProjectTasks(user: User, id: number, res: Response) {
+    const project = await this.prisma.project.findFirst({
+      where: { id: id },
+      include: { integration: true },
+    });
+    if (!project) {
+      throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
+    }
+    try {
+      await this.prisma.task.deleteMany({
+        where: {
+          projectId: id,
+        },
+      });
+      try {
+        const projectIntegrated = await this.prisma.project.update({
+          where: { id: id },
+          data: { integrated: false },
+        });
+        console.log(
+          '🚀 ~ file: tasks.service.ts:1704 ~ TasksService ~ deleteProjectTasks ~ projectIntegrated:',
+          projectIntegrated,
+        );
+        return res.status(202).json({ message: 'Project Deleted' });
+      } catch (error) {
+        console.log(
+          '🚀 ~ file: tasks.service.ts:521 ~ TasksService ~ projectTasks ~ error:',
+          error,
+        );
+      }
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: tasks.service.ts:1645 ~ TasksService ~ deleteProjectTasks ~ error:',
+        error,
+      );
+      throw new APIException('Internal server Error', HttpStatus.BAD_REQUEST);
+    }
   }
 }
 
