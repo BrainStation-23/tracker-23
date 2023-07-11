@@ -1,29 +1,38 @@
-import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
 import { Button } from "antd";
+import { ProjectDto } from "models/projects";
 
-const ImportedProject = () => {
+import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
+
+type Props = {
+  project: ProjectDto;
+  deleteProject: Function;
+};
+const ImportedProject = ({ project, deleteProject }: Props) => {
+  const deleteProjectTasks = async () => {
+    deleteProject(project);
+  };
   return (
     <div className="flex w-[500px] justify-between rounded-md border-2 p-3 hover:bg-gray-50">
       <div className="flex flex-col">
-        <div className=" font-bold">Project Name</div>
+        <div className=" font-bold">{project.projectName}</div>
         <div className="flex items-center gap-1">
           <div> Source :</div>
           <div
-            className="text-sm font-normal text-blue-500"
-            // onClick={() => {
-            //   window.open(data.site);
-            // }}
+            className="cursor-pointer text-sm font-normal text-blue-500"
+            onClick={() => {
+              window.open(project.source);
+            }}
           >
-            https://pm23.atlassian.net/jira/software/projects/T23
+            {project.source}
           </div>
         </div>
       </div>
       <div>
         <Button
           className="flex w-full gap-2 p-1"
-          // onClick={() => {
-          //   deleteTask(task.id);
-          // }}
+          onClick={() => {
+            deleteProjectTasks();
+          }}
           type="ghost"
         >
           <DeleteIconSvg />

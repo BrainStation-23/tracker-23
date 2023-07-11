@@ -424,7 +424,7 @@ export async function getAllProjectsRest() {
   }
 }
 
-export async function getProjectTasksRest(id: number) {
+export async function importProjectRest(id: number) {
   try {
     const res = await axios.get(`${apiEndPoints.projectTasks}/${id}`);
     return res.data;

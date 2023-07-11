@@ -36,7 +36,7 @@ import {
   updateSessionRest,
   updateTaskEstimationRest,
   updateTaskSTatusRest,
-  getProjectTasksRest,
+  importProjectRest,
 } from "./restApi";
 
 const graphqlApi: apiFunction = {
@@ -73,7 +73,7 @@ const graphqlApi: apiFunction = {
   getJiraSprints: getJiraSprintsRest,
   getJiraActiveSprintTasks: getJiraActiveSprintTasksRest,
   getAllProjects: getAllProjectsRest,
-  getProjectTasks: getProjectTasksRest,
+  importProject: importProjectRest,
   deleteProjectTasks: deleteProjectTasksRest,
 };
 
@@ -111,7 +111,7 @@ const restApi: apiFunction = {
   getJiraSprints: getJiraSprintsRest,
   getJiraActiveSprintTasks: getJiraActiveSprintTasksRest,
   getAllProjects: getAllProjectsRest,
-  getProjectTasks: getProjectTasksRest,
+  importProject: importProjectRest,
   deleteProjectTasks: deleteProjectTasksRest,
 };
 

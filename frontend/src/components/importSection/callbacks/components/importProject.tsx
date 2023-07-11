@@ -1,24 +1,15 @@
 import { Button, message } from "antd";
-import { userAPI } from "APIs";
 import { ProjectDto } from "models/projects";
-import { useRouter } from "next/router";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 
 type Props = {
   project: ProjectDto;
-  setSpinning: Function;
+  importIntegrationTasks: Function;
 };
-const ImportProject = ({ project, setSpinning }: Props) => {
-  const router = useRouter();
+const ImportProject = ({ project, importIntegrationTasks }: Props) => {
   const importProjectTasks = async () => {
-    setSpinning(true);
-    const res = await userAPI.importProject(project.id);
-    if (res) {
-      message.success(res.message);
-      router.push("/projects");
-    }
-    setSpinning(false);
+    importIntegrationTasks(project);
   };
   return (
     <div className="flex w-[500px] items-center justify-between rounded-md border-2 p-3 hover:bg-gray-50">

@@ -16,6 +16,7 @@ import { Providers } from "@/storage/redux/provider";
 import { getLocalStorage } from "@/storage/storage";
 
 import type { AppProps } from "next/app";
+import { logOutFunction } from "@/components/logout/logoutFunction";
 // Axios.defaults.baseURL = process?.env?.NEXT_PUBLIC_API_PREFIX_REST;
 // Axios.defaults.baseURL =
 //   "http://ec2-54-172-94-212.compute-1.amazonaws.com:3000";
@@ -41,7 +42,9 @@ Axios.interceptors.response.use(undefined, async (error) => {
     message.error(
       data?.error?.message ? data?.error?.message : "Something Went Wrong"
     );
-  if (status === 401) userAPI.logout();
+  if (status === 401) {
+    logOutFunction();
+  }
 
   throw error.response;
 });
