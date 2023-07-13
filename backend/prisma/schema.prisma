@@ -35,6 +35,7 @@ model Workspace {
 model UserWorkspace {
   id        Int      @id @default(autoincrement())
   role      Role     @default(USER) // Admin, User, etc.
+  valid Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -94,7 +95,7 @@ model Notification {
 
 model Integration {
   id               Int               @id @default(autoincrement())
-  siteId           String
+  siteId           String?
   type             IntegrationType
   site             String?
   Projects         Project[]
