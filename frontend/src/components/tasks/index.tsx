@@ -356,7 +356,7 @@ const TasksPage = () => {
     setSessionActionLoading(false);
   };
   const getProjects = async () => {
-    const res = await userAPI.getProjectWiseStatus();
+    const res = await userAPI.getIntegratedProjectStatuses();
     res?.length > 0 && dispatch(setProjectsSlice(res));
   };
 

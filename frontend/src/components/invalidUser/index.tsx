@@ -4,8 +4,10 @@ import LogOutButton from "../logout/logOutButton";
 import { useEffect } from "react";
 import { useState } from "react";
 import { logOutFunction } from "../logout/logoutFunction";
+import { useRouter } from "next/router";
 
 const InvalidUserPage = () => {
+  const router = useRouter();
   const [userDetails, setUserDetails] = useState(
     getLocalStorage("userDetails")
   );
@@ -16,9 +18,10 @@ const InvalidUserPage = () => {
   useEffect(() => {
     if (!getLocalStorage("userDetails")) {
       logOutFunction();
+      router.push("/login");
     }
     setUserDetails(getLocalStorage("userDetails"));
-  }, []);
+  }, [userDetails]);
 
   return (
     <div className="m-auto flex h-screen w-full flex-col items-center justify-center">

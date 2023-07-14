@@ -38,12 +38,15 @@ export interface apiFunction {
     data: UpdateTaskEstimationParams
   ) => Promise<any>;
   pinTask: (taskId: any, pinned: boolean) => Promise<any>;
-  getProjectWiseStatus: () => Promise<any>;
+  getIntegratedProjectStatuses: () => Promise<any>;
   getNotifications: () => Promise<any>;
   markNotificationSeen: (id: number) => Promise<any>;
   markAllNotificationsSeen: () => Promise<any>;
   deleteSession: (sessionId: number) => Promise<any>;
   updateSession: (sessionId: number, data: AddWorkLogParams) => Promise<any>;
   getJiraSprints: () => Promise<any>;
+  getAllProjects: () => Promise<any>;
+  importProject: (id: number) => Promise<any>;
+  deleteProjectTasks: (id: number) => Promise<any>;
   getJiraActiveSprintTasks: (searchParams?: SearchParamsModel) => Promise<any>;
 }

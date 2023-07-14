@@ -10,13 +10,15 @@ import {
   deleteSessionRest,
   deleteTaskRest,
   exportTasksRest,
+  getAllProjectsRest,
   getIntegrationsRest,
   getJiraActiveSprintTasksRest,
   getJiraLinkRest,
   getJiraSprintsRest,
   getNotificationsRest,
+  deleteProjectTasksRest,
   getProjectWiseHourRest,
-  getProjectWiseStatusRest,
+  getIntegratedProjectStatusesRest,
   getSpentTimePerDayRest,
   getTasksRest,
   googleLoginRest,
@@ -34,6 +36,7 @@ import {
   updateSessionRest,
   updateTaskEstimationRest,
   updateTaskSTatusRest,
+  importProjectRest,
 } from "./restApi";
 
 const graphqlApi: apiFunction = {
@@ -60,7 +63,7 @@ const graphqlApi: apiFunction = {
   updateTaskSTatus: updateTaskSTatusRest,
   pinTask: pinTaskRest,
   selectJiraIntegration: selectJiraIntegrationRest,
-  getProjectWiseStatus: getProjectWiseStatusRest,
+  getIntegratedProjectStatuses: getIntegratedProjectStatusesRest,
   getNotifications: getNotificationsRest,
   deleteSession: deleteSessionRest,
   updateSession: updateSessionRest,
@@ -69,6 +72,9 @@ const graphqlApi: apiFunction = {
   updateTaskEstimation: updateTaskEstimationRest,
   getJiraSprints: getJiraSprintsRest,
   getJiraActiveSprintTasks: getJiraActiveSprintTasksRest,
+  getAllProjects: getAllProjectsRest,
+  importProject: importProjectRest,
+  deleteProjectTasks: deleteProjectTasksRest,
 };
 
 const restApi: apiFunction = {
@@ -95,7 +101,7 @@ const restApi: apiFunction = {
   updateTaskSTatus: updateTaskSTatusRest,
   pinTask: pinTaskRest,
   selectJiraIntegration: selectJiraIntegrationRest,
-  getProjectWiseStatus: getProjectWiseStatusRest,
+  getIntegratedProjectStatuses: getIntegratedProjectStatusesRest,
   getNotifications: getNotificationsRest,
   deleteSession: deleteSessionRest,
   updateSession: updateSessionRest,
@@ -104,6 +110,9 @@ const restApi: apiFunction = {
   updateTaskEstimation: updateTaskEstimationRest,
   getJiraSprints: getJiraSprintsRest,
   getJiraActiveSprintTasks: getJiraActiveSprintTasksRest,
+  getAllProjects: getAllProjectsRest,
+  importProject: importProjectRest,
+  deleteProjectTasks: deleteProjectTasksRest,
 };
 
 export const userAPI: apiFunction =
