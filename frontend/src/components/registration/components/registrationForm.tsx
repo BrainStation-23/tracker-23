@@ -30,9 +30,10 @@ const RegistrationForm = ({ setIsModalOpen }: Props) => {
     if (userRegistered) {
       message.success("Singed up Successfully");
       router.push("/login");
-    } else {
-      message.error("email already Used");
     }
+    //  else {
+    //   message.error("email already Used");
+    // }
   };
 
   const onFinishFailed = (errorInfo: any) => {

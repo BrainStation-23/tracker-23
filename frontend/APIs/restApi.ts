@@ -56,7 +56,8 @@ export async function registerRest(
     const res = await axios.post(`${apiEndPoints.register}`, data);
     return res.data;
   } catch (error: any) {
-    return error;
+    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
+    return null;
   }
 }
 
