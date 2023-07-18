@@ -39,13 +39,17 @@ model UserWorkspace {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user            User              @relation(fields: [userId], references: [id])
-  userId          Int
-  workspace       Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId     Int
   callSync        callSync[]
   Task            Task[]
   UserIntegration UserIntegration[]
+
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId Int
+
+  invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
+  invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
 }
 
 model WorkspaceInvitation {
@@ -57,9 +61,9 @@ model WorkspaceInvitation {
   Workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int
 
-  inviter       User  @relation("InviterUser", fields: [inviterUserId], references: [id])
+  inviter       UserWorkspace  @relation("InviterUser", fields: [inviterUserId], references: [id])
   inviterUserId Int
-  invitedUser   User? @relation("InvitedUser", fields: [invitedUserId], references: [id])
+  invitedUser   UserWorkspace? @relation("InvitedUser", fields: [invitedUserId], references: [id])
   invitedUserId Int?
 }
 
@@ -73,13 +77,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userWorkspaces      UserWorkspace[]
+  userWorkspaces UserWorkspace[]
   // ownedWorkspaces     Workspace[]
   // tasks               Task[]
-  notifications       Notification[]
-  invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
-  invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
+  notifications  Notification[]
   // UserIntegrations    UserIntegration[]
+
+  // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
+  // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
 }
 
 model Notification {
