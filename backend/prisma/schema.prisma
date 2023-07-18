@@ -24,7 +24,7 @@ model Workspace {
   projects             Project[]
   integrations         Integration[]
   notifications        Notification[]
-  workspaceInvitations WorkspaceInvitation[]
+  // workspaceInvitations WorkspaceInvitation[]
 
   // Creator          User              @relation(fields: [creatorUserId], references: [id])
   creatorUserId    Int
@@ -48,24 +48,28 @@ model UserWorkspace {
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int
 
-  invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
-  invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
+  inviterId    Int?
+  invitationID String
+  status        String // active , invited , inactive, deleted
+
+  // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
+  // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
 }
 
-model WorkspaceInvitation {
-  id           Int               @id @default(autoincrement())
-  role         Role              @default(USER) // Admin, user
-  status       InvitationStatus? //pending accepted, rejected
-  invitedEmail String
+// model WorkspaceInvitation {
+//   id           Int               @id @default(autoincrement())
+//   role         Role              @default(USER) // Admin, user
+//   status       InvitationStatus? //pending accepted, rejected
+//   invitedEmail String
 
-  Workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId Int
+//   Workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+//   workspaceId Int
 
-  inviter       UserWorkspace  @relation("InviterUser", fields: [inviterUserId], references: [id])
-  inviterUserId Int
-  invitedUser   UserWorkspace? @relation("InvitedUser", fields: [invitedUserId], references: [id])
-  invitedUserId Int?
-}
+//   inviter       UserWorkspace  @relation("InviterUser", fields: [inviterUserId], references: [id])
+//   inviterUserId Int
+//   invitedUser   UserWorkspace? @relation("InvitedUser", fields: [invitedUserId], references: [id])
+//   invitedUserId Int?
+// }
 
 model User {
   id        Int      @id @default(autoincrement())
