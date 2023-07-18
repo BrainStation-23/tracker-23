@@ -19,11 +19,11 @@ model Workspace {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userWorkspaces       UserWorkspace[]
-  tasks                Task[]
-  projects             Project[]
-  integrations         Integration[]
-  notifications        Notification[]
+  userWorkspaces UserWorkspace[]
+  tasks          Task[]
+  projects       Project[]
+  integrations   Integration[]
+  notifications  Notification[]
   // workspaceInvitations WorkspaceInvitation[]
 
   // Creator          User              @relation(fields: [creatorUserId], references: [id])
@@ -50,7 +50,7 @@ model UserWorkspace {
 
   inviterId    Int?
   invitationID String
-  status        String // active , invited , inactive, deleted
+  status       String // active , invited , inactive, deleted
 
   // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
   // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
@@ -205,6 +205,8 @@ model Task {
   url                String?
   pinned             Boolean?        @default(false)
 
+  jiraUpdatedAt DateTime?
+
   sessions Session[]
 
   createdAt DateTime @default(now())
@@ -218,6 +220,10 @@ model Task {
   workspaceId     Int?
   // User            User?          @relation(fields: [userId], references: [id])
   // userId          Int?
+
+  parentTask   Task?  @relation("childTask", fields: [parentTaskId], references: [id])
+  parentTaskId Int?
+  childTask    Task[] @relation("childTask")
 }
 
 model Session {
