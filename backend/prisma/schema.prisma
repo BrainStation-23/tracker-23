@@ -13,42 +13,82 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Account {
-  id           Int           @id @default(autoincrement())
-  firstName    String?
-  lastName     String?
-  users        User[]
-  userAccounts UserAccount[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+model Workspace {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userWorkspaces UserWorkspace[]
+  tasks          Task[]
+  projects       Project[]
+  integrations   Integration[]
+  notifications  Notification[]
+  // workspaceInvitations WorkspaceInvitation[]
+
+  // Creator          User              @relation(fields: [creatorUserId], references: [id])
+  creatorUserId    Int
+  TempIntegration  TempIntegration[]
+  UserIntegrations UserIntegration[]
 }
 
-model UserAccount {
-  id           Int               @id @default(autoincrement())
-  invitationId String?
-  account      Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  accountId    Int
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       Int
-  role         Role              @default(USER) // Admin, user
-  status       InvitationStatus? //pending accepted, rejected
+model UserWorkspace {
+  id        Int      @id @default(autoincrement())
+  role      Role     @default(USER) // Admin, User, etc.
+  valid     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  callSync        callSync[]
+  Task            Task[]
+  UserIntegration UserIntegration[]
+
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId Int
+
+  inviterId    Int?
+  invitationID String
+  status       String // active , invited , inactive, deleted
+
+  // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
+  // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
 }
+
+// model WorkspaceInvitation {
+//   id           Int               @id @default(autoincrement())
+//   role         Role              @default(USER) // Admin, user
+//   status       InvitationStatus? //pending accepted, rejected
+//   invitedEmail String
+
+//   Workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+//   workspaceId Int
+
+//   inviter       UserWorkspace  @relation("InviterUser", fields: [inviterUserId], references: [id])
+//   inviterUserId Int
+//   invitedUser   UserWorkspace? @relation("InvitedUser", fields: [invitedUserId], references: [id])
+//   invitedUserId Int?
+// }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  email         String         @unique
-  hash          String?
-  firstName     String?
-  lastName      String?
-  picture       String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  userAccounts  UserAccount[]
-  accounts      Account[]
-  tasks         Task[]
-  projectIds    Int[]
-  integrations  Integration[]
-  notifications Notification[]
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  hash      String?
+  firstName String?
+  lastName  String?
+  picture   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userWorkspaces UserWorkspace[]
+  // ownedWorkspaces     Workspace[]
+  // tasks               Task[]
+  notifications  Notification[]
+  // UserIntegrations    UserIntegration[]
+
+  // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
+  // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
 }
 
 model Notification {
@@ -59,36 +99,78 @@ model Notification {
   title       String
   description String
 
-  User   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  Workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId Int
 }
 
 model Integration {
-  id            Int             @id @default(autoincrement())
-  siteId        String
-  type          IntegrationType
-  accessToken   String
-  refreshToken  String
-  site          String?
-  jiraAccountId String?
-  Projects      Projects[]
+  id               Int               @id @default(autoincrement())
+  siteId           String?
+  type             IntegrationType
+  site             String?
+  Projects         Project[]
+  userIntegrations UserIntegration[]
 
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int
+  Workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId Int
 
-  @@unique([siteId, userId], name: "integrationIdentifier")
+  @@unique([siteId, workspaceId], name: "integrationIdentifier")
+  @@unique([siteId, id], name: "integrationIdentifier2")
 }
 
-model Projects {
+model UserIntegration {
+  id            Int     @id @default(autoincrement())
+  accessToken   String?
+  refreshToken  String?
+  jiraAccountId String?
+
+  // user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // userId      Int
+
+  UserWorkspace   UserWorkspace @relation(fields: [userWorkspaceId], references: [id])
+  userWorkspaceId Int
+
+  Workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId Int
+
+  // @@unique([siteId, userId], name: "integrationIdentifier")
+  Integration   Integration? @relation(fields: [integrationId, siteId], references: [id, siteId])
+  integrationId Int?
+  siteId        String?
+}
+
+model TempIntegration {
+  id              Int             @id @default(autoincrement())
+  siteId          String
+  type            IntegrationType
+  accessToken     String
+  refreshToken    String
+  site            String?
+  jiraAccountId   String?
+  userWorkspaceId Int
+
+  Workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId Int
+
+  @@unique([siteId, userWorkspaceId], name: "tempIntegrationIdentifier")
+}
+
+model Project {
   id          Int            @id @default(autoincrement())
   projectId   String
   projectName String?
   projectKey  String?
+  source      String
+  integrated  Boolean        @default(false)
   statuses    StatusDetail[]
+  tasks       Task[]
 
   integration   Integration? @relation(fields: [integrationID], references: [id], onDelete: Cascade)
   integrationID Int?
-  tasks         Task[]
+  Workspace     Workspace?   @relation(fields: [workspaceId], references: [id])
+  workspaceId   Int?
 }
 
 model StatusDetail {
@@ -100,74 +182,73 @@ model StatusDetail {
   statusCategoryName String
   transitionId       String?
 
-  transitionStatus Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  transitionStatus Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId        Int
 
   @@unique([name, projectId], name: "tempStatusDetailIdentifier")
 }
 
-model TempIntegration {
-  id            Int             @id @default(autoincrement())
-  siteId        String
-  type          IntegrationType
-  accessToken   String
-  refreshToken  String
-  site          String?
-  jiraAccountId String?
-  userId        Int
-
-  @@unique([siteId, userId], name: "tempIntegrationIdentifier")
-}
-
 model Task {
-  id                 Int       @id @default(autoincrement())
+  id                 Int             @id @default(autoincrement())
   title              String
   description        String?
   assigneeId         String?
   projectName        String?
-  estimation         Decimal?  @db.Decimal(5, 2)
-  status             String?   @default("To Do")
-  statusCategoryName String?   @default("TO_DO")
+  estimation         Decimal?        @db.Decimal(5, 2)
+  status             String?         @default("To Do")
+  statusCategoryName String?         @default("TO_DO")
   due                DateTime?
-  priority           String?   @default("Medium")
-  labels             Labels[]  @default([])
+  priority           String?         @default("Medium")
+  labels             Labels[]        @default([])
+  source             IntegrationType @default(TRACKER23)
+  integratedTaskId   Int?
+  url                String?
+  pinned             Boolean?        @default(false)
+
+  jiraUpdatedAt DateTime?
+
+  sessions Session[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int
+  UserWorkspace   UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
+  userWorkspaceId Int?
+  project         Project?       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId       Int?
+  Workspace       Workspace?     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId     Int?
+  // User            User?          @relation(fields: [userId], references: [id])
+  // userId          Int?
 
-  source           IntegrationType @default(TRACKER23)
-  integratedTaskId Int?
-  url              String?
-  sessions         Session[]
-  pinned           Boolean?        @default(false)
-  projects         Projects?       @relation(fields: [projectId], references: [id])
-  projectId        Int?
+  parentTask   Task?  @relation("childTask", fields: [parentTaskId], references: [id])
+  parentTaskId Int?
+  childTask    Task[] @relation("childTask")
 }
 
 model Session {
-  id        Int           @id @default(autoincrement())
-  startTime DateTime      @default(now())
-  endTime   DateTime?
-  status    SessionStatus @default(STARTED)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  authorId  String?
-
-  task             Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  taskId           Int
+  id               Int           @id @default(autoincrement())
+  startTime        DateTime      @default(now())
+  endTime          DateTime?
+  status           SessionStatus @default(STARTED)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  authorId         String?
   integratedTaskId Int?
   worklogId        Int?
+
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId Int
 }
 
 model callSync {
   id        Int      @id @default(autoincrement())
   status    String
-  userId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  UserWorkspace   UserWorkspace @relation(fields: [userWorkspaceId], references: [id])
+  userWorkspaceId Int
 }
 
 model webhook {
@@ -178,28 +259,6 @@ model webhook {
   expirationDate DateTime
 
   @@unique([webhookId, siteUrl], name: "webhookIdentifier")
-}
-
-model Sprint {
-  id           Int          @id @default(autoincrement())
-  jiraSprintId Int
-  userId       Int
-  sprintTask   SprintTask[]
-  state        String
-  name         String
-  startDate    DateTime?
-  endDate      DateTime?
-  completeDate DateTime?
-}
-
-model SprintTask {
-  id       Int    @id @default(autoincrement())
-  sprint   Sprint @relation(fields: [sprintId], references: [id], onDelete: Cascade)
-  sprintId Int
-  taskId   Int
-  userId   Int
-
-  @@unique([sprintId, taskId, userId], name: "sprintTaskIdentifier")
 }
 
 enum Priority {
