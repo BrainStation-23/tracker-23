@@ -149,6 +149,10 @@ model Task {
   pinned           Boolean?        @default(false)
   project          Project?        @relation(fields: [projectId], references: [id])
   projectId        Int?
+  jiraUpdatedAt    DateTime?
+  parentTask       Task? @relation("childTask", fields: [parentTaskId], references: [id])
+  parentTaskId     Int?
+  childTask Task[] @relation("childTask")
 }
 
 model Session {

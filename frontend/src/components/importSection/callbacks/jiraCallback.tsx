@@ -10,7 +10,7 @@ import NewIntegrationProjectImportComponent from "./components/newIntegrationPro
 
 const JiraCallBack = () => {
   const router = useRouter();
-  const [newIntegrationProject, setNewIntegrationProject] = useState([]);
+  const [newIntegrationProjects, setNewIntegrationProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
   const [spinning, setSpinning] = useState(false);
@@ -20,7 +20,7 @@ const JiraCallBack = () => {
 
     if (res && res[0]) {
       setIsModalOpen(true);
-      setNewIntegrationProject(res);
+      setNewIntegrationProjects(res);
     } else router.push("/projects");
   };
 
