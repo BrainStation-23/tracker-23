@@ -9,9 +9,13 @@ import { GetTaskQuery } from 'src/tasks/dto';
 import * as tmp from 'tmp';
 import { Workbook } from 'exceljs';
 import { Response } from 'express';
+import { WorkspacesService } from 'src/workspaces/workspaces.service';
 @Injectable()
 export class ExportService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private workspacesService: WorkspacesService,
+  ) {}
   async exportToExcel(
     user: User,
     query: GetTaskQuery,
@@ -115,7 +119,10 @@ export class ExportService {
       let { startDate, endDate } = query as unknown as GetTaskQuery;
 
       const jiraIntegration = await this.prisma.integration.findFirst({
-        where: { userId: user.id, type: IntegrationType.JIRA },
+        where: {
+          userWorkspaceId: userWorkspace.id,
+          type: IntegrationType.JIRA,
+        },
       });
 
       const priority1: any = (priority as unknown as string)?.split(',');
@@ -129,7 +136,7 @@ export class ExportService {
       }
 
       const databaseQuery = {
-        userId: user.id,
+        userWorkspaceId: userWorkspace.id,
         OR: [
           {
             assigneeId: jiraIntegration?.jiraAccountId,

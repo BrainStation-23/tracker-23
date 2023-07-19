@@ -4,6 +4,7 @@ import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto, RegisterDto, userDto } from './dto';
+import { WorkspacesService } from 'src/workspaces/workspaces.service';
 
 @Injectable()
 export class AuthService {
@@ -11,27 +12,17 @@ export class AuthService {
     private prisma: PrismaService,
     private config: ConfigService,
     private jwt: JwtService,
+    private workspacesService: WorkspacesService,
   ) {}
 
   async createUser(dto: RegisterDto) {
     const hashedPassword = await argon.hash(dto.password);
-    const account = await this.prisma.account.create({
-      data: {
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-      },
-    });
 
     const data = {
       email: dto.email,
       firstName: dto.firstName,
       lastName: dto.lastName,
       hash: hashedPassword,
-      accounts: {
-        connect: {
-          id: account.id,
-        },
-      },
     };
 
     const user = await this.prisma.user.create({
@@ -41,24 +32,26 @@ export class AuthService {
         email: true,
         firstName: true,
         lastName: true,
-        accounts: true,
       },
     });
+    const workspce =
+      user.firstName &&
+      this.workspacesService.createWorkspace(user.id, user.firstName);
 
-    await this.prisma.userAccount.create({
-      data: {
-        account: {
-          connect: {
-            id: account.id,
-          },
-        },
-        user: {
-          connect: {
-            id: user.id,
-          },
-        },
-      },
-    });
+    // await this.prisma.userAccount.create({
+    //   data: {
+    //     account: {
+    //       connect: {
+    //         id: account.id,
+    //       },
+    //     },
+    //     user: {
+    //       connect: {
+    //         id: user.id,
+    //       },
+    //     },
+    //   },
+    // });
     return user;
   }
 
