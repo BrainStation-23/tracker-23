@@ -72,15 +72,15 @@ model UserWorkspace {
 // }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  hash      String?
-  firstName String?
-  lastName  String?
+  id                Int      @id @default(autoincrement())
+  email             String   @unique
+  hash              String?
+  firstName         String?
+  lastName          String?
   activeWorkspaceId Int?
-  picture   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  picture           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   userWorkspaces UserWorkspace[]
   // ownedWorkspaces     Workspace[]
@@ -137,7 +137,7 @@ model UserIntegration {
   workspaceId Int
 
   // @@unique([siteId, userId], name: "integrationIdentifier")
-  Integration   Integration? @relation(fields: [integrationId, siteId], references: [id, siteId])
+  Integration   Integration? @relation(fields: [integrationId, siteId], references: [id, siteId], onDelete: Cascade)
   integrationId Int?
   siteId        String?
 }

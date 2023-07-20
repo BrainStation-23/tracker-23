@@ -66,7 +66,10 @@ export class TasksService {
       // console.log(sprintIdArray);
 
       const jiraIntegration = await this.prisma.integration.findFirst({
-        where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
+        where: {
+          userWorkspaceId: userWorkspace.id,
+          type: IntegrationType.JIRA,
+        },
       });
 
       const priority1: any = (priority as unknown as string)?.split(',');
@@ -305,7 +308,7 @@ export class TasksService {
     console.log('hello first');
     const updated_integration =
       project.integrationID &&
-      (await this.integrationsService.updateIntegration(
+      (await this.integrationsService.getUpdatedUserIntegration(
         user,
         project.integrationID,
       ));
@@ -585,7 +588,7 @@ export class TasksService {
     ///////////////////////////////
     try {
       const updated_integration =
-        await this.integrationsService.updateIntegration(user, 6);
+        await this.integrationsService.getUpdatedUserIntegration(user, 6);
       if (!updated_integration) return [];
       const headers: any = {
         'Content-Type': 'application/json',
@@ -845,7 +848,7 @@ export class TasksService {
 
     const updated_integration =
       project.integrationID &&
-      (await this.integrationsService.updateIntegration(
+      (await this.integrationsService.getUpdatedUserIntegration(
         user,
         project.integrationID,
       ));
@@ -1283,7 +1286,7 @@ export class TasksService {
 
         const updated_integration =
           project.integration?.id &&
-          (await this.integrationsService.updateIntegration(
+          (await this.integrationsService.getUpdatedUserIntegration(
             user,
             project.integration.id,
           ));
@@ -1409,7 +1412,7 @@ export class TasksService {
 
         const updated_integration =
           project.integration?.id &&
-          (await this.integrationsService.updateIntegration(
+          (await this.integrationsService.getUpdatedUserIntegration(
             user,
             project.integration.id,
           ));
@@ -1481,7 +1484,7 @@ export class TasksService {
     try {
       // fix this incase u need this api
       const updated_integration =
-        await this.integrationsService.updateIntegration(user, 7);
+        await this.integrationsService.getUpdatedUserIntegration(user, 7);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${issueId}/worklog`;
       const config = {
         method: 'post',
@@ -1626,7 +1629,10 @@ export class TasksService {
   async getAllStatus(user: User) {
     try {
       const integration = await this.prisma.integration.findFirst({
-        where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
+        where: {
+          userWorkspaceId: userWorkspace.id,
+          type: IntegrationType.JIRA,
+        },
       });
       const url = `https://api.atlassian.com/ex/jira/${integration?.siteId}//rest/api/3/statuscategory`;
       const config = {
@@ -1648,7 +1654,10 @@ export class TasksService {
 
   async setProjectStatuses(user: User, integration: Integration) {
     const updated_integration =
-      await this.integrationsService.updateIntegration(user, integration.id);
+      await this.integrationsService.getUpdatedUserIntegration(
+        user,
+        integration.id,
+      );
     if (!updated_integration) return [];
     // let statusList: any;
     const getStatusListUrl = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/status`;
@@ -1780,7 +1789,10 @@ export class TasksService {
     const sprintPromises: Promise<any>[] = [];
     const issuePromises: Promise<any>[] = [];
     const updated_integration =
-      await this.integrationsService.updateIntegration(user, integrationID);
+      await this.integrationsService.getUpdatedUserIntegration(
+        user,
+        integrationID,
+      );
     if (!updated_integration) {
       console.log(
         '🚀 ~ file: sprints.service.ts:31 ~ SprintsService ~ createSprintAndTask ~ updated_integration:',
@@ -1999,10 +2011,11 @@ export class TasksService {
   }
 
   async getIntegrationProjectList(user: User, integrationId: number) {
-    const update_integration = await this.integrationsService.updateIntegration(
-      user,
-      integrationId,
-    );
+    const update_integration =
+      await this.integrationsService.getUpdatedUserIntegration(
+        user,
+        integrationId,
+      );
     return await this.prisma.project.findMany({
       where: {
         integrationID: update_integration?.id,
