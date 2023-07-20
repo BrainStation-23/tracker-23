@@ -5,37 +5,35 @@
   - You are about to drop the column `jiraAccountId` on the `Integration` table. All the data in the column will be lost.
   - You are about to drop the column `refreshToken` on the `Integration` table. All the data in the column will be lost.
   - You are about to drop the column `userId` on the `Integration` table. All the data in the column will be lost.
+  - You are about to drop the column `userId` on the `Project` table. All the data in the column will be lost.
+  - You are about to drop the column `userId` on the `Sprint` table. All the data in the column will be lost.
+  - You are about to drop the column `userId` on the `SprintTask` table. All the data in the column will be lost.
   - You are about to drop the column `userId` on the `Task` table. All the data in the column will be lost.
   - You are about to drop the column `userId` on the `TempIntegration` table. All the data in the column will be lost.
-  - You are about to drop the column `projectIds` on the `User` table. All the data in the column will be lost.
   - You are about to drop the column `userId` on the `callSync` table. All the data in the column will be lost.
   - You are about to drop the `Account` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Projects` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Sprint` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `SprintTask` table. If the table is not empty, all the data it contains will be lost.
   - You are about to drop the `UserAccount` table. If the table is not empty, all the data it contains will be lost.
   - You are about to drop the `_AccountToUser` table. If the table is not empty, all the data it contains will be lost.
   - A unique constraint covering the columns `[siteId,workspaceId]` on the table `Integration` will be added. If there are existing duplicate values, this will fail.
   - A unique constraint covering the columns `[siteId,id]` on the table `Integration` will be added. If there are existing duplicate values, this will fail.
+  - A unique constraint covering the columns `[sprintId,taskId]` on the table `SprintTask` will be added. If there are existing duplicate values, this will fail.
   - A unique constraint covering the columns `[siteId,userWorkspaceId]` on the table `TempIntegration` will be added. If there are existing duplicate values, this will fail.
   - Added the required column `workspaceId` to the `Integration` table without a default value. This is not possible if the table is not empty.
   - Added the required column `workspaceId` to the `Notification` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `projectId` to the `Sprint` table without a default value. This is not possible if the table is not empty.
   - Added the required column `userWorkspaceId` to the `TempIntegration` table without a default value. This is not possible if the table is not empty.
   - Added the required column `workspaceId` to the `TempIntegration` table without a default value. This is not possible if the table is not empty.
   - Added the required column `userWorkspaceId` to the `callSync` table without a default value. This is not possible if the table is not empty.
 
 */
+-- CreateEnum
+CREATE TYPE "UserWorkspaceStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'INVITED', 'DELETED');
+
 -- DropForeignKey
 ALTER TABLE "Integration" DROP CONSTRAINT "Integration_userId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "Projects" DROP CONSTRAINT "Projects_integrationID_fkey";
-
--- DropForeignKey
-ALTER TABLE "SprintTask" DROP CONSTRAINT "SprintTask_sprintId_fkey";
-
--- DropForeignKey
-ALTER TABLE "StatusDetail" DROP CONSTRAINT "StatusDetail_projectId_fkey";
+ALTER TABLE "Project" DROP CONSTRAINT "Project_userId_fkey";
 
 -- DropForeignKey
 ALTER TABLE "Task" DROP CONSTRAINT "Task_projectId_fkey";
@@ -59,6 +57,9 @@ ALTER TABLE "_AccountToUser" DROP CONSTRAINT "_AccountToUser_B_fkey";
 DROP INDEX "Integration_siteId_userId_key";
 
 -- DropIndex
+DROP INDEX "SprintTask_sprintId_taskId_userId_key";
+
+-- DropIndex
 DROP INDEX "TempIntegration_siteId_userId_key";
 
 -- AlterTable
@@ -73,9 +74,18 @@ ALTER COLUMN "siteId" DROP NOT NULL;
 ALTER TABLE "Notification" ADD COLUMN     "workspaceId" INTEGER NOT NULL;
 
 -- AlterTable
+ALTER TABLE "Project" DROP COLUMN "userId",
+ADD COLUMN     "workspaceId" INTEGER;
+
+-- AlterTable
+ALTER TABLE "Sprint" DROP COLUMN "userId",
+ADD COLUMN     "projectId" INTEGER NOT NULL;
+
+-- AlterTable
+ALTER TABLE "SprintTask" DROP COLUMN "userId";
+
+-- AlterTable
 ALTER TABLE "Task" DROP COLUMN "userId",
-ADD COLUMN     "jiraUpdatedAt" TIMESTAMP(3),
-ADD COLUMN     "parentTaskId" INTEGER,
 ADD COLUMN     "userWorkspaceId" INTEGER,
 ADD COLUMN     "workspaceId" INTEGER;
 
@@ -85,7 +95,7 @@ ADD COLUMN     "userWorkspaceId" INTEGER NOT NULL,
 ADD COLUMN     "workspaceId" INTEGER NOT NULL;
 
 -- AlterTable
-ALTER TABLE "User" DROP COLUMN "projectIds";
+ALTER TABLE "User" ADD COLUMN     "activeWorkspaceId" INTEGER;
 
 -- AlterTable
 ALTER TABLE "callSync" DROP COLUMN "userId",
@@ -93,15 +103,6 @@ ADD COLUMN     "userWorkspaceId" INTEGER NOT NULL;
 
 -- DropTable
 DROP TABLE "Account";
-
--- DropTable
-DROP TABLE "Projects";
-
--- DropTable
-DROP TABLE "Sprint";
-
--- DropTable
-DROP TABLE "SprintTask";
 
 -- DropTable
 DROP TABLE "UserAccount";
@@ -130,8 +131,8 @@ CREATE TABLE "UserWorkspace" (
     "userId" INTEGER NOT NULL,
     "workspaceId" INTEGER NOT NULL,
     "inviterId" INTEGER,
-    "invitationID" TEXT NOT NULL,
-    "status" TEXT NOT NULL,
+    "invitationID" TEXT,
+    "status" "UserWorkspaceStatus" NOT NULL,
 
     CONSTRAINT "UserWorkspace_pkey" PRIMARY KEY ("id")
 );
@@ -150,25 +151,14 @@ CREATE TABLE "UserIntegration" (
     CONSTRAINT "UserIntegration_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "Project" (
-    "id" SERIAL NOT NULL,
-    "projectId" TEXT NOT NULL,
-    "projectName" TEXT,
-    "projectKey" TEXT,
-    "source" TEXT NOT NULL,
-    "integrated" BOOLEAN NOT NULL DEFAULT false,
-    "integrationID" INTEGER,
-    "workspaceId" INTEGER,
-
-    CONSTRAINT "Project_pkey" PRIMARY KEY ("id")
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "Integration_siteId_workspaceId_key" ON "Integration"("siteId", "workspaceId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Integration_siteId_id_key" ON "Integration"("siteId", "id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SprintTask_sprintId_taskId_key" ON "SprintTask"("sprintId", "taskId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "TempIntegration_siteId_userWorkspaceId_key" ON "TempIntegration"("siteId", "userWorkspaceId");
@@ -198,13 +188,7 @@ ALTER TABLE "UserIntegration" ADD CONSTRAINT "UserIntegration_integrationId_site
 ALTER TABLE "TempIntegration" ADD CONSTRAINT "TempIntegration_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "Workspace"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Project" ADD CONSTRAINT "Project_integrationID_fkey" FOREIGN KEY ("integrationID") REFERENCES "Integration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Project" ADD CONSTRAINT "Project_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "Workspace"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "StatusDetail" ADD CONSTRAINT "StatusDetail_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Task" ADD CONSTRAINT "Task_userWorkspaceId_fkey" FOREIGN KEY ("userWorkspaceId") REFERENCES "UserWorkspace"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -216,7 +200,7 @@ ALTER TABLE "Task" ADD CONSTRAINT "Task_projectId_fkey" FOREIGN KEY ("projectId"
 ALTER TABLE "Task" ADD CONSTRAINT "Task_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "Workspace"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Task" ADD CONSTRAINT "Task_parentTaskId_fkey" FOREIGN KEY ("parentTaskId") REFERENCES "Task"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "callSync" ADD CONSTRAINT "callSync_userWorkspaceId_fkey" FOREIGN KEY ("userWorkspaceId") REFERENCES "UserWorkspace"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "callSync" ADD CONSTRAINT "callSync_userWorkspaceId_fkey" FOREIGN KEY ("userWorkspaceId") REFERENCES "UserWorkspace"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Sprint" ADD CONSTRAINT "Sprint_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;

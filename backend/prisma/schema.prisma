@@ -167,6 +167,7 @@ model Project {
   integrated  Boolean        @default(false)
   statuses    StatusDetail[]
   tasks       Task[]
+  sprints     Sprint[]
 
   integration   Integration? @relation(fields: [integrationID], references: [id], onDelete: Cascade)
   integrationID Int?
@@ -260,6 +261,28 @@ model webhook {
   expirationDate DateTime
 
   @@unique([webhookId, siteUrl], name: "webhookIdentifier")
+}
+
+model Sprint {
+  id           Int          @id @default(autoincrement())
+  jiraSprintId Int
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId Int
+  sprintTask   SprintTask[]
+  state        String
+  name         String
+  startDate    DateTime?
+  endDate      DateTime?
+  completeDate DateTime?
+}
+
+model SprintTask {
+  id       Int    @id @default(autoincrement())
+  sprint   Sprint @relation(fields: [sprintId], references: [id], onDelete: Cascade)
+  sprintId Int
+  taskId   Int
+
+  @@unique([sprintId, taskId], name: "sprintTaskIdentifier")
 }
 
 enum Priority {
