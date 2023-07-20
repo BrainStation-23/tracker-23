@@ -5,8 +5,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IntegrationType, User } from '@prisma/client';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class IntegrationsService {
@@ -30,7 +30,7 @@ export class IntegrationsService {
         userWorkspaceId: userWorkspace.id,
         workspaceId: user.activeWorkspaceId,
       },
-      include: { Integration: true },
+      include: { integration: true },
     });
   }
 
@@ -63,7 +63,7 @@ export class IntegrationsService {
       await lastValueFrom(this.httpService.post(tokenUrl, data, headers))
     ).data;
 
-    const updated_integration =
+    const updatedUserIntegration =
       userIntegration &&
       (await this.prisma.userIntegration.update({
         where: { id: userIntegration?.id },
@@ -71,15 +71,15 @@ export class IntegrationsService {
           accessToken: tokenResp.access_token,
           refreshToken: tokenResp.refresh_token,
         },
-        include: { Integration: true },
+        include: { integration: true },
       }));
-    return updated_integration;
+    return updatedUserIntegration;
   }
 
   async deleteUserIntegration(user: User, userIntegrationId: number) {
     try {
       const id = Number(userIntegrationId);
-      const deletedUserIntegration = await this.prisma.userIntegration.delete({
+      await this.prisma.userIntegration.delete({
         where: { id },
       });
       return { message: 'Successfully user integration deleted' };
