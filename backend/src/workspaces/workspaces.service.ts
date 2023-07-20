@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { User } from '@prisma/client';
+import { Role, User, UserWorkspaceStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { WorkspaceReqBody } from './dto';
 
@@ -14,10 +14,19 @@ export class WorkspacesService {
   ) {}
 
   async createWorkspace(userId: number, name: string) {
-    return await this.prisma.workspace.create({
+    const workspace = await this.prisma.workspace.create({
       data: {
         name: name,
         creatorUserId: userId,
+      },
+    });
+
+    await this.prisma.userWorkspace.create({
+      data: {
+        role: Role.ADMIN,
+        userId: userId,
+        workspaceId: workspace.id,
+        status: UserWorkspaceStatus.ACTIVE,
       },
     });
   }
@@ -30,6 +39,14 @@ export class WorkspacesService {
     });
   }
 
+  async getWorkspaceList(userId: number) {
+    return await this.prisma.workspace.findMany({
+      where: {
+        creatorUserId: userId,
+      },
+    });
+  }
+
   async updateWorkspace(workspaceId: number, reqBody: WorkspaceReqBody) {
     return await this.prisma.workspace.update({
       where: {
@@ -37,6 +54,14 @@ export class WorkspacesService {
       },
       data: {
         name: reqBody.name,
+      },
+    });
+  }
+
+  async deleteWorkspace(workspaceId: number) {
+    return await this.prisma.workspace.delete({
+      where: {
+        id: workspaceId,
       },
     });
   }

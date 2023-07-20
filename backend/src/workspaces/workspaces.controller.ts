@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -33,6 +34,12 @@ export class WorkspacesController {
     return this.workspacesService.getWorkspace(workspaceId);
   }
 
+  @Get('list')
+  @UseGuards(JwtAuthGuard)
+  async getWorkspaceList(@GetUser() user: User) {
+    return this.workspacesService.getWorkspaceList(Number(user.id));
+  }
+
   @Patch(':workspaceId')
   @UseGuards(JwtAuthGuard)
   async updateWorkspace(
@@ -40,5 +47,13 @@ export class WorkspacesController {
     @Body() reqBody: WorkspaceReqBody,
   ) {
     return this.workspacesService.updateWorkspace(workspaceId, reqBody);
+  }
+
+  @Delete(':workspaceId')
+  @UseGuards(JwtAuthGuard)
+  async deleteWorkspace(
+    @Param('workspaceId', ParseIntPipe) workspaceId: number,
+  ) {
+    return this.workspacesService.deleteWorkspace(workspaceId);
   }
 }
