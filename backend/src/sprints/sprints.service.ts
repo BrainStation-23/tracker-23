@@ -44,7 +44,7 @@ export class SprintsService {
 
     const task_list = await this.prisma.task.findMany({
       where: {
-        userId: user.id,
+        userWorkspaceId: userWorkspace.id,
         source: IntegrationType.JIRA,
       },
     });
@@ -107,7 +107,7 @@ export class SprintsService {
             if (val.startDate && val.endDate && val.completeDate) {
               sprint_list.push({
                 jiraSprintId: Number(val.id),
-                userId: user.id,
+                userWorkspaceId: userWorkspace.id,
                 state: val.state,
                 name: val.name,
                 startDate: new Date(val.startDate),
@@ -118,7 +118,7 @@ export class SprintsService {
               toBeUpdated.push(val.id);
               sprint_list.push({
                 jiraSprintId: Number(val.id),
-                userId: user.id,
+                userWorkspaceId: userWorkspace.id,
                 state: val.state,
                 name: val.name,
               });
@@ -145,7 +145,7 @@ export class SprintsService {
     const [deS, crtSprint, sprints] = await Promise.all([
       await this.prisma.sprint.deleteMany({
         where: {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
         },
       }),
       await this.prisma.sprint.createMany({
@@ -153,7 +153,7 @@ export class SprintsService {
       }),
       await this.prisma.sprint.findMany({
         where: {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
         },
       }),
     ]);
@@ -187,7 +187,7 @@ export class SprintsService {
         issue_list.push({
           sprintId: sprintId,
           taskId: taskId,
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
         });
       });
     });
@@ -196,7 +196,7 @@ export class SprintsService {
     const [DST, CST, sprintTasks] = await Promise.all([
       await this.prisma.sprintTask.deleteMany({
         where: {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
         },
       }),
       await this.prisma.sprintTask.createMany({
@@ -205,7 +205,7 @@ export class SprintsService {
 
       await this.prisma.sprintTask.findMany({
         where: {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
         },
       }),
     ]);
@@ -216,7 +216,7 @@ export class SprintsService {
   async getSprintList(user: User, reqBody: GetSprintListQueryDto) {
     const tmpSprints = await this.prisma.sprint.findMany({
       where: {
-        userId: user.id,
+        userWorkspaceId: userWorkspace.id,
       },
     });
     if (tmpSprints.length === 0) await this.createSprintAndTask(user);
@@ -231,7 +231,7 @@ export class SprintsService {
 
       return await this.prisma.sprint.findMany({
         where: {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
           state: { in: array },
         },
       });
@@ -243,7 +243,7 @@ export class SprintsService {
   async getActiveSprintTasks(user: User, reqBody: GetSprintListQueryDto) {
     const tmpSprints = await this.prisma.sprint.findMany({
       where: {
-        userId: user.id,
+        userWorkspaceId: userWorkspace.id,
       },
     });
     if (tmpSprints.length === 0) await this.createSprintAndTask(user);
@@ -261,7 +261,7 @@ export class SprintsService {
 
       const sprints = await this.prisma.sprint.findMany({
         where: {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
           state: { in: array },
         },
       });

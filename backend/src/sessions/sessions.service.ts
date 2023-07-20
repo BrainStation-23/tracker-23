@@ -160,7 +160,7 @@ export class SessionsService {
     const tokenUrl = 'https://auth.atlassian.com/oauth/token';
     const headers: any = { 'Content-Type': 'application/json' };
     const integration = await this.prisma.integration.findFirst({
-      where: { userId: user.id, type: IntegrationType.JIRA },
+      where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
     });
     if (!integration) {
       throw new APIException('You have no integration', HttpStatus.BAD_REQUEST);
@@ -320,7 +320,7 @@ export class SessionsService {
       const task = await this.prisma.task.findFirst({
         where: {
           id: doesExistWorklog.taskId,
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
         },
       });
       if (task && task.source === IntegrationType.TRACKER23) {
@@ -409,7 +409,7 @@ export class SessionsService {
       const task = await this.prisma.task.findFirst({
         where: {
           id: doesExistWorklog.taskId,
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
         },
       });
       if (task && task.source === IntegrationType.TRACKER23) {

@@ -8,7 +8,7 @@ export class IntegrationsService {
 
   async getIntegrations(user: User) {
     return await this.prisma.integration.findMany({
-      where: { userId: user.id },
+      where: { userWorkspaceId: userWorkspace.id },
       select: {
         id: true,
         site: true,
@@ -27,11 +27,11 @@ export class IntegrationsService {
       });
       await Promise.all([
         await this.prisma.task.deleteMany({
-          where: { userId: user.id, source: deletedIntegration.type },
+          where: { userWorkspaceId: userWorkspace.id, source: deletedIntegration.type },
         }),
         await this.prisma.sprint.deleteMany({
           where: {
-            userId: user.id,
+            userWorkspaceId: userWorkspace.id,
           },
         }),
       ]);

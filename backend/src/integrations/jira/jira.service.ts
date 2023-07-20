@@ -30,7 +30,7 @@ export class JiraService {
 
   async findIntegration(dto: AuthorizeJiraDto, user: User) {
     const previousIntegrations = await this.prisma.integration.findMany({
-      where: { userId: user.id, type: IntegrationType.JIRA },
+      where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
     });
     if (previousIntegrations.length) {
       throw new APIException(
@@ -73,7 +73,7 @@ export class JiraService {
             where: {
               tempIntegrationIdentifier: {
                 siteId: element.id,
-                userId: user.id,
+                userWorkspaceId: userWorkspace.id,
               },
             },
             update: {
@@ -83,7 +83,7 @@ export class JiraService {
             },
             create: {
               siteId: element.id,
-              userId: user.id,
+              userWorkspaceId: userWorkspace.id,
               type: IntegrationType.JIRA,
               accessToken: resp.access_token,
               refreshToken: resp.refresh_token,
@@ -95,7 +95,7 @@ export class JiraService {
         }),
       );
       const integrations = await this.prisma.tempIntegration.findMany({
-        where: { userId: user.id, type: IntegrationType.JIRA },
+        where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
         select: {
           id: true,
           site: true,
@@ -123,7 +123,7 @@ export class JiraService {
         where: {
           integrationIdentifier: {
             siteId,
-            userId: user.id,
+            userWorkspaceId: userWorkspace.id,
           },
         },
       });
@@ -137,7 +137,7 @@ export class JiraService {
         where: {
           tempIntegrationIdentifier: {
             siteId,
-            userId: user.id,
+            userWorkspaceId: userWorkspace.id,
           },
         },
       });
@@ -148,7 +148,7 @@ export class JiraService {
       const integration = await this.prisma.integration.create({
         data: {
           siteId,
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
           type: IntegrationType.JIRA,
           accessToken: getTempIntegration.accessToken,
           refreshToken: getTempIntegration.refreshToken,
@@ -181,7 +181,7 @@ export class JiraService {
 
   async getProjectStatuses(user: User) {
     const jiraIntegration = await this.prisma.integration.findFirst({
-      where: { userId: user.id, type: IntegrationType.JIRA },
+      where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
     });
     try {
       const projects = jiraIntegration?.id

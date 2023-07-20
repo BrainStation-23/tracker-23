@@ -36,7 +36,7 @@ export class TasksService {
     try {
       const getSprintTasks = await this.prisma.sprintTask.findMany({
         where: {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
           sprintId: { in: sprintIds.map((id) => Number(id)) },
         },
       });
@@ -63,7 +63,7 @@ export class TasksService {
       // console.log(sprintIdArray);
 
       const jiraIntegration = await this.prisma.integration.findFirst({
-        where: { userId: user.id, type: IntegrationType.JIRA },
+        where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
       });
 
       const priority1: any = (priority as unknown as string)?.split(',');
@@ -102,7 +102,7 @@ export class TasksService {
         });
       } else {
         const databaseQuery = {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
           OR: [
             {
               assigneeId: jiraIntegration
@@ -149,7 +149,7 @@ export class TasksService {
     } else {
       const task: Task = await this.prisma.task.create({
         data: {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
           title: dto.title,
           description: dto.description,
           estimation: dto.estimation,
@@ -181,7 +181,7 @@ export class TasksService {
           this.prisma.task
             .create({
               data: {
-                userId: user.id,
+                userWorkspaceId: userWorkspace.id,
                 title: dto.title,
                 description: dto.description,
                 estimation: dto.estimation,
@@ -275,7 +275,7 @@ export class TasksService {
           author: 'SYSTEM',
           title: 'Sync Started',
           description: 'Sync Started',
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
         },
       });
       this.myGateway.sendNotification(`${user.id}`, notification);
@@ -337,7 +337,7 @@ export class TasksService {
 
         const integratedTasks = await this.prisma.task.findMany({
           where: {
-            userId: user.id,
+            userWorkspaceId: userWorkspace.id,
             integratedTaskId: { in: [...mappedIssues.keys()] },
             source: IntegrationType.JIRA,
           },
@@ -357,7 +357,7 @@ export class TasksService {
             integratedTask.priority.name,
           );
           taskList.push({
-            userId: user.id,
+            userWorkspaceId: userWorkspace.id,
             title: integratedTask.summary,
             assigneeId: integratedTask.assignee?.accountId || null,
             estimation: integratedTask.timeoriginalestimate
@@ -486,7 +486,7 @@ export class TasksService {
             author: 'SYSTEM',
             title: 'Sync Completed',
             description: 'Sync Completed',
-            userId: user.id,
+            userWorkspaceId: userWorkspace.id,
           },
         });
         this.myGateway.sendNotification(`${user.id}`, notification);
@@ -504,7 +504,7 @@ export class TasksService {
             author: 'SYSTEM',
             title: 'Sync Failed',
             description: 'Sync Failed',
-            userId: user.id,
+            userWorkspaceId: userWorkspace.id,
           },
         });
         this.myGateway.sendNotification(`${user.id}`, notification);
@@ -602,7 +602,7 @@ export class TasksService {
     try {
       const task = await this.prisma.task.findFirst({
         where: {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
           id: Number(taskId),
         },
         select: {
@@ -712,7 +712,7 @@ export class TasksService {
     try {
       const task = await this.prisma.task.findFirst({
         where: {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
           id: Number(taskId),
         },
         select: {
@@ -939,7 +939,7 @@ export class TasksService {
   async getAllStatus(user: User) {
     try {
       const integration = await this.prisma.integration.findFirst({
-        where: { userId: user.id, type: IntegrationType.JIRA },
+        where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
       });
       const url = `https://api.atlassian.com/ex/jira/${integration?.siteId}//rest/api/3/statuscategory`;
       const config = {
@@ -963,7 +963,7 @@ export class TasksService {
     const tokenUrl = 'https://auth.atlassian.com/oauth/token';
     const headers: any = { 'Content-Type': 'application/json' };
     const integration = await this.prisma.integration.findFirst({
-      where: { userId: user.id, type: IntegrationType.JIRA },
+      where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
     });
     // if (!integration) {
     //   throw new APIException('You have no integration', HttpStatus.BAD_REQUEST);
@@ -1137,7 +1137,7 @@ export class TasksService {
 
     const task_list = await this.prisma.task.findMany({
       where: {
-        userId: user.id,
+        userWorkspaceId: userWorkspace.id,
         source: IntegrationType.JIRA,
       },
     });
@@ -1200,7 +1200,7 @@ export class TasksService {
             if (val.startDate && val.endDate && val.completeDate) {
               sprint_list.push({
                 jiraSprintId: Number(val.id),
-                userId: user.id,
+                userWorkspaceId: userWorkspace.id,
                 state: val.state,
                 name: val.name,
                 startDate: new Date(val.startDate),
@@ -1211,7 +1211,7 @@ export class TasksService {
               toBeUpdated.push(val.id);
               sprint_list.push({
                 jiraSprintId: Number(val.id),
-                userId: user.id,
+                userWorkspaceId: userWorkspace.id,
                 state: val.state,
                 name: val.name,
               });
@@ -1238,7 +1238,7 @@ export class TasksService {
     const [deS, crtSprint, sprints] = await Promise.all([
       await this.prisma.sprint.deleteMany({
         where: {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
         },
       }),
       await this.prisma.sprint.createMany({
@@ -1246,7 +1246,7 @@ export class TasksService {
       }),
       await this.prisma.sprint.findMany({
         where: {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
         },
       }),
     ]);
@@ -1280,7 +1280,7 @@ export class TasksService {
         issue_list.push({
           sprintId: sprintId,
           taskId: taskId,
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
         });
       });
     });
@@ -1293,7 +1293,7 @@ export class TasksService {
 
       await this.prisma.sprintTask.findMany({
         where: {
-          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
         },
       }),
     ]);
