@@ -71,6 +71,7 @@ export class IntegrationsService {
           accessToken: tokenResp.access_token,
           refreshToken: tokenResp.refresh_token,
         },
+        include: { Integration: true },
       }));
     return updated_integration;
   }

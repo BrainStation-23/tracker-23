@@ -28,8 +28,8 @@ model Workspace {
 
   // Creator          User              @relation(fields: [creatorUserId], references: [id])
   creatorUserId    Int
-  TempIntegration  TempIntegration[]
-  UserIntegrations UserIntegration[]
+  tempIntegration  TempIntegration[]
+  userIntegrations UserIntegration[]
 }
 
 model UserWorkspace {
@@ -40,8 +40,8 @@ model UserWorkspace {
   updatedAt DateTime @updatedAt
 
   callSync        callSync[]
-  Task            Task[]
-  UserIntegration UserIntegration[]
+  task            Task[]
+  userIntegration UserIntegration[]
 
   user        User      @relation(fields: [userId], references: [id])
   userId      Int
@@ -100,9 +100,9 @@ model Notification {
   title       String
   description String
 
-  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
-  Workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId Int
 }
 
@@ -114,7 +114,7 @@ model Integration {
   Projects         Project[]
   userIntegrations UserIntegration[]
 
-  Workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId Int
 
   @@unique([siteId, workspaceId], name: "integrationIdentifier")
@@ -130,14 +130,14 @@ model UserIntegration {
   // user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   // userId      Int
 
-  UserWorkspace   UserWorkspace @relation(fields: [userWorkspaceId], references: [id])
+  userWorkspace   UserWorkspace @relation(fields: [userWorkspaceId], references: [id])
   userWorkspaceId Int
 
-  Workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId Int
 
   // @@unique([siteId, userId], name: "integrationIdentifier")
-  Integration   Integration? @relation(fields: [integrationId, siteId], references: [id, siteId], onDelete: Cascade)
+  integration   Integration? @relation(fields: [integrationId, siteId], references: [id, siteId], onDelete: Cascade)
   integrationId Int?
   siteId        String?
 }
@@ -152,7 +152,7 @@ model TempIntegration {
   jiraAccountId   String?
   userWorkspaceId Int
 
-  Workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId Int
 
   @@unique([siteId, userWorkspaceId], name: "tempIntegrationIdentifier")
@@ -171,7 +171,7 @@ model Project {
 
   integration   Integration? @relation(fields: [integrationID], references: [id], onDelete: Cascade)
   integrationID Int?
-  Workspace     Workspace?   @relation(fields: [workspaceId], references: [id])
+  workspace     Workspace?   @relation(fields: [workspaceId], references: [id])
   workspaceId   Int?
 }
 
@@ -214,11 +214,11 @@ model Task {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  UserWorkspace   UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
+  userWorkspace   UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
   userWorkspaceId Int?
   project         Project?       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId       Int?
-  Workspace       Workspace?     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace       Workspace?     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId     Int?
   // User            User?          @relation(fields: [userId], references: [id])
   // userId          Int?
