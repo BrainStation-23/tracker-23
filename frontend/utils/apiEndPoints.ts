@@ -4,6 +4,8 @@ export const apiEndPoints = {
   register: `/auth/register`,
   tasks: `/tasks`,
   export: `/export`,
+  allProjects: `/tasks/project-list`,
+  projectTasks: `/tasks/project-tasks`,
   syncTasks: `/tasks/sync`,
   syncStatus: `/tasks/sync/status`,
   sessions: `/sessions`,

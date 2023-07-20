@@ -1,11 +1,15 @@
-import { Module } from '@nestjs/common';
+import { IntegrationsModule } from 'src/integrations/integrations.module';
+import { IntegrationsService } from 'src/integrations/integrations.service';
+import { SprintsController } from 'src/sprints/sprints.controller';
+import { SprintsService } from 'src/sprints/sprints.service';
+
 import { HttpModule } from '@nestjs/axios';
-import { SprintsController } from './sprints.controller';
-import { SprintsService } from './sprints.service';
-import { TasksModule } from 'src/tasks/tasks.module';
+import { Module } from '@nestjs/common';
+
 @Module({
-  imports: [HttpModule.register({}), TasksModule],
-  providers: [SprintsService],
+  imports: [HttpModule.register({}), IntegrationsModule],
+  providers: [SprintsService, IntegrationsService],
   controllers: [SprintsController],
+  exports: [SprintsService],
 })
 export class SprintsModule {}

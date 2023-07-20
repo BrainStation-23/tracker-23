@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { IntegrationType, User } from '@prisma/client';
 
 import { AuthorizeJiraDto } from './dto';
+import { SprintsService } from 'src/sprints/sprints.service';
 
 @Injectable()
 export class JiraService {
@@ -17,6 +18,7 @@ export class JiraService {
     private prisma: PrismaService,
     private config: ConfigService,
     private tasksService: TasksService,
+    private sprintsService: SprintsService,
   ) {}
   async getIntegrationLink(state: string | undefined) {
     let stateParam = '';
@@ -29,15 +31,6 @@ export class JiraService {
   }
 
   async findIntegration(dto: AuthorizeJiraDto, user: User) {
-    const previousIntegrations = await this.prisma.integration.findMany({
-      where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
-    });
-    if (previousIntegrations.length) {
-      throw new APIException(
-        'You already have an integration',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
     try {
       // get access token and refresh tokens and store those on integrations table.
       const url = 'https://auth.atlassian.com/oauth/token';
@@ -94,8 +87,8 @@ export class JiraService {
           // console.log(integration);
         }),
       );
-      const integrations = await this.prisma.tempIntegration.findMany({
-        where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
+      const tempIntegrations = await this.prisma.tempIntegration.findMany({
+        where: { userId: user.id, type: IntegrationType.JIRA },
         select: {
           id: true,
           site: true,
@@ -104,20 +97,23 @@ export class JiraService {
           accessToken: true,
         },
       });
-      if (integrations.length === 1) {
-        const createdIntegration = await this.createIntegration(
-          user,
-          integrations[0].siteId,
-        );
-        return createdIntegration;
+      const integrationProjects = [];
+      for (const tempIntegration of tempIntegrations) {
+        const tmpIntegrationProjects =
+          await this.createIntegrationAndGetProjects(
+            user,
+            tempIntegration.siteId,
+          );
+        tmpIntegrationProjects &&
+          integrationProjects.push(tmpIntegrationProjects);
       }
-      return integrations;
+      return integrationProjects;
     } catch (error) {
       throw new APIException('Code Expired', HttpStatus.BAD_REQUEST);
     }
   }
 
-  async createIntegration(user: User, siteId: string) {
+  async createIntegrationAndGetProjects(user: User, siteId: string) {
     try {
       const doesExistIntegration = await this.prisma.integration.findUnique({
         where: {
@@ -128,10 +124,16 @@ export class JiraService {
         },
       });
       if (doesExistIntegration) {
-        throw new APIException(
-          'Already you have an integration',
-          HttpStatus.BAD_REQUEST,
+        const projects = await this.tasksService.getIntegrationProjectList(
+          user,
+          doesExistIntegration.id,
         );
+
+        return {
+          message: `Integration successful in ${doesExistIntegration.site}`,
+          integration: doesExistIntegration,
+          projects,
+        };
       }
       const getTempIntegration = await this.prisma.tempIntegration.findUnique({
         where: {
@@ -158,8 +160,13 @@ export class JiraService {
       });
       const deleteTempIntegrations =
         integration &&
-        (await this.prisma.tempIntegration.deleteMany({
-          where: { jiraAccountId: integration.jiraAccountId },
+        (await this.prisma.tempIntegration.delete({
+          where: {
+            tempIntegrationIdentifier: {
+              siteId,
+              userId: user.id,
+            },
+          },
         }));
       // console.log(integration);
       if (!deleteTempIntegrations) {
@@ -168,9 +175,18 @@ export class JiraService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      await this.tasksService.setProjectStatuses(user);
-      this.tasksService.syncTasks(user);
-      return { message: `Integration successful in ${integration.site}` };
+      await this.tasksService.setProjectStatuses(user, integration);
+      await this.sprintsService.createSprintAndTask(user, integration.id);
+      const projects = await this.tasksService.getIntegrationProjectList(
+        user,
+        integration.id,
+      );
+      // this.tasksService.syncTasks(user);
+      return {
+        message: `Integration successful in ${integration.site}`,
+        integration,
+        projects,
+      };
     } catch (err) {
       throw new APIException(
         err.message || 'Something is wrong in creating integration',
@@ -179,25 +195,34 @@ export class JiraService {
     }
   }
 
-  async getProjectStatuses(user: User) {
-    const jiraIntegration = await this.prisma.integration.findFirst({
-      where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
+  async getIntegratedProjectStatuses(user: User) {
+    const jiraIntegrations = await this.prisma.integration.findMany({
+      where: { userId: user.id, type: IntegrationType.JIRA },
     });
+    const jiraIntegrationIds = jiraIntegrations?.map(
+      (integration) => integration.id,
+    );
     try {
-      const projects = jiraIntegration?.id
-        ? await this.prisma.projects.findMany({
-            where: { integrationID: jiraIntegration.id },
-            include: {
-              statuses: true,
-            },
-          })
-        : [];
+      const projects =
+        jiraIntegrationIds?.length > 0
+          ? await this.prisma.project.findMany({
+              where: {
+                integrationID: { in: jiraIntegrationIds },
+                integrated: true,
+              },
+              include: {
+                statuses: true,
+              },
+            })
+          : [];
       projects.push({
         id: 0,
         projectId: 'None',
         projectKey: 'None',
         projectName: 'T23',
+        source: '/',
         integrationID: -1,
+        userId: -1,
         statuses: [
           {
             id: 0,
@@ -230,6 +255,7 @@ export class JiraService {
             projectId: 0,
           },
         ],
+        integrated: true,
       });
       return projects;
     } catch (error) {

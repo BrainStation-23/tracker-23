@@ -25,8 +25,22 @@ const GetCookie = (cookieName: string) => {
 };
 
 const RemoveAllCookies = () => {
-  CookieNames.map((cookieName: string) => RemoveCookie(cookieName));
+  const cookieNames = getCookieNames();
+  cookieNames.map((cookieName: string) => RemoveCookie(cookieName));
   console.log("Cookies Removed");
+};
+
+const getCookieNames = () => {
+  const cookies = document.cookie.split(";");
+  const cookieNames = [];
+
+  for (let i = 0; i < cookies.length; i++) {
+    const cookie = cookies[i].trim().split("=");
+    const cookieName = cookie[0];
+    cookieNames.push(cookieName);
+  }
+
+  return cookieNames;
 };
 
 export { RemoveAllCookies, GetCookie, RemoveCookie, SetCookie };

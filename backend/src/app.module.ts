@@ -10,6 +10,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
 import { NotificationModule } from './notifications/notifications.module';
 import { SprintsModule } from './sprints/sprints.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
+import { JiraModule } from './integrations/jira/jira.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
     NotificationModule,
     SprintsModule,
     WorkspacesModule,
+    JiraModule,
   ],
 })
 export class AppModule {}

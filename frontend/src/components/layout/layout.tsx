@@ -49,7 +49,7 @@ const CustomLayout = ({ children }: any) => {
   const getProjectWiseStatues = async () => {
     if (!projectStatuses) {
       {
-        const res = await userAPI.getProjectWiseStatus();
+        const res = await userAPI.getIntegratedProjectStatuses();
         res?.length > 0 && dispatch(setProjectsSlice(res));
       }
     }

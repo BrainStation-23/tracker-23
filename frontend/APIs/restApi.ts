@@ -325,7 +325,7 @@ export async function pinTaskRest(taskId: any, pinned: boolean) {
   }
 }
 
-export async function getProjectWiseStatusRest() {
+export async function getIntegratedProjectStatusesRest() {
   try {
     const res = await axios.get(`${apiEndPoints.projectWiseStatus}`);
     return res.data;
@@ -409,6 +409,32 @@ export async function getJiraActiveSprintTasksRest(
         (status && status.length > 0 ? `&status=${status}` : "")
       // `${apiEndPoints.activeSprintTasks}/?state=${["closed"]}`
     );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getAllProjectsRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.allProjects}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function importProjectRest(id: number) {
+  try {
+    const res = await axios.get(`${apiEndPoints.projectTasks}/${id}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function deleteProjectTasksRest(id: number) {
+  try {
+    const res = await axios.post(`${apiEndPoints.projectTasks}/${id}`);
     return res.data;
   } catch (error: any) {
     return false;

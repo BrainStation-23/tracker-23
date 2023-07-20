@@ -38,11 +38,11 @@ export class JiraController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/:siteId')
-  async createIntegration(
+  async createIntegrationAndGetProjects(
     @GetUser() user: User,
     @Param('siteId') siteId: string,
   ) {
-    return this.jiraService.createIntegration(user, siteId);
+    return this.jiraService.createIntegrationAndGetProjects(user, siteId);
   }
 
   // @Post('projects')
@@ -50,9 +50,9 @@ export class JiraController {
   // async setProjects(@GetUser() user: User) {
   //   return this.jiraService.setProjectStatuses(user);
   // }
-  @Get('projects')
   @UseGuards(JwtAuthGuard)
+  @Get('projects')
   async getProjects(@GetUser() user: User) {
-    return this.jiraService.getProjectStatuses(user);
+    return this.jiraService.getIntegratedProjectStatuses(user);
   }
 }

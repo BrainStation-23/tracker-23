@@ -82,6 +82,11 @@ export const sideMenuOptions = [
     icon: <IntegrationIconSvg />,
   },
   {
+    link: "/projects",
+    title: "Projects",
+    icon: <IntegrationIconSvg />,
+  },
+  {
     link: "/exports",
     title: "Exports",
     icon: <ExportsIconSvg />,

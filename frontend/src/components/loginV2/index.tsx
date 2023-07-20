@@ -76,10 +76,13 @@ export default function LoginV2() {
                   <span className="px-4">Or</span>
                   <span className="w-full border border-black"></span>
                 </div>
-                <Link
-                  href={`${config?.baseUrl}/auth/google`}
-                  className="relative flex flex-none items-center justify-center rounded-lg border-2 border-black px-3 py-2 font-medium md:px-4 md:py-3"
-                  onClick={() => setIsModalOpen(true)}
+                <div
+                  // href={`${config?.baseUrl}/auth/google`}
+                  className="relative flex flex-none cursor-pointer items-center justify-center rounded-lg border-2 border-black px-3 py-2 font-medium md:px-4 md:py-3"
+                  onClick={() => {
+                    window.open(`${config?.baseUrl}/auth/google`, "_self");
+                    setIsModalOpen(true);
+                  }}
                 >
                   {/* <button
                     className="relative flex flex-none items-center justify-center rounded-lg border-2 border-black px-3 py-2 font-medium md:px-4 md:py-3"
@@ -112,7 +115,7 @@ export default function LoginV2() {
                   </span>
                   <span>Sign in with Google</span>
                   {/* </button> */}
-                </Link>
+                </div>
               </div>
             </div>
 

@@ -1,25 +1,25 @@
-import { HttpService } from '@nestjs/axios';
+import axios from 'axios';
+import * as moment from 'moment';
+import { IntegrationsService } from 'src/integrations/integrations.service';
+import { APIException } from 'src/internal/exception/api.exception';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { TasksService } from 'src/tasks/tasks.service';
+
 import {
   BadRequestException,
   HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { IntegrationType, Session, SessionStatus, User } from '@prisma/client';
-import { lastValueFrom } from 'rxjs';
-import { PrismaService } from 'src/prisma/prisma.service';
+
 import { ManualTimeEntryReqBody, SessionDto, SessionReqBodyDto } from './dto';
-import axios from 'axios';
-import * as moment from 'moment';
-import { APIException } from 'src/internal/exception/api.exception';
-import { TasksService } from 'src/tasks/tasks.service';
+
 @Injectable()
 export class SessionsService {
   constructor(
-    private config: ConfigService,
+    private integrationsService: IntegrationsService,
     private prisma: PrismaService,
-    private httpService: HttpService,
     private tasksService: TasksService,
   ) {}
 
@@ -78,11 +78,22 @@ export class SessionsService {
     const updated_session = await this.stopSessionUtil(activeSession.id);
 
     if (task.integratedTaskId) {
-      const session = await this.logToIntegrations(
-        user,
-        task.integratedTaskId,
-        updated_session,
-      );
+      const project =
+        task.projectId &&
+        (await this.prisma.project.findFirst({
+          where: { id: task.projectId },
+          include: { integration: true },
+        }));
+      if (!project)
+        throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+      const session =
+        project.integration?.id &&
+        (await this.logToIntegrations(
+          user,
+          task.integratedTaskId,
+          project.integration.id,
+          updated_session,
+        ));
       if (!session) {
         throw new BadRequestException({
           message: 'Session canceled due to insufficient time',
@@ -118,6 +129,7 @@ export class SessionsService {
   async logToIntegrations(
     user: User,
     integratedTaskId: number,
+    integrationId: number,
     session: Session,
   ) {
     if (session.endTime == null) {
@@ -129,7 +141,8 @@ export class SessionsService {
     if (timeSpent < 60) {
       return null;
     }
-    const updated_integration = await this.updateIntegration(user);
+    const updated_integration =
+      await this.integrationsService.updateIntegration(user, integrationId);
     if (!updated_integration) {
       return null;
     }
@@ -154,37 +167,6 @@ export class SessionsService {
       }));
     if (!localSession) return null;
     return { success: true, msg: 'Successfully Updated to jira' };
-  }
-
-  async updateIntegration(user: User) {
-    const tokenUrl = 'https://auth.atlassian.com/oauth/token';
-    const headers: any = { 'Content-Type': 'application/json' };
-    const integration = await this.prisma.integration.findFirst({
-      where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
-    });
-    if (!integration) {
-      throw new APIException('You have no integration', HttpStatus.BAD_REQUEST);
-    }
-
-    const data = {
-      grant_type: 'refresh_token',
-      client_id: this.config.get('JIRA_CLIENT_ID'),
-      client_secret: this.config.get('JIRA_SECRET_KEY'),
-      refresh_token: integration?.refreshToken,
-    };
-
-    const tokenResp = (
-      await lastValueFrom(this.httpService.post(tokenUrl, data, headers))
-    ).data;
-
-    const updated_integration = await this.prisma.integration.update({
-      where: { id: integration?.id },
-      data: {
-        accessToken: tokenResp.access_token,
-        refreshToken: tokenResp.refresh_token,
-      },
-    });
-    return updated_integration;
   }
 
   timeConverter(timeSpent: number) {
@@ -247,7 +229,7 @@ export class SessionsService {
     try {
       const startTime = new Date(`${dto.startTime}`);
       const endTime = new Date(`${dto.endTime}`);
-      const { integratedTaskId, id } = await this.validateTaskAccess(
+      const { integratedTaskId, id, projectId } = await this.validateTaskAccess(
         user,
         dto.taskId,
       );
@@ -262,9 +244,22 @@ export class SessionsService {
         );
       }
       let jiraSession: any;
-      let updated_integration;
+      let updated_integration: any;
       if (integratedTaskId) {
-        updated_integration = await this.updateIntegration(user);
+        const project =
+          projectId &&
+          (await this.prisma.project.findFirst({
+            where: { id: projectId },
+            include: { integration: true },
+          }));
+        if (!project)
+          throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+        updated_integration =
+          project.integration?.id &&
+          (await this.integrationsService.updateIntegration(
+            user,
+            project.integration.id,
+          ));
         if (updated_integration)
           jiraSession = await this.addWorkLog(
             startTime,
@@ -323,12 +318,37 @@ export class SessionsService {
           userWorkspaceId: userWorkspace.id,
         },
       });
+      if (!task) {
+        throw new APIException(
+          'Task Not Found',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
       if (task && task.source === IntegrationType.TRACKER23) {
         session = await this.updateSessionFromLocal(Number(sessionId), reqBody);
         return session;
       }
+      const project =
+        task.projectId &&
+        (await this.prisma.project.findFirst({
+          where: { id: task.projectId },
+          include: { integration: true },
+        }));
+      if (!project)
+        throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+      const updated_integration =
+        project.integration?.id &&
+        (await this.integrationsService.updateIntegration(
+          user,
+          project.integration.id,
+        ));
 
-      const updated_integration = await this.updateIntegration(user);
+      if (!updated_integration) {
+        throw new APIException(
+          'Integration Not Found',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
       if (doesExistWorklog.authorId === updated_integration.jiraAccountId) {
         const startTime = new Date(`${reqBody.startTime}`);
         const endTime = new Date(`${reqBody.endTime}`);
@@ -412,12 +432,39 @@ export class SessionsService {
           userWorkspaceId: userWorkspace.id,
         },
       });
+
+      if (!task) {
+        throw new APIException(
+          'Task Not Found',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
       if (task && task.source === IntegrationType.TRACKER23) {
         session = await this.deleteSessionFromLocal(Number(sessionId));
         return { message: 'Session Deleted Successfully!' };
       }
 
-      const updated_integration = await this.updateIntegration(user);
+      const project =
+        task.projectId &&
+        (await this.prisma.project.findFirst({
+          where: { id: task.projectId },
+          include: { integration: true },
+        }));
+      if (!project)
+        throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+      const updated_integration =
+        project.integration?.id &&
+        (await this.integrationsService.updateIntegration(
+          user,
+          project.integration.id,
+        ));
+
+      if (!updated_integration) {
+        throw new APIException(
+          'Integration Not Found',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
       if (doesExistWorklog.authorId === updated_integration.jiraAccountId) {
         const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${doesExistWorklog?.integratedTaskId}/worklog/${doesExistWorklog.worklogId}`;
         const config = {
