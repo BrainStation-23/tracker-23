@@ -142,7 +142,7 @@ export class SessionsService {
       return null;
     }
     const updated_integration =
-      await this.integrationsService.updateIntegration(user, integrationId);
+      await this.integrationsService.getUpdatedUserIntegration(user, integrationId);
     if (!updated_integration) {
       return null;
     }
@@ -256,7 +256,7 @@ export class SessionsService {
           throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
         updated_integration =
           project.integration?.id &&
-          (await this.integrationsService.updateIntegration(
+          (await this.integrationsService.getUpdatedUserIntegration(
             user,
             project.integration.id,
           ));
@@ -338,7 +338,7 @@ export class SessionsService {
         throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
       const updated_integration =
         project.integration?.id &&
-        (await this.integrationsService.updateIntegration(
+        (await this.integrationsService.getUpdatedUserIntegration(
           user,
           project.integration.id,
         ));
@@ -454,7 +454,7 @@ export class SessionsService {
         throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
       const updated_integration =
         project.integration?.id &&
-        (await this.integrationsService.updateIntegration(
+        (await this.integrationsService.getUpdatedUserIntegration(
           user,
           project.integration.id,
         ));

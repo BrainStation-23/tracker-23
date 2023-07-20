@@ -22,7 +22,10 @@ export class SprintsService {
     const sprintPromises: Promise<any>[] = [];
     const issuePromises: Promise<any>[] = [];
     const updated_integration =
-      await this.integrationsService.updateIntegration(user, integrationID);
+      await this.integrationsService.getUpdatedUserIntegration(
+        user,
+        integrationID,
+      );
     if (!updated_integration) {
       console.log(
         '🚀 ~ file: sprints.service.ts:31 ~ SprintsService ~ createSprintAndTask ~ updated_integration:',

@@ -19,7 +19,7 @@ export class WebhooksService {
   ) {}
 
   async getWebhooks(user: User) {
-    const updated_integration = await this.updateIntegration(user);
+    const updated_integration = await this.getUpdatedUserIntegration(user);
     const url = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/webhook`;
     const config = {
       method: 'get',
@@ -32,7 +32,7 @@ export class WebhooksService {
     return (await axios(config)).data;
   }
 
-  async updateIntegration(user: User) {
+  async getUpdatedUserIntegration(user: User) {
     const tokenUrl = 'https://auth.atlassian.com/oauth/token';
     const headers: any = { 'Content-Type': 'application/json' };
     const integration = await this.prisma.integration.findFirst({
@@ -167,7 +167,7 @@ export class WebhooksService {
 
   async registerWebhook(user: User, reqBody: RegisterWebhookDto) {
     try {
-      const updated_integration = await this.updateIntegration(user);
+      const updated_integration = await this.getUpdatedUserIntegration(user);
       const doesExist =
         updated_integration.site &&
         (await this.prisma.webhook.findMany({
@@ -237,7 +237,7 @@ export class WebhooksService {
 
   async deleteWebhook(user: User, reqBody: deleteWebhookDto) {
     try {
-      const updated_integration = await this.updateIntegration(user);
+      const updated_integration = await this.getUpdatedUserIntegration(user);
       const jiraReqBody = {
         webhookIds: [reqBody.webhookId],
       };
@@ -277,7 +277,7 @@ export class WebhooksService {
 
   async failedWebhook(user: User) {
     try {
-      const updated_integration = await this.updateIntegration(user);
+      const updated_integration = await this.getUpdatedUserIntegration(user);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook/failed`;
       const config = {
         method: 'get',
@@ -306,7 +306,7 @@ export class WebhooksService {
         webhookIds: [reqBody.webhookId],
       };
       console.log(body);
-      const updated_integration = await this.updateIntegration(user);
+      const updated_integration = await this.getUpdatedUserIntegration(user);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook/refresh`;
       const config = {
         method: 'put',
