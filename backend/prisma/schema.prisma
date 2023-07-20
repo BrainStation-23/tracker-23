@@ -49,8 +49,8 @@ model UserWorkspace {
   workspaceId Int
 
   inviterId    Int?
-  invitationID String
-  status       String // active , invited , inactive, deleted
+  invitationID String?
+  status       UserWorkspaceStatus // active , invited , inactive, deleted
 
   // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
   // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
@@ -299,4 +299,11 @@ enum InvitationStatus {
   PENDING
   ACCEPTED
   REJECTED
+}
+
+enum UserWorkspaceStatus {
+  ACTIVE
+  INACTIVE
+  INVITED
+  DELETED
 }
