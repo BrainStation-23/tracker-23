@@ -79,7 +79,7 @@ export class TasksController {
   @Get('sync/status')
   @UseGuards(JwtAuthGuard)
   async callSync(@GetUser() user: User) {
-    return await this.tasksService.getCallSync(user.id);
+    return await this.tasksService.getCallSync(user);
   }
 
   @Patch('update/status/:taskId')

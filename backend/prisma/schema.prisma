@@ -16,6 +16,7 @@ datasource db {
 model Workspace {
   id        Int      @id @default(autoincrement())
   name      String
+  picture   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -257,10 +258,10 @@ model webhook {
   id             Int      @id @default(autoincrement())
   projectKey     String[]
   webhookId      Int
-  siteUrl        String
+  siteId        String
   expirationDate DateTime
 
-  @@unique([webhookId, siteUrl], name: "webhookIdentifier")
+  @@unique([webhookId, siteId], name: "webhookIdentifier")
 }
 
 model Sprint {

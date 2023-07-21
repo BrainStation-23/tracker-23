@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class RegisterWebhookDto {
   @IsString()
@@ -12,4 +12,14 @@ export class RegisterWebhookDto {
   @IsArray()
   @IsNotEmpty()
   projectName: string[];
+
+  @IsNumber()
+  @IsNotEmpty()
+  userIntegrationId: number;
+}
+
+export class FailedWebhookReqBody {
+  @IsNumber()
+  @IsNotEmpty()
+  userIntegrationId: number;
 }

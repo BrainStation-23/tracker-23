@@ -1,14 +1,23 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IntegrationType, SessionStatus, User } from '@prisma/client';
+import {
+  IntegrationType,
+  SessionStatus,
+  User,
+  UserIntegration,
+} from '@prisma/client';
 import axios from 'axios';
-import { lastValueFrom } from 'rxjs';
 import { APIException } from 'src/internal/exception/api.exception';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { RegisterWebhookDto, extendWebhookLifeReqDto } from './dto/index.js';
+import {
+  FailedWebhookReqBody,
+  RegisterWebhookDto,
+  extendWebhookLifeReqDto,
+} from './dto/index.js';
 import { SessionsService } from 'src/sessions/sessions.service';
 import { deleteWebhookDto } from './dto/deleteWebhook.dto.js';
+import { IntegrationsService } from 'src/integrations/integrations.service.js';
 @Injectable()
 export class WebhooksService {
   constructor(
@@ -16,10 +25,27 @@ export class WebhooksService {
     private prisma: PrismaService,
     private httpService: HttpService,
     private sessionService: SessionsService, // private tasksService: TasksService,
+    private integrationsService: IntegrationsService,
   ) {}
 
   async getWebhooks(user: User) {
-    const updated_integration = await this.getUpdatedUserIntegration(user);
+    const getUserIntegrationList =
+      await this.integrationsService.getUserIntegrations(user);
+    return getUserIntegrationList.map((userIntegration) => {
+      this.getAllWebhooks(user, userIntegration);
+    });
+  }
+
+  async getAllWebhooks(user: User, userIntegration: UserIntegration) {
+    const updated_integration =
+      await this.integrationsService.getUpdatedUserIntegration(
+        user,
+        userIntegration.id,
+      );
+    if (!updated_integration) {
+      return null;
+    }
+
     const url = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/webhook`;
     const config = {
       method: 'get',
@@ -32,57 +58,27 @@ export class WebhooksService {
     return (await axios(config)).data;
   }
 
-  async getUpdatedUserIntegration(user: User) {
-    const tokenUrl = 'https://auth.atlassian.com/oauth/token';
-    const headers: any = { 'Content-Type': 'application/json' };
-    const integration = await this.prisma.integration.findFirst({
-      where: { userWorkspaceId: userWorkspace.id, type: IntegrationType.JIRA },
-    });
-    if (!integration) {
-      throw new APIException('You have no integration', HttpStatus.BAD_REQUEST);
-    }
-
-    const data = {
-      grant_type: 'refresh_token',
-      client_id: this.config.get('JIRA_CLIENT_ID'),
-      client_secret: this.config.get('JIRA_SECRET_KEY'),
-      refresh_token: integration?.refreshToken,
-    };
-
-    const tokenResp = (
-      await lastValueFrom(this.httpService.post(tokenUrl, data, headers))
-    ).data;
-
-    const updated_integration = await this.prisma.integration.update({
-      where: { id: integration?.id },
-      data: {
-        accessToken: tokenResp.access_token,
-        refreshToken: tokenResp.refresh_token,
-      },
-    });
-    return updated_integration;
-  }
-
   async handleWebhook(payload: any) {
     console.log(payload);
     const jiraEvent = payload.webhookEvent;
 
     const projectKey = payload.issue.fields.project.key;
-    const siteUrl = payload.user.self.split('/')[2];
+    const siteId = 'payload.self.sideId';
+    // const siteUrl = payload.user.self.split('/')[2];
     const webhookId = payload.matchedWebhookIds;
     const doesExistWebhook = await this.prisma.webhook.findUnique({
       where: {
         webhookIdentifier: {
           webhookId,
-          siteUrl,
+          siteId,
         },
       },
     });
     if (doesExistWebhook && payload.webhookEvent === 'jira:issue_created') {
-      console.log('project', projectKey, siteUrl, webhookId);
+      // console.log('project', projectKey, siteUrl, webhookId);
       await this.prisma.task.create({
         data: {
-          userId: 1, //unknown user or search user from integration
+          // userId: 1, //unknown user or search user from integration
           title: payload.issue.fields.summary,
           assigneeId: payload.issue.fields.assignee?.accountId || null,
           estimation: payload.issue.fields.timeoriginalestimate
@@ -167,12 +163,19 @@ export class WebhooksService {
 
   async registerWebhook(user: User, reqBody: RegisterWebhookDto) {
     try {
-      const updated_integration = await this.getUpdatedUserIntegration(user);
+      const updated_integration =
+        await this.integrationsService.getUpdatedUserIntegration(
+          user,
+          reqBody.userIntegrationId,
+        );
+      if (!updated_integration) {
+        return null;
+      }
       const doesExist =
-        updated_integration.site &&
+        updated_integration.siteId &&
         (await this.prisma.webhook.findMany({
           where: {
-            siteUrl: updated_integration.site,
+            siteId: updated_integration.siteId,
             projectKey: {
               hasSome: [...reqBody.projectName.map((key) => key)],
             },
@@ -214,14 +217,14 @@ export class WebhooksService {
 
       const localWebhook =
         webhook &&
-        updated_integration.site &&
+        updated_integration.siteId &&
         (await this.prisma.webhook.create({
           data: {
             projectKey: reqBody.projectName,
             webhookId: Number(
               webhook.webhookRegistrationResult[0].createdWebhookId,
             ),
-            siteUrl: updated_integration.site,
+            siteId: updated_integration.siteId,
             expirationDate: currentDate,
           },
         }));
@@ -237,7 +240,14 @@ export class WebhooksService {
 
   async deleteWebhook(user: User, reqBody: deleteWebhookDto) {
     try {
-      const updated_integration = await this.getUpdatedUserIntegration(user);
+      const updated_integration =
+        await this.integrationsService.getUpdatedUserIntegration(
+          user,
+          reqBody.userIntegrationId,
+        );
+      if (!updated_integration) {
+        return null;
+      }
       const jiraReqBody = {
         webhookIds: [reqBody.webhookId],
       };
@@ -256,12 +266,12 @@ export class WebhooksService {
       const webhook = (await axios(config)).status;
       console.log('deleted', webhook);
       webhook == 202 &&
-        updated_integration.site &&
+        updated_integration.siteId &&
         (await this.prisma.webhook.delete({
           where: {
             webhookIdentifier: {
               webhookId: reqBody.webhookId,
-              siteUrl: updated_integration.site,
+              siteId: updated_integration.siteId,
             },
           },
         }));
@@ -275,9 +285,16 @@ export class WebhooksService {
     }
   }
 
-  async failedWebhook(user: User) {
+  async failedWebhook(user: User, reqBody: RegisterWebhookDto) {
     try {
-      const updated_integration = await this.getUpdatedUserIntegration(user);
+      const updated_integration =
+        await this.integrationsService.getUpdatedUserIntegration(
+          user,
+          reqBody.userIntegrationId,
+        );
+      if (!updated_integration) {
+        return null;
+      }
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook/failed`;
       const config = {
         method: 'get',
@@ -301,12 +318,19 @@ export class WebhooksService {
   }
   async extendWebhookLife(user: User, reqBody: extendWebhookLifeReqDto) {
     try {
+      const updated_integration =
+        await this.integrationsService.getUpdatedUserIntegration(
+          user,
+          reqBody.userIntegrationId,
+        );
+      if (!updated_integration) {
+        return null;
+      }
       console.log(reqBody);
       const body = {
         webhookIds: [reqBody.webhookId],
       };
       console.log(body);
-      const updated_integration = await this.getUpdatedUserIntegration(user);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook/refresh`;
       const config = {
         method: 'put',
@@ -323,12 +347,12 @@ export class WebhooksService {
         this.sessionService.getUtcTime(webhook.expirationDate),
       );
       const updatedLocal =
-        updated_integration.site &&
+        updated_integration.siteId &&
         (await this.prisma.webhook.update({
           where: {
             webhookIdentifier: {
               webhookId: reqBody.webhookId,
-              siteUrl: updated_integration.site,
+              siteId: updated_integration.siteId,
             },
           },
           data: {

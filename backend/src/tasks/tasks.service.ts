@@ -25,6 +25,7 @@ import {
   TimeSpentReqBodyDto,
   UpdatePinDto,
 } from './dto';
+import { WorkspacesService } from 'src/workspaces/workspaces.service';
 
 @Injectable()
 export class TasksService {
@@ -33,13 +34,13 @@ export class TasksService {
     private httpService: HttpService,
     private integrationsService: IntegrationsService,
     private myGateway: MyGateway,
+    private workspacesService: WorkspacesService,
   ) {}
 
   async getSprintTasks(user: User, sprintIds: number[]) {
     try {
       const getSprintTasks = await this.prisma.sprintTask.findMany({
         where: {
-          userWorkspaceId: userWorkspace.id,
           sprintId: { in: sprintIds.map((id) => Number(id)) },
         },
       });
@@ -65,12 +66,24 @@ export class TasksService {
         sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
       // console.log(sprintIdArray);
 
-      const jiraIntegration = await this.prisma.integration.findFirst({
-        where: {
-          userWorkspaceId: userWorkspace.id,
-          type: IntegrationType.JIRA,
-        },
-      });
+      // const jiraIntegration = await this.prisma.integration.findFirst({
+      //   where: {
+      //     userWorkspaceId: userWorkspace.id,
+      //     type: IntegrationType.JIRA,
+      //   },
+      // });
+
+      const userWorkspace =
+        user.activeWorkspaceId &&
+        (await this.prisma.userWorkspace.findFirst({
+          where: {
+            userId: user.id,
+            workspaceId: user.activeWorkspaceId,
+          },
+        }));
+      if (!userWorkspace) {
+        return [];
+      }
 
       const priority1: any = (priority as unknown as string)?.split(',');
       const status1: any = (status as unknown as string)?.split(',');
@@ -84,13 +97,14 @@ export class TasksService {
       let tasks: Task[] = [];
 
       if (sprintIdArray && sprintIdArray.length) {
-        const inttegrationId = jiraIntegration?.jiraAccountId ?? '-1';
+        // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
         const taskIds = await this.getSprintTasks(user, sprintIdArray);
         console.log(taskIds);
 
         return await this.prisma.task.findMany({
           where: {
-            assigneeId: inttegrationId,
+            // assigneeId: integrationId,
+            userWorkspaceId: userWorkspace.id,
             source: IntegrationType.JIRA,
             id: { in: taskIds },
             ...(priority1 && { priority: { in: priority1 } }),
@@ -109,17 +123,16 @@ export class TasksService {
       } else {
         const databaseQuery = {
           userWorkspaceId: userWorkspace.id,
-          OR: [
-            {
-              assigneeId: jiraIntegration
-                ? jiraIntegration.jiraAccountId
-                : '-1',
-              source: IntegrationType.JIRA,
-            },
-            {
-              source: IntegrationType.TRACKER23,
-            },
-          ],
+          // OR: [
+          //   {
+          //     userWorkspaceId: userWorkspace.id,
+          //     source: IntegrationType.JIRA,
+          //   },
+          //   {
+          //     userWorkspaceId: userWorkspace.id,
+          //     source: IntegrationType.TRACKER23,
+          //   },
+          // ],
           ...(startDate &&
             endDate && {
               createdAt: { lte: endDate },
@@ -150,10 +163,17 @@ export class TasksService {
   }
 
   async createTask(user: User, dto: CreateTaskDto) {
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      throw new APIException(
+        'User workspace not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     if (dto.isRecurrent) {
-      await this.recurrentTask(user, dto);
+      await this.recurrentTask(user, userWorkspace.id, dto);
     } else {
-      const task: Task = await this.prisma.task.create({
+      const task = await this.prisma.task.create({
         data: {
           userWorkspaceId: userWorkspace.id,
           title: dto.title,
@@ -163,13 +183,14 @@ export class TasksService {
           priority: dto.priority,
           status: dto.status,
           labels: dto.labels,
+          workspaceId: user.activeWorkspaceId,
         },
       });
       return task;
     }
   }
 
-  async recurrentTask(user: User, dto: CreateTaskDto) {
+  async recurrentTask(user: User, userWorkspaceId: number, dto: CreateTaskDto) {
     const endDate = new Date(dto.endDate);
     const timeMultiplier =
       dto.frequency === 'DAILY' ? 1 : dto.frequency === 'WEEKLY' ? 7 : 14;
@@ -187,7 +208,7 @@ export class TasksService {
           this.prisma.task
             .create({
               data: {
-                userWorkspaceId: userWorkspace.id,
+                userWorkspaceId: userWorkspaceId,
                 title: dto.title,
                 description: dto.description,
                 estimation: dto.estimation,
@@ -197,6 +218,7 @@ export class TasksService {
                 labels: dto.labels,
                 createdAt: new Date(startTime),
                 updatedAt: new Date(endTime),
+                workspaceId: user.activeWorkspaceId,
               },
             })
             .then(async (task: any) => {
@@ -287,15 +309,18 @@ export class TasksService {
       projectId,
     );
     try {
-      const notification = await this.prisma.notification.create({
-        data: {
-          seen: false,
-          author: 'SYSTEM',
-          title: 'Importing Project',
-          description: 'Importing Project',
-          userId: user.id,
-        },
-      });
+      const notification =
+        user.activeWorkspaceId &&
+        (await this.prisma.notification.create({
+          data: {
+            seen: false,
+            author: 'SYSTEM',
+            title: 'Importing Project',
+            description: 'Importing Project',
+            userId: user.id,
+            workspaceId: user.activeWorkspaceId,
+          },
+        }));
       this.myGateway.sendNotification(`${user.id}`, notification);
     } catch (error) {
       console.log(
@@ -315,17 +340,20 @@ export class TasksService {
     console.log('updated_integration', updated_integration);
     if (!updated_integration) {
       try {
-        const notification = await this.prisma.notification.create({
-          data: {
-            seen: false,
-            author: 'SYSTEM',
-            title: 'Project Import Failed',
-            description: 'Project Import Failed',
-            userId: user.id,
-          },
-        });
+        const notification =
+          user.activeWorkspaceId &&
+          (await this.prisma.notification.create({
+            data: {
+              seen: false,
+              author: 'SYSTEM',
+              title: 'Project Import Failed',
+              description: 'Project Import Failed',
+              userId: user.id,
+              workspaceId: user.activeWorkspaceId,
+            },
+          }));
         this.myGateway.sendNotification(`${user.id}`, notification);
-        await this.syncCall(StatusEnum.FAILED, user.id);
+        await this.syncCall(StatusEnum.FAILED, user);
         throw new APIException(
           'Can not sync with jira',
           HttpStatus.BAD_REQUEST,
@@ -373,7 +401,7 @@ export class TasksService {
 
         const integratedTasks = await this.prisma.task.findMany({
           where: {
-            userId: user.id,
+            workspaceId: user.activeWorkspaceId,
             integratedTaskId: { in: [...mappedIssues.keys()] },
             source: IntegrationType.JIRA,
           },
@@ -503,7 +531,7 @@ export class TasksService {
           console.log('Error creating sessions');
         }
       }
-      const done = await this.syncCall(StatusEnum.DONE, user.id);
+      const done = await this.syncCall(StatusEnum.DONE, user);
       if (done) {
         await this.createSprintAndTask(user, updated_integration.id);
       }
@@ -523,15 +551,18 @@ export class TasksService {
         );
       }
       try {
-        const notification = await this.prisma.notification.create({
-          data: {
-            seen: false,
-            author: 'SYSTEM',
-            title: 'Importing Project',
-            description: 'Importing Project',
-            userId: user.id,
-          },
-        });
+        const notification =
+          user.activeWorkspaceId &&
+          (await this.prisma.notification.create({
+            data: {
+              seen: false,
+              author: 'SYSTEM',
+              title: 'Importing Project',
+              description: 'Importing Project',
+              userId: user.id,
+              workspaceId: user.activeWorkspaceId,
+            },
+          }));
         this.myGateway.sendNotification(`${user.id}`, notification);
         res?.json({ message: 'Project Imported' });
       } catch (error) {
@@ -542,15 +573,18 @@ export class TasksService {
       }
     } catch (err) {
       try {
-        const notification = await this.prisma.notification.create({
-          data: {
-            seen: false,
-            author: 'SYSTEM',
-            title: 'Importing Project Failed',
-            description: 'Importing Project Failed',
-            userId: user.id,
-          },
-        });
+        const notification =
+          user.activeWorkspaceId &&
+          (await this.prisma.notification.create({
+            data: {
+              seen: false,
+              author: 'SYSTEM',
+              title: 'Importing Project Failed',
+              description: 'Importing Project Failed',
+              userId: user.id,
+              workspaceId: user.activeWorkspaceId,
+            },
+          }));
         this.myGateway.sendNotification(`${user.id}`, notification);
       } catch (error) {
         console.log(
@@ -575,7 +609,8 @@ export class TasksService {
           author: 'SYSTEM',
           title: 'Sync Started',
           description: 'Sync Started',
-          userWorkspaceId: userWorkspace.id,
+          userId: user.id,
+          workspaceId: user.activeWorkspaceId ?? -1,
         },
       });
       this.myGateway.sendNotification(`${user.id}`, notification);
@@ -596,9 +631,9 @@ export class TasksService {
       };
       // headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
       if (res) {
-        res.json(await this.syncCall(StatusEnum.IN_PROGRESS, user.id));
+        res.json(await this.syncCall(StatusEnum.IN_PROGRESS, user));
       } else {
-        await this.syncCall(StatusEnum.IN_PROGRESS, user.id);
+        await this.syncCall(StatusEnum.IN_PROGRESS, user);
       }
       // await this.setProjectStatuses(user);
 
@@ -638,7 +673,7 @@ export class TasksService {
 
         const integratedTasks = await this.prisma.task.findMany({
           where: {
-            userWorkspaceId: userWorkspace.id,
+            workspaceId: user.activeWorkspaceId,
             integratedTaskId: { in: [...mappedIssues.keys()] },
             source: IntegrationType.JIRA,
           },
@@ -658,7 +693,7 @@ export class TasksService {
             integratedTask.priority.name,
           );
           taskList.push({
-            userWorkspaceId: userWorkspace.id,
+            workspaceId: user.activeWorkspaceId,
             title: integratedTask.summary,
             assigneeId: integratedTask.assignee?.accountId || null,
             estimation: integratedTask.timeoriginalestimate
@@ -770,7 +805,7 @@ export class TasksService {
           console.log('Error creating sessions');
         }
       }
-      const done = await this.syncCall(StatusEnum.DONE, user.id);
+      const done = await this.syncCall(StatusEnum.DONE, user);
       if (done) {
         // await this.createSprintAndTask(user);
       }
@@ -782,7 +817,8 @@ export class TasksService {
             author: 'SYSTEM',
             title: 'Sync Completed',
             description: 'Sync Completed',
-            userWorkspaceId: userWorkspace.id,
+            userId: user.id,
+            workspaceId: user.activeWorkspaceId ?? -1,
           },
         });
         this.myGateway.sendNotification(`${user.id}`, notification);
@@ -800,11 +836,12 @@ export class TasksService {
             author: 'SYSTEM',
             title: 'Sync Failed',
             description: 'Sync Failed',
-            userWorkspaceId: userWorkspace.id,
+            userId: user.id,
+            workspaceId: user.activeWorkspaceId ?? -1,
           },
         });
         this.myGateway.sendNotification(`${user.id}`, notification);
-        await this.syncCall(StatusEnum.FAILED, user.id);
+        await this.syncCall(StatusEnum.FAILED, user);
       } catch (error) {
         console.log(
           '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
@@ -829,15 +866,18 @@ export class TasksService {
       projectId,
     );
     try {
-      const notification = await this.prisma.notification.create({
-        data: {
-          seen: false,
-          author: 'SYSTEM',
-          title: 'Importing Project',
-          description: 'Importing Project',
-          userId: user.id,
-        },
-      });
+      const notification =
+        user.activeWorkspaceId &&
+        (await this.prisma.notification.create({
+          data: {
+            seen: false,
+            author: 'SYSTEM',
+            title: 'Importing Project',
+            description: 'Importing Project',
+            userId: user.id,
+            workspaceId: user.activeWorkspaceId,
+          },
+        }));
       this.myGateway.sendNotification(`${user.id}`, notification);
     } catch (error) {
       console.log(
@@ -855,17 +895,20 @@ export class TasksService {
 
     if (!updated_integration) {
       try {
-        const notification = await this.prisma.notification.create({
-          data: {
-            seen: false,
-            author: 'SYSTEM',
-            title: 'Project Import Failed',
-            description: 'Project Import Failed',
-            userId: user.id,
-          },
-        });
+        const notification =
+          user.activeWorkspaceId &&
+          (await this.prisma.notification.create({
+            data: {
+              seen: false,
+              author: 'SYSTEM',
+              title: 'Project Import Failed',
+              description: 'Project Import Failed',
+              userId: user.id,
+              workspaceId: user.activeWorkspaceId,
+            },
+          }));
         this.myGateway.sendNotification(`${user.id}`, notification);
-        await this.syncCall(StatusEnum.FAILED, user.id);
+        await this.syncCall(StatusEnum.FAILED, user);
         throw new APIException(
           'Can not sync with jira',
           HttpStatus.BAD_REQUEST,
@@ -912,7 +955,7 @@ export class TasksService {
 
         const integratedTasks = await this.prisma.task.findMany({
           where: {
-            userId: user.id,
+            workspaceId: user.activeWorkspaceId,
             integratedTaskId: { in: [...mappedIssues.keys()] },
             source: IntegrationType.JIRA,
           },
@@ -1126,7 +1169,7 @@ export class TasksService {
           console.log('Error creating sessions');
         }
       }
-      const done = await this.syncCall(StatusEnum.DONE, user.id);
+      const done = await this.syncCall(StatusEnum.DONE, user);
       if (done) {
         await this.createSprintAndTask(user, updated_integration.id);
       }
@@ -1146,15 +1189,18 @@ export class TasksService {
         );
       }
       try {
-        const notification = await this.prisma.notification.create({
-          data: {
-            seen: false,
-            author: 'SYSTEM',
-            title: 'Importing Project',
-            description: 'Importing Project',
-            userId: user.id,
-          },
-        });
+        const notification =
+          user.activeWorkspaceId &&
+          (await this.prisma.notification.create({
+            data: {
+              seen: false,
+              author: 'SYSTEM',
+              title: 'Importing Project',
+              description: 'Importing Project',
+              userId: user.id,
+              workspaceId: user.activeWorkspaceId,
+            },
+          }));
         this.myGateway.sendNotification(`${user.id}`, notification);
         res?.json({ message: 'Project Imported' });
       } catch (error) {
@@ -1165,15 +1211,18 @@ export class TasksService {
       }
     } catch (err) {
       try {
-        const notification = await this.prisma.notification.create({
-          data: {
-            seen: false,
-            author: 'SYSTEM',
-            title: 'Importing Project Failed',
-            description: 'Importing Project Failed',
-            userId: user.id,
-          },
-        });
+        const notification =
+          user.activeWorkspaceId &&
+          (await this.prisma.notification.create({
+            data: {
+              seen: false,
+              author: 'SYSTEM',
+              title: 'Importing Project Failed',
+              description: 'Importing Project Failed',
+              userId: user.id,
+              workspaceId: user.activeWorkspaceId,
+            },
+          }));
         this.myGateway.sendNotification(`${user.id}`, notification);
       } catch (error) {
         console.log(
@@ -1208,18 +1257,21 @@ export class TasksService {
     }
   }
 
-  async getCallSync(userId: number) {
+  async getCallSync(user: User) {
     try {
-      const getData = await this.prisma.callSync.findFirst({
-        where: {
-          userId: userId,
-        },
-      });
-      if (!getData) {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      const getData =
+        userWorkspace &&
+        (await this.prisma.callSync.findFirst({
+          where: {
+            userWorkspaceId: userWorkspace.id,
+          },
+        }));
+      if (userWorkspace && !getData) {
         return {
           id: -1,
           status: 'Not yet synced',
-          userId: userId,
+          userWorkspaceId: userWorkspace.id,
         };
       }
       return getData;
@@ -1229,14 +1281,21 @@ export class TasksService {
     }
   }
 
-  async syncCall(status: string, userId: number) {
+  async syncCall(status: string, user: User) {
     try {
-      const doesExist = await this.getCallSync(userId);
+      const doesExist = await this.getCallSync(user);
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new APIException(
+          'User workspace not found',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       if (!doesExist || doesExist.id === -1) {
         return await this.prisma.callSync.create({
           data: {
             status,
-            userId,
+            userWorkspaceId: userWorkspace.id,
           },
         });
       }
@@ -1255,6 +1314,13 @@ export class TasksService {
 
   async updateIssueStatus(user: User, taskId: string, status: string) {
     try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new APIException(
+          'User workspace not found',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const task = await this.prisma.task.findFirst({
         where: {
           userWorkspaceId: userWorkspace.id,
@@ -1382,6 +1448,13 @@ export class TasksService {
 
   async updateIssueEstimation(user: User, taskId: string, estimation: number) {
     try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new APIException(
+          'User workspace not found',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const task = await this.prisma.task.findFirst({
         where: {
           userWorkspaceId: userWorkspace.id,
@@ -1628,12 +1701,25 @@ export class TasksService {
 
   async getAllStatus(user: User) {
     try {
-      const integration = await this.prisma.integration.findFirst({
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new APIException(
+          'User workspace not found',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      //Lots of works to do
+      const integration = await this.prisma.userIntegration.findFirst({
         where: {
           userWorkspaceId: userWorkspace.id,
-          type: IntegrationType.JIRA,
         },
       });
+      if (!integration) {
+        throw new APIException(
+          'You have no integration',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const url = `https://api.atlassian.com/ex/jira/${integration?.siteId}//rest/api/3/statuscategory`;
       const config = {
         method: 'get',
@@ -1687,9 +1773,9 @@ export class TasksService {
               projectId,
               projectName,
               projectKey,
-              source: updated_integration
-                ? `${updated_integration.site}/browse/${projectKey}`
-                : '',
+              // source: updated_integration
+              //   ? `${updated_integration.site}/browse/${projectKey}`
+              //   : '',
               integrationID: updated_integration.id,
               userId: user.id,
               integrated: false,
@@ -1788,6 +1874,14 @@ export class TasksService {
     const toBeUpdated: any[] = [];
     const sprintPromises: Promise<any>[] = [];
     const issuePromises: Promise<any>[] = [];
+
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      throw new APIException(
+        'User workspace not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const updated_integration =
       await this.integrationsService.getUpdatedUserIntegration(
         user,
@@ -1892,6 +1986,7 @@ export class TasksService {
               sprint_list.push({
                 jiraSprintId: Number(val.id),
                 userWorkspaceId: userWorkspace.id,
+                // projectId:
                 state: val.state,
                 name: val.name,
                 startDate: new Date(val.startDate),
@@ -1926,18 +2021,19 @@ export class TasksService {
     const resolvedPromise = await Promise.all(issuePromises);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [deS, crtSprint, sprints] = await Promise.all([
-      await this.prisma.sprint.deleteMany({
-        where: {
-          userWorkspaceId: userWorkspace.id,
-        },
-      }),
+    const [crtSprint, sprints] = await Promise.all([
+      // await this.prisma.sprint.deleteMany({
+      //   where: {
+      //     userWorkspaceId: userWorkspace.id,
+      //   },
+      // }),
       await this.prisma.sprint.createMany({
         data: sprint_list,
       }),
       await this.prisma.sprint.findMany({
         where: {
-          userWorkspaceId: userWorkspace.id,
+          // userWorkspaceId: userWorkspace.id,
+          projectId: { in: projectIds },
         },
       }),
     ]);
@@ -1976,20 +2072,23 @@ export class TasksService {
       });
     });
 
+    const sprintIds: number[] = Array.from(mappedSprintId.values());
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [DST, CST, sprintTasks] = await Promise.all([
-      await this.prisma.sprintTask.deleteMany({
-        where: {
-          userId: user.id,
-        },
-      }),
+    const [CST, sprintTasks] = await Promise.all([
+      // await this.prisma.sprintTask.deleteMany({
+      //   where: {
+      //     userId: user.id,
+      //   },
+      // }),
       await this.prisma.sprintTask.createMany({
         data: issue_list,
       }),
 
       await this.prisma.sprintTask.findMany({
         where: {
-          userWorkspaceId: userWorkspace.id,
+          // userWorkspaceId: userWorkspace.id,
+          sprintId: { in: sprintIds },
         },
       }),
     ]);
@@ -1998,16 +2097,22 @@ export class TasksService {
   }
 
   async getProjectList(user: User) {
-    const integrationIds = (
-      await this.prisma.integration.findMany({
-        where: { userId: user.id },
-      })
-    )?.map((integration: Integration) => integration.id);
     return await this.prisma.project.findMany({
       where: {
-        integrationID: { in: integrationIds },
+        workspaceId: user.activeWorkspaceId,
       },
     });
+    // const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    // if (!userWorkspace) {
+    //   throw new APIException('userWorkspace not found', HttpStatus.BAD_REQUEST);
+    // }
+    // const userIntegrationIds = (
+    //   await this.prisma.userIntegration.findMany({
+    //     where: { userWorkspaceId: userWorkspace.id },
+    //   })
+    // )?.map((userIntegration: UserIntegration) => userIntegration.id);
+
+    // });
   }
 
   async getIntegrationProjectList(user: User, integrationId: number) {
