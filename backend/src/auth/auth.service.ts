@@ -36,12 +36,23 @@ export class AuthService {
         },
       });
 
-      user.firstName &&
+      const workspace =
+        user.firstName &&
         (await this.workspacesService.createWorkspace(
           user.id,
           `${user.firstName}'s Workspace`,
         ));
-      return user;
+      const updateUser =
+        workspace &&
+        (await this.prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            activeWorkspaceId: workspace.id,
+          },
+        }));
+      return updateUser;
     } catch (err) {
       throw new APIException(
         'Can not create user!',
@@ -144,12 +155,23 @@ export class AuthService {
         '🚀 ~ file: auth.service.ts:154 ~ AuthService ~ googleLogin ~ user:',
         user,
       );
-      user.firstName &&
+      const workspace =
+        user.firstName &&
         (await this.workspacesService.createWorkspace(
           user.id,
           `${user.firstName}'s Workspace`,
         ));
-      return await this.getFormattedUserData(user);
+      const updateUser =
+        workspace &&
+        (await this.prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            activeWorkspaceId: workspace.id,
+          },
+        }));
+      return updateUser && (await this.getFormattedUserData(updateUser));
     } catch (error) {
       console.log(
         '🚀 ~ file: auth.service.ts:145 ~ AuthService ~ googleLogin ~ error:',

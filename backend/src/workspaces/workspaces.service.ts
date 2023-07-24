@@ -29,6 +29,7 @@ export class WorkspacesService {
         status: UserWorkspaceStatus.ACTIVE,
       },
     });
+    return workspace;
   }
 
   async getWorkspace(workspaceId: number) {
