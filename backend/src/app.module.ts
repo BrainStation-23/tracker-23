@@ -11,12 +11,14 @@ import { NotificationModule } from './notifications/notifications.module';
 import { SprintsModule } from './sprints/sprints.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
 import { JiraModule } from './integrations/jira/jira.module';
+import { TestModule } from './test/test.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    TestModule,
     AuthModule,
     PrismaModule,
     TasksModule,
