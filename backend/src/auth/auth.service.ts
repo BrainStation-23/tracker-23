@@ -1,10 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto, RegisterDto, userDto } from './dto';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
+import { APIException } from 'src/internal/exception/api.exception';
 
 @Injectable()
 export class AuthService {
@@ -70,8 +71,9 @@ export class AuthService {
   async register(dto: RegisterDto) {
     const doesExistUser = await this.getUser(dto);
     if (doesExistUser) {
-      const token = await this.createToken(doesExistUser);
-      return { ...doesExistUser, ...token };
+      throw new APIException('Email already in Use!', HttpStatus.BAD_REQUEST);
+      // const token = await this.createToken(doesExistUser);
+      // return { ...doesExistUser, ...token };
     }
 
     const user = await this.createUser(dto);
@@ -119,31 +121,42 @@ export class AuthService {
       return 'No user from google';
     }
     console.log(req.user);
-    console.log('User information from google');
+    console.log('User information from google...');
     const queryData = {
       email: req.user.email,
       firstName: req.user.firstName,
       lastName: req.user.lastName,
       picture: req.user.picture,
     };
-    const oldUser = await this.prisma.user.findUnique({
-      where: { email: req.user.email },
-    });
-    if (oldUser) {
-      console.log('Old User Found');
-      return await this.getFormattedUserData(oldUser);
+    try {
+      const oldUser = await this.prisma.user.findUnique({
+        where: { email: req.user.email },
+      });
+      if (oldUser) {
+        console.log('Old User Found');
+        return await this.getFormattedUserData(oldUser);
+      }
+      const user = await this.prisma.user.create({
+        data: queryData,
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          picture: true,
+        },
+      });
+      console.log(
+        '🚀 ~ file: auth.service.ts:154 ~ AuthService ~ googleLogin ~ user:',
+        user,
+      );
+      return await this.getFormattedUserData(user);
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: auth.service.ts:145 ~ AuthService ~ googleLogin ~ error:',
+        error,
+      );
     }
-    const user = await this.prisma.user.create({
-      data: queryData,
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        picture: true,
-      },
-    });
-    return await this.getFormattedUserData(user);
   }
 
   async getFormattedUserData(user: userDto) {

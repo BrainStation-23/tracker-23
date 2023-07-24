@@ -6,10 +6,11 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "prebuild": "npx prisma generate && rimraf dist",
+    "prebuild": " npx prisma generate && rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
+    "migrate": "prisma migrate deploy --preview-feature",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node ./dist/src/main.js",
