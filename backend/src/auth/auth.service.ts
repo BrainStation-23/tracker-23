@@ -25,35 +25,29 @@ export class AuthService {
       lastName: dto.lastName,
       hash: hashedPassword,
     };
+    try {
+      const user = await this.prisma.user.create({
+        data,
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+        },
+      });
 
-    const user = await this.prisma.user.create({
-      data,
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-      },
-    });
-    const workspce =
       user.firstName &&
-      this.workspacesService.createWorkspace(user.id, user.firstName);
-
-    // await this.prisma.userAccount.create({
-    //   data: {
-    //     account: {
-    //       connect: {
-    //         id: account.id,
-    //       },
-    //     },
-    //     user: {
-    //       connect: {
-    //         id: user.id,
-    //       },
-    //     },
-    //   },
-    // });
-    return user;
+        (await this.workspacesService.createWorkspace(
+          user.id,
+          `${user.firstName}'s Workspace`,
+        ));
+      return user;
+    } catch (err) {
+      throw new APIException(
+        'Can not create user!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async getUser(dto: RegisterDto) {
@@ -150,6 +144,11 @@ export class AuthService {
         '🚀 ~ file: auth.service.ts:154 ~ AuthService ~ googleLogin ~ user:',
         user,
       );
+      user.firstName &&
+        (await this.workspacesService.createWorkspace(
+          user.id,
+          `${user.firstName}'s Workspace`,
+        ));
       return await this.getFormattedUserData(user);
     } catch (error) {
       console.log(
