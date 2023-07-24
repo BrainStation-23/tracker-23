@@ -8,14 +8,21 @@ import { GoogleOAuth2Controller } from './controllers/google-auth.controller';
 import { PassportModule } from '@nestjs/passport';
 import { APP_FILTER } from '@nestjs/core';
 import { TokenErrorFilter } from 'src/filters/token-error.filter';
+import { WorkspacesService } from 'src/workspaces/workspaces.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [JwtModule.register({}), PassportModule.register({})],
+  imports: [
+    HttpModule.register({}),
+    JwtModule.register({}),
+    PassportModule.register({}),
+  ],
   controllers: [AuthController, GoogleOAuth2Controller],
   providers: [
     AuthService,
     JwtStrategy,
     GoogleStrategy,
+    WorkspacesService,
 
     {
       provide: APP_FILTER,

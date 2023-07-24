@@ -1,6 +1,4 @@
-import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   IntegrationType,
   SessionStatus,
@@ -10,20 +8,15 @@ import {
 import axios from 'axios';
 import { APIException } from 'src/internal/exception/api.exception';
 import { PrismaService } from 'src/prisma/prisma.service';
-import {
-  FailedWebhookReqBody,
-  RegisterWebhookDto,
-  extendWebhookLifeReqDto,
-} from './dto/index.js';
+import { RegisterWebhookDto, extendWebhookLifeReqDto } from './dto/index.js';
 import { SessionsService } from 'src/sessions/sessions.service';
 import { deleteWebhookDto } from './dto/deleteWebhook.dto.js';
 import { IntegrationsService } from 'src/integrations/integrations.service.js';
+
 @Injectable()
 export class WebhooksService {
   constructor(
-    private config: ConfigService,
     private prisma: PrismaService,
-    private httpService: HttpService,
     private sessionService: SessionsService, // private tasksService: TasksService,
     private integrationsService: IntegrationsService,
   ) {}
@@ -31,8 +24,8 @@ export class WebhooksService {
   async getWebhooks(user: User) {
     const getUserIntegrationList =
       await this.integrationsService.getUserIntegrations(user);
-    return getUserIntegrationList.map((userIntegration) => {
-      this.getAllWebhooks(user, userIntegration);
+    return getUserIntegrationList.map(async (userIntegration: any) => {
+      await this.getAllWebhooks(user, userIntegration);
     });
   }
 

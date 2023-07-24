@@ -1,20 +1,24 @@
 import {
   BadRequestException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { IntegrationType, Task, User } from '@prisma/client';
+import { IntegrationType, Task, User, UserIntegration } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GetTaskQuery } from 'src/tasks/dto';
 import * as tmp from 'tmp';
 import { Workbook } from 'exceljs';
 import { Response } from 'express';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
+import { APIException } from 'src/internal/exception/api.exception';
+import { IntegrationsService } from 'src/integrations/integrations.service';
 @Injectable()
 export class ExportService {
   constructor(
     private prisma: PrismaService,
     private workspacesService: WorkspacesService,
+    private integrationsService: IntegrationsService,
   ) {}
   async exportToExcel(
     user: User,
@@ -113,17 +117,38 @@ export class ExportService {
     });
     res.download(file);
   }
+
   async getTasks(user: User, query: GetTaskQuery): Promise<any[]> {
+    const getUserIntegrationList =
+      await this.integrationsService.getUserIntegrations(user);
+    return getUserIntegrationList.map(async (userIntegration) => {
+      await this.getTaskList(user, query, userIntegration);
+    });
+  }
+
+  async getTaskList(
+    user: User,
+    query: GetTaskQuery,
+    userIntegration: UserIntegration,
+  ) {
     try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new APIException(
+          'User workspace not found',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const updated_integration =
+        await this.integrationsService.getUpdatedUserIntegration(
+          user,
+          userIntegration.id,
+        );
+      if (!updated_integration) {
+        return null;
+      }
       const { priority, status, text } = query;
       let { startDate, endDate } = query as unknown as GetTaskQuery;
-
-      const jiraIntegration = await this.prisma.integration.findFirst({
-        where: {
-          userWorkspaceId: userWorkspace.id,
-          type: IntegrationType.JIRA,
-        },
-      });
 
       const priority1: any = (priority as unknown as string)?.split(',');
       const status1: any = (status as unknown as string)?.split(',');
@@ -139,7 +164,7 @@ export class ExportService {
         userWorkspaceId: userWorkspace.id,
         OR: [
           {
-            assigneeId: jiraIntegration?.jiraAccountId,
+            assigneeId: updated_integration?.jiraAccountId,
             source: IntegrationType.JIRA,
           },
           {
@@ -175,7 +200,7 @@ export class ExportService {
           labels: true,
           createdAt: true,
           updatedAt: true,
-          userId: true,
+          userWorkspaceId: true,
           source: true,
           sessions: {
             select: {

@@ -109,7 +109,10 @@ export class JiraService {
       const integrationProjects = [];
       for (const tempIntegration of tempIntegrations) {
         const tmpIntegrationProjects =
-          await this.createIntegrationAndGetProjects(user, tempIntegration);
+          await this.createIntegrationAndGetProjects(
+            user,
+            tempIntegration.siteId,
+          );
         tmpIntegrationProjects &&
           integrationProjects.push(tmpIntegrationProjects);
       }
@@ -119,17 +122,33 @@ export class JiraService {
     }
   }
 
-  async createIntegrationAndGetProjects(
-    user: User,
-    tempIntegration: TempIntegration,
-  ) {
-    const { siteId, userWorkspaceId, workspaceId } = tempIntegration;
+  async createIntegrationAndGetProjects(user: User, siteId: string) {
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      throw new APIException(
+        'User workspace not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    // const { siteId, userWorkspaceId, workspaceId } = tempIntegration;
+    const getTempIntegration = await this.prisma.tempIntegration.findUnique({
+      where: {
+        tempIntegrationIdentifier: {
+          siteId,
+          userWorkspaceId: userWorkspace.id,
+        },
+      },
+    });
+
+    if (!getTempIntegration) {
+      throw new APIException('Something went wrong !!', HttpStatus.BAD_REQUEST);
+    }
     try {
       const doesExistIntegration = await this.prisma.integration.findUnique({
         where: {
           integrationIdentifier: {
-            siteId,
-            workspaceId,
+            siteId: siteId,
+            workspaceId: getTempIntegration.workspaceId,
           },
         },
       });
@@ -145,21 +164,6 @@ export class JiraService {
           projects,
         };
       }
-      const getTempIntegration = await this.prisma.tempIntegration.findUnique({
-        where: {
-          tempIntegrationIdentifier: {
-            siteId,
-            userWorkspaceId,
-          },
-        },
-      });
-
-      if (!getTempIntegration) {
-        throw new APIException(
-          'Something went wrong !!',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
       const integration = await this.prisma.integration.create({
         data: {
           siteId,
@@ -169,7 +173,7 @@ export class JiraService {
           // refreshToken: getTempIntegration.refreshToken,
           site: getTempIntegration.site,
           // jiraAccountId: getTempIntegration.jiraAccountId,
-          workspaceId,
+          workspaceId: getTempIntegration.workspaceId,
         },
       });
       // const integration = await this.prisma.integration.create({
@@ -188,8 +192,8 @@ export class JiraService {
           accessToken: getTempIntegration.accessToken,
           refreshToken: getTempIntegration.refreshToken,
           jiraAccountId: getTempIntegration.jiraAccountId,
-          userWorkspaceId,
-          workspaceId,
+          userWorkspaceId: getTempIntegration.userWorkspaceId,
+          workspaceId: getTempIntegration.workspaceId,
           integrationId: integration.id,
           siteId,
         },
@@ -198,7 +202,7 @@ export class JiraService {
         integration &&
         (await this.prisma.tempIntegration.delete({
           where: {
-            id: tempIntegration.id,
+            id: getTempIntegration.id,
           },
         }));
       // console.log(integration);
@@ -229,13 +233,12 @@ export class JiraService {
   }
 
   async getIntegratedProjectStatuses(user: User) {
-    const jiraIntegrations = await this.integrationsService.getIntegrations(
-      user,
-    );
+    const getUserIntegrationList =
+      await this.integrationsService.getUserIntegrations(user);
     // const jiraIntegrations = await this.prisma.integration.findMany({
     //   where: { userId: user.id, type: IntegrationType.JIRA },
     // });
-    const jiraIntegrationIds = jiraIntegrations?.map(
+    const jiraIntegrationIds = getUserIntegrationList?.map(
       (integration) => integration.id,
     );
     try {
@@ -253,7 +256,7 @@ export class JiraService {
           : [];
       projects.push({
         id: 0,
-        projectId: 'None',
+        projectId: -1,
         projectKey: 'None',
         projectName: 'T23',
         source: '/',

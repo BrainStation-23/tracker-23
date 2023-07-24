@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { SprintsModule } from '../sprints/sprints.module';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
+import { WorkspacesService } from 'src/workspaces/workspaces.service';
 
 @Module({
   imports: [HttpModule.register({}), SprintsModule, IntegrationsModule],
@@ -19,6 +20,7 @@ import { TasksService } from './tasks.service';
     AuthService,
     JwtService,
     IntegrationsService,
+    WorkspacesService,
   ],
   controllers: [TasksController],
   exports: [TasksService],
