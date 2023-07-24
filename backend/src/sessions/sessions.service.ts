@@ -14,6 +14,7 @@ import {
 import { IntegrationType, Session, SessionStatus, User } from '@prisma/client';
 
 import { ManualTimeEntryReqBody, SessionDto, SessionReqBodyDto } from './dto';
+import { WorkspacesService } from 'src/workspaces/workspaces.service';
 
 @Injectable()
 export class SessionsService {
@@ -21,6 +22,7 @@ export class SessionsService {
     private integrationsService: IntegrationsService,
     private prisma: PrismaService,
     private tasksService: TasksService,
+    private workspacesService: WorkspacesService,
   ) {}
 
   async getSessions(user: User, taskId: number) {
@@ -105,6 +107,13 @@ export class SessionsService {
   }
 
   async validateTaskAccess(user: User, taskId: number) {
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      throw new APIException(
+        'User workspace not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const task = await this.prisma.task.findFirst({
       where: { id: taskId },
     });
@@ -112,8 +121,8 @@ export class SessionsService {
     if (!task) {
       throw new BadRequestException('Task not found');
     }
-
-    if (task.userId !== user.id) {
+    //have to think about it
+    if (task.userWorkspaceId !== userWorkspace.id) {
       throw new UnauthorizedException('You do not have access to this task');
     }
     return task;
@@ -142,7 +151,10 @@ export class SessionsService {
       return null;
     }
     const updated_integration =
-      await this.integrationsService.getUpdatedUserIntegration(user, integrationId);
+      await this.integrationsService.getUpdatedUserIntegration(
+        user,
+        integrationId,
+      );
     if (!updated_integration) {
       return null;
     }
@@ -304,6 +316,13 @@ export class SessionsService {
     reqBody: SessionReqBodyDto,
   ) {
     try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new APIException(
+          'User workspace not found',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const doesExistWorklog = await this.prisma.session.findUnique({
         where: { id: Number(sessionId) },
       });
@@ -418,6 +437,13 @@ export class SessionsService {
 
   async deleteSession(user: User, sessionId: string) {
     try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new APIException(
+          'User workspace not found',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const doesExistWorklog = await this.prisma.session.findUnique({
         where: { id: Number(sessionId) },
       });

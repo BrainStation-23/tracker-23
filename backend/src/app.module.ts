@@ -23,7 +23,7 @@ import { JiraModule } from './integrations/jira/jira.module';
     SessionsModule,
     IntegrationsModule,
     ExportModule,
-    WebhooksModule,
+    // WebhooksModule,
     NotificationModule,
     SprintsModule,
     WorkspacesModule,

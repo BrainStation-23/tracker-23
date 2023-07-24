@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { NotificationController } from './notifications.controller';
-import { MyGateway } from './socketGateway';
-import { AuthService } from 'src/auth/auth.service';
-import { JwtService } from '@nestjs/jwt';
 import { NotificationsService } from './notifications.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
+  imports: [HttpModule.register({})],
   controllers: [NotificationController],
-  providers: [AuthService, MyGateway, JwtService, NotificationsService],
+  providers: [NotificationsService],
 })
 export class NotificationModule {}

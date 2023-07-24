@@ -42,8 +42,8 @@ export class WebhooksController {
 
   @Get('failed')
   @UseGuards(JwtAuthGuard)
-  async failedWebhook(@GetUser() user: User) {
-    return this.webhooksService.failedWebhook(user);
+  async failedWebhook(@GetUser() user: User, reqBody: RegisterWebhookDto) {
+    return this.webhooksService.failedWebhook(user, reqBody);
   }
 
   @Get()

@@ -17,7 +17,7 @@ export class IntegrationsService {
     private workspacesService: WorkspacesService,
   ) {}
 
-  async getIntegrations(user: User) {
+  async getUserIntegrations(user: User) {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace || !user.activeWorkspaceId)
       throw new APIException(
