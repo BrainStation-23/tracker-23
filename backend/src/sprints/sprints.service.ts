@@ -3,12 +3,7 @@ import { IntegrationsService } from 'src/integrations/integrations.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { HttpStatus, Injectable } from '@nestjs/common';
-import {
-  Integration,
-  IntegrationType,
-  User,
-  UserIntegration,
-} from '@prisma/client';
+import { IntegrationType, User, UserIntegration } from '@prisma/client';
 
 import { GetSprintListQueryDto } from './dto';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';

@@ -21,7 +21,7 @@ import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
-  const [hasActiveWorkSpace, setHasActiveWorkSpace] = useState<boolean>(false);
+  const [hasActiveWorkSpace, setHasActiveWorkSpace] = useState<boolean>(true);
   const path = router.asPath;
   const isPublicRoute = publicRoutes.includes(router.pathname);
 
