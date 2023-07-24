@@ -16,10 +16,12 @@ import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
 import { initializeSocket } from "@/services/socket.service";
 import { setNotifications } from "@/storage/redux/notificationsSlice";
 import { GetCookie } from "@/services/cookie.service";
+import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
+  const [hasActiveWorkSpace, setHasActiveWorkSpace] = useState<boolean>(false);
   const path = router.asPath;
   const isPublicRoute = publicRoutes.includes(router.pathname);
 
@@ -152,6 +154,17 @@ const CustomLayout = ({ children }: any) => {
     if (syncRunning !== syncing) setSyncing(syncRunning);
   }, [syncing, syncRunning]);
 
+  const getWorkspaces = () => {};
+
+  useEffect(() => {
+    if (
+      !publicRoutes.some((route) => path.includes(route)) &&
+      !path.includes("socialLogin")
+    ) {
+      getWorkspaces();
+    }
+  }, [router, path]);
+
   return (
     <>
       <div className="flex">
@@ -184,18 +197,23 @@ const CustomLayout = ({ children }: any) => {
             </div>
           </>
         )} */}
-        <div
-          className={classNames("flex w-full flex-col overflow-y-auto", {
-            "px-8": !isPublicRoute && !path.includes("onBoarding"),
-          })}
-        >
-          {!isPublicRoute && !path.includes("onBoarding") && <Navbar />}
-
-          <div className="h-full w-full bg-white">
-            {!isPublicRoute && !path.includes("onBoarding") && <GlobalClock />}
-            {children}
+        {hasActiveWorkSpace || path.includes("socialLogin") ? (
+          <div
+            className={classNames("flex w-full flex-col overflow-y-auto", {
+              "px-8": !isPublicRoute && !path.includes("onBoarding"),
+            })}
+          >
+            {!isPublicRoute && !path.includes("onBoarding") && <Navbar />}
+            <div className="h-full w-full bg-white">
+              {!isPublicRoute && !path.includes("onBoarding") && (
+                <GlobalClock />
+              )}
+              {children}
+            </div>
           </div>
-        </div>
+        ) : (
+          <NoActiveWorkspace />
+        )}
       </div>
 
       <ToastContainer
