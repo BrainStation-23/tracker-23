@@ -1,9 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
-import syncReducer from "./syncSlice";
-import projectsReducer from "./projectsSlice";
+
 import integrationsReducer from "./integrationsSlice";
 import notificationsReducer from "./notificationsSlice";
+import projectsReducer from "./projectsSlice";
+import syncReducer from "./syncSlice";
 import tasksReducer from "./tasksSlice";
+import userReducer from "./userSlice";
+
 // ...
 
 export const store = configureStore({
@@ -13,6 +16,7 @@ export const store = configureStore({
     integrations: integrationsReducer,
     notificationsSlice: notificationsReducer,
     tasksSlice: tasksReducer,
+    userSlice: userReducer,
   },
 });
 

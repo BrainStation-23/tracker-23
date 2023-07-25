@@ -25,4 +25,5 @@ export const apiEndPoints = {
   projectWiseStatus: `/integrations/jira/projects`,
   jiraSprints: `/sprints/sprint-list`,
   activeSprintTasks: `/sprints/active-sprintTasks`,
+  getWorkspacesList: `workspaces/list`
 };

@@ -8,8 +8,12 @@ interface SyncStatus {
   updatedAt: string;
   userId: string;
 }
+interface SyncState {
+  syncRunning: boolean;
+  syncStatus: SyncStatus;
+}
 // Define the initial state using that type
-const initialState = {
+const initialState: SyncState = {
   syncRunning: false,
   syncStatus: {
     createdAt: "",
