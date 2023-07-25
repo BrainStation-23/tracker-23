@@ -15,7 +15,7 @@ import { JwtAuthGuard } from 'src/guard';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
 
-@Controller('workspace')
+@Controller('workspaces')
 export class WorkspacesController {
   constructor(private workspacesService: WorkspacesService) {}
 
@@ -28,16 +28,16 @@ export class WorkspacesController {
     return this.workspacesService.createWorkspace(user.id, reqBody.name);
   }
 
+  @Get('list')
+  @UseGuards(JwtAuthGuard)
+  async getWorkspaceList(@GetUser() user: User) {
+    return this.workspacesService.getWorkspaceList(user);
+  }
+
   @Get(':workspaceId')
   @UseGuards(JwtAuthGuard)
   async getWorkspace(@Param('workspaceId', ParseIntPipe) workspaceId: number) {
     return this.workspacesService.getWorkspace(workspaceId);
-  }
-
-  @Get('list')
-  @UseGuards(JwtAuthGuard)
-  async getWorkspaceList(@GetUser() user: User) {
-    return this.workspacesService.getWorkspaceList(Number(user.id));
   }
 
   @Patch(':workspaceId')

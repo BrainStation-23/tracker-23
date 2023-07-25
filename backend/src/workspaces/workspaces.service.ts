@@ -40,7 +40,24 @@ export class WorkspacesService {
     });
   }
 
-  async getWorkspaceList(userId: number) {
+  async getWorkspaceList(user: User) {
+    const userId = user.id;
+    const userWorkspaces = await this.prisma.userWorkspace.findMany({
+      where: {
+        userId,
+      },
+    });
+    const workSpaceIds = userWorkspaces.map(
+      (userWorkspace) => userWorkspace.workspaceId,
+    );
+    const workspaces = await this.prisma.workspace.findMany({
+      where: {
+        id: { in: workSpaceIds },
+      },
+    });
+    return { user, workspaces };
+  }
+  async getOwnedWorkspaceList(userId: number) {
     return await this.prisma.workspace.findMany({
       where: {
         creatorUserId: userId,
