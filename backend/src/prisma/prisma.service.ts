@@ -16,10 +16,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
   constructor(config: ConfigService) {
     const url = config.get('DATABASE_URL');
-    console.log(
-      'config.get(DATABASE_URL)==========+L>>>>>',
-      config.get('DATABASE_URL'),
-    );
     // if (config.get('BACKEND_MODE') !== 'DEV') {
     //   url = `postgres://${config.get('AZURE_POSTGRESQL_USER')}:${config.get(
     //     'AZURE_POSTGRESQL_PASSWORD',
@@ -27,10 +23,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     //     'AZURE_POSTGRESQL_PORT',
     //   )}/${config.get('AZURE_POSTGRESQL_DATABASE')}`;
     // }
-    console.log(
-      '🚀 ~ file: prisma.service.ts:24 ~ PrismaService ~ url=`postgres://${config.get ~ url:',
-      url,
-    );
     super({
       datasources: {
         db: {

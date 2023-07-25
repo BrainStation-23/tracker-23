@@ -9,9 +9,9 @@ import { ExportModule } from './export/export.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { NotificationModule } from './notifications/notifications.module';
 import { SprintsModule } from './sprints/sprints.module';
-import { WorkspacesModule } from './workspaces/workspaces.module';
 import { JiraModule } from './integrations/jira/jira.module';
 import { TestModule } from './test/test.module';
+import { WorkspacesModule } from './workspaces/workspaces.module';
 
 @Module({
   imports: [
@@ -23,12 +23,12 @@ import { TestModule } from './test/test.module';
     PrismaModule,
     TasksModule,
     SessionsModule,
+    WorkspacesModule,
     IntegrationsModule,
     ExportModule,
     // WebhooksModule,
     NotificationModule,
     SprintsModule,
-    WorkspacesModule,
     JiraModule,
   ],
 })

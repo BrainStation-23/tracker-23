@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto, RegisterDto, userDto } from './dto';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { APIException } from 'src/internal/exception/api.exception';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -171,7 +172,9 @@ export class AuthService {
             activeWorkspaceId: workspace.id,
           },
         }));
-      return updateUser && (await this.getFormattedUserData(updateUser));
+      const updatedUser =
+        updateUser && (await this.getFormattedUserData(updateUser));
+      return updatedUser;
     } catch (error) {
       console.log(
         '🚀 ~ file: auth.service.ts:145 ~ AuthService ~ googleLogin ~ error:',
@@ -180,15 +183,16 @@ export class AuthService {
     }
   }
 
-  async getFormattedUserData(user: userDto) {
+  async getFormattedUserData(user: User) {
     const token = await this.createToken(user);
-    const { id, firstName, lastName, email, picture } = user;
+    const { id, firstName, lastName, email, picture, activeWorkspaceId } = user;
     return {
       id,
       firstName,
       lastName,
       email,
       picture,
+      activeWorkspaceId,
       ...token,
     };
   }
