@@ -54,6 +54,7 @@ export class WorkspacesService {
       where: {
         id: { in: workSpaceIds },
       },
+      include: { userWorkspaces: true },
     });
     return { user, workspaces };
   }
