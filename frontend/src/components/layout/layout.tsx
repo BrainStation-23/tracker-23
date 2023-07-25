@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { userAPI } from "APIs";
 import { setSyncStatus, setSyncRunning } from "@/storage/redux/syncSlice";
-import { message } from "antd";
+import { Spin, message } from "antd";
 import { publicRoutes } from "utils/constants";
 import { setProjectsSlice } from "@/storage/redux/projectsSlice";
 import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
@@ -17,11 +17,14 @@ import { initializeSocket } from "@/services/socket.service";
 import { setNotifications } from "@/storage/redux/notificationsSlice";
 import { GetCookie } from "@/services/cookie.service";
 import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
+import { GetWorkspaceListWithUserDto } from "models/user";
+import { setUserSlice } from "@/storage/redux/userSlice";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
-  const [hasActiveWorkSpace, setHasActiveWorkSpace] = useState<boolean>(true);
+  const [hasActiveWorkSpace, setHasActiveWorkSpace] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const path = router.asPath;
   const isPublicRoute = publicRoutes.includes(router.pathname);
 
@@ -154,7 +157,22 @@ const CustomLayout = ({ children }: any) => {
     if (syncRunning !== syncing) setSyncing(syncRunning);
   }, [syncing, syncRunning]);
 
-  const getWorkspaces = () => {};
+  const getWorkspaces = async () => {
+    const res: GetWorkspaceListWithUserDto = await userAPI.getWorkspaceList();
+    console.log("🚀 ~ file: layout.tsx:159 ~ getWorkspaces ~ res:", res);
+    const user = res.user;
+    if (res.user) {
+      const activeWorkspace = res.workspaces?.filter(
+        (workspace) => workspace.id === user.activeWorkspaceId
+      )[0];
+      const userWorkspace = activeWorkspace?.userWorkspaces.filter(
+        (userWorkspace) => userWorkspace.userId === user.id
+      )[0];
+      dispatch(setUserSlice({ ...user, role: userWorkspace?.role }));
+    }
+    if (user.activeWorkspaceId) setHasActiveWorkSpace(true);
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (
@@ -167,16 +185,27 @@ const CustomLayout = ({ children }: any) => {
 
   return (
     <>
-      <div className="flex">
-        {!publicRoutes.some((route) => path.includes(route)) &&
-          !path.includes("onBoarding") && (
-            <div className="mr-6 w-[300px]">
-              <div className="fixed">
-                <SideMenu />
+      {loading && !path.includes("socialLogin") ? (
+        <div className="h-screen">
+          <Spin
+            spinning={loading}
+            tip={"Loading"}
+            className="inset-0 m-auto h-full "
+          >
+            <div className="h-screen "></div>
+          </Spin>
+        </div>
+      ) : (
+        <div className="flex">
+          {!publicRoutes.some((route) => path.includes(route)) &&
+            !path.includes("onBoarding") && (
+              <div className="mr-6 w-[300px]">
+                <div className="fixed">
+                  <SideMenu />
+                </div>
               </div>
-            </div>
-          )}
-        {/* {!publicRoutes.some((route) => path.includes(route)) && (
+            )}
+          {/* {!publicRoutes.some((route) => path.includes(route)) && (
           <>
             <div
               className={`duration-500  ${showSideBar ? "pr-48" : "pr-0"} `}
@@ -197,24 +226,25 @@ const CustomLayout = ({ children }: any) => {
             </div>
           </>
         )} */}
-        {hasActiveWorkSpace || path.includes("socialLogin") ? (
-          <div
-            className={classNames("flex w-full flex-col overflow-y-auto", {
-              "px-8": !isPublicRoute && !path.includes("onBoarding"),
-            })}
-          >
-            {!isPublicRoute && !path.includes("onBoarding") && <Navbar />}
-            <div className="h-full w-full bg-white">
-              {!isPublicRoute && !path.includes("onBoarding") && (
-                <GlobalClock />
-              )}
-              {children}
+          {hasActiveWorkSpace || path.includes("socialLogin") ? (
+            <div
+              className={classNames("flex w-full flex-col overflow-y-auto", {
+                "px-8": !isPublicRoute && !path.includes("onBoarding"),
+              })}
+            >
+              {!isPublicRoute && !path.includes("onBoarding") && <Navbar />}
+              <div className="h-full w-full bg-white">
+                {!isPublicRoute && !path.includes("onBoarding") && (
+                  <GlobalClock />
+                )}
+                {children}
+              </div>
             </div>
-          </div>
-        ) : (
-          <NoActiveWorkspace />
-        )}
-      </div>
+          ) : (
+            <NoActiveWorkspace />
+          )}
+        </div>
+      )}
 
       <ToastContainer
         position="top-right"

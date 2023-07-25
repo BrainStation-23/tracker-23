@@ -44,6 +44,7 @@ function Navbar() {
     const res = await userAPI.syncTasks();
     res && dispatch(setSyncStatus(res));
   };
+  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
   useEffect(() => {
     const tmp = getLocalStorage("userDetails");
     if (!userDetails && tmp) setUserDetails(tmp);
@@ -199,7 +200,9 @@ function Navbar() {
                     <div className="font-semibold">
                       {userDetails?.firstName} {userDetails?.lastName}
                     </div>
-                    <div className="font-normal">Project Manager</div>
+                    <div className="font-normal">
+                      {userInfo?.role ? userInfo?.role : "Project Manager"}
+                    </div>
                   </div>
                 </div>
                 <div
