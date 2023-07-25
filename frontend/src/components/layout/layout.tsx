@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import Navbar from "../navbar";
-import SideMenu from "../navbar/sideMenu";
+import SideMenu from "../sideMenu";
 import GlobalClock from "../stopWatch/globalClock";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
@@ -17,8 +17,9 @@ import { initializeSocket } from "@/services/socket.service";
 import { setNotifications } from "@/storage/redux/notificationsSlice";
 import { GetCookie } from "@/services/cookie.service";
 import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
-import { GetWorkspaceListWithUserDto } from "models/user";
 import { setUserSlice } from "@/storage/redux/userSlice";
+import { GetWorkspaceListWithUserDto } from "models/workspaces";
+import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -162,13 +163,20 @@ const CustomLayout = ({ children }: any) => {
     console.log("🚀 ~ file: layout.tsx:159 ~ getWorkspaces ~ res:", res);
     const user = res.user;
     if (res.user) {
-      const activeWorkspace = res.workspaces?.filter(
+      const activeWorkspace = res.workspaces.filter(
         (workspace) => workspace.id === user.activeWorkspaceId
       )[0];
+      const workspaces = res.workspaces.map((workspace) => {
+        return {
+          ...workspace,
+          active: workspace.id === user.activeWorkspaceId,
+        };
+      });
       const userWorkspace = activeWorkspace?.userWorkspaces.filter(
         (userWorkspace) => userWorkspace.userId === user.id
       )[0];
       dispatch(setUserSlice({ ...user, role: userWorkspace?.role }));
+      dispatch(setWorkspacesSlice(workspaces));
     }
     if (user.activeWorkspaceId) setHasActiveWorkSpace(true);
     setLoading(false);

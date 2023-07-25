@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import { LoginResponseDto } from "models/auth";
 import BellIconSvg from "@/assets/svg/BellIconSvg";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
-import { sideMenuOptions } from "./sideMenu";
+import { sideMenuOptions } from "../sideMenu";
 import { SyncOutlined } from "@ant-design/icons";
 import { userAPI } from "APIs";
 import ProfileIconSvg from "@/assets/svg/ProfileIconSvg";

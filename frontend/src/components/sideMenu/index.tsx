@@ -5,6 +5,7 @@ import DashboardIconSvg from "@/assets/svg/dashboardIconSvg";
 import ExportsIconSvg from "@/assets/svg/ExportsIconSvg";
 import IntegrationIconSvg from "@/assets/svg/IntegrationIconSvg";
 import { BulbOutlined } from "@ant-design/icons";
+import WorkspaceSelection from "./components/workspaceSection";
 
 const SideMenu = () => {
   const router = useRouter();
@@ -65,6 +66,9 @@ const SideMenu = () => {
               ))}
             </div>
           </div>
+        </div>
+        <div className="mb-[45px]">
+          <WorkspaceSelection />
         </div>
       </div>
     </div>

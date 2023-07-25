@@ -6,6 +6,7 @@ import projectsReducer from "./projectsSlice";
 import syncReducer from "./syncSlice";
 import tasksReducer from "./tasksSlice";
 import userReducer from "./userSlice";
+import workspacesReducer from "./workspacesSlice";
 
 // ...
 
@@ -17,6 +18,7 @@ export const store = configureStore({
     notificationsSlice: notificationsReducer,
     tasksSlice: tasksReducer,
     userSlice: userReducer,
+    workspacesSlice: workspacesReducer,
   },
 });
 

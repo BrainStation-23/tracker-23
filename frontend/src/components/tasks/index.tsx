@@ -28,6 +28,7 @@ import TableComponent from "./components/tableComponent";
 import TopPanel from "./components/topPanel/topPanel";
 import SessionStartWarning from "./components/warning";
 import TopPanelActiveSprint from "./components/topPanel/topPanelActiveSprint";
+import WorkspaceSelection from "../sideMenu/components/workspaceSection";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -743,6 +744,7 @@ const TasksPage = () => {
           // handleDelete={handleDelete}
         />
       </div>
+      <WorkspaceSelection />
     </TaskContext.Provider>
   );
 };
