@@ -441,3 +441,11 @@ export async function deleteProjectTasksRest(id: number) {
     return false;
   }
 }
+export async function getWorkspaceListRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.getWorkspacesList}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}

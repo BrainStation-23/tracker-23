@@ -21,11 +21,6 @@ import { logOutFunction } from "@/components/logout/logoutFunction";
 // Axios.defaults.baseURL =
 //   "http://ec2-54-172-94-212.compute-1.amazonaws.com:3000";
 Axios.defaults.baseURL = config?.baseUrl;
-console.log(
-  "🚀 ~ file: _app.tsx:23 ~ config , Axios.defaults:",
-  config,
-  Axios.defaults
-);
 Axios.interceptors.request.use(
   (config) => {
     const token = getLocalStorage("access_token");

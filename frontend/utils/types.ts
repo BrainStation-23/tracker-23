@@ -46,6 +46,7 @@ export interface apiFunction {
   updateSession: (sessionId: number, data: AddWorkLogParams) => Promise<any>;
   getJiraSprints: () => Promise<any>;
   getAllProjects: () => Promise<any>;
+  getWorkspaceList: () => Promise<any>;
   importProject: (id: number) => Promise<any>;
   deleteProjectTasks: (id: number) => Promise<any>;
   getJiraActiveSprintTasks: (searchParams?: SearchParamsModel) => Promise<any>;
