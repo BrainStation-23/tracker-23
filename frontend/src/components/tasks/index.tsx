@@ -744,7 +744,6 @@ const TasksPage = () => {
           // handleDelete={handleDelete}
         />
       </div>
-      <WorkspaceSelection />
     </TaskContext.Provider>
   );
 };

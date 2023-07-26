@@ -196,7 +196,9 @@ const CustomLayout = ({ children }: any) => {
       {loading && !path.includes("socialLogin") ? (
         <div className="h-screen">
           <Spin
-            spinning={loading}
+            spinning={
+              loading && !publicRoutes.some((route) => path.includes(route))
+            }
             tip={"Loading"}
             className="inset-0 m-auto h-full "
           >
