@@ -187,6 +187,7 @@ const CustomLayout = ({ children }: any) => {
       !publicRoutes.some((route) => path.includes(route)) &&
       !path.includes("socialLogin")
     ) {
+      setLoading(true);
       getWorkspaces();
     }
   }, [router, path]);
@@ -236,7 +237,9 @@ const CustomLayout = ({ children }: any) => {
             </div>
           </>
         )} */}
-          {hasActiveWorkSpace || path.includes("socialLogin") ? (
+          {hasActiveWorkSpace ||
+          path.includes("socialLogin") ||
+          publicRoutes.some((route) => path.includes(route)) ? (
             <div
               className={classNames("flex w-full flex-col overflow-y-auto", {
                 "px-8": !isPublicRoute && !path.includes("onBoarding"),
