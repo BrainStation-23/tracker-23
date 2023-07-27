@@ -50,7 +50,7 @@ model UserWorkspace {
   workspaceId Int
 
   inviterId    Int?
-  invitationID String?
+  invitationId String?
   status       UserWorkspaceStatus // active , invited , inactive, deleted
 
   // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
@@ -137,10 +137,11 @@ model UserIntegration {
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId Int
 
-  // @@unique([siteId, userId], name: "integrationIdentifier")
   integration   Integration? @relation(fields: [integrationId, siteId], references: [id, siteId], onDelete: Cascade)
   integrationId Int?
   siteId        String?
+
+  @@unique([integrationId, userWorkspaceId], name: "userIntegrationIdentifier")
 }
 
 model TempIntegration {
@@ -170,8 +171,8 @@ model Project {
   tasks       Task[]
   sprints     Sprint[]
 
-  integration   Integration? @relation(fields: [integrationID], references: [id], onDelete: Cascade)
-  integrationID Int?
+  integration   Integration? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  integrationId Int?
   workspace     Workspace?   @relation(fields: [workspaceId], references: [id])
   workspaceId   Int?
 }
@@ -185,7 +186,7 @@ model StatusDetail {
   statusCategoryName String
   transitionId       String?
 
-  transitionStatus Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projects Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId        Int
 
   @@unique([name, projectId], name: "tempStatusDetailIdentifier")
