@@ -118,7 +118,7 @@ export default function LoginV2() {
                 </div>
               </div>
             </div>
-
+            {/* 
             <div className="m-auto mb-16 flex flex-col justify-center text-center text-lg dark:text-slate-200 ">
               <p>Find us on social media</p>
               <div className="mt-4 flex flex-wrap items-center justify-center space-x-2">
@@ -212,7 +212,7 @@ export default function LoginV2() {
                   </svg>
                 </a>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
