@@ -91,10 +91,13 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
+    console.log(user);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
     let isPasswordMatched;
+    console.log(user.hash);
+    console.log(dto.password);
     if (user.hash) {
       isPasswordMatched = await argon.verify(user.hash, dto.password);
     }

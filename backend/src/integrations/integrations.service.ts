@@ -34,15 +34,14 @@ export class IntegrationsService {
     });
   }
 
-  async getUpdatedUserIntegration(user: User, userIntegrationID: number) {
+  async getUpdatedUserIntegration(user: User, userIntegrationId: number) {
     const tokenUrl = 'https://auth.atlassian.com/oauth/token';
     const headers: any = { 'Content-Type': 'application/json' };
     if (!user.activeWorkspaceId)
       throw new APIException('No active Workspace', HttpStatus.BAD_REQUEST);
-    const userIntegration = await this.prisma.userIntegration.findFirst({
+    const userIntegration = await this.prisma.userIntegration.findUnique({
       where: {
-        id: userIntegrationID,
-        workspaceId: user.activeWorkspaceId,
+        id: userIntegrationId,
       },
     });
     // const integration = await this.prisma.integration.findFirst({
