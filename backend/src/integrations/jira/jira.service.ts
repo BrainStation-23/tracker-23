@@ -212,12 +212,15 @@ export class JiraService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      await this.tasksService.setProjectStatuses(user, integration);
-      await this.sprintsService.createSprintAndTask(user, integration.id);
-      const projects = await this.tasksService.getIntegrationProjectList(
+      const projects = await this.tasksService.fetchAllProjects(
         user,
-        integration.id,
+        integration,
       );
+      // await this.sprintsService.createSprintAndTask(user, integration.id);
+      // const projects = await this.tasksService.getIntegrationProjectList(
+      //   user,
+      //   integration.id,
+      // );
       // this.tasksService.syncTasks(user);
       return {
         message: `Integration successful in ${integration.site}`,
@@ -246,7 +249,7 @@ export class JiraService {
         jiraIntegrationIds?.length > 0
           ? await this.prisma.project.findMany({
               where: {
-                integrationID: { in: jiraIntegrationIds },
+                integrationId: { in: jiraIntegrationIds },
                 integrated: true,
               },
               include: {
@@ -260,7 +263,7 @@ export class JiraService {
         projectKey: 'None',
         projectName: 'T23',
         source: '/',
-        integrationID: -1,
+        integrationId: -1,
         workspaceId: user.activeWorkspaceId,
         statuses: [
           {

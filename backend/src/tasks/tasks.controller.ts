@@ -25,6 +25,7 @@ import {
   StatusReqBodyDto,
   TimeSpentReqBodyDto,
   UpdatePinDto,
+  importProjectTasks,
 } from './dto';
 import { TasksService } from './tasks.service';
 
@@ -137,14 +138,18 @@ export class TasksController {
     return this.tasksService.getAllStatus(user);
   }
 
-  @Get('project-tasks/:id')
+  @Get('project-tasks/:projectId')
   @UseGuards(JwtAuthGuard)
   async importProjectTasks(
     @GetUser() user: User,
-    @Param('id') id: string,
+    @Param() param: importProjectTasks,
     @Response() res: any,
   ) {
-    return this.tasksService.importProjectTasks(user, Number(id), res);
+    return this.tasksService.importProjectTasks(
+      user,
+      Number(param.projectId),
+      res,
+    );
   }
 
   @Post('project-tasks/:id')
@@ -161,5 +166,11 @@ export class TasksController {
   @UseGuards(JwtAuthGuard)
   async getProjectList(@GetUser() user: User) {
     return this.tasksService.getProjectList(user);
+  }
+
+  @Get('set-statuses/:projectId')
+  @UseGuards(JwtAuthGuard)
+  async setProjectStatuses(@GetUser() user: User, @Param() param: any) {
+    return this.tasksService.setProjectStatuses(user, Number(param.projectId));
   }
 }

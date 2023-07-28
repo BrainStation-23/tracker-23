@@ -178,7 +178,7 @@ const CustomLayout = ({ children }: any) => {
       dispatch(setUserSlice({ ...user, role: userWorkspace?.role }));
       dispatch(setWorkspacesSlice(workspaces));
     }
-    if (user.activeWorkspaceId) setHasActiveWorkSpace(true);
+    if (user?.activeWorkspaceId) setHasActiveWorkSpace(true);
     setLoading(false);
   };
 
