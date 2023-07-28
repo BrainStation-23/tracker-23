@@ -21,14 +21,22 @@ export class WorkspacesService {
       },
     });
 
-    await this.prisma.userWorkspace.create({
-      data: {
-        role: Role.ADMIN,
-        userId: userId,
-        workspaceId: workspace.id,
-        status: UserWorkspaceStatus.ACTIVE,
-      },
-    });
+    try {
+      await this.prisma.userWorkspace.create({
+        data: {
+          role: Role.ADMIN,
+          userId: userId,
+          workspaceId: workspace.id,
+          status: UserWorkspaceStatus.ACTIVE,
+        },
+      });
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: workspaces.service.ts:34 ~ WorkspacesService ~ createWorkspace ~ error:',
+        error,
+      );
+    }
+
     return workspace;
   }
 
@@ -41,22 +49,33 @@ export class WorkspacesService {
   }
 
   async getWorkspaceList(user: User) {
-    const userId = user.id;
-    const userWorkspaces = await this.prisma.userWorkspace.findMany({
-      where: {
+    try {
+      const userId = user.id;
+      console.log(
+        '🚀 ~ file: workspaces.service.ts:46 ~ WorkspacesService ~ getWorkspaceList ~ userId:',
         userId,
-      },
-    });
-    const workSpaceIds = userWorkspaces.map(
-      (userWorkspace) => userWorkspace.workspaceId,
-    );
-    const workspaces = await this.prisma.workspace.findMany({
-      where: {
-        id: { in: workSpaceIds },
-      },
-      include: { userWorkspaces: true },
-    });
-    return { user, workspaces };
+      );
+      const userWorkspaces = await this.prisma.userWorkspace.findMany({
+        where: {
+          userId,
+        },
+      });
+      const workSpaceIds = userWorkspaces.map(
+        (userWorkspace) => userWorkspace.workspaceId,
+      );
+      const workspaces = await this.prisma.workspace.findMany({
+        where: {
+          id: { in: workSpaceIds },
+        },
+        include: { userWorkspaces: true },
+      });
+      return { user, workspaces };
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: workspaces.service.ts:62 ~ WorkspacesService ~ getWorkspaceList ~ error:',
+        error,
+      );
+    }
   }
   async getOwnedWorkspaceList(userId: number) {
     return await this.prisma.workspace.findMany({

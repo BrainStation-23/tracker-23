@@ -143,6 +143,27 @@ export class AuthService {
       });
       if (oldUser) {
         console.log('Old User Found');
+        if (!oldUser.activeWorkspaceId) {
+          const workspace =
+            oldUser.firstName &&
+            (await this.workspacesService.createWorkspace(
+              oldUser.id,
+              `${oldUser.firstName}'s Workspace`,
+            ));
+          const updatedOldUser =
+            workspace &&
+            (await this.prisma.user.update({
+              where: {
+                id: oldUser.id,
+              },
+              data: {
+                activeWorkspaceId: workspace.id,
+              },
+            }));
+          const updatedUser =
+            updatedOldUser && (await this.getFormattedUserData(updatedOldUser));
+          return updatedUser;
+        }
         return await this.getFormattedUserData(oldUser);
       }
       const user = await this.prisma.user.create({
