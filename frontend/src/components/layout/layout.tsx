@@ -179,7 +179,9 @@ const CustomLayout = ({ children }: any) => {
       dispatch(setUserSlice({ ...user, role: userWorkspace?.role }));
       dispatch(setWorkspacesSlice(workspaces));
     } else {
-      logOutFunction();
+      const errorRes: any = res;
+      errorRes?.error?.message && message.error(errorRes?.error?.message);
+      // logOutFunction();
     }
     if (user?.activeWorkspaceId) setHasActiveWorkSpace(true);
     setLoading(false);
