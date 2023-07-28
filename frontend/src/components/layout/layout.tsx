@@ -20,6 +20,7 @@ import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
 import { setUserSlice } from "@/storage/redux/userSlice";
 import { GetWorkspaceListWithUserDto } from "models/workspaces";
 import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
+import { logOutFunction } from "../logout/logoutFunction";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -177,6 +178,8 @@ const CustomLayout = ({ children }: any) => {
       )[0];
       dispatch(setUserSlice({ ...user, role: userWorkspace?.role }));
       dispatch(setWorkspacesSlice(workspaces));
+    } else {
+      logOutFunction();
     }
     if (user?.activeWorkspaceId) setHasActiveWorkSpace(true);
     setLoading(false);
