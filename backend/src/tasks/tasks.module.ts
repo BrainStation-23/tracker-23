@@ -11,6 +11,7 @@ import { SprintsModule } from '../sprints/sprints.module';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
+import { SprintsService } from 'src/sprints/sprints.service';
 
 @Module({
   imports: [HttpModule.register({}), SprintsModule, IntegrationsModule],
@@ -21,6 +22,7 @@ import { WorkspacesService } from 'src/workspaces/workspaces.service';
     JwtService,
     IntegrationsService,
     WorkspacesService,
+    SprintsService,
   ],
   controllers: [TasksController],
   exports: [TasksService],

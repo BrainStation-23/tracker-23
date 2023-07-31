@@ -33,6 +33,19 @@ export class IntegrationsService {
       include: { integration: true },
     });
   }
+  async getIntegrations(user: User) {
+    if (!user.activeWorkspaceId) {
+      throw new APIException(
+        'Can not delete user integration',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return await this.prisma.integration.findMany({
+      where: {
+        workspaceId: user.activeWorkspaceId,
+      },
+    });
+  }
 
   async getUpdatedUserIntegration(user: User, userIntegrationId: number) {
     const tokenUrl = 'https://auth.atlassian.com/oauth/token';
