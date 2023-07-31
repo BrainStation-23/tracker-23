@@ -8,6 +8,7 @@ import { IntegrationType, User, UserIntegration } from '@prisma/client';
 import { GetSprintListQueryDto } from './dto';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { APIException } from 'src/internal/exception/api.exception';
+import { count } from 'console';
 
 @Injectable()
 export class SprintsService {
@@ -213,12 +214,13 @@ export class SprintsService {
 
       res.data.issues.map((issue: any) => {
         const taskId = mappedTaskId.get(Number(issue.id));
-
-        issue_list.push({
-          sprintId: sprintId,
-          taskId: taskId,
-          userWorkspaceId: userWorkspace.id,
-        });
+        if (taskId) {
+          issue_list.push({
+            sprintId: sprintId,
+            taskId: taskId,
+            userWorkspaceId: userWorkspace.id,
+          });
+        }
       });
     });
 
@@ -292,9 +294,20 @@ export class SprintsService {
     try {
       const getUserIntegrationList =
         await this.integrationsService.getUserIntegrations(user);
-      return getUserIntegrationList.map(async (userIntegration) => {
-        await this.getAllActiveSprintTask(user, reqBody, userIntegration);
-      });
+      const taskList: any[] = [];
+      console.log(getUserIntegrationList.length);
+      for (let i = 0, len = getUserIntegrationList.length; i < len; i++) {
+        const userIntegration = getUserIntegrationList[i];
+        // console.log('count');
+        const array = await this.getIndividualIntegrationActiveSprintTask(
+          user,
+          reqBody,
+          userIntegration,
+        );
+        taskList.push(...array);
+      }
+      // console.log(taskList);
+      return taskList;
     } catch (err) {
       console.log(
         '🚀 ~ file: sprints.service.ts:306 ~ SprintsService ~ getActiveSprintTasks ~ err:',
@@ -303,7 +316,7 @@ export class SprintsService {
     }
   }
 
-  async getAllActiveSprintTask(
+  async getIndividualIntegrationActiveSprintTask(
     user: User,
     reqBody: GetSprintListQueryDto,
     userIntegration: UserIntegration,
@@ -315,20 +328,7 @@ export class SprintsService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const updated_userIntegration =
-      await this.integrationsService.getUpdatedUserIntegration(
-        user,
-        userIntegration.id,
-      );
-    if (!updated_userIntegration) {
-      return null;
-    }
-
     try {
-      // const integrations = await this.prisma.integration.findMany({
-      //   where: { userId: user.id },
-      // });
-      // if (!(integrations.length > 0)) return [];
       const { priority, status, text } = reqBody;
       const priority1: any = (priority as unknown as string)?.split(',');
       const status1: any = (status as unknown as string)?.split(',');
@@ -342,17 +342,18 @@ export class SprintsService {
           state: { in: array },
         },
       });
-      console.log('🚀 ~ file: sprints.service.ts:345 ~ sprints:', sprints);
 
       const sprintIds = sprints.map((sprint) => sprint.id);
+      // console.log(sprintIds);
       const taskIds = await this.getSprintTasksIds(
         userWorkspace?.id,
         sprintIds,
       );
+      // console.log(taskIds);
 
-      return await this.prisma.task.findMany({
+      const taskList = await this.prisma.task.findMany({
         where: {
-          assigneeId: updated_userIntegration.jiraAccountId,
+          assigneeId: userIntegration.jiraAccountId,
           source: IntegrationType.JIRA,
           id: { in: taskIds },
           ...(priority1 && { priority: { in: priority1 } }),
@@ -368,9 +369,10 @@ export class SprintsService {
           sessions: true,
         },
       });
+      // console.log(taskList);
+      return taskList;
     } catch (error) {
       console.log('🚀 ~ file: sprints.service.ts:372 ~ error:', error);
-
       return [];
     }
   }
