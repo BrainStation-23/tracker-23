@@ -6,7 +6,7 @@ import { TasksService } from 'src/tasks/tasks.service';
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IntegrationType, TempIntegration, User } from '@prisma/client';
+import { IntegrationType, User } from '@prisma/client';
 
 import { AuthorizeJiraDto } from './dto';
 import { SprintsService } from 'src/sprints/sprints.service';

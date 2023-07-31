@@ -48,7 +48,7 @@ export class IntegrationsService {
   }
 
   async getUpdatedUserIntegration(user: User, userIntegrationId: number) {
-    const tokenUrl = 'https://auth.atlassian.com/oauth/token';
+    const url = 'https://auth.atlassian.com/oauth/token';
     const headers: any = { 'Content-Type': 'application/json' };
     if (!user.activeWorkspaceId)
       throw new APIException('No active Workspace', HttpStatus.BAD_REQUEST);
@@ -57,12 +57,18 @@ export class IntegrationsService {
         id: userIntegrationId,
       },
     });
+    // console.log(
+    //   '🚀 ~ file: integrations.service.ts:60 ~ IntegrationsService ~ getUpdatedUserIntegration ~ userIntegration:',
+    //   userIntegration,
+    // );
+
     // const integration = await this.prisma.integration.findFirst({
     //   where: { userId: user.id, type: IntegrationType.JIRA, id: integrationID },
     // });
     if (!userIntegration) {
       return null;
     }
+    // console.log(userIntegration?.refreshToken);
 
     const data = {
       grant_type: 'refresh_token',
@@ -70,10 +76,15 @@ export class IntegrationsService {
       client_secret: this.config.get('JIRA_SECRET_KEY'),
       refresh_token: userIntegration?.refreshToken,
     };
-
+    // console.log('hello', data);
+    // try {
     const tokenResp = (
-      await lastValueFrom(this.httpService.post(tokenUrl, data, headers))
+      await lastValueFrom(this.httpService.post(url, data, headers))
     ).data;
+    // console.log(
+    //   '🚀 ~ file: integrations.service.ts:82 ~ IntegrationsService ~ getUpdatedUserIntegration ~ tokenResp:',
+    //   tokenResp,
+    // );
 
     const updatedUserIntegration =
       userIntegration &&
@@ -86,6 +97,12 @@ export class IntegrationsService {
         include: { integration: true },
       }));
     return updatedUserIntegration;
+    // } catch (err) {
+    //   console.log(
+    //     '🚀 ~ file: integrations.service.ts:99 ~ IntegrationsService ~ getUpdatedUserIntegration ~ err:',
+    //     err,
+    //   );
+    // }
   }
 
   async deleteUserIntegration(user: User, userIntegrationId: number) {
