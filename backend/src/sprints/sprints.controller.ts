@@ -12,10 +12,10 @@ export class SprintsController {
   @Get('sprint-list')
   @UseGuards(JwtAuthGuard)
   async getSprintList(
-    @Query() projectId: string,
+    @GetUser() user: User,
     @Query() reqBody: GetSprintListQueryDto,
   ) {
-    return this.sprintsService.getSprintList(Number(projectId), reqBody);
+    return this.sprintsService.getSprintList(user, reqBody);
   }
 
   @Get('active-sprintTasks')

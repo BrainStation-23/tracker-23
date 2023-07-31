@@ -10,6 +10,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
+import { SprintsService } from 'src/sprints/sprints.service';
 
 @Module({
   imports: [HttpModule.register({}), IntegrationsModule],
@@ -22,6 +23,7 @@ import { WorkspacesService } from 'src/workspaces/workspaces.service';
     JwtService,
     IntegrationsService,
     WorkspacesService,
+    SprintsService,
   ],
   exports: [SessionsService],
 })
