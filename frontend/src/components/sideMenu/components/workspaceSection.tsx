@@ -57,8 +57,8 @@ const WorkspaceSelection = () => {
       >
         <Button className="h-max">
           <div className="flex items-center gap-2 p-2">
-            <Avatar size={"small"}>{selectedWorkspace.name[0]}</Avatar>
-            {selectedWorkspace.name}
+            <Avatar size={"small"}>{selectedWorkspace?.name[0]}</Avatar>
+            {selectedWorkspace?.name}
           </div>
         </Button>
       </Dropdown>
