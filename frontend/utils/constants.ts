@@ -2,6 +2,7 @@ export const publicRoutes = [
   "/login",
   "/registration",
   "/socialLogin/redirect",
+  "/forgotPassword",
 ];
 export const ignoreRoutes = ["/_next", "/assets", "/integrations"];
 export const menuOptions = [
