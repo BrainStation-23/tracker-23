@@ -50,6 +50,7 @@ export class WorkspacesService {
     const workSpaceIds = userWorkspaces.map(
       (userWorkspace) => userWorkspace.workspaceId,
     );
+    console.log(workSpaceIds);
     const workspaces = await this.prisma.workspace.findMany({
       where: {
         id: { in: workSpaceIds },

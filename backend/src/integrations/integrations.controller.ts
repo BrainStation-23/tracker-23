@@ -15,7 +15,7 @@ export class IntegrationsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async getIntegrations(@GetUser() user: User) {
-    return this.integrationsService.getUserIntegrations(user);
+    return this.integrationsService.getIntegrations(user);
   }
 
   @UseGuards(JwtAuthGuard)
