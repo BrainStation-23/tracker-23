@@ -1,7 +1,7 @@
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import SortStatusIconSvg from "@/assets/svg/sortIcons/SortStatusIconSvg";
 import { useAppSelector } from "@/storage/redux";
-import { StatusType } from "@/storage/redux/projectsSlice";
+import { Project, StatusType } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
 import { Select } from "antd";
 import { StatusDto } from "models/tasks";
@@ -12,8 +12,8 @@ import {
   taskStatusEnum,
 } from "utils/constants";
 type Props = {
-  project: string[];
-  setProject: Function;
+  projectIds: number[];
+  setProjectIds: Function;
 };
 type TagProps = {
   label: any;
@@ -21,7 +21,7 @@ type TagProps = {
   closable: any;
   onClose: any;
 };
-const ProjectSelectorComponent = ({ project, setProject }: Props) => {
+const ProjectSelectorComponent = ({ projectIds, setProjectIds }: Props) => {
   const defaultValues: any = [
     // { name: "To Do", statusCategoryName: "TO_DO" },
     // { name: "In Progress", statusCategoryName: "IN_PROGRESS" },
@@ -32,16 +32,16 @@ const ProjectSelectorComponent = ({ project, setProject }: Props) => {
   const Options = projects
     ? projects?.map((project) => {
         return {
-          value: JSON.stringify(project),
+          value: project.id,
           label: project.projectName,
         };
       })
     : [];
   if (Options?.length === 0) {
-    defaultValues.forEach((val: any) => {
+    defaultValues.forEach((val: Project) => {
       Options.push({
-        value: JSON.stringify(val),
-        label: val.name,
+        value: val.id,
+        label: val.projectName,
       });
     });
   }
@@ -77,12 +77,12 @@ const ProjectSelectorComponent = ({ project, setProject }: Props) => {
   };
   useEffect(() => {
     const tmpArray: any[] = [];
-    project?.map((st) => {
+    projectIds?.map((projectId) => {
       Options?.map((option) => {
-        if (option.label === JSON.parse(st).label) tmpArray.push(option.value);
+        if (option.value === projectId) tmpArray.push(option.value);
       });
     });
-  }, [project]);
+  }, [projectIds]);
   return (
     <div
       className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
@@ -98,7 +98,7 @@ const ProjectSelectorComponent = ({ project, setProject }: Props) => {
         placeholder="Select Project"
         mode="multiple"
         tagRender={(props) => tagRender(props)}
-        value={project}
+        value={projectIds}
         // defaultValue={[
         //   '{"name":"To Do","statusCategoryName":"TO_DO"}',
         //   '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
@@ -112,7 +112,7 @@ const ProjectSelectorComponent = ({ project, setProject }: Props) => {
         //   { value: "DONE", label: "Done" },
         // ]}
         onChange={(value) => {
-          setProject(value);
+          setProjectIds(value);
         }}
       />
     </div>

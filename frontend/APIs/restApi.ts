@@ -98,6 +98,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
   const sprints = searchParams?.sprints;
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
+  const projectIds = searchParams?.projectIds;
   try {
     const res = await axios.get(
       apiEndPoints.tasks +
@@ -110,6 +111,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${searchParams.searchText}`
           : "") +
+        (projectIds?.length > 0 && `&projectIds=${projectIds}`) +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (status && status.length > 0 ? `&status=${status}` : "")
     );
@@ -400,6 +402,7 @@ export async function getJiraActiveSprintTasksRest(
 ) {
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
+  const projectIds = searchParams?.projectIds;
   try {
     const res = await axios.get(
       `${apiEndPoints.activeSprintTasks}/?state=${["active"]}` +
@@ -407,6 +410,7 @@ export async function getJiraActiveSprintTasksRest(
           ? `&text=${searchParams.searchText}`
           : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (status && status.length > 0 ? `&status=${status}` : "")
       // `${apiEndPoints.activeSprintTasks}/?state=${["closed"]}`
     );
