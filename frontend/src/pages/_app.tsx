@@ -58,7 +58,8 @@ export default function App({ Component, pageProps }: AppProps) {
 
   useEffect(() => {
     if (!publicRoutes.some((route) => url.includes(route))) {
-      whiteListEmails.includes(userDetails?.email) ? "" : setValidUser(false);
+      const email = userDetails?.email?.toLowerCase();
+      whiteListEmails.includes(email) ? "" : setValidUser(false);
     } else if (!validUser) {
       setValidUser(true);
     }
