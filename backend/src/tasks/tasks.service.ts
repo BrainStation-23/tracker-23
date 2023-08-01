@@ -16,6 +16,8 @@ import {
   StatusDetail,
   Task,
   User,
+  UserIntegration,
+  UserWorkspace,
 } from '@prisma/client';
 
 import {
@@ -39,10 +41,11 @@ export class TasksService {
     private sprintService: SprintsService,
   ) {}
 
-  async getSprintTasks(user: User, sprintIds: number[]) {
+  async getSprintTasks(userWorkspace: UserWorkspace, sprintIds: number[]) {
     try {
       const getSprintTasks = await this.prisma.sprintTask.findMany({
         where: {
+          userWorkspaceId: userWorkspace.id,
           sprintId: { in: sprintIds.map((id) => Number(id)) },
         },
       });
@@ -66,14 +69,6 @@ export class TasksService {
 
       const sprintIdArray =
         sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
-      // console.log(sprintIdArray);
-
-      // const jiraIntegration = await this.prisma.integration.findFirst({
-      //   where: {
-      //     userWorkspaceId: userWorkspace.id,
-      //     type: IntegrationType.JIRA,
-      //   },
-      // });
 
       const userWorkspace =
         user.activeWorkspaceId &&
@@ -100,12 +95,11 @@ export class TasksService {
 
       if (sprintIdArray && sprintIdArray.length) {
         // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
-        const taskIds = await this.getSprintTasks(user, sprintIdArray);
+        const taskIds = await this.getSprintTasks(userWorkspace, sprintIdArray);
         console.log(taskIds);
 
         return await this.prisma.task.findMany({
           where: {
-            // assigneeId: integrationId,
             userWorkspaceId: userWorkspace.id,
             source: IntegrationType.JIRA,
             id: { in: taskIds },
@@ -163,7 +157,6 @@ export class TasksService {
       return [];
     }
   }
-
   async createTask(user: User, dto: CreateTaskDto) {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
@@ -443,8 +436,13 @@ export class TasksService {
             integratedTask.priority.name,
           );
           // console.log(integratedTask);
+
           taskList.push({
-            userWorkspaceId: userWorkspace.id,
+            userWorkspaceId:
+              userIntegration.jiraAccountId ===
+              integratedTask.assignee?.accountId
+                ? userWorkspace.id
+                : null,
             workspaceId: project.workspaceId,
             title: integratedTask.summary,
             assigneeId: integratedTask.assignee?.accountId || null,
