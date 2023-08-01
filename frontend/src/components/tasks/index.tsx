@@ -358,6 +358,7 @@ const TasksPage = () => {
   };
   const getProjects = async () => {
     const res = await userAPI.getIntegratedProjectStatuses();
+    console.log("🚀 ~ file: index.tsx:361 ~ getProjects ~ res:", res);
     res?.length > 0 && dispatch(setProjectsSlice(res));
   };
 

@@ -13,6 +13,7 @@ import PrioritySelectorComponent from "./components/prioritySelector";
 import SprintSelectorComponent from "./components/sprintSelector";
 import StatusSelectorComponent from "./components/statusSelector";
 import { SearchParamsModel } from "models/apiParams";
+import ProjectSelectorComponent from "./components/projectSelector";
 
 type Props = {
   tasks: TaskDto[];
@@ -32,6 +33,7 @@ const TopPanel = ({
 }: Props) => {
   const [searchText, setSearchText] = useState(searchParams.searchText);
   const [status, setStatus] = useState<string[]>(searchParams.status);
+  const [project, setProject] = useState<string[]>(searchParams.projects);
   const [priority, setPriority] = useState(searchParams.priority);
   const [sprints, setSprints] = useState(searchParams.sprints);
   const [active, setActive] = useState("");
@@ -119,6 +121,7 @@ const TopPanel = ({
         priority: priority,
         status: status,
         sprints: sprints,
+        project: project,
       })
     ) {
       setSearchParams({
@@ -127,6 +130,7 @@ const TopPanel = ({
         priority: priority,
         status: status,
         sprints: sprints,
+        project: project,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -144,6 +148,7 @@ const TopPanel = ({
         priority: priority,
         status: status,
         sprints: sprints,
+        project: project,
       });
     } else if (
       JSON.stringify(sprints) != JSON.stringify(searchParams.sprints)
@@ -154,11 +159,12 @@ const TopPanel = ({
         priority: priority,
         status: status,
         sprints: sprints,
+        project: project,
       });
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate, priority, status, sprints]);
+  }, [selectedDate, priority, status, sprints, project]);
   const filterOptions = [
     // {
     //   icon: <SortNameIconSvg />,
@@ -169,6 +175,10 @@ const TopPanel = ({
       {...{ priority, setPriority }}
     />,
     <StatusSelectorComponent key={Math.random()} {...{ status, setStatus }} />,
+    <ProjectSelectorComponent
+      key={Math.random()}
+      {...{ project, setProject }}
+    />,
     // {
     //   icon: <ClockIconSvg />,
     //   title: "Estimation",

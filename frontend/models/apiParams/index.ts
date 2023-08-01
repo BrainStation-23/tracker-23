@@ -3,5 +3,6 @@ export interface SearchParamsModel {
   selectedDate?: any;
   priority?: string[];
   status?: string[];
+  projects?: string[];
   sprints?: number[];
 }
