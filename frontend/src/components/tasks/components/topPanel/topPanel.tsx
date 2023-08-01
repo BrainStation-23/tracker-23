@@ -33,7 +33,7 @@ const TopPanel = ({
 }: Props) => {
   const [searchText, setSearchText] = useState(searchParams.searchText);
   const [status, setStatus] = useState<string[]>(searchParams.status);
-  const [project, setProject] = useState<string[]>(searchParams.projects);
+  const [projectIds, setProjectIds] = useState<number[]>(searchParams.projectIds);
   const [priority, setPriority] = useState(searchParams.priority);
   const [sprints, setSprints] = useState(searchParams.sprints);
   const [active, setActive] = useState("");
@@ -121,7 +121,7 @@ const TopPanel = ({
         priority: priority,
         status: status,
         sprints: sprints,
-        project: project,
+        projectIds: projectIds,
       })
     ) {
       setSearchParams({
@@ -130,7 +130,7 @@ const TopPanel = ({
         priority: priority,
         status: status,
         sprints: sprints,
-        project: project,
+        projectIds: projectIds,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -140,7 +140,8 @@ const TopPanel = ({
       JSON.stringify(searchParams.priority) != JSON.stringify(priority) ||
       JSON.stringify(searchParams.selectedDate) !=
         JSON.stringify(selectedDate) ||
-      JSON.stringify(searchParams.status) != JSON.stringify(status)
+      JSON.stringify(searchParams.status) != JSON.stringify(status)||
+      JSON.stringify(searchParams.projectIds) != JSON.stringify(projectIds)
     ) {
       setSearchParams({
         searchText: searchText,
@@ -148,7 +149,7 @@ const TopPanel = ({
         priority: priority,
         status: status,
         sprints: sprints,
-        project: project,
+        projectIds: projectIds,
       });
     } else if (
       JSON.stringify(sprints) != JSON.stringify(searchParams.sprints)
@@ -159,12 +160,12 @@ const TopPanel = ({
         priority: priority,
         status: status,
         sprints: sprints,
-        project: project,
+        projectIds: projectIds,
       });
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate, priority, status, sprints, project]);
+  }, [selectedDate, priority, status, sprints, projectIds]);
   const filterOptions = [
     // {
     //   icon: <SortNameIconSvg />,
@@ -177,7 +178,7 @@ const TopPanel = ({
     <StatusSelectorComponent key={Math.random()} {...{ status, setStatus }} />,
     <ProjectSelectorComponent
       key={Math.random()}
-      {...{ project, setProject }}
+      {...{ projectIds, setProjectIds }}
     />,
     // {
     //   icon: <ClockIconSvg />,

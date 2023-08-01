@@ -12,6 +12,7 @@ import { RootState } from "@/storage/redux/store";
 import PrioritySelectorComponent from "./components/prioritySelector";
 import StatusSelectorComponent from "./components/statusSelector";
 import { SearchParamsModel } from "models/apiParams";
+import ProjectSelectorComponent from "./components/projectSelector";
 
 type Props = {
   tasks: TaskDto[];
@@ -34,6 +35,9 @@ const TopPanelActiveSprint = ({
   );
   const [status, setStatus] = useState<string[]>(
     searchParamsActiveSprint.status
+  );
+  const [projectIds, setProjectIds] = useState<number[]>(
+    searchParamsActiveSprint.projectIds
   );
   const [priority, setPriority] = useState(searchParamsActiveSprint.priority);
   const [active, setActive] = useState("");
@@ -116,12 +120,14 @@ const TopPanelActiveSprint = ({
         searchText: searchText,
         priority: priority,
         status: status,
+        projectIds: projectIds,
       })
     ) {
       setSearchParamsActiveSprint({
         searchText: searchText,
         priority: priority,
         status: status,
+        projectIds: projectIds,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -129,27 +135,35 @@ const TopPanelActiveSprint = ({
   useEffect(() => {
     if (
       JSON.stringify(searchParamsActiveSprint) !=
-      JSON.stringify({
-        searchText: searchText,
-        priority: priority,
-        status: status,
-      })
+        JSON.stringify({
+          searchText: searchText,
+          priority: priority,
+          status: status,
+          projectIds: projectIds,
+        }) ||
+      JSON.stringify(searchParamsActiveSprint.projectIds) !=
+        JSON.stringify(projectIds)
     ) {
       setSearchParamsActiveSprint({
         searchText: searchText,
         priority: priority,
         status: status,
+        projectIds: projectIds,
       });
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate, priority, status]);
+  }, [selectedDate, priority, status, projectIds]);
   const filterOptions = [
     <PrioritySelectorComponent
       key={Math.random()}
       {...{ priority, setPriority }}
     />,
     <StatusSelectorComponent key={Math.random()} {...{ status, setStatus }} />,
+    <ProjectSelectorComponent
+      key={Math.random()}
+      {...{ projectIds, setProjectIds }}
+    />,
     // {
     //   icon: <ClockIconSvg />,
     //   title: "Estimation",
