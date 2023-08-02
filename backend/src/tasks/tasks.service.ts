@@ -12,6 +12,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import {
   Integration,
   IntegrationType,
+  Role,
   SessionStatus,
   StatusDetail,
   Task,
@@ -40,25 +41,6 @@ export class TasksService {
     private workspacesService: WorkspacesService,
     private sprintService: SprintsService,
   ) {}
-
-  async getSprintTasks(userWorkspace: UserWorkspace, sprintIds: number[]) {
-    try {
-      const getSprintTasks = await this.prisma.sprintTask.findMany({
-        where: {
-          userWorkspaceId: userWorkspace.id,
-          sprintId: { in: sprintIds.map((id) => Number(id)) },
-        },
-      });
-      const taskIds: number[] = [];
-      for (let index = 0; index < getSprintTasks.length; index++) {
-        const val = getSprintTasks[index];
-        taskIds.push(val.taskId);
-      }
-      return taskIds;
-    } catch (error) {
-      return [];
-    }
-  }
 
   async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
     try {
@@ -95,8 +77,9 @@ export class TasksService {
 
       if (sprintIdArray && sprintIdArray.length) {
         // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
-        const taskIds = await this.getSprintTasks(userWorkspace, sprintIdArray);
-        console.log(taskIds);
+        const taskIds = await this.sprintService.getSprintTasksIds(
+          sprintIdArray,
+        );
 
         return await this.prisma.task.findMany({
           where: {
@@ -152,6 +135,114 @@ export class TasksService {
         });
       }
       return tasks;
+    } catch (err) {
+      // console.log(err.message);
+      return [];
+    }
+  }
+
+  async getWorkspaceTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
+    try {
+      const { priority, status, text } = query;
+      const sprintIds = query.sprintId as unknown as string;
+      // console.log(sprintIds);
+      let { startDate, endDate } = query as unknown as GetTaskQuery;
+
+      const sprintIdArray =
+        sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
+
+      const userWorkspace =
+        user.activeWorkspaceId &&
+        (await this.prisma.userWorkspace.findFirst({
+          where: {
+            userId: user.id,
+            workspaceId: user.activeWorkspaceId,
+          },
+        }));
+      if (!userWorkspace) {
+        return [];
+      }
+
+      if (userWorkspace.role === Role.ADMIN) {
+        const priority1: any = (priority as unknown as string)?.split(',');
+        const status1: any = (status as unknown as string)?.split(',');
+
+        startDate = startDate && new Date(startDate);
+        endDate = endDate && new Date(endDate);
+        if (endDate) {
+          const oneDay = 3600 * 24 * 1000;
+          endDate = new Date(endDate.getTime() + oneDay);
+        }
+        let tasks: Task[] = [];
+
+        if (sprintIdArray && sprintIdArray.length) {
+          // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
+          const taskIds = await this.sprintService.getSprintTasksIds(
+            sprintIdArray,
+          );
+          console.log(taskIds);
+
+          return await this.prisma.task.findMany({
+            where: {
+              workspaceId: user.activeWorkspaceId,
+              source: IntegrationType.JIRA,
+              id: { in: taskIds },
+              ...(priority1 && { priority: { in: priority1 } }),
+              ...(status1 && { status: { in: status1 } }),
+              ...(text && {
+                title: {
+                  contains: text,
+                  mode: 'insensitive',
+                },
+              }),
+            },
+            include: {
+              sessions: true,
+            },
+          });
+        } else {
+          const databaseQuery = {
+            workspaceId: user.activeWorkspaceId,
+            // OR: [
+            //   {
+            //     userWorkspaceId: userWorkspace.id,
+            //     source: IntegrationType.JIRA,
+            //   },
+            //   {
+            //     userWorkspaceId: userWorkspace.id,
+            //     source: IntegrationType.TRACKER23,
+            //   },
+            // ],
+            ...(startDate &&
+              endDate && {
+                createdAt: { lte: endDate },
+                updatedAt: { gte: startDate },
+              }),
+            ...(priority1 && { priority: { in: priority1 } }),
+            ...(status1 && { status: { in: status1 } }),
+            ...(text && {
+              title: {
+                contains: text,
+                mode: 'insensitive',
+              },
+            }),
+          };
+
+          tasks = await this.prisma.task.findMany({
+            where: databaseQuery,
+            include: {
+              sessions: true,
+            },
+          });
+        }
+        console.log(tasks.length);
+        return tasks;
+      }
+
+      throw new APIException(
+        'Only admin has this ability',
+        HttpStatus.BAD_REQUEST,
+      );
     } catch (err) {
       // console.log(err.message);
       return [];
@@ -354,6 +445,8 @@ export class TasksService {
       }
       return [];
     }
+
+    this.setProjectStatuses(user, project.id);
     // console.log('hello before');
     const projectId = project.projectId;
     // console.log(projectId);
