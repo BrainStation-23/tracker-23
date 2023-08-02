@@ -18,13 +18,11 @@ export class AuthService {
   ) {}
 
   async createUser(dto: RegisterDto) {
-    const hashedPassword = await argon.hash(dto.password);
-
     const data = {
-      email: dto.email,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
-      hash: hashedPassword,
+      email: dto?.email,
+      firstName: dto?.firstName,
+      lastName: dto?.lastName,
+      hash: await argon.hash(dto?.password),
     };
     try {
       const user = await this.prisma.user.create({
@@ -75,6 +73,9 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
+    const email = dto?.email?.toLowerCase();
+    dto.email = email;
+
     const doesExistUser = await this.getUser(dto);
     if (doesExistUser) {
       throw new APIException('Email already in Use!', HttpStatus.BAD_REQUEST);
@@ -120,10 +121,12 @@ export class AuthService {
       secret: this.config.get('JWT_SECRET'),
       expiresIn: '1d',
     });
+
     return {
       access_token,
     };
   }
+
   async googleLogin(req: any) {
     if (!req.user) {
       console.log('No user from google');

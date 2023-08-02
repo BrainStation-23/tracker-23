@@ -8,9 +8,7 @@ import { WorkspaceReqBody } from './dto';
 @Injectable()
 export class WorkspacesService {
   constructor(
-    private config: ConfigService,
     private prisma: PrismaService,
-    private httpService: HttpService,
   ) {}
 
   async createWorkspace(userId: number, name: string) {
