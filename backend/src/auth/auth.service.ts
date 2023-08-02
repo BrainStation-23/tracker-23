@@ -83,22 +83,18 @@ export class AuthService {
       // return { ...doesExistUser, ...token };
     }
 
-    const user = await this.createUser(dto);
-    const token = await this.createToken(user);
-    return { ...user, ...token };
+    return await this.createUser(dto);
   }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: dto?.email?.toLowerCase() },
     });
-    console.log(user);
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
     let isPasswordMatched;
-    console.log(user.hash);
-    console.log(dto.password);
     if (user.hash) {
       isPasswordMatched = await argon.verify(user.hash, dto.password);
     }
@@ -169,6 +165,7 @@ export class AuthService {
         }
         return await this.getFormattedUserData(oldUser);
       }
+      
       const user = await this.prisma.user.create({
         data: queryData,
         select: {
