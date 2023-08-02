@@ -6,8 +6,10 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 
 const WorkspaceSelection = () => {
-  // const workspacesList = tmp; 
-  const workspacesList = useAppSelector((state: RootState) => state.workspacesSlice.workspaces);
+  // const workspacesList = tmp;
+  const workspacesList = useAppSelector(
+    (state: RootState) => state.workspacesSlice.workspaces
+  );
 
   const [selectedWorkspace, setSelectedWorkspace] =
     useState<WorkspaceDto | null>(
@@ -48,20 +50,29 @@ const WorkspaceSelection = () => {
 
   return (
     <>
-      <Dropdown
-        menu={{ items }}
-        trigger={["click"]}
-        placement="topRight"
-        arrow
-        dropdownRender={dropdownRender}
-      >
+      {workspacesList?.length > 1 ? (
+        <Dropdown
+          menu={{ items }}
+          trigger={["click"]}
+          placement="topRight"
+          arrow
+          dropdownRender={dropdownRender}
+        >
+          <Button className="h-max">
+            <div className="flex items-center gap-2 p-2">
+              <Avatar size={"small"}>{selectedWorkspace?.name[0]}</Avatar>
+              {selectedWorkspace?.name}
+            </div>
+          </Button>
+        </Dropdown>
+      ) : (
         <Button className="h-max">
           <div className="flex items-center gap-2 p-2">
             <Avatar size={"small"}>{selectedWorkspace?.name[0]}</Avatar>
             {selectedWorkspace?.name}
           </div>
         </Button>
-      </Dropdown>
+      )}
     </>
   );
 };

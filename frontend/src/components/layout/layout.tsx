@@ -88,9 +88,13 @@ const CustomLayout = ({ children }: any) => {
   };
   useEffect(() => {
     if (!publicRoutes.some((route) => path.includes(route))) {
-      initialLoading();
+      hasActiveWorkSpace && initialLoading();
     }
-  }, [publicRoutes.some((route) => path.includes(route)), path]);
+  }, [
+    publicRoutes.some((route) => path.includes(route)),
+    path,
+    hasActiveWorkSpace,
+  ]);
   useEffect(() => {
     const connectSocket = async () => {
       GetCookie("access_token") &&
@@ -192,6 +196,11 @@ const CustomLayout = ({ children }: any) => {
   };
 
   useEffect(() => {
+    console.log(
+      !publicRoutes.some((route) => path.includes(route)),
+      !path.includes("socialLogin")
+    );
+
     if (
       !publicRoutes.some((route) => path.includes(route)) &&
       !path.includes("socialLogin")
