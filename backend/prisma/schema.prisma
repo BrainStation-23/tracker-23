@@ -270,7 +270,6 @@ model Sprint {
   jiraSprintId Int
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId Int
-  userWorkspaceId Int
   sprintTask   SprintTask[]
   state        String
   name         String
@@ -283,7 +282,6 @@ model SprintTask {
   id       Int    @id @default(autoincrement())
   sprint   Sprint @relation(fields: [sprintId], references: [id], onDelete: Cascade)
   sprintId Int
-  userWorkspaceId Int
   taskId   Int
 
   @@unique([sprintId, taskId], name: "sprintTaskIdentifier")

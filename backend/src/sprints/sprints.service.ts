@@ -3,7 +3,12 @@ import { IntegrationsService } from 'src/integrations/integrations.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { IntegrationType, User, UserIntegration } from '@prisma/client';
+import {
+  IntegrationType,
+  Project,
+  User,
+  UserIntegration,
+} from '@prisma/client';
 
 import { GetSprintListQueryDto } from './dto';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
@@ -82,7 +87,7 @@ export class SprintsService {
 
     const task_list = await this.prisma.task.findMany({
       where: {
-        userWorkspaceId: userWorkspace.id,
+        projectId,
         source: IntegrationType.JIRA,
       },
     });
@@ -132,8 +137,7 @@ export class SprintsService {
             if (val.startDate && val.endDate && val.completeDate) {
               sprint_list.push({
                 jiraSprintId: Number(val.id),
-                userWorkspaceId: userWorkspace.id,
-                projectId: project.id,
+                projectId: projectId,
                 state: val.state,
                 name: val.name,
                 startDate: new Date(val.startDate),
@@ -144,13 +148,16 @@ export class SprintsService {
               toBeUpdated.push(val.id);
               sprint_list.push({
                 jiraSprintId: Number(val.id),
-                userWorkspaceId: userWorkspace.id,
-                projectId: project.id,
+                projectId: projectId,
                 state: val.state,
                 name: val.name,
               });
             }
 
+            console.log(
+              '🚀 ~ file: sprints.service.ts:155 ~ SprintsService ~ res.data.values.map ~ sprint_list:',
+              sprint_list,
+            );
             const sprintIssueUrl = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/agile/1.0/sprint/${val.id}/issue`;
             const sprintIssueConfig = {
               method: 'get',
@@ -172,8 +179,7 @@ export class SprintsService {
     const [delSprint, crtSprint, sprints] = await Promise.all([
       await this.prisma.sprint.deleteMany({
         where: {
-          userWorkspaceId: userWorkspace.id,
-          projectId: project.id,
+          projectId: projectId,
         },
       }),
       await this.prisma.sprint.createMany({
@@ -181,8 +187,7 @@ export class SprintsService {
       }),
       await this.prisma.sprint.findMany({
         where: {
-          userWorkspaceId: userWorkspace.id,
-          projectId: project.id,
+          projectId: projectId,
         },
       }),
     ]);
@@ -214,13 +219,10 @@ export class SprintsService {
 
       res.data.issues.map((issue: any) => {
         const taskId = mappedTaskId.get(Number(issue.id));
-        if (taskId) {
-          issue_list.push({
-            sprintId: sprintId,
-            taskId: taskId,
-            userWorkspaceId: userWorkspace.id,
-          });
-        }
+        issue_list.push({
+          sprintId: sprintId,
+          taskId: taskId,
+        });
       });
     });
 
@@ -239,7 +241,6 @@ export class SprintsService {
 
       await this.prisma.sprintTask.findMany({
         where: {
-          // userWorkspaceId: userWorkspace.id,
           sprintId: { in: sprintIds },
         },
       }),
@@ -250,14 +251,8 @@ export class SprintsService {
 
   async getSprintList(user: User, reqBody: GetSprintListQueryDto) {
     try {
-      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-      if (!userWorkspace) {
-        // throw new APIException(
-        //   'User workspace not found',
-        //   HttpStatus.BAD_REQUEST,
-        // );
-        return [];
-      }
+      const projectIds: number[] = await this.getProjectIds(user);
+
       const st = reqBody.state as unknown as string;
       const array =
         st &&
@@ -272,7 +267,7 @@ export class SprintsService {
 
       const sprintList = await this.prisma.sprint.findMany({
         where: {
-          userWorkspaceId: userWorkspace.id,
+          projectId: { in: projectIds },
         },
       });
       console.log(
@@ -291,43 +286,14 @@ export class SprintsService {
   }
 
   async getActiveSprintTasks(user: User, reqBody: GetSprintListQueryDto) {
-    try {
-      const getUserIntegrationList =
-        await this.integrationsService.getUserIntegrations(user);
-      const taskList: any[] = [];
-      console.log(getUserIntegrationList.length);
-      for (let i = 0, len = getUserIntegrationList.length; i < len; i++) {
-        const userIntegration = getUserIntegrationList[i];
-        // console.log('count');
-        const array = await this.getIndividualIntegrationActiveSprintTask(
-          user,
-          reqBody,
-          userIntegration,
-        );
-        taskList.push(...array);
-      }
-      // console.log(taskList);
-      return taskList;
-    } catch (err) {
-      console.log(
-        '🚀 ~ file: sprints.service.ts:306 ~ SprintsService ~ getActiveSprintTasks ~ err:',
-        err,
-      );
-    }
-  }
-
-  async getIndividualIntegrationActiveSprintTask(
-    user: User,
-    reqBody: GetSprintListQueryDto,
-    userIntegration: UserIntegration,
-  ) {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace) {
+    if (!userWorkspace || !user.activeWorkspaceId)
       throw new APIException(
-        'User workspace not found',
+        'User Workspace not found',
         HttpStatus.BAD_REQUEST,
       );
-    }
+
+    const projectIds: number[] = await this.getProjectIds(user);
     try {
       const { priority, status, text } = reqBody;
       const priority1: any = (priority as unknown as string)?.split(',');
@@ -338,22 +304,19 @@ export class SprintsService {
 
       const sprints = await this.prisma.sprint.findMany({
         where: {
-          userWorkspaceId: userWorkspace.id,
+          projectId: { in: projectIds },
           state: { in: array },
         },
       });
 
       const sprintIds = sprints.map((sprint) => sprint.id);
       // console.log(sprintIds);
-      const taskIds = await this.getSprintTasksIds(
-        userWorkspace?.id,
-        sprintIds,
-      );
+      const taskIds = await this.getSprintTasksIds(sprintIds);
       // console.log(taskIds);
 
       const taskList = await this.prisma.task.findMany({
         where: {
-          assigneeId: userIntegration.jiraAccountId,
+          userWorkspaceId: userWorkspace.id,
           source: IntegrationType.JIRA,
           id: { in: taskIds },
           ...(priority1 && { priority: { in: priority1 } }),
@@ -376,11 +339,10 @@ export class SprintsService {
       return [];
     }
   }
-  async getSprintTasksIds(userWorkspaceId: number, sprintIds: number[]) {
+  async getSprintTasksIds(sprintIds: number[]) {
     try {
       const getSprintTasks = await this.prisma.sprintTask.findMany({
         where: {
-          userWorkspaceId: userWorkspaceId,
           sprintId: { in: sprintIds.map((id) => Number(id)) },
         },
       });
@@ -393,5 +355,41 @@ export class SprintsService {
     } catch (error) {
       return [];
     }
+  }
+
+  async getProjectIds(user: User): Promise<number[]> {
+    const getUserIntegrationList =
+      await this.integrationsService.getUserIntegrations(user);
+    const integrationIds: any[] = [];
+    const projectIds: any[] = [];
+    for (let i = 0, len = getUserIntegrationList.length; i < len; i++) {
+      integrationIds.push(getUserIntegrationList[i].integrationId);
+    }
+
+    console.log(
+      '🚀 ~ file: sprints.service.ts:364 ~ getProjectIds ~ integrationIds:',
+      integrationIds,
+    );
+    const projectList = await this.prisma.project.findMany({
+      where: {
+        workspaceId: user.activeWorkspaceId,
+        integrationId: { in: integrationIds },
+      },
+    });
+    console.log(
+      '🚀 ~ file: sprints.service.ts:379 ~ getProjectIds ~ projectList:',
+      projectList,
+    );
+
+    for (let i = 0, len = projectList.length; i < len; i++) {
+      projectIds.push(projectList[i].id);
+    }
+
+    console.log(
+      '🚀 ~ file: sprints.service.ts:378 ~ getProjectIds ~ projectIds:',
+      projectIds,
+    );
+
+    return projectIds;
   }
 }

@@ -42,6 +42,15 @@ export class TasksController {
     return this.tasksService.getTasks(user, query);
   }
 
+  @Get('workspace-tasks')
+  @UseGuards(JwtAuthGuard)
+  async getWorkspaceTasks(
+    @GetUser() user: User,
+    @Query() query: GetTaskQuery,
+  ): Promise<Task[]> {
+    return this.tasksService.getWorkspaceTasks(user, query);
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
   async createTask(
