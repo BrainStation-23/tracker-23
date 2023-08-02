@@ -6,7 +6,6 @@ import { IntegrationsService } from 'src/integrations/integrations.service';
 import { APIException } from 'src/internal/exception/api.exception';
 import { MyGateway } from 'src/notifications/socketGateway';
 import { PrismaService } from 'src/prisma/prisma.service';
-
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import {
@@ -17,8 +16,6 @@ import {
   StatusDetail,
   Task,
   User,
-  UserIntegration,
-  UserWorkspace,
 } from '@prisma/client';
 
 import {
@@ -46,11 +43,16 @@ export class TasksService {
     try {
       const { priority, status, text } = query;
       const sprintIds = query.sprintId as unknown as string;
+      const projectIds = query.projectId as unknown as string;
+
       // console.log(sprintIds);
       let { startDate, endDate } = query as unknown as GetTaskQuery;
 
       const sprintIdArray =
         sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
+
+      const projectIdArray =
+        projectIds && projectIds.split(',').map((item) => Number(item.trim()));
 
       const userWorkspace =
         user.activeWorkspaceId &&
@@ -75,6 +77,19 @@ export class TasksService {
       }
       let tasks: Task[] = [];
 
+      console.log({
+        userWorkspaceId: userWorkspace.id,
+        source: IntegrationType.JIRA,
+        ...(projectIdArray && { projectId: { in: projectIdArray } }),
+        ...(priority1 && { priority: { in: priority1 } }),
+        ...(status1 && { status: { in: status1 } }),
+        ...(text && {
+          title: {
+            contains: text,
+            mode: 'insensitive',
+          },
+        }),
+      });
       if (sprintIdArray && sprintIdArray.length) {
         // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
         const taskIds = await this.sprintService.getSprintTasksIds(
@@ -86,6 +101,7 @@ export class TasksService {
             userWorkspaceId: userWorkspace.id,
             source: IntegrationType.JIRA,
             id: { in: taskIds },
+            ...(projectIdArray && { projectId: { in: projectIdArray } }),
             ...(priority1 && { priority: { in: priority1 } }),
             ...(status1 && { status: { in: status1 } }),
             ...(text && {
@@ -102,6 +118,7 @@ export class TasksService {
       } else {
         const databaseQuery = {
           userWorkspaceId: userWorkspace.id,
+          ...(projectIdArray && { projectId: { in: projectIdArray } }),
           // OR: [
           //   {
           //     userWorkspaceId: userWorkspace.id,
@@ -2164,237 +2181,12 @@ export class TasksService {
     }
   }
 
-  // async createSprintAndTask(
-  //   user: User,
-  //   projectId: number,
-  //   userIntegrationId: number,
-  // ) {
-  //   const sprint_list: any[] = [];
-  //   const issue_list: any[] = [];
-  //   const validSprint: any[] = [];
-  //   const toBeUpdated: any[] = [];
-  //   const sprintPromises: Promise<any>[] = [];
-  //   const issuePromises: Promise<any>[] = [];
-
-  //   const project = await this.prisma.project.findUnique({
-  //     where: {
-  //       id: projectId,
-  //     },
-  //   });
-
-  //   const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-  //   if (!userWorkspace) {
-  //     throw new APIException(
-  //       'User workspace not found',
-  //       HttpStatus.BAD_REQUEST,
-  //     );
-  //   }
-  //   const updated_userIntegration =
-  //     await this.integrationsService.getUpdatedUserIntegration(
-  //       user,
-  //       userIntegrationId,
-  //     );
-  //   if (!updated_userIntegration) {
-  //     console.log(
-  //       '🚀 ~ file: sprints.service.ts:31 ~ SprintsService ~ createSprintAndTask ~ updated_userIntegration:',
-  //       updated_userIntegration,
-  //     );
-  //     return [];
-  //   }
-  //   // console.log(formateReqBody);
-  //   const boardUrl = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/agile/1.0/board`;
-  //   const config = {
-  //     method: 'get',
-  //     boardUrl,
-  //     headers: {
-  //       Authorization: `Bearer ${updated_userIntegration?.accessToken}`,
-  //       'Content-Type': 'application/json',
-  //     },
-  //   };
-  //   const boardList = await (await axios(config)).data;
-
-  //   const mappedBoardId = new Map<number, number>();
-  //   for (let index = 0; index < boardList.total; index++) {
-  //     const board = boardList.values[index];
-  //     mappedBoardId.set(Number(board.location.projectId), Number(board.id));
-  //   }
-
-  //   const task_list = await this.prisma.task.findMany({
-  //     where: {
-  //       userWorkspaceId: userWorkspace.id,
-  //       source: IntegrationType.JIRA,
-  //     },
-  //   });
-  //   const boardId = project && mappedBoardId.get(project.projectId);
-  //   if (!boardId) {
-  //     return [];
-  //   }
-  //   const sprintUrl = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/agile/1.0/board/${boardId}/sprint`;
-  //   const sprintConfig = {
-  //     method: 'get',
-  //     sprintUrl,
-  //     headers: {
-  //       Authorization: `Bearer ${updated_userIntegration?.accessToken}`,
-  //       'Content-Type': 'application/json',
-  //     },
-  //   };
-  //   const res = axios(sprintConfig);
-  //   sprintPromises.push(res);
-  //   // }
-
-  //   const sprintResponses = await Promise.all(
-  //     sprintPromises.map((p) =>
-  //       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  //       p.catch((err) => {
-  //         console.error(
-  //           '🚀 ~ file: tasks.service.ts:1544 ~ TasksService ~ createSprintAndTask ~ err:',
-  //           err.config.url,
-  //           err.message,
-  //           'This board has no sprint!',
-  //         );
-  //       }),
-  //     ),
-  //   );
-  //   sprintResponses.map((res) => {
-  //     res &&
-  //       res.data &&
-  //       res.data.values.map((val: any) => {
-  //         if (val) {
-  //           // console.log(val);
-  //           validSprint.push(val);
-  //           if (val.startDate && val.endDate && val.completeDate) {
-  //             sprint_list.push({
-  //               jiraSprintId: Number(val.id),
-  //               userWorkspaceId: userWorkspace.id,
-  //               projectId: project.id,
-  //               state: val.state,
-  //               name: val.name,
-  //               startDate: new Date(val.startDate),
-  //               endDate: new Date(val.startDate),
-  //               completeDate: new Date(val.startDate),
-  //             });
-  //           } else {
-  //             toBeUpdated.push(val.id);
-  //             sprint_list.push({
-  //               jiraSprintId: Number(val.id),
-  //               userWorkspaceId: userWorkspace.id,
-  //               projectId: project.id,
-  //               state: val.state,
-  //               name: val.name,
-  //             });
-  //           }
-
-  //           const sprintIssueUrl = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/agile/1.0/sprint/${val.id}/issue`;
-  //           const sprintIssueConfig = {
-  //             method: 'get',
-  //             sprintIssueUrl,
-  //             headers: {
-  //               Authorization: `Bearer ${updated_userIntegration?.accessToken}`,
-  //               'Content-Type': 'application/json',
-  //             },
-  //           };
-  //           const res = axios(sprintIssueConfig);
-  //           issuePromises.push(res);
-  //         }
-  //       });
-  //   });
-  //   //Get all task related to the sprint
-  //   const resolvedPromiseSprintTask = await Promise.all(issuePromises);
-
-  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  //   const [delSprint, crtSprint, sprints] = await Promise.all([
-  //     await this.prisma.sprint.deleteMany({
-  //       where: {
-  //         userWorkspaceId: userWorkspace.id,
-  //         projectId: project.id,
-  //       },
-  //     }),
-  //     await this.prisma.sprint.createMany({
-  //       data: sprint_list,
-  //     }),
-  //     await this.prisma.sprint.findMany({
-  //       where: {
-  //         userWorkspaceId: userWorkspace.id,
-  //         projectId: project.id,
-  //       },
-  //     }),
-  //   ]);
-
-  //   //relation between sprintId and jiraSprintId
-  //   const mappedSprintId = new Map<number, number>();
-  //   for (let index = 0; index < sprints.length; index++) {
-  //     mappedSprintId.set(
-  //       Number(sprints[index].jiraSprintId),
-  //       sprints[index].id,
-  //     );
-  //   }
-
-  //   //relation between taskId and integratedTaskId
-  //   const mappedTaskId = new Map<number, number>();
-  //   for (let index = 0; index < task_list.length; index++) {
-  //     mappedTaskId.set(
-  //       Number(task_list[index].integratedTaskId),
-  //       task_list[index].id,
-  //     );
-  //   }
-
-  //   resolvedPromiseSprintTask.map((res: any) => {
-  //     const urlArray = res.config.url.split('/');
-  //     const jiraSprintId = urlArray[urlArray.length - 2];
-  //     const sprintId = mappedSprintId.get(Number(jiraSprintId));
-
-  //     res.data.issues.map((issue: any) => {
-  //       const taskId = mappedTaskId.get(Number(issue.id));
-
-  //       issue_list.push({
-  //         sprintId: sprintId,
-  //         taskId: taskId,
-  //         userWorkspaceId: userWorkspace.id,
-  //       });
-  //     });
-  //   });
-
-  //   const sprintIds: number[] = Array.from(mappedSprintId.values());
-
-  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  //   const [DelSprintTask, CST, sprintTasks] = await Promise.all([
-  //     await this.prisma.sprintTask.deleteMany({
-  //       where: {
-  //         sprintId: { in: sprintIds },
-  //       },
-  //     }),
-  //     await this.prisma.sprintTask.createMany({
-  //       data: issue_list,
-  //     }),
-
-  //     await this.prisma.sprintTask.findMany({
-  //       where: {
-  //         // userWorkspaceId: userWorkspace.id,
-  //         sprintId: { in: sprintIds },
-  //       },
-  //     }),
-  //   ]);
-
-  //   return { total: sprintTasks.length, sprintTasks };
-  // }
-
   async getProjectList(user: User) {
     return await this.prisma.project.findMany({
       where: {
         workspaceId: user.activeWorkspaceId,
       },
     });
-    // const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    // if (!userWorkspace) {
-    //   throw new APIException('userWorkspace not found', HttpStatus.BAD_REQUEST);
-    // }
-    // const userIntegrationIds = (
-    //   await this.prisma.userIntegration.findMany({
-    //     where: { userWorkspaceId: userWorkspace.id },
-    //   })
-    // )?.map((userIntegration: UserIntegration) => userIntegration.id);
-
-    // });
   }
 
   async getIntegrationProjectList(user: User, integrationId: number) {

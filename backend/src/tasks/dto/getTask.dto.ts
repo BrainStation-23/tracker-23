@@ -34,6 +34,10 @@ export class GetTaskQuery {
   @IsString()
   @IsOptional()
   sprintId: string[];
+
+  @IsString()
+  @IsOptional()
+  projectId: string[];
 }
 
 export class ProjectTaskDeto {
