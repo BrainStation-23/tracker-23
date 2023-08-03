@@ -10,21 +10,17 @@ import { GetTaskQuery } from 'src/tasks/dto';
 import * as tmp from 'tmp';
 import { Workbook } from 'exceljs';
 import { Response } from 'express';
-import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { APIException } from 'src/internal/exception/api.exception';
-import { IntegrationsService } from 'src/integrations/integrations.service';
+import { SprintsService } from 'src/sprints/sprints.service';
 @Injectable()
 export class ExportService {
   constructor(
     private prisma: PrismaService,
-    private workspacesService: WorkspacesService,
-    private integrationsService: IntegrationsService,
+    private sprintService: SprintsService,
   ) {}
   async exportToExcel(
     user: User,
     query: GetTaskQuery,
-    // sheetName: string,
-    // fileName: string,
     res: Response,
   ): Promise<any> {
     const data: Task[] = await this.getTasks(user, query);
@@ -119,112 +115,172 @@ export class ExportService {
   }
 
   async getTasks(user: User, query: GetTaskQuery): Promise<any[]> {
-    const getUserIntegrationList =
-      await this.integrationsService.getUserIntegrations(user);
-    return getUserIntegrationList.map(async (userIntegration) => {
-      await this.getTaskList(user, query, userIntegration);
-    });
-  }
-
-  async getTaskList(
-    user: User,
-    query: GetTaskQuery,
-    userIntegration: UserIntegration,
-  ) {
-    try {
-      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-      if (!userWorkspace) {
-        throw new APIException(
-          'User workspace not found',
-          HttpStatus.BAD_REQUEST,
+    {
+      try {
+        console.log(
+          '🚀 ~ file: export.service.ts:118 ~ ExportService ~ getTasks ~ query:',
+          query.status,
         );
-      }
-      const updated_userIntegration =
-        await this.integrationsService.getUpdatedUserIntegration(
-          user,
-          userIntegration.id,
-        );
-      if (!updated_userIntegration) {
-        throw new APIException(
-          'User integration not found!',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      const { priority, status, text } = query;
-      let { startDate, endDate } = query as unknown as GetTaskQuery;
 
-      const priority1: any = (priority as unknown as string)?.split(',');
-      const status1: any = (status as unknown as string)?.split(',');
+        const { priority, status, text } = query;
+        const sprintIds = query.sprintId as unknown as string;
+        const projectIds = query.projectIds as unknown as string;
 
-      startDate = startDate && new Date(startDate);
-      endDate = endDate && new Date(endDate);
-      if (endDate) {
-        const oneDay = 3600 * 24 * 1000;
-        endDate = new Date(endDate.getTime() + oneDay);
-      }
+        let { startDate, endDate } = query as unknown as GetTaskQuery;
+        const sprintIdArray =
+          sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
+        const projectIdArray =
+          projectIds &&
+          projectIds.split(',').map((item) => Number(item.trim()));
+        const userWorkspace =
+          user.activeWorkspaceId &&
+          (await this.prisma.userWorkspace.findFirst({
+            where: {
+              userId: user.id,
+              workspaceId: user.activeWorkspaceId,
+            },
+          }));
+        if (!userWorkspace) {
+          return [];
+        }
 
-      const databaseQuery = {
-        userWorkspaceId: userWorkspace.id,
-        OR: [
-          {
-            assigneeId: updated_userIntegration.jiraAccountId,
+        const priority1: any = (priority as unknown as string)?.split(',');
+        const status1: any = (status as unknown as string)?.split(',');
+        startDate = startDate && new Date(startDate);
+        endDate = endDate && new Date(endDate);
+        if (endDate) {
+          const oneDay = 3600 * 24 * 1000;
+          endDate = new Date(endDate.getTime() + oneDay);
+        }
+        let tasks: any[] = [];
+
+        if (sprintIdArray && sprintIdArray.length) {
+          // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
+          const taskIds = await this.sprintService.getSprintTasksIds(
+            sprintIdArray,
+          );
+
+          console.log({
+            userWorkspaceId: userWorkspace.id,
             source: IntegrationType.JIRA,
-          },
-          {
-            source: IntegrationType.TRACKER23,
-          },
-        ],
-        ...(startDate &&
-          endDate && {
-            createdAt: { lte: endDate },
-            updatedAt: { gte: startDate },
-          }),
-        ...(priority1 && { priority: { in: priority1 } }),
-        ...(status1 && { status: { in: status1 } }),
-        ...(text && {
-          title: {
-            contains: text,
-            mode: 'insensitive',
-          },
-        }),
-      };
+            id: { in: taskIds },
+            ...(projectIdArray && {
+              projectId: { in: projectIdArray.map((id) => Number(id)) },
+            }),
+            ...(priority1 && { priority: { in: priority1 } }),
+            ...(status1 && { status: { in: status1 } }),
+            ...(text && {
+              title: {
+                contains: text,
+                mode: 'insensitive',
+              },
+            }),
+          });
 
-      const tasks = await this.prisma.task.findMany({
-        where: databaseQuery,
-        select: {
-          title: true,
-          description: true,
-          assigneeId: true,
-          projectName: true,
-          estimation: true,
-          status: true,
-          due: true,
-          priority: true,
-          labels: true,
-          createdAt: true,
-          updatedAt: true,
-          userWorkspaceId: true,
-          source: true,
-          sessions: {
+          return await this.prisma.task.findMany({
+            where: {
+              userWorkspaceId: userWorkspace.id,
+              source: IntegrationType.JIRA,
+              id: { in: taskIds },
+              ...(projectIdArray && {
+                projectId: { in: projectIdArray.map((id) => Number(id)) },
+              }),
+              ...(priority1 && { priority: { in: priority1 } }),
+              ...(status1 && { status: { in: status1 } }),
+              ...(text && {
+                title: {
+                  contains: text,
+                  mode: 'insensitive',
+                },
+              }),
+            },
             select: {
-              startTime: true,
-              endTime: true,
+              title: true,
+              description: true,
+              assigneeId: true,
+              projectName: true,
+              estimation: true,
               status: true,
+              due: true,
+              priority: true,
+              labels: true,
               createdAt: true,
               updatedAt: true,
-              authorId: true,
-              worklogId: true,
+              userWorkspaceId: true,
+              source: true,
+              sessions: {
+                select: {
+                  startTime: true,
+                  endTime: true,
+                  status: true,
+                  createdAt: true,
+                  updatedAt: true,
+                  authorId: true,
+                  worklogId: true,
+                },
+              },
             },
-          },
-        },
-      });
-      return tasks;
-    } catch (err) {
-      console.log(err.message);
-      throw new APIException(
-        'Can not export file!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+          });
+        } else {
+          const databaseQuery = {
+            userWorkspaceId: userWorkspace.id,
+            ...(projectIdArray && {
+              projectId: { in: projectIdArray.map((id) => Number(id)) },
+            }),
+            ...(startDate &&
+              endDate && {
+                createdAt: { lte: endDate },
+                updatedAt: { gte: startDate },
+              }),
+            ...(priority1 && { priority: { in: priority1 } }),
+            ...(status1 && { status: { in: status1 } }),
+            ...(text && {
+              title: {
+                contains: text,
+                mode: 'insensitive',
+              },
+            }),
+          };
+          console.log(databaseQuery);
+
+          tasks = await this.prisma.task.findMany({
+            where: databaseQuery,
+            select: {
+              title: true,
+              description: true,
+              assigneeId: true,
+              projectName: true,
+              estimation: true,
+              status: true,
+              due: true,
+              priority: true,
+              labels: true,
+              createdAt: true,
+              updatedAt: true,
+              userWorkspaceId: true,
+              source: true,
+              sessions: {
+                select: {
+                  startTime: true,
+                  endTime: true,
+                  status: true,
+                  createdAt: true,
+                  updatedAt: true,
+                  authorId: true,
+                  worklogId: true,
+                },
+              },
+            },
+          });
+        }
+        return tasks;
+      } catch (err) {
+        console.log(err.message);
+        throw new APIException(
+          'Can not export file!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 }
