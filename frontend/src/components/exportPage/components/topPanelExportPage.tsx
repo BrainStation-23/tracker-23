@@ -12,6 +12,7 @@ import SprintSelectorComponent from "@/components/tasks/components/topPanel/comp
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { debounce } from "lodash";
+import ProjectSelectorComponent from "@/components/tasks/components/topPanel/components/projectSelector";
 
 type Props = {
   tasks: TaskDto[];
@@ -29,6 +30,7 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
   const [status, setStatus] = useState([]);
   const [priority, setPriority] = useState([]);
   const [sprints, setSprints] = useState([]);
+  const [projectIds, setProjectIds] = useState<number[]>();
   const [active, setActive] = useState("");
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -47,9 +49,16 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
         priority: priority,
         status: status,
         sprints: sprints,
+        projectIds: projectIds,
       });
+      console.log(
+        "🚀 ~ file: topPanelExportPage.tsx:54 ~ excelExport ~ res:",
+        res
+      );
       if (!res) {
-        message.error("Export Failed");
+        message.error(
+          res?.error?.message ? res?.error?.message : "Export Failed"
+        );
       } else {
         const blob = new Blob([res], {
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -82,6 +91,10 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
       {...{ priority, setPriority }}
     />,
     <StatusSelectorComponent key={Math.random()} {...{ status, setStatus }} />,
+    <ProjectSelectorComponent
+      key={Math.random()}
+      {...{ projectIds, setProjectIds }}
+    />,
     // {
     //   icon: <ClockIconSvg />,
     //   title: "Estimation",
@@ -102,9 +115,10 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
       priority: priority,
       status: status,
       sprints: sprints,
+      projectIds: projectIds,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchText, selectedDate, priority, status, sprints]);
+  }, [searchText, selectedDate, priority, status, sprints, projectIds]);
   const items: MenuProps["items"] = filterOptions.map((option, index) => {
     return {
       label: option,
