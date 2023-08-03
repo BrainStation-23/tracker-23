@@ -21,7 +21,6 @@ export class SprintsService {
     projectId: number,
     userIntegrationId: number,
   ) {
-    console.log(user, projectId, userIntegrationId);
     const sprint_list: any[] = [];
     const issue_list: any[] = [];
     const validSprint: any[] = [];
@@ -41,7 +40,7 @@ export class SprintsService {
         '🚀 ~ file: sprints.service.ts:41 ~ SprintsService ~ userWorkspace:',
         userWorkspace,
       );
-      return [];
+      throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
     }
     const updated_userIntegration =
       await this.integrationsService.getUpdatedUserIntegration(
