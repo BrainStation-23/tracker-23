@@ -111,7 +111,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${searchParams.searchText}`
           : "") +
-        (projectIds?.length > 0 && `&projectIds=${projectIds}`) +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (status && status.length > 0 ? `&status=${status}` : "")
     );
