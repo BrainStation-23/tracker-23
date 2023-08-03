@@ -43,17 +43,12 @@ export class TasksService {
     try {
       const { priority, status, text } = query;
       const sprintIds = query.sprintId as unknown as string;
-      const projectIds = query.projectId as unknown as string;
-
-      // console.log(sprintIds);
+      const projectIds = query.projectIds as unknown as string;
       let { startDate, endDate } = query as unknown as GetTaskQuery;
-
       const sprintIdArray =
         sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
-
       const projectIdArray =
         projectIds && projectIds.split(',').map((item) => Number(item.trim()));
-
       const userWorkspace =
         user.activeWorkspaceId &&
         (await this.prisma.userWorkspace.findFirst({
@@ -68,7 +63,6 @@ export class TasksService {
 
       const priority1: any = (priority as unknown as string)?.split(',');
       const status1: any = (status as unknown as string)?.split(',');
-
       startDate = startDate && new Date(startDate);
       endDate = endDate && new Date(endDate);
       if (endDate) {
@@ -77,19 +71,6 @@ export class TasksService {
       }
       let tasks: Task[] = [];
 
-      console.log({
-        userWorkspaceId: userWorkspace.id,
-        source: IntegrationType.JIRA,
-        ...(projectIdArray && { projectId: { in: projectIdArray } }),
-        ...(priority1 && { priority: { in: priority1 } }),
-        ...(status1 && { status: { in: status1 } }),
-        ...(text && {
-          title: {
-            contains: text,
-            mode: 'insensitive',
-          },
-        }),
-      });
       if (sprintIdArray && sprintIdArray.length) {
         // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
         const taskIds = await this.sprintService.getSprintTasksIds(
@@ -101,7 +82,9 @@ export class TasksService {
             userWorkspaceId: userWorkspace.id,
             source: IntegrationType.JIRA,
             id: { in: taskIds },
-            ...(projectIdArray && { projectId: { in: projectIdArray } }),
+            ...(projectIdArray && {
+              projectId: { in: projectIdArray.map((id) => Number(id)) },
+            }),
             ...(priority1 && { priority: { in: priority1 } }),
             ...(status1 && { status: { in: status1 } }),
             ...(text && {
@@ -118,17 +101,9 @@ export class TasksService {
       } else {
         const databaseQuery = {
           userWorkspaceId: userWorkspace.id,
-          ...(projectIdArray && { projectId: { in: projectIdArray } }),
-          // OR: [
-          //   {
-          //     userWorkspaceId: userWorkspace.id,
-          //     source: IntegrationType.JIRA,
-          //   },
-          //   {
-          //     userWorkspaceId: userWorkspace.id,
-          //     source: IntegrationType.TRACKER23,
-          //   },
-          // ],
+          ...(projectIdArray && {
+            projectId: { in: projectIdArray.map((id) => Number(id)) },
+          }),
           ...(startDate &&
             endDate && {
               createdAt: { lte: endDate },
@@ -153,7 +128,6 @@ export class TasksService {
       }
       return tasks;
     } catch (err) {
-      // console.log(err.message);
       return [];
     }
   }
