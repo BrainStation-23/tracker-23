@@ -3,18 +3,11 @@ import { IntegrationsService } from 'src/integrations/integrations.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { HttpStatus, Injectable } from '@nestjs/common';
-import {
-  IntegrationType,
-  Project,
-  User,
-  UserIntegration,
-} from '@prisma/client';
+import { IntegrationType, User } from '@prisma/client';
 
 import { GetSprintListQueryDto } from './dto';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { APIException } from 'src/internal/exception/api.exception';
-import { count } from 'console';
-
 @Injectable()
 export class SprintsService {
   constructor(
@@ -372,6 +365,7 @@ export class SprintsService {
     );
     const projectList = await this.prisma.project.findMany({
       where: {
+        integrated: true,
         workspaceId: user.activeWorkspaceId,
         integrationId: { in: integrationIds },
       },
