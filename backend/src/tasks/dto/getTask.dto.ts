@@ -37,7 +37,7 @@ export class GetTaskQuery {
 
   @IsString()
   @IsOptional()
-  projectId: string[];
+  projectIds: string[];
 }
 
 export class ProjectTaskDeto {
