@@ -176,10 +176,4 @@ export class TasksController {
   async getProjectList(@GetUser() user: User) {
     return this.tasksService.getProjectList(user);
   }
-
-  @Get('set-statuses/:projectId')
-  @UseGuards(JwtAuthGuard)
-  async setProjectStatuses(@GetUser() user: User, @Param() param: any) {
-    return this.tasksService.setProjectStatuses(user, Number(param.projectId));
-  }
 }

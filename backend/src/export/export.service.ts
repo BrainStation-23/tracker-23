@@ -28,7 +28,7 @@ export class ExportService {
     res: Response,
   ): Promise<any> {
     const data: Task[] = await this.getTasks(user, query);
-    if (!(data.length > 0) || !data) {
+    if (!(data?.length > 0)) {
       throw new NotFoundException('No data to download');
     }
 
@@ -139,13 +139,16 @@ export class ExportService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      const updated_integration =
+      const updated_userIntegration =
         await this.integrationsService.getUpdatedUserIntegration(
           user,
           userIntegration.id,
         );
-      if (!updated_integration) {
-        return null;
+      if (!updated_userIntegration) {
+        throw new APIException(
+          'User integration not found!',
+          HttpStatus.BAD_REQUEST,
+        );
       }
       const { priority, status, text } = query;
       let { startDate, endDate } = query as unknown as GetTaskQuery;
@@ -164,7 +167,7 @@ export class ExportService {
         userWorkspaceId: userWorkspace.id,
         OR: [
           {
-            assigneeId: updated_integration?.jiraAccountId,
+            assigneeId: updated_userIntegration.jiraAccountId,
             source: IntegrationType.JIRA,
           },
           {
@@ -218,7 +221,10 @@ export class ExportService {
       return tasks;
     } catch (err) {
       console.log(err.message);
-      return [];
+      throw new APIException(
+        'Can not export file!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

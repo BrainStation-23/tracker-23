@@ -7,9 +7,7 @@ import { WorkspaceReqBody } from './dto';
 
 @Injectable()
 export class WorkspacesService {
-  constructor(
-    private prisma: PrismaService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async createWorkspace(userId: number, name: string) {
     const workspace = await this.prisma.workspace.create({
@@ -103,14 +101,18 @@ export class WorkspacesService {
   }
 
   async getUserWorkspace(user: User) {
-    return (
-      user.activeWorkspaceId &&
-      (await this.prisma.userWorkspace.findFirst({
-        where: {
-          userId: user.id,
-          workspaceId: user.activeWorkspaceId,
-        },
-      }))
-    );
+    try {
+      return (
+        user.activeWorkspaceId &&
+        (await this.prisma.userWorkspace.findFirst({
+          where: {
+            userId: user.id,
+            workspaceId: user.activeWorkspaceId,
+          },
+        }))
+      );
+    } catch (err) {
+      return null;
+    }
   }
 }
