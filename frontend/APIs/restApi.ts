@@ -132,6 +132,7 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
   const status = getStringFromArray(searchParams?.status);
   const sprints = searchParams?.sprints;
   const priority = getStringFromArray(searchParams?.priority);
+  const projectIds = searchParams?.projectIds;
   try {
     const res = await axios.get(
       apiEndPoints.export +
@@ -144,6 +145,7 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${searchParams.searchText}`
           : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (status && status.length > 0 ? `&status=${status}` : ""),
       {
