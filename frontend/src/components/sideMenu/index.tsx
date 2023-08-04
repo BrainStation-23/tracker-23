@@ -18,7 +18,7 @@ const SideMenu = () => {
         }`}
         onClick={() => {
           option.link === "suggestion"
-            ? window.open("https://tracker23.nolt.io/")
+            ? window.open("https://tracker23.canny.io/feature-request")
             : router.push(option.link);
         }}
       >
