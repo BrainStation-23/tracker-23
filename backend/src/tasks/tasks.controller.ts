@@ -85,6 +85,11 @@ export class TasksController {
     // From PARAMS get filters so that we can bring tasks that are reasonable, for now we only bring todo and inprogress and assigned to the user.
     return await this.tasksService.syncTasks(user, Number(id), res);
   }
+  @Get('syncAll')
+  @UseGuards(JwtAuthGuard)
+  async syncAllAndUpdateTasks(@GetUser() user: User) {
+    return await this.tasksService.syncAll(user);
+  }
 
   @Get('sync/status')
   @UseGuards(JwtAuthGuard)

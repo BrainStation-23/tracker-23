@@ -169,7 +169,7 @@ export async function syncStatusRest() {
 
 export async function syncTasksRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.syncTasks}`);
+    const res = await axios.get(`${apiEndPoints.synAllTasks}`);
     return res.data;
   } catch (error: any) {
     return false;

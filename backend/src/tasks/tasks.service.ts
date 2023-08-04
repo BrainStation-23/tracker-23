@@ -728,7 +728,7 @@ export class TasksService {
       return [];
     }
 
-    await this.syncCall(StatusEnum.IN_PROGRESS, user);
+    res && (await this.syncCall(StatusEnum.IN_PROGRESS, user));
 
     this.setProjectStatuses(project, updatedUserIntegration);
 
@@ -746,7 +746,7 @@ export class TasksService {
         updatedUserIntegration.id,
       );
       await this.updateProjectIntegrationStatus(projId);
-      await this.syncCall(StatusEnum.DONE, user);
+      res && (await this.syncCall(StatusEnum.DONE, user));
       await this.sendImportedNotification(user, res);
     } catch (error) {
       await this.handleImportFailure(user);
@@ -1052,6 +1052,7 @@ export class TasksService {
       throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
     }
     const projectId = project?.projectId;
+    const projectName = project?.projectName;
     console.log(
       '🚀 ~ file: tasks.service.ts:271 ~ TasksService ~ projectTasks ~ projectId:',
       projectId,
@@ -1063,8 +1064,8 @@ export class TasksService {
           data: {
             seen: false,
             author: 'SYSTEM',
-            title: 'Importing Project',
-            description: 'Importing Project',
+            title: 'Syncing Project ' + projectName,
+            description: 'Syncing Project ' + projectName,
             userId: user.id,
             workspaceId: user.activeWorkspaceId,
           },
@@ -1092,8 +1093,8 @@ export class TasksService {
             data: {
               seen: false,
               author: 'SYSTEM',
-              title: 'Project Import Failed',
-              description: 'Project Import Failed',
+              title: 'Syncing Project ' + projectName + ' Failed',
+              description: 'Syncing Project ' + projectName + ' Failed',
               userId: user.id,
               workspaceId: user.activeWorkspaceId,
             },
@@ -1360,7 +1361,7 @@ export class TasksService {
           console.log('Error creating sessions');
         }
       }
-      const done = await this.syncCall(StatusEnum.DONE, user);
+      res && (await this.syncCall(StatusEnum.DONE, user));
       // if (done) {
       //   await this.createSprintAndTask(user, updated_userIntegration.id);
       // }
@@ -1386,19 +1387,21 @@ export class TasksService {
             data: {
               seen: false,
               author: 'SYSTEM',
-              title: 'Importing Project',
-              description: 'Importing Project',
+              title: 'Project ' + projectName + ' Synced',
+              description: 'Project ' + projectName + ' Synced',
               userId: user.id,
               workspaceId: user.activeWorkspaceId,
             },
           }));
         this.myGateway.sendNotification(`${user.id}`, notification);
         res?.json({ message: 'Project Imported' });
+        if (!res) return true;
       } catch (error) {
         console.log(
           '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
           error.message,
         );
+        if (!res) return false;
       }
     } catch (err) {
       try {
@@ -1423,6 +1426,55 @@ export class TasksService {
       }
       console.log(err);
       throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async syncAll(user: User) {
+    // async syncTasks(user: User, id: number, res?: Response)
+    await this.syncCall(StatusEnum.IN_PROGRESS, user);
+    const projectIds = await this.sprintService.getProjectIds(user);
+    let syncedProjects = 0;
+    try {
+      for (const projectId of projectIds) {
+        const synced = await this.syncTasks(user, projectId);
+        console.log(
+          '🚀 ~ file: tasks.service.ts:1436 ~ TasksService ~ syncAll ~ synced:',
+          synced,
+        );
+        if (synced) syncedProjects++;
+      }
+      try {
+        const notification =
+          user.activeWorkspaceId &&
+          (await this.prisma.notification.create({
+            data: {
+              seen: false,
+              author: 'SYSTEM',
+              title: 'Synced all projects',
+              description: 'Synced all projects',
+              userId: user.id,
+              workspaceId: user.activeWorkspaceId,
+            },
+          }));
+        this.myGateway.sendNotification(`${user.id}`, notification);
+      } catch (error) {
+        console.log(
+          '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
+          error.message,
+        );
+      }
+      await this.syncCall(StatusEnum.DONE, user);
+      return { message: syncedProjects + ' Projects Imported' };
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: tasks.service.ts:1437 ~ TasksService ~ syncAll ~ error:',
+        error,
+      );
+      throw new APIException(
+        'Can not sync All projects : ' +
+          `${syncedProjects} synced out of ${projectIds?.length} projects`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
