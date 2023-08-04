@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
@@ -92,7 +92,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new NotFoundException('Email is not registered. Please sign up to continue.');
     }
     let isPasswordMatched;
     if (user.hash) {
@@ -165,7 +165,7 @@ export class AuthService {
         }
         return await this.getFormattedUserData(oldUser);
       }
-      
+
       const user = await this.prisma.user.create({
         data: queryData,
         select: {
