@@ -129,7 +129,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
 }
 
 export async function exportTasksRest(searchParams: SearchParamsModel) {
-  const status = getStringFromArray(searchParams?.status);
+  const status = getStringFromArray(getLabels(searchParams?.status));
   const sprints = searchParams?.sprints;
   const priority = getStringFromArray(searchParams?.priority);
   const projectIds = searchParams?.projectIds;

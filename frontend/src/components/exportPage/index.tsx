@@ -23,6 +23,7 @@ import { getDateRangeArray } from "../datePicker";
 import TopPanelExportPage from "./components/topPanelExportPage";
 
 import type { TableProps } from "antd/es/table";
+import { SearchParamsModel } from "models/apiParams";
 const { Search } = Input;
 interface DataType {
   key: string;
@@ -194,7 +195,7 @@ const ExportPageComponent = () => {
   const dispatch = useAppDispatch();
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchParams, setSearchParams] = useState({
+  const [searchParams, setSearchParams] = useState<SearchParamsModel>({
     searchText: null,
     selectedDate: getDateRangeArray("this-week"),
     priority: null,

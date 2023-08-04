@@ -99,10 +99,6 @@ const StatusSelectorComponent = ({ status, setStatus }: Props) => {
         mode="multiple"
         tagRender={(props) => tagRender(props)}
         value={status}
-        defaultValue={[
-          '{"name":"To Do","statusCategoryName":"TO_DO"}',
-          '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
-        ]}
         className="w-full"
         showArrow
         options={Options}
