@@ -80,6 +80,8 @@ export class ExportService {
         return 'Source';
       } else if (name === 'sessions') {
         return 'Sessions';
+      } else if (name === 'url'){
+        return 'URL'
       }
       return name;
     });
@@ -219,6 +221,7 @@ export class ExportService {
                   worklogId: true,
                 },
               },
+              url: true,
             },
           });
         } else {
@@ -270,6 +273,7 @@ export class ExportService {
                   worklogId: true,
                 },
               },
+              url: true,
             },
           });
         }
