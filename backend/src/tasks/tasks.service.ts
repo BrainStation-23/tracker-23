@@ -31,8 +31,6 @@ import {
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { SprintsService } from 'src/sprints/sprints.service';
 
-const task_url_prefix =
-  'https://pm23.atlassian.net/browse/';
 @Injectable()
 export class TasksService {
   constructor(
@@ -905,7 +903,8 @@ export class TasksService {
           jiraUpdatedAt: new Date(integratedTask.updated),
           // parentTaskId: integratedTask.parent.id,
           source: IntegrationType.JIRA,
-          url: task_url_prefix + integratedTask?.key,
+          //@ts-ignore
+          url: `${userIntegration?.integration?.site}/browse/${integratedTask?.key}`,
         });
       }
 
