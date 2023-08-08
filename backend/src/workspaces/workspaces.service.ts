@@ -10,7 +10,8 @@ export class WorkspacesService {
 
   async createWorkspace(
     userId: number,
-    { name, changeWorkspace }: WorkspaceReqBody,
+    name: string,
+    changeWorkspace: boolean = true,
   ) {
     const workspace = await this.prisma.workspace.create({
       data: {
