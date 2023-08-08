@@ -1,9 +1,8 @@
-import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserWorkspaceStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { WorkspaceReqBody } from './dto';
+import { APIException } from 'src/internal/exception/api.exception';
 
 @Injectable()
 export class WorkspacesService {
@@ -114,5 +113,33 @@ export class WorkspacesService {
     } catch (err) {
       return null;
     }
+  }
+
+  async changeActiveWorkspace(workspaceId: number, userId: number) {
+    const userWorkspaceExists = await this.prisma.userWorkspace.findFirst({
+      where: {
+        userId,
+        workspaceId,
+      },
+    });
+
+    if (!userWorkspaceExists) {
+      throw new APIException('Invalid workspace id', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      return await this.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          activeWorkspaceId: workspaceId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      throw new APIException('Can not change workspace', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
   }
 }
