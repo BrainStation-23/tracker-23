@@ -1,11 +1,14 @@
+import GlobalMOdal from "@/components/modals/globalModal";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { Avatar, Button, Dropdown, Menu, MenuProps } from "antd";
 import { WorkspaceDto } from "models/workspaces";
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import AddNewWorkspace from "./addnewWorkspace";
 
 const WorkspaceSelection = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   // const workspacesList = tmp;
   const workspacesList = useAppSelector(
     (state: RootState) => state.workspacesSlice.workspaces
@@ -38,10 +41,20 @@ const WorkspaceSelection = () => {
           </>
         ),
         label: <div className="ml-2">{workspace.name}</div>,
-        onClick: () => handleWorkspaceClick(workspace),
+        onClick: () => {
+          handleWorkspaceClick(workspace);
+        },
         // disabled: workspace.active,
       };
     });
+
+  items.push({
+    key: Math.random(),
+    icon: <Avatar size={"small"}>+</Avatar>,
+    label: <div className="ml-2">Add new</div>,
+    onClick: () => setIsModalOpen(true),
+    // disabled: workspace.active,
+  });
   console.log("🚀 ~ file: workspaceSection.tsx:30 ~  ~ items:", items);
 
   const dropdownRender = (menu: React.ReactNode) => (
@@ -50,30 +63,51 @@ const WorkspaceSelection = () => {
 
   return (
     <>
-      {workspacesList?.length > 1 ? (
-        <Dropdown
-          menu={{ items }}
-          trigger={["click"]}
-          placement="topRight"
-          arrow
-          dropdownRender={dropdownRender}
-        >
-          <Button className="h-max">
-            <div className="flex items-center gap-2 p-2">
-              <Avatar size={"small"}>{selectedWorkspace?.name[0]}</Avatar>
-              {selectedWorkspace?.name}
-            </div>
-          </Button>
-        </Dropdown>
-      ) : (
+      <Dropdown
+        menu={{ items }}
+        trigger={["click"]}
+        placement="topRight"
+        arrow
+        dropdownRender={dropdownRender}
+      >
         <Button className="h-max">
           <div className="flex items-center gap-2 p-2">
             <Avatar size={"small"}>{selectedWorkspace?.name[0]}</Avatar>
             {selectedWorkspace?.name}
           </div>
         </Button>
-      )}
+      </Dropdown>
+      <GlobalMOdal
+        {...{ isModalOpen, setIsModalOpen, title: "Add a New Project" }}
+      >
+        <AddNewWorkspace />
+      </GlobalMOdal>
     </>
+    // <>
+    //   {items?.length > 1 ? (
+    //     <Dropdown
+    //       menu={{ items }}
+    //       trigger={["click"]}
+    //       placement="topRight"
+    //       arrow
+    //       dropdownRender={dropdownRender}
+    //     >
+    //       <Button className="h-max">
+    //         <div className="flex items-center gap-2 p-2">
+    //           <Avatar size={"small"}>{selectedWorkspace?.name[0]}</Avatar>
+    //           {selectedWorkspace?.name}
+    //         </div>
+    //       </Button>
+    //     </Dropdown>
+    //   ) : (
+    //     <Button className="h-max">
+    //       <div className="flex items-center gap-2 p-2">
+    //         <Avatar size={"small"}>{selectedWorkspace?.name[0]}</Avatar>
+    //         {selectedWorkspace?.name}
+    //       </div>
+    //     </Button>
+    //   )}
+    // </>
   );
 };
 
