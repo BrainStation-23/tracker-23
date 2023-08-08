@@ -25,7 +25,7 @@ export class WorkspacesController {
     @GetUser() user: User,
     @Body() reqBody: WorkspaceReqBody,
   ) {
-    return this.workspacesService.createWorkspace(user.id, reqBody.name, Boolean(reqBody?.changeWorkspace));
+    return this.workspacesService.createWorkspace(user.id, {...reqBody });
   }
 
   @Get('list')

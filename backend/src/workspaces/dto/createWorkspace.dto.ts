@@ -7,5 +7,9 @@ export class WorkspaceReqBody {
 
   @IsBoolean()
   @IsOptional()
-  changeWorkspace: boolean;
+  changeWorkspace?: boolean;
+
+  @IsString()
+  @IsOptional()
+  icon?: string;
 }

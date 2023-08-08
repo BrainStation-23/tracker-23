@@ -10,8 +10,7 @@ export class WorkspacesService {
 
   async createWorkspace(
     userId: number,
-    name: string,
-    changeWorkspace: boolean,
+    { name, changeWorkspace }: WorkspaceReqBody,
   ) {
     const workspace = await this.prisma.workspace.create({
       data: {
@@ -36,7 +35,8 @@ export class WorkspacesService {
       );
     }
     //no need to throw error, as it deosn't concern the creation phase
-    changeWorkspace && await this.changeActiveWorkspace(+workspace?.id, +userId);
+    changeWorkspace &&
+      (await this.changeActiveWorkspace(+workspace?.id, +userId));
 
     return workspace;
   }
