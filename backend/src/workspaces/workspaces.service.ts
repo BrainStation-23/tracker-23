@@ -8,7 +8,11 @@ import { APIException } from 'src/internal/exception/api.exception';
 export class WorkspacesService {
   constructor(private prisma: PrismaService) {}
 
-  async createWorkspace(userId: number, name: string) {
+  async createWorkspace(
+    userId: number,
+    name: string,
+    changeWorkspace: boolean,
+  ) {
     const workspace = await this.prisma.workspace.create({
       data: {
         name: name,
@@ -31,6 +35,8 @@ export class WorkspacesService {
         error,
       );
     }
+    //no need to throw error, as it deosn't concern the creation phase
+    changeWorkspace && await this.changeActiveWorkspace(+workspace?.id, +userId);
 
     return workspace;
   }
@@ -138,8 +144,10 @@ export class WorkspacesService {
       });
     } catch (error) {
       console.log(error);
-      throw new APIException('Can not change workspace', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new APIException(
+        'Can not change workspace',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
   }
 }
