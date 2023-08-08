@@ -25,7 +25,7 @@ export class WorkspacesController {
     @GetUser() user: User,
     @Body() reqBody: WorkspaceReqBody,
   ) {
-    return this.workspacesService.createWorkspace(user.id, reqBody.name);
+    return this.workspacesService.createWorkspace(user.id, {...reqBody });
   }
 
   @Get('list')
@@ -55,5 +55,14 @@ export class WorkspacesController {
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
   ) {
     return this.workspacesService.deleteWorkspace(workspaceId);
+  }
+
+  @Patch('/change-workspace/:workspaceId')
+  @UseGuards(JwtAuthGuard)
+  async changeActiveWorkspace(
+    @GetUser() user: User,
+    @Param('workspaceId') workspaceId: string,
+  ) {
+    return await this.workspacesService.changeActiveWorkspace(+workspaceId, +user?.id);
   }
 }
