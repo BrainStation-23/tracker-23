@@ -1,6 +1,6 @@
 import { message } from "antd";
 import axios from "axios";
-import { SearchParamsModel } from "models/apiParams";
+import { CreateWorkspaceModel, SearchParamsModel } from "models/apiParams";
 import { LoginDto, LoginResponseDto, RegisterDto } from "models/auth";
 import {
   AddWorkLogParams,
@@ -449,7 +449,23 @@ export async function deleteProjectTasksRest(id: number) {
 }
 export async function getWorkspaceListRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.getWorkspacesList}`);
+    const res = await axios.get(`${apiEndPoints.workspaces}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function createWorkspaceRest(data: CreateWorkspaceModel) {
+  try {
+    const res = await axios.post(`${apiEndPoints.workspaces}`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function changeWorkspaceRest(id: number) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.changeWorkspace}/${id}`);
     return res.data;
   } catch (error: any) {
     return false;

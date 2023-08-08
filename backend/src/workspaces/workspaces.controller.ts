@@ -32,7 +32,7 @@ export class WorkspacesController {
     );
   }
 
-  @Get('list')
+  @Get()
   @UseGuards(JwtAuthGuard)
   async getWorkspaceList(@GetUser() user: User) {
     return this.workspacesService.getWorkspaceList(user);
@@ -67,6 +67,9 @@ export class WorkspacesController {
     @GetUser() user: User,
     @Param('workspaceId') workspaceId: string,
   ) {
-    return await this.workspacesService.changeActiveWorkspace(+workspaceId, +user?.id);
+    return await this.workspacesService.changeActiveWorkspace(
+      +workspaceId,
+      +user?.id,
+    );
   }
 }

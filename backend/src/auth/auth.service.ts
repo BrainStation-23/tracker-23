@@ -1,4 +1,9 @@
-import { HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
@@ -92,7 +97,9 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new NotFoundException('Email is not registered. Please sign up to continue.');
+      throw new NotFoundException(
+        'Email is not registered. Please sign up to continue.',
+      );
     }
     let isPasswordMatched;
     if (user.hash) {

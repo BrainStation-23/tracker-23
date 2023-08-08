@@ -1,4 +1,4 @@
-import { SearchParamsModel } from "models/apiParams";
+import { CreateWorkspaceModel, SearchParamsModel } from "models/apiParams";
 import { LoginDto, LoginResponseDto } from "models/auth";
 import {
   AddWorkLogParams,
@@ -47,6 +47,8 @@ export interface apiFunction {
   getJiraSprints: () => Promise<any>;
   getAllProjects: () => Promise<any>;
   getWorkspaceList: () => Promise<any>;
+  createWorkspace: (data: CreateWorkspaceModel) => Promise<any>;
+  changeWorkspace: (id: number) => Promise<any>;
   importProject: (id: number) => Promise<any>;
   deleteProjectTasks: (id: number) => Promise<any>;
   getJiraActiveSprintTasks: (searchParams?: SearchParamsModel) => Promise<any>;

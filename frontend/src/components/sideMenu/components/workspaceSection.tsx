@@ -5,7 +5,8 @@ import { Avatar, Button, Dropdown, Menu, MenuProps } from "antd";
 import { WorkspaceDto } from "models/workspaces";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import AddNewWorkspace from "./addnewWorkspace";
+import AddNewWorkspace from "./addNewWorkspace";
+import { userAPI } from "APIs";
 
 const WorkspaceSelection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,7 +20,12 @@ const WorkspaceSelection = () => {
       workspacesList.findLast((workspace) => workspace.active)
     );
 
-  const handleWorkspaceClick = (workspace: WorkspaceDto) => {
+  const handleWorkspaceClick = async (workspace: WorkspaceDto) => {
+    const res = await userAPI.changeWorkspace(workspace.id);
+    console.log(
+      "🚀 ~ file: workspaceSection.tsx:25 ~ handleWorkspaceClick ~ res:",
+      res
+    );
     setSelectedWorkspace(workspace);
   };
 

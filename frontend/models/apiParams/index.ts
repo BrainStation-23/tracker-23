@@ -6,3 +6,9 @@ export interface SearchParamsModel {
   projectIds?: number[];
   sprints?: number[];
 }
+
+export interface CreateWorkspaceModel {
+  name: string;
+  changeWorkspace?: boolean;
+  icon?: string;
+}

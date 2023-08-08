@@ -38,6 +38,8 @@ import {
   updateTaskSTatusRest,
   importProjectRest,
   getWorkspaceListRest,
+  createWorkspaceRest,
+  changeWorkspaceRest,
 } from "./restApi";
 
 const graphqlApi: apiFunction = {
@@ -77,6 +79,8 @@ const graphqlApi: apiFunction = {
   importProject: importProjectRest,
   deleteProjectTasks: deleteProjectTasksRest,
   getWorkspaceList: getWorkspaceListRest,
+  createWorkspace: createWorkspaceRest,
+  changeWorkspace: changeWorkspaceRest,
 };
 
 const restApi: apiFunction = {
@@ -116,6 +120,8 @@ const restApi: apiFunction = {
   importProject: importProjectRest,
   deleteProjectTasks: deleteProjectTasksRest,
   getWorkspaceList: getWorkspaceListRest,
+  createWorkspace: createWorkspaceRest,
+  changeWorkspace: changeWorkspaceRest,
 };
 
 export const userAPI: apiFunction =
