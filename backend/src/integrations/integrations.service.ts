@@ -66,7 +66,10 @@ export class IntegrationsService {
     //   where: { userId: user.id, type: IntegrationType.JIRA, id: integrationID },
     // });
     if (!userIntegration) {
-      return null;
+      throw new APIException(
+        'User integration not found',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     // console.log(userIntegration?.refreshToken);
 
@@ -76,15 +79,21 @@ export class IntegrationsService {
       client_secret: this.config.get('JIRA_SECRET_KEY'),
       refresh_token: userIntegration?.refreshToken,
     };
-    // console.log('hello', data);
-    // try {
-    const tokenResp = (
-      await lastValueFrom(this.httpService.post(url, data, headers))
-    ).data;
-    // console.log(
-    //   '🚀 ~ file: integrations.service.ts:82 ~ IntegrationsService ~ getUpdatedUserIntegration ~ tokenResp:',
-    //   tokenResp,
-    // );
+    let tokenResp;
+    try {
+      tokenResp = (
+        await lastValueFrom(this.httpService.post(url, data, headers))
+      ).data;
+      console.log(
+        '🚀 ~ file: integrations.service.ts:82 ~ IntegrationsService ~ getUpdatedUserIntegration ~ tokenResp:',
+        tokenResp,
+      );
+    } catch (err) {
+      throw new APIException(
+        'Can not update user integration',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
 
     const updatedUserIntegration =
       userIntegration &&
