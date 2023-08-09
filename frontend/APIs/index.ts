@@ -40,6 +40,7 @@ import {
   getWorkspaceListRest,
   createWorkspaceRest,
   changeWorkspaceRest,
+  deleteWorkspaceRest,
 } from "./restApi";
 
 const graphqlApi: apiFunction = {
@@ -81,6 +82,7 @@ const graphqlApi: apiFunction = {
   getWorkspaceList: getWorkspaceListRest,
   createWorkspace: createWorkspaceRest,
   changeWorkspace: changeWorkspaceRest,
+  deleteWorkspace: deleteWorkspaceRest,
 };
 
 const restApi: apiFunction = {
@@ -122,6 +124,7 @@ const restApi: apiFunction = {
   getWorkspaceList: getWorkspaceListRest,
   createWorkspace: createWorkspaceRest,
   changeWorkspace: changeWorkspaceRest,
+  deleteWorkspace: deleteWorkspaceRest,
 };
 
 export const userAPI: apiFunction =

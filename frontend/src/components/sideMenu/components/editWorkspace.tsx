@@ -1,9 +1,13 @@
 import { userAPI } from "APIs";
 import { Button, Checkbox, Form, Input } from "antd";
 import { CreateWorkspaceModel } from "models/apiParams";
+import { WorkspaceDto } from "models/workspaces";
 import { useState } from "react";
-
-const AddNewWorkspace = () => {
+type Props = {
+  workspace: WorkspaceDto;
+  setSelectedWorkspace: Function;
+};
+const EditWorkspace = ({ workspace, setSelectedWorkspace }: Props) => {
   const [form] = Form.useForm();
   const [switchWorkspace, setSwitchWorkspace] = useState(false);
 
@@ -20,6 +24,7 @@ const AddNewWorkspace = () => {
       <Form.Item
         label="Workspace Name"
         name="name"
+        initialValue={workspace.name}
         rules={[{ required: true, message: "Please enter a workspace name" }]}
       >
         <Input />
@@ -31,11 +36,14 @@ const AddNewWorkspace = () => {
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit">
-          Create Workspace
+          Save
         </Button>
+      </Form.Item>
+      <Form.Item>
+        <Button type="primary">Cancel</Button>
       </Form.Item>
     </Form>
   );
 };
 
-export default AddNewWorkspace;
+export default EditWorkspace;
