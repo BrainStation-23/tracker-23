@@ -211,10 +211,11 @@ export class SprintsService {
 
       res.data.issues.map((issue: any) => {
         const taskId = mappedTaskId.get(Number(issue.id));
-        issue_list.push({
-          sprintId: sprintId,
-          taskId: taskId,
-        });
+        taskId &&
+          issue_list.push({
+            sprintId: sprintId,
+            taskId: taskId,
+          });
       });
     });
 
