@@ -84,10 +84,10 @@ export class SprintsService {
       },
     });
     const boardId = project && mappedBoardId.get(project.projectId);
-    console.log(
-      '🚀 ~ file: sprints.service.ts:86 ~ SprintsService ~ boardId:',
-      boardId,
-    );
+    // console.log(
+    //   '🚀 ~ file: sprints.service.ts:86 ~ SprintsService ~ boardId:',
+    //   boardId,
+    // );
 
     if (!boardId) {
       return [];
