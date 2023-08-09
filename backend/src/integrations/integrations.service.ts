@@ -48,70 +48,75 @@ export class IntegrationsService {
   }
 
   async getUpdatedUserIntegration(user: User, userIntegrationId: number) {
-    const url = 'https://auth.atlassian.com/oauth/token';
-    const headers: any = { 'Content-Type': 'application/json' };
-    if (!user.activeWorkspaceId)
-      throw new APIException('No active Workspace', HttpStatus.BAD_REQUEST);
-    const userIntegration = await this.prisma.userIntegration.findUnique({
-      where: {
-        id: userIntegrationId,
-      },
-    });
-    // console.log(
-    //   '🚀 ~ file: integrations.service.ts:60 ~ IntegrationsService ~ getUpdatedUserIntegration ~ userIntegration:',
-    //   userIntegration,
-    // );
-
-    // const integration = await this.prisma.integration.findFirst({
-    //   where: { userId: user.id, type: IntegrationType.JIRA, id: integrationID },
-    // });
-    if (!userIntegration) {
-      throw new APIException(
-        'User integration not found',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    // console.log(userIntegration?.refreshToken);
-
-    const data = {
-      grant_type: 'refresh_token',
-      client_id: this.config.get('JIRA_CLIENT_ID'),
-      client_secret: this.config.get('JIRA_SECRET_KEY'),
-      refresh_token: userIntegration?.refreshToken,
-    };
-    let tokenResp;
     try {
-      tokenResp = (
-        await lastValueFrom(this.httpService.post(url, data, headers))
-      ).data;
-      console.log(
-        '🚀 ~ file: integrations.service.ts:82 ~ IntegrationsService ~ getUpdatedUserIntegration ~ tokenResp:',
-        tokenResp,
-      );
+      const url = 'https://auth.atlassian.com/oauth/token';
+      const headers: any = { 'Content-Type': 'application/json' };
+      if (!user.activeWorkspaceId)
+        throw new APIException('No active Workspace', HttpStatus.BAD_REQUEST);
+      const userIntegration = await this.prisma.userIntegration.findUnique({
+        where: {
+          id: userIntegrationId,
+        },
+      });
+      // console.log(
+      //   '🚀 ~ file: integrations.service.ts:60 ~ IntegrationsService ~ getUpdatedUserIntegration ~ userIntegration:',
+      //   userIntegration,
+      // );
+
+      // const integration = await this.prisma.integration.findFirst({
+      //   where: { userId: user.id, type: IntegrationType.JIRA, id: integrationID },
+      // });
+      if (!userIntegration) {
+        throw new APIException(
+          'User integration not found',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      // console.log(userIntegration?.refreshToken);
+
+      const data = {
+        grant_type: 'refresh_token',
+        client_id: this.config.get('JIRA_CLIENT_ID'),
+        client_secret: this.config.get('JIRA_SECRET_KEY'),
+        refresh_token: userIntegration?.refreshToken,
+      };
+      let tokenResp;
+      try {
+        tokenResp = (
+          await lastValueFrom(this.httpService.post(url, data, headers))
+        ).data;
+        console.log(
+          '🚀 ~ file: integrations.service.ts:82 ~ IntegrationsService ~ getUpdatedUserIntegration ~ tokenResp:',
+          tokenResp,
+        );
+      } catch (err) {
+        throw new APIException(
+          'Can not update user integration',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      const updatedUserIntegration =
+        userIntegration &&
+        (await this.prisma.userIntegration.update({
+          where: { id: userIntegration?.id },
+          data: {
+            accessToken: tokenResp.access_token,
+            refreshToken: tokenResp.refresh_token,
+          },
+          include: { integration: true },
+        }));
+      return updatedUserIntegration;
     } catch (err) {
+      console.log(
+        '🚀 ~ file: integrations.service.ts:99 ~ IntegrationsService ~ getUpdatedUserIntegration ~ err:',
+        err,
+      );
       throw new APIException(
         'Can not update user integration',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
-    const updatedUserIntegration =
-      userIntegration &&
-      (await this.prisma.userIntegration.update({
-        where: { id: userIntegration?.id },
-        data: {
-          accessToken: tokenResp.access_token,
-          refreshToken: tokenResp.refresh_token,
-        },
-        include: { integration: true },
-      }));
-    return updatedUserIntegration;
-    // } catch (err) {
-    //   console.log(
-    //     '🚀 ~ file: integrations.service.ts:99 ~ IntegrationsService ~ getUpdatedUserIntegration ~ err:',
-    //     err,
-    //   );
-    // }
   }
 
   async deleteUserIntegration(user: User, userIntegrationId: number) {
