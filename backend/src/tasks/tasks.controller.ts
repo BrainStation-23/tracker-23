@@ -22,6 +22,7 @@ import {
   CreateTaskDto,
   EstimationReqBodyDto,
   GetTaskQuery,
+  GetTeamTaskQuery,
   StatusReqBodyDto,
   TimeSpentReqBodyDto,
   UpdatePinDto,
@@ -145,6 +146,19 @@ export class TasksController {
   async getSpentTimeByDay(@GetUser() user: User, @Query() query: GetTaskQuery) {
     return this.tasksService.getSpentTimeByDay(user, query);
   }
+
+  //TODO: only for superiror role, example: Project Manager, Admin
+  @Get('/team/spent-time')
+  //@UseGuards(JwtAuthGuard)
+  async getTimeSpentByTeam(@Query() query: GetTeamTaskQuery) {
+    return this.tasksService.getTimeSpentByTeam(query);
+  }
+
+  // @Get('/team/spent-time/per-day')
+  // @UseGuards(JwtAuthGuard)
+  // async getDailyTimeSpentByTeam(@GetUser() user: User, @Query() query: GetTaskQuery) {
+  //   return this.tasksService.getSpentTimeByDay(user, query);
+  // }
 
   @Get('all/status')
   @UseGuards(JwtAuthGuard)

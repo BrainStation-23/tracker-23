@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export enum PriorityEnum {
   HIGH = 'HIGH',
@@ -40,6 +40,27 @@ export class GetTaskQuery {
   projectIds: string[];
 }
 
+export class GetTeamTaskQuery {
+  @IsString()
+  @IsOptional()
+  startDate?: Date;
+
+  @IsString()
+  @IsOptional()
+  endDate?: Date;
+
+  @IsString()
+  @IsOptional()
+  sprintId?: string;
+
+  @IsString()
+  @IsOptional()
+  projectId?: string;
+
+  @IsArray()
+  @IsOptional()
+  userIds?: number[];
+}
 export class ProjectTaskDeto {
   @IsNumber()
   projectId: string;

@@ -1,3 +1,4 @@
+import { SessionsService } from './../sessions/sessions.service';
 import axios from 'axios';
 import { coreConfig } from 'config/core';
 import { Response } from 'express';
@@ -24,12 +25,15 @@ import {
 import {
   CreateTaskDto,
   GetTaskQuery,
+  GetTeamTaskQuery,
   StatusEnum,
   TimeSpentReqBodyDto,
   UpdatePinDto,
 } from './dto';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { SprintsService } from 'src/sprints/sprints.service';
+import { setDefaultResultOrder } from 'dns';
+import { DefaultDeserializer } from 'v8';
 
 @Injectable()
 export class TasksService {
@@ -853,7 +857,10 @@ export class TasksService {
         break;
       }
       respTasks.issues.map((issue: any) => {
-        mappedIssues.set(Number(issue.id), {...issue?.fields, key: issue?.key});
+        mappedIssues.set(Number(issue.id), {
+          ...issue?.fields,
+          key: issue?.key,
+        });
       });
 
       const integratedTasks = await this.prisma.task.findMany({
@@ -1828,7 +1835,7 @@ export class TasksService {
   }
 
   async weeklySpentTime(user: User, query: GetTaskQuery) {
-    let { startDate, endDate } = query as unknown as GetTaskQuery;
+    let { startDate, endDate } = query;
     startDate = startDate && new Date(startDate);
     endDate = endDate && new Date(endDate);
     const taskList: any[] = await this.getTasks(user, query);
@@ -2311,6 +2318,31 @@ export class TasksService {
       );
       throw new APIException('Internal server Error', HttpStatus.BAD_REQUEST);
     }
+  }
+
+  async getTimeSpentByTeam(query: GetTeamTaskQuery) {
+      let { startDate, endDate, userIds } = query;
+      startDate = startDate && new Date(startDate);
+      endDate = endDate && new Date(endDate);
+
+      if(query?.projectId && userIds && userIds?.length > 0){
+        const userWorkspaces = await this.prisma.user.findMany({
+          where: {
+            id: {
+              in: userIds,
+            },
+          },
+          include: {
+            userWorkspaces: true,
+          }
+        });
+
+        const combinedWorkSpace = userWorkspaces?.map();
+
+      }
+      // else if(){
+
+      // }
   }
 }
 
