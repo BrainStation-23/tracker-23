@@ -1,39 +1,60 @@
 import GlobalMOdal from "@/components/modals/globalModal";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
-import { Avatar, Button, Dropdown, Menu, MenuProps } from "antd";
+import { Avatar, Button, Dropdown, Menu, MenuProps, Typography } from "antd";
 import { WorkspaceDto } from "models/workspaces";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import AddNewWorkspace from "./addNewWorkspace";
 import { userAPI } from "APIs";
-
+import {
+  CloseCircleOutlined,
+  EditOutlined,
+  RightCircleOutlined,
+} from "@ant-design/icons";
+import EditWorkspace from "./editWorkspace";
+const { Text } = Typography;
 const WorkspaceSelection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mode, setMode] = useState(0);
   // const workspacesList = tmp;
   const workspacesList = useAppSelector(
     (state: RootState) => state.workspacesSlice.workspaces
   );
 
   const [selectedWorkspace, setSelectedWorkspace] =
-    useState<WorkspaceDto | null>(
-      workspacesList.findLast((workspace) => workspace.active)
-    );
+    useState<WorkspaceDto | null>();
+  const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceDto | null>(
+    workspacesList.findLast((workspace) => workspace.active)
+  );
 
-  const handleWorkspaceClick = async (workspace: WorkspaceDto) => {
+  const handleChangeWorkspaceClick = async (workspace: WorkspaceDto) => {
     const res = await userAPI.changeWorkspace(workspace.id);
     console.log(
-      "🚀 ~ file: workspaceSection.tsx:25 ~ handleWorkspaceClick ~ res:",
+      "🚀 ~ file: workspaceSection.tsx:25 ~ handleChangeWorkspaceClick ~ res:",
       res
     );
+  };
+  const handleWorkspaceDeleteClick = async (workspace: WorkspaceDto) => {
+    setMode(2);
+    const res = await userAPI.deleteWorkspace(workspace.id);
+    console.log(
+      "🚀 ~ file: workspaceSection.tsx:25 ~ handleChangeWorkspaceClick ~ res:",
+      res
+    );
+    setActiveWorkspace(workspace);
+  };
+  const handleWorkspaceEditClick = async (workspace: WorkspaceDto) => {
     setSelectedWorkspace(workspace);
+    setMode(1);
+    setIsModalOpen(true);
   };
 
   const filteredWorkspaces = workspacesList.filter(
-    (workspace) => workspace !== selectedWorkspace
+    (workspace) => workspace !== activeWorkspace
   );
   const items: MenuProps["items"] = workspacesList
-    .filter((workspace) => selectedWorkspace.id != workspace.id)
+    .filter((workspace) => activeWorkspace.id != workspace.id)
     .map((workspace) => {
       return {
         key: `${workspace.id}`,
@@ -46,10 +67,34 @@ const WorkspaceSelection = () => {
             )}
           </>
         ),
-        label: <div className="ml-2">{workspace.name}</div>,
-        onClick: () => {
-          handleWorkspaceClick(workspace);
-        },
+        label: (
+          <div className="ml-2 flex  items-center justify-between">
+            <div>{workspace.name} </div>
+            <div className="flex items-center justify-between gap-3">
+              <EditOutlined
+                className="hover:text-red-500"
+                onClick={() => {
+                  handleWorkspaceDeleteClick(workspace);
+                }}
+              />
+              <CloseCircleOutlined
+                className="hover:text-red-500"
+                onClick={() => {
+                  handleWorkspaceDeleteClick(workspace);
+                }}
+              />
+              <RightCircleOutlined
+                className="hover:text-green-500"
+                onClick={() => {
+                  handleChangeWorkspaceClick(workspace);
+                }}
+              />
+            </div>
+          </div>
+        ),
+        // onClick: () => {
+        //   handleChangeWorkspaceClick(workspace);
+        // },
         // disabled: workspace.active,
       };
     });
@@ -64,7 +109,7 @@ const WorkspaceSelection = () => {
   console.log("🚀 ~ file: workspaceSection.tsx:30 ~  ~ items:", items);
 
   const dropdownRender = (menu: React.ReactNode) => (
-    <div className="float-right">{menu}</div>
+    <div className="float-right  w-[240px]">{menu}</div>
   );
 
   return (
@@ -75,18 +120,25 @@ const WorkspaceSelection = () => {
         placement="topRight"
         arrow
         dropdownRender={dropdownRender}
+        className=" w-[250px]"
       >
-        <Button className="h-max">
-          <div className="flex items-center gap-2 p-2">
-            <Avatar size={"small"}>{selectedWorkspace?.name[0]}</Avatar>
-            {selectedWorkspace?.name}
+        <Button className="h-max w-[240px]">
+          <div className="grid grid-cols-12 gap-2 py-2">
+            <Avatar className="col-span-2" size={"small"}>
+              {activeWorkspace?.name[0]}
+            </Avatar>
+            <div className="col-span-10">
+              <Text className="" ellipsis={{ tooltip: activeWorkspace?.name }}>
+                {activeWorkspace?.name}
+              </Text>
+            </div>
           </div>
         </Button>
       </Dropdown>
       <GlobalMOdal
         {...{ isModalOpen, setIsModalOpen, title: "Add a New Project" }}
       >
-        <AddNewWorkspace />
+        {mode === 1 ? <EditWorkspace  /> : <AddNewWorkspace />}
       </GlobalMOdal>
     </>
     // <>
@@ -100,16 +152,16 @@ const WorkspaceSelection = () => {
     //     >
     //       <Button className="h-max">
     //         <div className="flex items-center gap-2 p-2">
-    //           <Avatar size={"small"}>{selectedWorkspace?.name[0]}</Avatar>
-    //           {selectedWorkspace?.name}
+    //           <Avatar size={"small"}>{activeWorkspace?.name[0]}</Avatar>
+    //           {activeWorkspace?.name}
     //         </div>
     //       </Button>
     //     </Dropdown>
     //   ) : (
     //     <Button className="h-max">
     //       <div className="flex items-center gap-2 p-2">
-    //         <Avatar size={"small"}>{selectedWorkspace?.name[0]}</Avatar>
-    //         {selectedWorkspace?.name}
+    //         <Avatar size={"small"}>{activeWorkspace?.name[0]}</Avatar>
+    //         {activeWorkspace?.name}
     //       </div>
     //     </Button>
     //   )}
@@ -118,75 +170,3 @@ const WorkspaceSelection = () => {
 };
 
 export default WorkspaceSelection;
-
-const tmp: WorkspaceDto[] = [
-  {
-    id: 9,
-    name: "Seefat's Workspace",
-    picture: null,
-    createdAt: "2023-07-25T09:31:57.368Z",
-    updatedAt: "2023-07-25T09:31:57.368Z",
-    creatorUserId: 10,
-    userWorkspaces: [
-      {
-        id: 9,
-        role: "ADMIN",
-        valid: true,
-        createdAt: "2023-07-25T09:31:57.709Z",
-        updatedAt: "2023-07-25T09:31:57.709Z",
-        userId: 10,
-        workspaceId: 9,
-        inviterId: null,
-        invitationID: null,
-        status: "ACTIVE",
-      },
-    ],
-    active: true,
-  },
-  {
-    id: 11,
-    name: "Leon's Workspace",
-    picture: null,
-    createdAt: "2023-07-25T09:31:57.368Z",
-    updatedAt: "2023-07-25T09:31:57.368Z",
-    creatorUserId: 10,
-    userWorkspaces: [
-      {
-        id: 9,
-        role: "ADMIN",
-        valid: true,
-        createdAt: "2023-07-25T09:31:57.709Z",
-        updatedAt: "2023-07-25T09:31:57.709Z",
-        userId: 10,
-        workspaceId: 9,
-        inviterId: null,
-        invitationID: null,
-        status: "ACTIVE",
-      },
-    ],
-    active: false,
-  },
-  {
-    id: 12,
-    name: "Himel's Workspace",
-    picture: null,
-    createdAt: "2023-07-25T09:31:57.368Z",
-    updatedAt: "2023-07-25T09:31:57.368Z",
-    creatorUserId: 10,
-    userWorkspaces: [
-      {
-        id: 9,
-        role: "ADMIN",
-        valid: true,
-        createdAt: "2023-07-25T09:31:57.709Z",
-        updatedAt: "2023-07-25T09:31:57.709Z",
-        userId: 10,
-        workspaceId: 9,
-        inviterId: null,
-        invitationID: null,
-        status: "ACTIVE",
-      },
-    ],
-    active: false,
-  },
-];

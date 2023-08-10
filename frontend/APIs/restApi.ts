@@ -471,3 +471,12 @@ export async function changeWorkspaceRest(id: number) {
     return false;
   }
 }
+
+export async function deleteWorkspaceRest(id: number) {
+  try {
+    const res = await axios.delete(`${apiEndPoints.workspaces}/${id}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
