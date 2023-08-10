@@ -4,10 +4,12 @@ import { WorkspaceDto } from "models/workspaces";
 // Define the initial state using the WorkspaceState interface
 interface WorkspaceState {
   workspaces: WorkspaceDto[];
+  reload : Boolean
 }
 
 const initialState: WorkspaceState = {
   workspaces: [],
+  reload: false,
 };
 
 const workspacesSlice = createSlice({
@@ -20,10 +22,13 @@ const workspacesSlice = createSlice({
     resetWorkspacesSlice: (state) => {
       state.workspaces = [];
     },
+    changeWorkspcarReloadStatusSlice:(state) => {
+      state.reload =  !state.reload ;
+    },
   },
 });
 
-export const { setWorkspacesSlice, resetWorkspacesSlice } =
+export const { setWorkspacesSlice, resetWorkspacesSlice ,changeWorkspcarReloadStatusSlice} =
   workspacesSlice.actions;
 
 export default workspacesSlice.reducer;
