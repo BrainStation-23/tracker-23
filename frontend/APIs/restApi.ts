@@ -463,6 +463,17 @@ export async function createWorkspaceRest(data: CreateWorkspaceModel) {
     return false;
   }
 }
+export async function updateWorkspaceRest(
+  data: CreateWorkspaceModel,
+  id: number
+) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.workspaces}/${id}`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
 export async function changeWorkspaceRest(id: number) {
   try {
     const res = await axios.patch(`${apiEndPoints.changeWorkspace}/${id}`);

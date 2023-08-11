@@ -1,16 +1,23 @@
+import { addWorkspaceSlice } from "@/storage/redux/workspacesSlice";
 import { userAPI } from "APIs";
-import { Button, Checkbox, Form, Input } from "antd";
+import { Button, Checkbox, Form, Input, message } from "antd";
 import { CreateWorkspaceModel } from "models/apiParams";
 import { useState } from "react";
-
-const AddNewWorkspace = () => {
+import { useDispatch } from "react-redux";
+type Props = {
+  setIsModalOpen: Function;
+};
+const AddNewWorkspace = ({ setIsModalOpen }: Props) => {
   const [form] = Form.useForm();
+  const dispatch = useDispatch();
   const [switchWorkspace, setSwitchWorkspace] = useState(false);
 
   const onFinish = async (values: CreateWorkspaceModel) => {
     console.log("Form values:", values);
     const res = await userAPI.createWorkspace(values);
-    console.log("🚀 ~ file: addNewWorkspace.tsx:13 ~ onFinish ~ res:", res);
+    message.success("Workspace created Successfully");
+    dispatch(addWorkspaceSlice(res));
+    setIsModalOpen(false);
     // Here you can perform actions based on the form values, e.g., create a workspace.
     // If switchWorkspace is true, you can switch to the newly created workspace.
   };
