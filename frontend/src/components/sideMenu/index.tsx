@@ -4,7 +4,7 @@ import TasksIconSvg from "@/assets/svg/tasksIconSvg";
 import DashboardIconSvg from "@/assets/svg/dashboardIconSvg";
 import ExportsIconSvg from "@/assets/svg/ExportsIconSvg";
 import IntegrationIconSvg from "@/assets/svg/IntegrationIconSvg";
-import { BulbOutlined } from "@ant-design/icons";
+import { BulbOutlined, MailOutlined } from "@ant-design/icons";
 import WorkspaceSelection from "./components/workspaceSection";
 
 const SideMenu = () => {
@@ -94,6 +94,12 @@ export const sideMenuOptions = [
     link: "/exports",
     title: "Exports",
     icon: <ExportsIconSvg />,
+    // icon: <TiExport className="h-6 w-6" />,
+  },
+  {
+    link: "/invitations",
+    title: "Invitations",
+    icon: <MailOutlined />,
     // icon: <TiExport className="h-6 w-6" />,
   },
   {
