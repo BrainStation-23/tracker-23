@@ -13,6 +13,7 @@ import { JiraModule } from './integrations/jira/jira.module';
 import { TestModule } from './test/test.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
 import { PrismaModule2 } from './prisma2/prisma.module';
+import { DataMigrationModule } from './data_migration/data_migration.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { PrismaModule2 } from './prisma2/prisma.module';
     NotificationModule,
     SprintsModule,
     JiraModule,
+    DataMigrationModule,
   ],
 })
 export class AppModule {}

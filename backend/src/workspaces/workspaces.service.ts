@@ -122,33 +122,33 @@ export class WorkspacesService {
     }
   }
 
-  async changeActiveWorkspace(workspaceId: number, userId: number) {
-    const userWorkspaceExists = await this.prisma.userWorkspace.findFirst({
-      where: {
-        userId,
-        workspaceId,
-      },
-    });
+  // async changeActiveWorkspace(workspaceId: number, userId: number) {
+  //   const userWorkspaceExists = await this.prisma.userWorkspace.findFirst({
+  //     where: {
+  //       userId,
+  //       workspaceId,
+  //     },
+  //   });
 
-    if (!userWorkspaceExists) {
-      throw new APIException('Invalid workspace id', HttpStatus.BAD_REQUEST);
-    }
+  //   if (!userWorkspaceExists) {
+  //     throw new APIException('Invalid workspace id', HttpStatus.BAD_REQUEST);
+  //   }
 
-    try {
-      return await this.prisma.user.update({
-        where: {
-          id: userId,
-        },
-        data: {
-          activeWorkspaceId: workspaceId,
-        },
-      });
-    } catch (error) {
-      console.log(error);
-      throw new APIException(
-        'Can not change workspace',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
+  //   try {
+  //     return await this.prisma.user.update({
+  //       where: {
+  //         id: userId,
+  //       },
+  //       data: {
+  //         activeWorkspaceId: workspaceId,
+  //       },
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //     throw new APIException(
+  //       'Can not change workspace',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 }

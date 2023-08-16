@@ -35,20 +35,21 @@ model UserAccount {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  email         String         @unique
-  hash          String?
-  firstName     String?
-  lastName      String?
-  picture       String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  userAccounts  UserAccount[]
-  accounts      Account[]
-  tasks         Task[]
-  projectIds    Int[]
-  integrations  Integration[]
-  notifications Notification[]
+  id                Int            @id @default(autoincrement())
+  email             String         @unique
+  hash              String?
+  firstName         String?
+  lastName          String?
+  picture           String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  activeWorkspaceId Int?
+  userAccounts      UserAccount[]
+  accounts          Account[]
+  tasks             Task[]
+  projectIds        Int[]
+  integrations      Integration[]
+  notifications     Notification[]
 }
 
 model Notification {
