@@ -1,0 +1,242 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// npx prisma migrate dev
+// npx prisma migrate reset --force
+// npx prisma studio
+
+generator client2 {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_MIGRATION")
+}
+
+model Account {
+  id           Int           @id @default(autoincrement())
+  firstName    String?
+  lastName     String?
+  users        User[]
+  userAccounts UserAccount[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model UserAccount {
+  id           Int               @id @default(autoincrement())
+  invitationId String?
+  account      Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId    Int
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  role         Role              @default(USER) // Admin, user
+  status       InvitationStatus? //pending accepted, rejected
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  hash          String?
+  firstName     String?
+  lastName      String?
+  picture       String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  userAccounts  UserAccount[]
+  accounts      Account[]
+  tasks         Task[]
+  projectIds    Int[]
+  integrations  Integration[]
+  notifications Notification[]
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  seen        Boolean  @default(false)
+  author      String
+  title       String
+  description String
+
+  User   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+}
+
+model Integration {
+  id            Int             @id @default(autoincrement())
+  siteId        String
+  type          IntegrationType
+  accessToken   String
+  refreshToken  String
+  site          String?
+  jiraAccountId String?
+  Projects      Projects[]
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+
+  @@unique([siteId, userId], name: "integrationIdentifier")
+}
+
+model Projects {
+  id          Int            @id @default(autoincrement())
+  projectId   String
+  projectName String?
+  projectKey  String?
+  statuses    StatusDetail[]
+
+  integration   Integration? @relation(fields: [integrationID], references: [id], onDelete: Cascade)
+  integrationID Int?
+  tasks         Task[]
+}
+
+model StatusDetail {
+  id                 Int     @id @default(autoincrement())
+  statusId           String
+  name               String
+  untranslatedName   String
+  statusCategoryId   String
+  statusCategoryName String
+  transitionId       String?
+
+  transitionStatus Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId        Int
+
+  @@unique([name, projectId], name: "tempStatusDetailIdentifier")
+}
+
+model TempIntegration {
+  id            Int             @id @default(autoincrement())
+  siteId        String
+  type          IntegrationType
+  accessToken   String
+  refreshToken  String
+  site          String?
+  jiraAccountId String?
+  userId        Int
+
+  @@unique([siteId, userId], name: "tempIntegrationIdentifier")
+}
+
+model Task {
+  id                 Int       @id @default(autoincrement())
+  title              String
+  description        String?
+  assigneeId         String?
+  projectName        String?
+  estimation         Decimal?  @db.Decimal(5, 2)
+  status             String?   @default("To Do")
+  statusCategoryName String?   @default("TO_DO")
+  due                DateTime?
+  priority           String?   @default("Medium")
+  labels             Labels[]  @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+
+  source           IntegrationType @default(TRACKER23)
+  integratedTaskId Int?
+  url              String?
+  sessions         Session[]
+  pinned           Boolean?        @default(false)
+  projects         Projects?       @relation(fields: [projectId], references: [id])
+  projectId        Int?
+}
+
+model Session {
+  id        Int           @id @default(autoincrement())
+  startTime DateTime      @default(now())
+  endTime   DateTime?
+  status    SessionStatus @default(STARTED)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  authorId  String?
+
+  task             Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId           Int
+  integratedTaskId Int?
+  worklogId        Int?
+}
+
+model callSync {
+  id        Int      @id @default(autoincrement())
+  status    String
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model webhook {
+  id             Int      @id @default(autoincrement())
+  projectKey     String[]
+  webhookId      Int
+  siteUrl        String
+  expirationDate DateTime
+
+  @@unique([webhookId, siteUrl], name: "webhookIdentifier")
+}
+
+model Sprint {
+  id           Int          @id @default(autoincrement())
+  jiraSprintId Int
+  userId       Int
+  sprintTask   SprintTask[]
+  state        String
+  name         String
+  startDate    DateTime?
+  endDate      DateTime?
+  completeDate DateTime?
+}
+
+model SprintTask {
+  id       Int    @id @default(autoincrement())
+  sprint   Sprint @relation(fields: [sprintId], references: [id], onDelete: Cascade)
+  sprintId Int
+  taskId   Int
+  userId   Int
+
+  @@unique([sprintId, taskId, userId], name: "sprintTaskIdentifier")
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Status {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum Labels {
+  BUG
+  FEATURE
+  REFACTOR
+}
+
+enum SessionStatus {
+  STARTED
+  STOPPED
+}
+
+enum IntegrationType {
+  JIRA
+  TRACKER23
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}

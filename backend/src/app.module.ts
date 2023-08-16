@@ -12,6 +12,7 @@ import { SprintsModule } from './sprints/sprints.module';
 import { JiraModule } from './integrations/jira/jira.module';
 import { TestModule } from './test/test.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
+import { PrismaModule2 } from './prisma2/prisma.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
     TestModule,
     AuthModule,
     PrismaModule,
+    PrismaModule2,
     TasksModule,
     SessionsModule,
     WorkspacesModule,
