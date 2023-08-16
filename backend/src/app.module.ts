@@ -12,6 +12,7 @@ import { SprintsModule } from './sprints/sprints.module';
 import { JiraModule } from './integrations/jira/jira.module';
 import { TestModule } from './test/test.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
+import { DataMigrationModule } from './data_migration/data_migration.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
     NotificationModule,
     SprintsModule,
     JiraModule,
+    DataMigrationModule,
   ],
 })
 export class AppModule {}
