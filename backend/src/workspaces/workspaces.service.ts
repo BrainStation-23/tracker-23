@@ -8,11 +8,7 @@ import { APIException } from 'src/internal/exception/api.exception';
 export class WorkspacesService {
   constructor(private prisma: PrismaService) {}
 
-  async createWorkspace(
-    userId: number,
-    name: string,
-    changeWorkspace: boolean = true,
-  ) {
+  async createWorkspace(userId: number, name: string, changeWorkspace = true) {
     const workspace = await this.prisma.workspace.create({
       data: {
         name: name,
@@ -36,8 +32,8 @@ export class WorkspacesService {
       );
     }
     //no need to throw error, as it deosn't concern the creation phase
-    changeWorkspace &&
-      (await this.changeActiveWorkspace(+workspace?.id, +userId));
+    // changeWorkspace &&
+    //   (await this.changeActiveWorkspace(+workspace?.id, +userId));
 
     return workspace;
   }

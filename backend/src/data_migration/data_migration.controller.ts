@@ -12,7 +12,7 @@ export class DataMigrationController {
     return this.dataMigrationService.getAndCreateUser();
   }
   @Get('task')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getAndCreateTask() {
     return this.dataMigrationService.getAndCreateTask();
   }

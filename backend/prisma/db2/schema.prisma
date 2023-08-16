@@ -136,6 +136,8 @@ model Task {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
+  jiraUpdatedAt DateTime?
+
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
 
@@ -146,6 +148,13 @@ model Task {
   pinned           Boolean?        @default(false)
   projects         Projects?       @relation(fields: [projectId], references: [id])
   projectId        Int?
+
+  userWorkspaceId Int?
+  workspaceId     Int?
+
+  parentTask   Task?  @relation("childTask", fields: [parentTaskId], references: [id])
+  parentTaskId Int?
+  childTask    Task[] @relation("childTask")
 }
 
 model Session {
