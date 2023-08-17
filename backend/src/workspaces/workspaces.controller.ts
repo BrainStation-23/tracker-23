@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { WorkspacesService } from './workspaces.service';
-import { WorkspaceReqBody } from './dto';
+import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
 import { JwtAuthGuard } from 'src/guard';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
@@ -71,5 +71,20 @@ export class WorkspacesController {
       +workspaceId,
       +user?.id,
     );
+  }
+
+  @Post('/invitation/send')
+  @UseGuards(JwtAuthGuard)
+  async sendInvitation(
+    @GetUser() user: User,
+    @Body() reqBody: SendInvitationReqBody,
+  ) {
+    return await this.workspacesService.sendInvitation(user, reqBody);
+  }
+
+  @Get('/invitation/list')
+  @UseGuards(JwtAuthGuard)
+  async getInvitationList(@GetUser() user: User) {
+    return await this.workspacesService.getInvitationList(user);
   }
 }
