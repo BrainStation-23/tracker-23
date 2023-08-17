@@ -53,10 +53,6 @@ export class GetTeamTaskQuery {
   @IsOptional()
   sprintId?: string;
 
-  @IsString()
-  @IsOptional()
-  projectId?: string;
-
   @IsArray()
   @IsOptional()
   userIds?: number[];

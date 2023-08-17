@@ -150,8 +150,11 @@ export class TasksController {
   //TODO: only for superiror role, example: Project Manager, Admin
   @Get('/team/spent-time')
   //@UseGuards(JwtAuthGuard)
-  async getTimeSpentByTeam(@Query() query: GetTeamTaskQuery) {
-    return this.tasksService.getTimeSpentByTeam(query);
+  async getTimeSpentByTeam(
+    @GetUser() user: User,
+    @Query() query: GetTeamTaskQuery,
+  ) {
+    return this.tasksService.getTimeSpentByTeam(query, user);
   }
 
   // @Get('/team/spent-time/per-day')

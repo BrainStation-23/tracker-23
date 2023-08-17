@@ -2320,24 +2320,26 @@ export class TasksService {
     }
   }
 
-  async getTimeSpentByTeam(query: GetTeamTaskQuery) {
+  async getTimeSpentByTeam(query: GetTeamTaskQuery, user: User) {
       let { startDate, endDate, userIds } = query;
       startDate = startDate && new Date(startDate);
       endDate = endDate && new Date(endDate);
 
-      if(query?.projectId && userIds && userIds?.length > 0){
-        const userWorkspaces = await this.prisma.user.findMany({
+      if(user?.activeWorkspaceId && userIds && userIds?.length > 0){
+        const userWorkspaces = await this.prisma.userWorkspace.findMany({
           where: {
-            id: {
+            userId: {
               in: userIds,
             },
+            workspaceId: user?.activeWorkspaceId,
           },
-          include: {
-            userWorkspaces: true,
-          }
+          select: {
+            id: true,
+          },
         });
 
-        const combinedWorkSpace = userWorkspaces?.map();
+        const combinedWorkSpace: number[] = userWorkspaces?.map(userWorkspace => userWorkspace?.id);
+        const taskSessions = await this.prisma.task.findMany({});
 
       }
       // else if(){
