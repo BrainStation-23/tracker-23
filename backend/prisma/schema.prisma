@@ -39,19 +39,21 @@ model UserWorkspace {
   valid     Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  status        UserWorkspaceStatus // active , invited , inactive, deleted
+  invitationId  String?
+  invitedAt     DateTime?
+  respondedAt   DateTime?
 
   callSync        callSync[]
   task            Task[]
   userIntegration UserIntegration[]
 
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation("User", fields: [userId], references: [id])
   userId      Int
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int
-
-  inviterId    Int?
-  invitationId String?
-  status       UserWorkspaceStatus // active , invited , inactive, deleted
+  inviter       User?       @relation("InviterUser", fields: [inviterUserId], references: [id])
+  inviterUserId Int?
 
   // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
   // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
@@ -83,11 +85,12 @@ model User {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  userWorkspaces UserWorkspace[]
+  userWorkspaces  UserWorkspace[] @relation("User")
   // ownedWorkspaces     Workspace[]
   // tasks               Task[]
-  notifications  Notification[]
+  notifications   Notification[]
   // UserIntegrations    UserIntegration[]
+  invitationsSent UserWorkspace[] @relation("InviterUser")
 
   // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
   // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
@@ -186,8 +189,8 @@ model StatusDetail {
   statusCategoryName String
   transitionId       String?
 
-  projects Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId        Int
+  projects  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId Int
 
   @@unique([name, projectId], name: "tempStatusDetailIdentifier")
 }
@@ -259,7 +262,7 @@ model webhook {
   id             Int      @id @default(autoincrement())
   projectKey     String[]
   webhookId      Int
-  siteId        String
+  siteId         String
   expirationDate DateTime
 
   @@unique([webhookId, siteId], name: "webhookIdentifier")
@@ -268,8 +271,8 @@ model webhook {
 model Sprint {
   id           Int          @id @default(autoincrement())
   jiraSprintId Int
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId Int
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId    Int
   sprintTask   SprintTask[]
   state        String
   name         String
