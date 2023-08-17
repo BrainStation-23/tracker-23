@@ -2339,8 +2339,55 @@ export class TasksService {
         });
 
         const combinedWorkSpace: number[] = userWorkspaces?.map(userWorkspace => userWorkspace?.id);
-        const taskSessions = await this.prisma.task.findMany({});
+        const taskList = await this.prisma.task.findMany({
+          where: {
+            userWorkspaceId: {
+              in: combinedWorkSpace,
+            }
+          },
+          select: {
+            sessions: true,
+          }
+        });
 
+        let totalTimeSpent = 0;
+         for (const task of taskList) {
+           let taskTimeSpent = 0;
+           task?.sessions?.forEach((session: any) => {
+             const start = new Date(session.startTime);
+             let end = new Date(session.endTime);
+             if (end.getTime() === 0) {
+               end = new Date();
+             }
+             let sessionTimeSpent = 0;
+             if (start >= startDate && end <= endDate) {
+               sessionTimeSpent =
+                 (end.getTime() - start.getTime()) / (1000 * 60);
+             } else if (startDate >= start && end >= endDate) {
+               sessionTimeSpent =
+                 (endDate.getTime() - startDate.getTime()) / (1000 * 60);
+             } else if (end >= startDate) {
+               sessionTimeSpent =
+                 Math.min(
+                   Math.max(endDate.getTime() - start.getTime(), 0),
+                   end.getTime() - startDate.getTime(),
+                 ) /
+                 (1000 * 60);
+             }
+             totalTimeSpent += sessionTimeSpent;
+             taskTimeSpent += sessionTimeSpent;
+           });
+
+           if (!task.projectName) task.projectName = 'T23';
+
+           if (!map.has(task.projectName)) {
+             map.set(task.projectName, taskTimeSpent);
+           } else {
+             let getValue = map.get(task.projectName);
+             if (!getValue) getValue = 0;
+             map.set(task.projectName, getValue + taskTimeSpent);
+           }
+         }
       }
       // else if(){
 
