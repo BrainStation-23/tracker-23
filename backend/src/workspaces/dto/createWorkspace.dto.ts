@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { Role, UserWorkspaceStatus } from '@prisma/client';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class WorkspaceReqBody {
@@ -23,4 +23,10 @@ export class SendInvitationReqBody {
   @IsString()
   @IsNotEmpty()
   role: Role;
+}
+
+export class ReqStatusBody {
+  @IsString()
+  @IsNotEmpty()
+  status: UserWorkspaceStatus;
 }

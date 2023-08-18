@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserWorkspaceStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
+import { ReqStatusBody, SendInvitationReqBody, WorkspaceReqBody } from './dto';
 import { APIException } from 'src/internal/exception/api.exception';
 import { v4 as uuidv4 } from 'uuid';
 @Injectable()
@@ -56,6 +56,7 @@ export class WorkspacesService {
       const userWorkspaces = await this.prisma.userWorkspace.findMany({
         where: {
           userId,
+          status: UserWorkspaceStatus.ACTIVE,
         },
       });
       const workSpaceIds = userWorkspaces.map(
@@ -252,6 +253,27 @@ export class WorkspacesService {
       throw new APIException(
         'Can not get invitation list',
         HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async invitationResponse(
+    userWorkspaceId: number,
+    reqStatus: UserWorkspaceStatus,
+  ) {
+    try {
+      return await this.prisma.userWorkspace.update({
+        where: {
+          id: userWorkspaceId,
+        },
+        data: {
+          status: reqStatus,
+        },
+      });
+    } catch (err) {
+      throw new APIException(
+        'Can not change the invitation status',
+        HttpStatus.NOT_MODIFIED,
       );
     }
   }
