@@ -834,8 +834,8 @@ export class TasksService {
     };
 
     const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId}&maxResults=1000`;
-    // const fields =
-    //   'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority';
+    const fields =
+      'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority';
     let respTasks;
     for (let startAt = 0; startAt < 5000; startAt += 100) {
       let worklogPromises: Promise<any>[] = [];
@@ -848,12 +848,12 @@ export class TasksService {
         await lastValueFrom(
           this.httpService.get(url, {
             headers,
-            params: { startAt, maxResults: 100 },
+            params: { startAt, maxResults: 100, fields },
           }),
         )
       ).data;
 
-      if (respTasks.issues.length === 0) {
+      if (!respTasks || respTasks.issues.length === 0) {
         break;
       }
       respTasks.issues.map((issue: any) => {
@@ -924,6 +924,7 @@ export class TasksService {
           }),
           await this.prisma.task.findMany({
             where: {
+              projectId: project.id,
               source: IntegrationType.JIRA,
             },
             select: {
@@ -2264,19 +2265,6 @@ export class TasksService {
     return await this.prisma.project.findMany({
       where: {
         workspaceId: user.activeWorkspaceId,
-      },
-    });
-  }
-
-  async getIntegrationProjectList(user: User, integrationId: number) {
-    const update_integration =
-      await this.integrationsService.getUpdatedUserIntegration(
-        user,
-        integrationId,
-      );
-    return await this.prisma.project.findMany({
-      where: {
-        integrationId: update_integration?.id,
       },
     });
   }

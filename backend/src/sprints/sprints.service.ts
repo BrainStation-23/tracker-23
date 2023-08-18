@@ -84,10 +84,10 @@ export class SprintsService {
       },
     });
     const boardId = project && mappedBoardId.get(project.projectId);
-    console.log(
-      '🚀 ~ file: sprints.service.ts:86 ~ SprintsService ~ boardId:',
-      boardId,
-    );
+    // console.log(
+    //   '🚀 ~ file: sprints.service.ts:86 ~ SprintsService ~ boardId:',
+    //   boardId,
+    // );
 
     if (!boardId) {
       return [];
@@ -211,10 +211,11 @@ export class SprintsService {
 
       res.data.issues.map((issue: any) => {
         const taskId = mappedTaskId.get(Number(issue.id));
-        issue_list.push({
-          sprintId: sprintId,
-          taskId: taskId,
-        });
+        taskId &&
+          issue_list.push({
+            sprintId: sprintId,
+            taskId: taskId,
+          });
       });
     });
 

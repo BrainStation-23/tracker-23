@@ -1,18 +1,14 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserWorkspaceStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { WorkspaceReqBody } from './dto';
+import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
 import { APIException } from 'src/internal/exception/api.exception';
-
+import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class WorkspacesService {
   constructor(private prisma: PrismaService) {}
 
-  async createWorkspace(
-    userId: number,
-    name: string,
-    changeWorkspace: boolean = true,
-  ) {
+  async createWorkspace(userId: number, name: string, changeWorkspace = true) {
     const workspace = await this.prisma.workspace.create({
       data: {
         name: name,
@@ -148,6 +144,114 @@ export class WorkspacesService {
       throw new APIException(
         'Can not change workspace',
         HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async sendInvitation(user: User, reqBody: SendInvitationReqBody) {
+    const invitedUser = await this.prisma.user.findFirst({
+      where: {
+        email: reqBody.email,
+      },
+    });
+    if (!invitedUser) {
+      throw new APIException('User Not found', HttpStatus.BAD_REQUEST);
+    }
+
+    const userWorkspace =
+      user.activeWorkspaceId &&
+      (await this.prisma.userWorkspace.findFirst({
+        where: {
+          userId: invitedUser?.id,
+          workspaceId: user.activeWorkspaceId,
+          status: {
+            in: [UserWorkspaceStatus.ACTIVE, UserWorkspaceStatus.INVITED],
+          },
+        },
+      }));
+
+    if (userWorkspace) {
+      throw new APIException(
+        'This user already active or exist in this workspace',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const invitationToken = uuidv4();
+    try {
+      const newUserWorkspace =
+        user.activeWorkspaceId &&
+        (await this.prisma.userWorkspace.create({
+          data: {
+            userId: invitedUser.id,
+            workspaceId: user.activeWorkspaceId,
+            role: reqBody.role,
+            inviterUserId: user.id,
+            invitationId: invitationToken,
+            status: UserWorkspaceStatus.INVITED,
+            invitedAt: new Date(Date.now()),
+          },
+          include: {
+            workspace: {
+              select: {
+                id: true,
+                name: true,
+                picture: true,
+                creatorUserId: true,
+              },
+            },
+            inviter: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                picture: true,
+                activeWorkspaceId: true,
+              },
+            },
+          },
+        }));
+      return newUserWorkspace;
+    } catch (err) {
+      throw new APIException(
+        'Something is wrong to create user workspace',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getInvitationList(user: User) {
+    try {
+      return await this.prisma.userWorkspace.findMany({
+        where: {
+          userId: user.id,
+          inviterUserId: { not: null },
+        },
+        include: {
+          workspace: {
+            select: {
+              id: true,
+              name: true,
+              picture: true,
+              creatorUserId: true,
+            },
+          },
+          inviter: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              picture: true,
+              activeWorkspaceId: true,
+            },
+          },
+        },
+      });
+    } catch (err) {
+      throw new APIException(
+        'Can not get invitation list',
+        HttpStatus.BAD_REQUEST,
       );
     }
   }

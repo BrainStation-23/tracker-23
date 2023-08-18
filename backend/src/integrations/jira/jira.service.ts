@@ -153,10 +153,11 @@ export class JiraService {
         },
       });
       if (doesExistIntegration) {
-        const projects = await this.tasksService.getIntegrationProjectList(
-          user,
-          doesExistIntegration.id,
-        );
+        const projects = await this.prisma.project.findMany({
+          where: {
+            integrationId: doesExistIntegration.id,
+          },
+        });
 
         return {
           message: `Integration successful in ${doesExistIntegration.site}`,
@@ -242,21 +243,21 @@ export class JiraService {
     //   where: { userId: user.id, type: IntegrationType.JIRA },
     // });
     const jiraIntegrationIds = getUserIntegrationList?.map(
-      (integration) => integration.id,
+      (userIntegration) => userIntegration?.integration?.id,
     );
     try {
-      const projects =
-        jiraIntegrationIds?.length > 0
-          ? await this.prisma.project.findMany({
-              where: {
-                integrationId: { in: jiraIntegrationIds },
-                integrated: true,
-              },
-              include: {
-                statuses: true,
-              },
-            })
-          : [];
+      const projects = await this.prisma.project.findMany({
+        where: {
+          integrated: true,
+          integrationId: {
+            in: jiraIntegrationIds?.map((id) => Number(id)),
+          },
+        },
+        include: {
+          statuses: true,
+        },
+      });
+
       projects.push({
         id: 0,
         projectId: -1,
