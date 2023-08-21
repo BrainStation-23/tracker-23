@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { WorkspacesService } from './workspaces.service';
-import { WorkspaceReqBody } from './dto';
+import { ReqStatusBody, SendInvitationReqBody, WorkspaceReqBody } from './dto';
 import { JwtAuthGuard } from 'src/guard';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
@@ -61,15 +61,42 @@ export class WorkspacesController {
     return this.workspacesService.deleteWorkspace(workspaceId);
   }
 
-  // @Patch('/change-workspace/:workspaceId')
-  // @UseGuards(JwtAuthGuard)
-  // async changeActiveWorkspace(
-  //   @GetUser() user: User,
-  //   @Param('workspaceId') workspaceId: string,
-  // ) {
-  //   return await this.workspacesService.changeActiveWorkspace(
-  //     +workspaceId,
-  //     +user?.id,
-  //   );
-  // }
+  @Patch('/change-workspace/:workspaceId')
+  @UseGuards(JwtAuthGuard)
+  async changeActiveWorkspace(
+    @GetUser() user: User,
+    @Param('workspaceId') workspaceId: string,
+  ) {
+    return await this.workspacesService.changeActiveWorkspace(
+      +workspaceId,
+      +user?.id,
+    );
+  }
+
+  @Post('/invitation/send')
+  @UseGuards(JwtAuthGuard)
+  async sendInvitation(
+    @GetUser() user: User,
+    @Body() reqBody: SendInvitationReqBody,
+  ) {
+    return await this.workspacesService.sendInvitation(user, reqBody);
+  }
+
+  @Get('/invitation/list')
+  @UseGuards(JwtAuthGuard)
+  async getInvitationList(@GetUser() user: User) {
+    return await this.workspacesService.getInvitationList(user);
+  }
+
+  @Patch('/invitation/response/:userWorkspaceId')
+  @UseGuards(JwtAuthGuard)
+  async invitationResponse(
+    @Param('userWorkspaceId') userWorkspaceId: number,
+    @Body() reqStatus: ReqStatusBody,
+  ) {
+    return await this.workspacesService.invitationResponse(
+      Number(userWorkspaceId),
+      reqStatus.status,
+    );
+  }
 }

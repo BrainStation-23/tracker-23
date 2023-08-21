@@ -154,7 +154,7 @@ const WorkspaceSelection = () => {
         </Button>
       </Dropdown>
       <GlobalMOdal
-        {...{ isModalOpen, setIsModalOpen, title: "Add a New Project" }}
+        {...{ isModalOpen, setIsModalOpen, title: "Create Workspace" }}
       >
         {mode === 1 ? (
           <EditWorkspace
