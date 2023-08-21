@@ -26,5 +26,6 @@ export const apiEndPoints = {
   jiraSprints: `/sprints/sprint-list`,
   activeSprintTasks: `/sprints/active-sprintTasks`,
   workspaces: `workspaces`,
+  invitation: `workspaces/invitation`,
   changeWorkspace: `workspaces/change-workspace`,
 };

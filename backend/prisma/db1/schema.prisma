@@ -334,4 +334,5 @@ enum UserWorkspaceStatus {
   INACTIVE
   INVITED
   DELETED
+  REJECTED
 }

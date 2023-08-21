@@ -42,6 +42,10 @@ import {
   changeWorkspaceRest,
   deleteWorkspaceRest,
   updateWorkspaceRest,
+  sendWorkspaceInvitationRest,
+  acceptWorkspaceInvitationRest,
+  rejectWorkspaceInvitationRest,
+  getWorkspaceInvitationListRest,
 } from "./restApi";
 
 const graphqlApi: apiFunction = {
@@ -85,6 +89,10 @@ const graphqlApi: apiFunction = {
   changeWorkspace: changeWorkspaceRest,
   deleteWorkspace: deleteWorkspaceRest,
   updateWorkspace: updateWorkspaceRest,
+  getWorkspaceInvitationList: getWorkspaceInvitationListRest,
+  sendWorkspaceInvitation: sendWorkspaceInvitationRest,
+  acceptWorkspaceInvitation: acceptWorkspaceInvitationRest,
+  rejectWorkspaceInvitation: rejectWorkspaceInvitationRest,
 };
 
 const restApi: apiFunction = {
@@ -128,6 +136,10 @@ const restApi: apiFunction = {
   changeWorkspace: changeWorkspaceRest,
   deleteWorkspace: deleteWorkspaceRest,
   updateWorkspace: updateWorkspaceRest,
+  getWorkspaceInvitationList: getWorkspaceInvitationListRest,
+  sendWorkspaceInvitation: sendWorkspaceInvitationRest,
+  acceptWorkspaceInvitation: acceptWorkspaceInvitationRest,
+  rejectWorkspaceInvitation: rejectWorkspaceInvitationRest,
 };
 
 export const userAPI: apiFunction =

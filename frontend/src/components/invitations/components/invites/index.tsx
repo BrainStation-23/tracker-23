@@ -1,5 +1,6 @@
 import { InviteUserWorkspaceDto } from "models/invitations";
 import InviteComponent from "./inviteComponent";
+import { Empty } from "antd";
 type Props = {
   data: InviteUserWorkspaceDto[];
   activeTab: "All" | "Pending" | "Responded";
@@ -13,9 +14,13 @@ const InvitesList = ({ data, activeTab }: Props) => {
       : data;
   return (
     <div className="flex flex-col gap-4">
-      {filteredData?.map((invite: any) => (
-        <InviteComponent invite={invite} key={invite.id} />
-      ))}
+      {filteredData?.length > 0 ? (
+        filteredData?.map((invite: any) => (
+          <InviteComponent invite={invite} key={invite.id} />
+        ))
+      ) : (
+        <Empty description="No invitations"></Empty>
+      )}
     </div>
   );
 };

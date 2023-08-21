@@ -9,6 +9,7 @@ import {
 
 import { RegisterDto } from "../models/auth/index";
 import { TaskDto } from "../models/tasks/index";
+import { SendWorkspaceInviteDto } from "models/invitation";
 
 export interface apiFunction {
   login: (data: LoginDto) => Promise<LoginResponseDto | undefined>;
@@ -51,6 +52,10 @@ export interface apiFunction {
   updateWorkspace: (data: CreateWorkspaceModel, id: number) => Promise<any>;
   changeWorkspace: (id: number) => Promise<any>;
   deleteWorkspace: (id: number) => Promise<any>;
+  getWorkspaceInvitationList: () => Promise<any>;
+  sendWorkspaceInvitation: (data: SendWorkspaceInviteDto) => Promise<any>;
+  acceptWorkspaceInvitation: (id: number) => Promise<any>;
+  rejectWorkspaceInvitation: (id: number) => Promise<any>;
   importProject: (id: number) => Promise<any>;
   deleteProjectTasks: (id: number) => Promise<any>;
   getJiraActiveSprintTasks: (searchParams?: SearchParamsModel) => Promise<any>;

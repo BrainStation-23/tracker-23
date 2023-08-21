@@ -1,3 +1,4 @@
+import { userAPI } from "APIs";
 import { Button, Form, Input, message, Select } from "antd";
 import { useState } from "react";
 
@@ -11,7 +12,10 @@ const InviteToWorkspace = ({ setIsModalOpen }: Props) => {
   const onFinish = async (values: any) => {
     console.log("Form values:", values);
 
-    message.success("Invitation sent successfully");
+    const res = await userAPI.sendWorkspaceInvitation(values);
+    console.log("🚀 ~ file: inviteToWorkspace.tsx:16 ~ onFinish ~ res:", res);
+
+    res && message.success("Invitation sent successfully");
     setIsModalOpen(false);
   };
 
@@ -33,8 +37,8 @@ const InviteToWorkspace = ({ setIsModalOpen }: Props) => {
         rules={[{ required: true, message: "Please select a role" }]}
       >
         <Select>
-          <Option value="admin">Admin</Option>
-          <Option value="user">User</Option>
+          <Option value="ADMIN">Admin</Option>
+          <Option value="USER">User</Option>
         </Select>
       </Form.Item>
       <Form.Item>
