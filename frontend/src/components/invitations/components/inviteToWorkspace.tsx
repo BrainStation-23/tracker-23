@@ -37,8 +37,8 @@ const InviteToWorkspace = ({ setIsModalOpen }: Props) => {
         rules={[{ required: true, message: "Please select a role" }]}
       >
         <Select>
-          <Option value="admin">Admin</Option>
-          <Option value="user">User</Option>
+          <Option value="ADMIN">Admin</Option>
+          <Option value="USER">User</Option>
         </Select>
       </Form.Item>
       <Form.Item>
