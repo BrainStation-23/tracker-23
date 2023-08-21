@@ -12,6 +12,8 @@ import { SprintsModule } from './sprints/sprints.module';
 import { JiraModule } from './integrations/jira/jira.module';
 import { TestModule } from './test/test.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
+import { PrismaModule2 } from './prisma2/prisma.module';
+import { DataMigrationModule } from './data_migration/data_migration.module';
 
 @Module({
   imports: [
@@ -21,6 +23,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
     TestModule,
     AuthModule,
     PrismaModule,
+    PrismaModule2,
     TasksModule,
     SessionsModule,
     WorkspacesModule,
@@ -30,6 +33,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
     NotificationModule,
     SprintsModule,
     JiraModule,
+    DataMigrationModule,
   ],
 })
 export class AppModule {}
