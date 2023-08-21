@@ -21,6 +21,7 @@ import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
 import { setTasksSliceHook } from "@/hooks/taskHooks";
+import { SendWorkspaceInviteDto } from "models/invitation";
 
 export async function loginRest(
   data: LoginDto
@@ -486,6 +487,47 @@ export async function changeWorkspaceRest(id: number) {
 export async function deleteWorkspaceRest(id: number) {
   try {
     const res = await axios.delete(`${apiEndPoints.workspaces}/${id}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function sendWorkspaceInvitationRest(
+  data: SendWorkspaceInviteDto
+) {
+  try {
+    const res = await axios.post(`${apiEndPoints.invitation}/send`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getWorkspaceInvitationListRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.invitation}/list`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function acceptWorkspaceInvitationRest(id: number) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.invitation}/response/${id}`, {
+      status: "ACTIVE",
+    });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function rejectWorkspaceInvitationRest(id: number) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.invitation}/response/${id}`, {
+      status: "REJECTED",
+    });
     return res.data;
   } catch (error: any) {
     return false;
