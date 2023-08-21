@@ -9,11 +9,11 @@ export class DataMigrationController {
   @Get('user')
   // @UseGuards(JwtAuthGuard)
   async getAndCreateUser() {
-    return this.dataMigrationService.getAndCreateUser();
+    return this.dataMigrationService.getAndCreateUsers();
   }
   @Get('task')
   // @UseGuards(JwtAuthGuard)
   async getAndCreateTask() {
-    return this.dataMigrationService.getAndCreateTask();
+    return this.dataMigrationService.getAndCreateTasks();
   }
 }
