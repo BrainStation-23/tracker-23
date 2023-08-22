@@ -1,4 +1,3 @@
-import { SessionsService } from './../sessions/sessions.service';
 import axios from 'axios';
 import { coreConfig } from 'config/core';
 import { Response } from 'express';
@@ -25,15 +24,13 @@ import {
 import {
   CreateTaskDto,
   GetTaskQuery,
-  GetTeamTaskQuery,
+  GetTeamTaskQuery, GetTeamTaskQueryType,
   StatusEnum,
   TimeSpentReqBodyDto,
   UpdatePinDto,
 } from './dto';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { SprintsService } from 'src/sprints/sprints.service';
-import { setDefaultResultOrder } from 'dns';
-import { DefaultDeserializer } from 'v8';
 
 @Injectable()
 export class TasksService {
@@ -1895,62 +1892,18 @@ export class TasksService {
   }
 
   async getSpentTimeByDay(user: User, query: GetTaskQuery) {
-    let { startDate, endDate } = query as unknown as GetTaskQuery;
-    startDate = startDate && new Date(startDate);
-    endDate = endDate && new Date(endDate);
-    const taskList: any[] = await this.getTasks(user, query);
-    const map = new Map<Date, number>();
-
-    let totalTimeSpent = 0;
-    const oneDay = 3600 * 24 * 1000;
-    for (
-      let endDay = startDate.getTime() + oneDay, startDay = startDate.getTime();
-      endDay <= endDate.getTime() + oneDay;
-      endDay += oneDay, startDay += oneDay
-    ) {
-      for (const task of taskList) {
-        task?.sessions?.forEach((session: any) => {
-          const start = new Date(session.startTime);
-          let end = new Date(session.endTime);
-          if (end.getTime() === 0) {
-            end = new Date();
-          }
-
-          let sessionTimeSpent = 0;
-          if (start.getTime() >= startDay && end.getTime() <= endDay) {
-            sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
-          } else if (startDay >= start.getTime() && end.getTime() >= endDay) {
-            sessionTimeSpent = (endDay - startDay) / (1000 * 60);
-          } else if (end.getTime() >= startDay) {
-            sessionTimeSpent =
-              Math.min(
-                Math.max(endDay - start.getTime(), 0),
-                end.getTime() - startDay,
-              ) /
-              (1000 * 60);
-          }
-          totalTimeSpent += sessionTimeSpent;
-        });
-      }
-      let tmp = map.get(new Date(startDay));
-      if (!tmp) tmp = 0;
-      map.set(
-        new Date(startDay),
-        tmp + this.getHourFromMinutes(totalTimeSpent),
-      );
-      totalTimeSpent = 0;
+    let { startDate, endDate } = query;
+    startDate = startDate ? new Date(startDate) : new Date()
+    endDate = endDate ? new Date(endDate) : new Date()
+    try{
+      const taskList: any[] = await this.getTasks(user, query);
+      return this.getSpentTimePerDay(taskList, startDate, endDate);
+    } catch (e) {
+      console.log(e);
+      throw new APIException('Could not get tasks', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    const ar = [];
-    const iterator = map[Symbol.iterator]();
-    for (const item of iterator) {
-      ar.push({
-        day: item[0],
-        hour: item[1],
-      });
-    }
-    return ar;
-    return new Array(...map);
   }
+
   getHourFromMinutes(min: number) {
     if (!min) return 0;
     const hour = Number((min / 60).toFixed(2));
@@ -2308,78 +2261,205 @@ export class TasksService {
     }
   }
 
-  async getTimeSpentByTeam(query: GetTeamTaskQuery, user: User) {
-      let { startDate, endDate, userIds } = query;
-      startDate = startDate && new Date(startDate);
-      endDate = endDate && new Date(endDate);
+  async getTimeSpentByTeam(query: GetTeamTaskQuery, user: User, type: GetTeamTaskQueryType) {
+    let projectIds, projectIdArray, userIds, userIdArray;
+    if(query?.projectIds) {
+      projectIds = query?.projectIds as unknown as string;
+      projectIdArray =
+          projectIds && projectIds.split(',').map((item) => Number(item.trim()));
+    }
+    if(query?.userIds){
+      userIds = query?.userIds as unknown as string;
+      userIdArray =
+          userIds && userIds.split(',').map((item) => Number(item.trim()));
+    }
 
-      if(user?.activeWorkspaceId && userIds && userIds?.length > 0){
-        const userWorkspaces = await this.prisma.userWorkspace.findMany({
+    if(!user?.activeWorkspaceId) throw new APIException('No user workspace detected', HttpStatus.BAD_REQUEST);
+
+    let { startDate, endDate } = query;
+    startDate = startDate ? new Date(startDate) : new Date()
+    endDate = endDate ? new Date(endDate) : new Date()
+    let taskList;
+
+    if(!userIdArray || userIdArray?.length === 0){
+      try {
+        taskList = user?.activeWorkspaceId && await this.prisma.task.findMany({
           where: {
-            userId: {
-              in: userIds,
+            workspaceId: user?.activeWorkspaceId,
+            ...(projectIdArray && projectIdArray?.length !== 0 && { projectId: { in: projectIdArray } }),
+            ...(query?.status && { status: query?.status }),
+            sessions: {
+              some: {
+                startTime: {
+                  gte: startDate,
+                },
+              },
+            },
+          },
+          select: {
+            sessions: true,
+            project: true
+          }
+        });
+      } catch (e) {
+        console.log(e);
+        throw new APIException('Could not get task list', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    } else {
+      try {
+        let userWorkspaces = user?.activeWorkspaceId && await this.prisma.userWorkspace.findMany({
+          where: {
+            userId:{
+              in: userIdArray
             },
             workspaceId: user?.activeWorkspaceId,
           },
           select: {
             id: true,
-          },
+          }
         });
+        //@ts-ignore
+        const userWorkspaceIds: number[] = userWorkspaces?.map((userWorkspace: any) => userWorkspace?.id);
 
-        const combinedWorkSpace: number[] = userWorkspaces?.map(userWorkspace => userWorkspace?.id);
-        const taskList = await this.prisma.task.findMany({
-          where: {
+        taskList = await this.prisma.task.findMany({
+          where : {
+            ...(projectIdArray && projectIdArray?.length !== 0 && { projectId: { in: projectIdArray } }),
+            ...(query?.status && { status: query?.status }),
             userWorkspaceId: {
-              in: combinedWorkSpace,
-            }
+              in: userWorkspaceIds,
+            },
+            sessions: {
+              some: {
+                startTime: {
+                  gte: startDate,
+                },
+              },
+            },
           },
           select: {
             sessions: true,
+            project: true,
           }
         });
-
-        let totalTimeSpent = 0;
-         for (const task of taskList) {
-           let taskTimeSpent = 0;
-           task?.sessions?.forEach((session: any) => {
-             const start = new Date(session.startTime);
-             let end = new Date(session.endTime);
-             if (end.getTime() === 0) {
-               end = new Date();
-             }
-             let sessionTimeSpent = 0;
-             if (start >= startDate && end <= endDate) {
-               sessionTimeSpent =
-                 (end.getTime() - start.getTime()) / (1000 * 60);
-             } else if (startDate >= start && end >= endDate) {
-               sessionTimeSpent =
-                 (endDate.getTime() - startDate.getTime()) / (1000 * 60);
-             } else if (end >= startDate) {
-               sessionTimeSpent =
-                 Math.min(
-                   Math.max(endDate.getTime() - start.getTime(), 0),
-                   end.getTime() - startDate.getTime(),
-                 ) /
-                 (1000 * 60);
-             }
-             totalTimeSpent += sessionTimeSpent;
-             taskTimeSpent += sessionTimeSpent;
-           });
-
-           if (!task.projectName) task.projectName = 'T23';
-
-           if (!map.has(task.projectName)) {
-             map.set(task.projectName, taskTimeSpent);
-           } else {
-             let getValue = map.get(task.projectName);
-             if (!getValue) getValue = 0;
-             map.set(task.projectName, getValue + taskTimeSpent);
-           }
-         }
+      } catch (e) {
+        console.log(e);
+        throw new APIException('Could not get task list', HttpStatus.INTERNAL_SERVER_ERROR);
       }
-      // else if(){
+    }
 
-      // }
+    if(!taskList) return { value: 0, message: 'No tasks available'};
+
+    return type === GetTeamTaskQueryType.DATE_RANGE
+        ? this.getSpentTimeOnTasks(taskList, startDate, endDate)
+        : this.getSpentTimePerDay(taskList, startDate, endDate)
+  }
+
+  //private functions
+  getSpentTimeOnTasks(taskList: any, startDate: Date, endDate: Date){
+    let totalTimeSpent = 0;
+    const map = new Map<string, number>();
+    for (const task of taskList) {
+      const {project} = task;
+      let taskTimeSpent = 0;
+      task?.sessions?.forEach((session: any) => {
+        const start = new Date(session.startTime);
+        let end = new Date(session.endTime);
+        if (end.getTime() === 0) {
+          end = new Date();
+        }
+        let sessionTimeSpent = 0;
+        if (start >= startDate && end <= endDate) {
+          sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
+        } else if (startDate >= start && end >= endDate) {
+          sessionTimeSpent =
+              (endDate.getTime() - startDate.getTime()) / (1000 * 60);
+        } else if (end >= startDate) {
+          sessionTimeSpent =
+              Math.min(
+                  Math.max(endDate.getTime() - start.getTime(), 0),
+                  end.getTime() - startDate.getTime(),
+              ) /
+              (1000 * 60);
+        }
+        totalTimeSpent += sessionTimeSpent;
+        taskTimeSpent += sessionTimeSpent;
+      });
+      if (!project?.projectName) project.projectName = 'T23';
+
+      if (!map.has(project?.projectName)) {
+        map.set(project?.projectName, taskTimeSpent);
+      } else {
+        let getValue = map.get(project?.projectName);
+        if (!getValue) getValue = 0;
+        map.set(project?.projectName, getValue + taskTimeSpent);
+      }
+    }
+    const ar = [];
+    const iterator = map[Symbol.iterator]();
+    for (const item of iterator) {
+      ar.push({
+        projectName: item[0],
+        value: this.getHourFromMinutes(item[1]),
+      });
+    }
+
+    return {
+      TotalSpentTime: this.getHourFromMinutes(totalTimeSpent),
+      value: ar,
+    };
+  }
+
+  getSpentTimePerDay(taskList: any, startDate: Date, endDate: Date){
+    const map = new Map<Date, number>();
+
+    let totalTimeSpent = 0;
+    const oneDay = 3600 * 24 * 1000;
+    for (
+        let endDay = startDate.getTime() + oneDay, startDay = startDate.getTime();
+        endDay <= endDate.getTime() + oneDay;
+        endDay += oneDay, startDay += oneDay
+    ) {
+      for (const task of taskList) {
+        task?.sessions?.forEach((session: any) => {
+          const start = new Date(session.startTime);
+          let end = new Date(session.endTime);
+          if (end.getTime() === 0) {
+            end = new Date();
+          }
+
+          let sessionTimeSpent = 0;
+          if (start.getTime() >= startDay && end.getTime() <= endDay) {
+            sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
+          } else if (startDay >= start.getTime() && end.getTime() >= endDay) {
+            sessionTimeSpent = (endDay - startDay) / (1000 * 60);
+          } else if (end.getTime() >= startDay) {
+            sessionTimeSpent =
+                Math.min(
+                    Math.max(endDay - start.getTime(), 0),
+                    end.getTime() - startDay,
+                ) /
+                (1000 * 60);
+          }
+          totalTimeSpent += sessionTimeSpent;
+        });
+      }
+      let tmp = map.get(new Date(startDay));
+      if (!tmp) tmp = 0;
+      map.set(
+          new Date(startDay),
+          tmp + this.getHourFromMinutes(totalTimeSpent),
+      );
+      totalTimeSpent = 0;
+    }
+    const ar = [];
+    const iterator = map[Symbol.iterator]();
+    for (const item of iterator) {
+      ar.push({
+        day: item[0],
+        hour: item[1],
+      });
+    }
+    return ar;
   }
 }
 
