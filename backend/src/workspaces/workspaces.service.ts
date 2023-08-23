@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserWorkspaceStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ReqStatusBody, SendInvitationReqBody, WorkspaceReqBody } from './dto';
+import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
 import { APIException } from 'src/internal/exception/api.exception';
 import { v4 as uuidv4 } from 'uuid';
 @Injectable()
@@ -32,8 +32,9 @@ export class WorkspacesService {
       );
     }
     //no need to throw error, as it deosn't concern the creation phase
-    // changeWorkspace &&
-    //   (await this.changeActiveWorkspace(+workspace?.id, +userId));
+    changeWorkspace &&
+      workspace?.id &&
+      (await this.changeActiveWorkspace(+workspace?.id, +userId));
 
     return workspace;
   }
