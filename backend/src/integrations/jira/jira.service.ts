@@ -286,6 +286,7 @@ export class JiraService {
           integrationId: {
             in: jiraIntegrationIds?.map((id) => Number(id)),
           },
+          workspaceId: user.activeWorkspaceId,
         },
         include: {
           statuses: true,
