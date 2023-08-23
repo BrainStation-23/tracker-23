@@ -118,6 +118,10 @@ export class JiraService {
       }
       return integrationProjects;
     } catch (error) {
+      console.log(
+        '🚀 ~ file: jira.service.ts:121 ~ respResources.map ~ error:',
+        error,
+      );
       throw new APIException('Code Expired', HttpStatus.BAD_REQUEST);
     }
   }
@@ -192,7 +196,18 @@ export class JiraService {
             userWorkspaceId: userWorkspace.id,
           },
         });
-
+        const deleteTempIntegration = await this.prisma.tempIntegration.delete({
+          where: {
+            id: getTempIntegration.id,
+          },
+        });
+        // console.log(integration);
+        if (!deleteTempIntegration) {
+          throw new APIException(
+            'Can not create integration',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
         return {
           message: `Integration successful in ${doesExistIntegration.site}`,
           integration: doesExistIntegration,
