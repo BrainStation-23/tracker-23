@@ -829,6 +829,14 @@ export class TasksService {
       Authorization: `Bearer ${userIntegration.accessToken}`,
     };
 
+    const mappedUserWorkspaceAndJiraId =
+      await this.mappingUserWorkspaceAndJiraAccountId(user);
+
+    console.log(
+      '🚀 ~ file: tasks.service.ts:833 ~ TasksService ~ mappedUserWorkspaceAndJiraId:',
+      mappedUserWorkspaceAndJiraId,
+    );
+
     const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId}&maxResults=1000`;
     const fields =
       'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority';
@@ -883,10 +891,15 @@ export class TasksService {
         // console.log(integratedTask);
 
         taskList.push({
+          // userWorkspaceId:
+          //   userIntegration.jiraAccountId === integratedTask.assignee?.accountId
+          //     ? userWorkspace.id
+          //     : null,
+
           userWorkspaceId:
-            userIntegration.jiraAccountId === integratedTask.assignee?.accountId
-              ? userWorkspace.id
-              : null,
+            mappedUserWorkspaceAndJiraId.get(
+              integratedTask.assignee?.accountId,
+            ) || null,
           workspaceId: project.workspaceId,
           title: integratedTask.summary,
           assigneeId: integratedTask.assignee?.accountId || null,
@@ -1022,6 +1035,39 @@ export class TasksService {
         );
       }
     }
+  }
+
+  private async mappingUserWorkspaceAndJiraAccountId(user: User) {
+    const mappedUserWorkspaceAndJiraId = new Map<string, number>();
+    const workspace =
+      user.activeWorkspaceId &&
+      (await this.prisma.workspace.findUnique({
+        where: {
+          id: user.activeWorkspaceId,
+        },
+        include: {
+          userWorkspaces: {
+            include: {
+              userIntegration: true,
+            },
+          },
+        },
+      }));
+
+    workspace &&
+      workspace.userWorkspaces &&
+      workspace.userWorkspaces?.map((userWorkspace) => {
+        if (
+          userWorkspace.userIntegration.length > 0 &&
+          userWorkspace.userIntegration[0].jiraAccountId
+        ) {
+          mappedUserWorkspaceAndJiraId.set(
+            userWorkspace.userIntegration[0].jiraAccountId,
+            userWorkspace.id,
+          );
+        }
+      });
+    return mappedUserWorkspaceAndJiraId;
   }
 
   private async updateProjectIntegrationStatus(projId: number) {
