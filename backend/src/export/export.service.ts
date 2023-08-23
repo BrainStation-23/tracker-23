@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { IntegrationType, Task, User, UserIntegration } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GetTaskQuery } from 'src/tasks/dto';
+import { ExportTeamTaskDataQuery, GetTaskQuery } from 'src/tasks/dto';
 import * as tmp from 'tmp';
 import { Workbook } from 'exceljs';
 import { Response } from 'express';
@@ -18,6 +18,7 @@ export class ExportService {
     private prisma: PrismaService,
     private sprintService: SprintsService,
   ) {}
+
   async exportToExcel(
     user: User,
     query: GetTaskQuery,
@@ -28,95 +29,23 @@ export class ExportService {
       throw new NotFoundException('No data to download');
     }
 
-    const rows = [];
-    data.forEach((doc: any) => {
-      const modifiedDoc = { ...doc };
-
-      // Format the sessions data to be user-friendly
-      const formattedSessions = doc.sessions.map((session: any) => {
-        return {
-          'Start Time': session.startTime,
-          'End Time': session.endTime,
-          Status: session.status,
-        };
-      });
-
-      modifiedDoc.sessions = formattedSessions;
-
-      rows.push(Object.values(modifiedDoc));
-    });
-    const book = new Workbook();
-    const sheet = book.addWorksheet(`Sheet 1`);
-    // Get the column names from the data structure
-    const columnNames = Object.keys(data[0]);
-
-    // Modify the column names as desired
-    const modifiedColumnNames = columnNames.map((name) => {
-      if (name === 'title') {
-        return 'Task Title';
-      } else if (name === 'description') {
-        return 'Description';
-      } else if (name === 'assigneeId') {
-        return 'Assignee ID';
-      } else if (name === 'projectName') {
-        return 'Project Name';
-      } else if (name === 'estimation') {
-        return 'Estimation';
-      } else if (name === 'status') {
-        return 'Status';
-      } else if (name === 'due') {
-        return 'Due Date';
-      } else if (name === 'priority') {
-        return 'Priority';
-      } else if (name === 'labels') {
-        return 'Labels';
-      } else if (name === 'createdAt') {
-        return 'Created At';
-      } else if (name === 'updatedAt') {
-        return 'Updated At';
-      } else if (name === 'userId') {
-        return 'User ID';
-      } else if (name === 'source') {
-        return 'Source';
-      } else if (name === 'sessions') {
-        return 'Sessions';
-      } else if (name === 'url'){
-        return 'URL'
-      }
-      return name;
-    });
-    rows.unshift(modifiedColumnNames);
-
-    sheet.addRows(rows);
-    sheet.getRow(1).font = { bold: true };
-
-    const file: any = await new Promise((resolve) => {
-      tmp.file(
-        {
-          discardDescriptor: true,
-          prefix: `MyExcelSheet`,
-          postfix: '.xlsx',
-          mode: parseInt('0600', 8),
-        },
-        (err, file) => {
-          if (err) {
-            throw new BadRequestException(err);
-          }
-          book.xlsx
-            .writeFile(file)
-            .then(() => {
-              resolve(file);
-            })
-            .catch((err) => {
-              throw new BadRequestException(err);
-            });
-        },
-      );
-    });
-    res.download(file);
+    await this.generateExcelFiles(res, data);
   }
 
-  async getTasks(user: User, query: GetTaskQuery): Promise<any[]> {
+  async exportTeamDataToExcel(
+    user: User,
+    query: ExportTeamTaskDataQuery,
+    res: Response,
+  ): Promise<any> {
+    const data: Task[] = await this.getTasks(user, query);
+    if (!(data?.length > 0)) {
+      throw new NotFoundException('No data to download');
+    }
+
+    await this.generateExcelFiles(res, data);
+  }
+
+  async getTasks(user: User, query: any): Promise<any[]> {
     {
       try {
         console.log(
@@ -134,16 +63,43 @@ export class ExportService {
         const projectIdArray =
           projectIds &&
           projectIds.split(',').map((item) => Number(item.trim()));
-        const userWorkspace =
-          user.activeWorkspaceId &&
-          (await this.prisma.userWorkspace.findFirst({
-            where: {
-              userId: user.id,
-              workspaceId: user.activeWorkspaceId,
-            },
-          }));
-        if (!userWorkspace) {
-          return [];
+        let userWorkspace;
+        let userIds, userIdArray, userWorkspaceIds: number[];
+        if (query?.userIds) {
+          userIds = query?.userIds as unknown as string;
+          userIdArray =
+            userIds && userIds.split(',').map((item) => Number(item.trim()));
+          userWorkspace =
+            user?.activeWorkspaceId &&
+            (await this.prisma.userWorkspace.findMany({
+              where: {
+                userId: {
+                  //@ts-ignore
+                  in: userIdArray,
+                },
+                workspaceId: user?.activeWorkspaceId,
+              },
+            }));
+
+          if (!userWorkspace || userWorkspace?.length === 0) {
+            return [];
+          }
+
+          userWorkspaceIds = userWorkspace?.map(
+            (workspace: any) => workspace?.id,
+          );
+        } else {
+          userWorkspace =
+            user.activeWorkspaceId &&
+            (await this.prisma.userWorkspace.findFirst({
+              where: {
+                userId: user.id,
+                workspaceId: user.activeWorkspaceId,
+              },
+            }));
+          if (!userWorkspace) {
+            return [];
+          }
         }
 
         const priority1: any = (priority as unknown as string)?.split(',');
@@ -163,6 +119,7 @@ export class ExportService {
           );
 
           console.log({
+            //@ts-ignore
             userWorkspaceId: userWorkspace.id,
             source: IntegrationType.JIRA,
             id: { in: taskIds },
@@ -179,9 +136,14 @@ export class ExportService {
             }),
           });
 
+
           return await this.prisma.task.findMany({
             where: {
-              userWorkspaceId: userWorkspace.id,
+              //@ts-ignore
+              userWorkspaceId: userWorkspaceIds
+                ? { in: userWorkspaceIds }
+                : //@ts-ignore
+                  userWorkspace.id,
               source: IntegrationType.JIRA,
               id: { in: taskIds },
               ...(projectIdArray && {
@@ -226,7 +188,11 @@ export class ExportService {
           });
         } else {
           const databaseQuery = {
-            userWorkspaceId: userWorkspace.id,
+            //@ts-ignore
+            userWorkspaceId: userWorkspaceIds
+              ? { in: userWorkspaceIds }
+              : //@ts-ignore
+                userWorkspace.id,
             ...(projectIdArray && {
               projectId: { in: projectIdArray.map((id) => Number(id)) },
             }),
@@ -286,5 +252,95 @@ export class ExportService {
         );
       }
     }
+  }
+
+  //private functions
+  async generateExcelFiles(res: Response, data: Task[]) {
+    const rows = [];
+    data.forEach((doc: any) => {
+      const modifiedDoc = { ...doc };
+
+      // Format the sessions data to be user-friendly
+      const formattedSessions = doc.sessions.map((session: any) => {
+        return {
+          'Start Time': session.startTime,
+          'End Time': session.endTime,
+          Status: session.status,
+        };
+      });
+
+      modifiedDoc.sessions = formattedSessions;
+
+      rows.push(Object.values(modifiedDoc));
+    });
+    const book = new Workbook();
+    const sheet = book.addWorksheet(`Sheet 1`);
+    // Get the column names from the data structure
+    const columnNames = Object.keys(data[0]);
+
+    // Modify the column names as desired
+    const modifiedColumnNames = columnNames.map((name) => {
+      if (name === 'title') {
+        return 'Task Title';
+      } else if (name === 'description') {
+        return 'Description';
+      } else if (name === 'assigneeId') {
+        return 'Assignee ID';
+      } else if (name === 'projectName') {
+        return 'Project Name';
+      } else if (name === 'estimation') {
+        return 'Estimation';
+      } else if (name === 'status') {
+        return 'Status';
+      } else if (name === 'due') {
+        return 'Due Date';
+      } else if (name === 'priority') {
+        return 'Priority';
+      } else if (name === 'labels') {
+        return 'Labels';
+      } else if (name === 'createdAt') {
+        return 'Created At';
+      } else if (name === 'updatedAt') {
+        return 'Updated At';
+      } else if (name === 'userId') {
+        return 'User ID';
+      } else if (name === 'source') {
+        return 'Source';
+      } else if (name === 'sessions') {
+        return 'Sessions';
+      } else if (name === 'url') {
+        return 'URL';
+      }
+      return name;
+    });
+    rows.unshift(modifiedColumnNames);
+
+    sheet.addRows(rows);
+    sheet.getRow(1).font = { bold: true };
+
+    const file: any = await new Promise((resolve) => {
+      tmp.file(
+        {
+          discardDescriptor: true,
+          prefix: `MyExcelSheet`,
+          postfix: '.xlsx',
+          mode: parseInt('0600', 8),
+        },
+        (err, file) => {
+          if (err) {
+            throw new BadRequestException(err);
+          }
+          book.xlsx
+            .writeFile(file)
+            .then(() => {
+              resolve(file);
+            })
+            .catch((err) => {
+              throw new BadRequestException(err);
+            });
+        },
+      );
+    });
+    res.download(file);
   }
 }

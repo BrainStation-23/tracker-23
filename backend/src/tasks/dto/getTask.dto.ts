@@ -40,6 +40,38 @@ export class GetTaskQuery {
   projectIds: string[];
 }
 
+export class ExportTeamTaskDataQuery {
+  @IsString()
+  @IsOptional()
+  startDate: Date;
+
+  @IsString()
+  @IsOptional()
+  endDate: Date;
+
+  @IsOptional()
+  priority: PriorityEnum[];
+
+  @IsOptional()
+  status: StatusEnum[];
+
+  @IsString()
+  @IsOptional()
+  text: string;
+
+  @IsString()
+  @IsOptional()
+  sprintId: string[];
+
+  @IsString()
+  @IsOptional()
+  projectIds: string[];
+
+  @IsString()
+  @IsOptional()
+  userIds: string[];
+}
+
 export class ProjectTaskDeto {
   @IsNumber()
   projectId: string;
