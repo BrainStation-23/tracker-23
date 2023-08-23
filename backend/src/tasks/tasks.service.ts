@@ -2304,47 +2304,6 @@ export class TasksService {
   }
 
   async getProjectList(user: User) {
-    // const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    // if (!userWorkspace) {
-    //   throw new APIException(
-    //     'User workspace not found',
-    //     HttpStatus.BAD_REQUEST,
-    //   );
-    // }
-    // const integrations = await this.prisma.integration.findMany({
-    //   where: { workspaceId: userWorkspace.workspaceId },
-    // });
-    // const userIntegrations =
-    //   userWorkspace &&
-    //   (await this.prisma.userIntegration.findMany({
-    //     where: {
-    //       userWorkspaceId: userWorkspace.id,
-    //       integrationId: {
-    //         in: integrations.map((int) => {
-    //           return int.id;
-    //         }),
-    //       },
-    //     },
-    //     include: {
-    //       integration: true,
-    //     },
-    //   }));
-
-    // const array: number[] = [];
-    // userIntegrations?.map((userIntegration) => {
-    //   if (userIntegration.integration?.id) {
-    //     array.push(userIntegration.integration.id);
-    //   }
-    // });
-    // return await this.prisma.project.findMany({
-    //   where: {
-    //     workspaceId: user.activeWorkspaceId,
-    //     integrationId: {
-    //       in: array,
-    //     },
-    //   },
-    // });
-
     const getUserIntegrationList =
       await this.integrationsService.getUserIntegrations(user);
     const jiraIntegrationIds = getUserIntegrationList?.map(
@@ -2353,7 +2312,6 @@ export class TasksService {
     try {
       return await this.prisma.project.findMany({
         where: {
-          integrated: false,
           integrationId: {
             in: jiraIntegrationIds?.map((id) => Number(id)),
           },
