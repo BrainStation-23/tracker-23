@@ -14,6 +14,7 @@ import { TestModule } from './test/test.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
 import { PrismaModule2 } from './prisma2/prisma.module';
 import { DataMigrationModule } from './data_migration/data_migration.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { DataMigrationModule } from './data_migration/data_migration.module';
     SprintsModule,
     JiraModule,
     DataMigrationModule,
+    EmailModule,
   ],
 })
 export class AppModule {}
