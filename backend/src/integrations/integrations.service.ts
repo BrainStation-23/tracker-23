@@ -6,7 +6,7 @@ import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
-import { User } from '@prisma/client';
+import { Integration, Role, User } from '@prisma/client';
 
 @Injectable()
 export class IntegrationsService {
@@ -34,16 +34,33 @@ export class IntegrationsService {
     });
   }
   async getIntegrations(user: User) {
-    if (!user.activeWorkspaceId) {
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
       throw new APIException(
-        'Can not delete user integration',
+        'User workspace not found',
         HttpStatus.BAD_REQUEST,
       );
     }
-    return await this.prisma.integration.findMany({
-      where: {
-        workspaceId: user.activeWorkspaceId,
-      },
+    const integrations = await this.prisma.integration.findMany({
+      where: { workspaceId: userWorkspace.workspaceId },
+    });
+    const userIntegrations =
+      userWorkspace &&
+      (await this.prisma.userIntegration.findMany({
+        where: {
+          userWorkspaceId: userWorkspace.id,
+          integrationId: {
+            in: integrations.map((int) => {
+              return int.id;
+            }),
+          },
+        },
+        include: {
+          integration: true,
+        },
+      }));
+    return userIntegrations?.map((userIntegration) => {
+      return userIntegration.integration;
     });
   }
 
@@ -137,11 +154,68 @@ export class IntegrationsService {
 
   async deleteIntegration(user: User, integrationId: number) {
     try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new APIException('Can not delete integration');
+      }
       const id = Number(integrationId);
-      await this.prisma.integration.delete({
-        where: { id },
-      });
-      return { message: 'Successfully user integration deleted' };
+      const transactionRes = await this.prisma.$transaction([
+        this.prisma.userIntegration.delete({
+          where: {
+            userIntegrationIdentifier: {
+              integrationId: id,
+              userWorkspaceId: userWorkspace.id,
+            },
+          },
+        }),
+
+        this.prisma.task.updateMany({
+          where: {
+            userWorkspaceId: userWorkspace.id,
+          },
+          data: {
+            userWorkspaceId: null,
+          },
+        }),
+      ]);
+      console.log(
+        '🚀 ~ file: integrations.service.ts:170 ~ IntegrationsService ~ deleteIntegration ~ transactionRes:',
+        transactionRes,
+      );
+
+      if (transactionRes) {
+        return { message: 'Successfully user integration deleted' };
+      }
+      throw new APIException(
+        'Can not delete user integration',
+        HttpStatus.BAD_REQUEST,
+      );
+    } catch (err) {
+      console.log(err.message);
+      throw new APIException(
+        err.message || 'Can not execute the uninstall operation',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async deleteIntegrationByAdmin(user: User, integrationId: number) {
+    try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new APIException(
+          'User Workspace not found',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (userWorkspace.role === Role.ADMIN) {
+        const id = Number(integrationId);
+        await this.prisma.integration.delete({
+          where: { id },
+        });
+        return { message: 'Successfully user integration deleted' };
+      }
+      return { message: 'You are not allowed to perform this action.' };
     } catch (err) {
       console.log(err.message);
       throw new APIException(

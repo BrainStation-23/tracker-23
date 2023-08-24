@@ -15,12 +15,25 @@ export class IntegrationsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async getIntegrations(@GetUser() user: User) {
-    return this.integrationsService.getIntegrations(user);
+    return await this.integrationsService.getIntegrations(user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteIntegration(@GetUser() user: User, @Param('id') id: number) {
-    return this.integrationsService.deleteIntegration(user, id);
+    return await this.integrationsService.deleteIntegration(user, id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':integrationId')
+  // need to add role system
+  async deleteIntegrationByAdmin(
+    @GetUser() user: User,
+    @Param('integrationId') integrationId: number,
+  ) {
+    return await this.integrationsService.deleteIntegrationByAdmin(
+      user,
+      integrationId,
+    );
   }
 }

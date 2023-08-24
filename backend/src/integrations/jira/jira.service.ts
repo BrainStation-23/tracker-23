@@ -159,6 +159,40 @@ export class JiraService {
           },
         });
 
+        await this.prisma.userIntegration.create({
+          data: {
+            accessToken: getTempIntegration.accessToken,
+            refreshToken: getTempIntegration.refreshToken,
+            jiraAccountId: getTempIntegration.jiraAccountId,
+            userWorkspaceId: getTempIntegration.userWorkspaceId,
+            workspaceId: getTempIntegration.workspaceId,
+            integrationId: doesExistIntegration.id,
+            siteId,
+          },
+        });
+
+        const importedProject = await this.prisma.project.findMany({
+          where: {
+            workspaceId: user.activeWorkspaceId,
+            integrationId: doesExistIntegration.id,
+            integrated: true,
+          },
+        });
+
+        await this.prisma.task.updateMany({
+          where: {
+            assigneeId: getTempIntegration.jiraAccountId,
+            projectId: {
+              in: importedProject.map((prj) => {
+                return prj.id;
+              }),
+            },
+          },
+          data: {
+            userWorkspaceId: userWorkspace.id,
+          },
+        });
+
         return {
           message: `Integration successful in ${doesExistIntegration.site}`,
           integration: doesExistIntegration,
