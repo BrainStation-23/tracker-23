@@ -84,7 +84,8 @@ model User {
   picture           String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-
+  passwordResetToken String?
+  passwordResetExpires DateTime?
   userWorkspaces  UserWorkspace[] @relation("User")
   // ownedWorkspaces     Workspace[]
   // tasks               Task[]

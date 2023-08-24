@@ -10,6 +10,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { TokenErrorFilter } from 'src/filters/token-error.filter';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { HttpModule } from '@nestjs/axios';
+import { EmailService } from 'src/email/email.service';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { HttpModule } from '@nestjs/axios';
     JwtStrategy,
     GoogleStrategy,
     WorkspacesService,
+    EmailService,
 
     {
       provide: APP_FILTER,

@@ -11,6 +11,7 @@ import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { SprintsService } from 'src/sprints/sprints.service';
+import { EmailService } from 'src/email/email.service';
 
 @Module({
   imports: [HttpModule.register({}), IntegrationsModule],
@@ -24,6 +25,7 @@ import { SprintsService } from 'src/sprints/sprints.service';
     IntegrationsService,
     WorkspacesService,
     SprintsService,
+    EmailService,
   ],
   exports: [SessionsService],
 })

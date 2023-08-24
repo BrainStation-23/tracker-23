@@ -12,6 +12,7 @@ import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { SprintsService } from 'src/sprints/sprints.service';
+import { EmailService } from 'src/email/email.service';
 
 @Module({
   imports: [HttpModule.register({}), SprintsModule, IntegrationsModule],
@@ -23,6 +24,7 @@ import { SprintsService } from 'src/sprints/sprints.service';
     IntegrationsService,
     WorkspacesService,
     SprintsService,
+    EmailService,
   ],
   controllers: [TasksController],
   exports: [TasksService],
