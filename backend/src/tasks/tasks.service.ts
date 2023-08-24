@@ -2304,11 +2304,29 @@ export class TasksService {
   }
 
   async getProjectList(user: User) {
-    return await this.prisma.project.findMany({
-      where: {
-        workspaceId: user.activeWorkspaceId,
-      },
-    });
+    const getUserIntegrationList =
+      await this.integrationsService.getUserIntegrations(user);
+    const jiraIntegrationIds = getUserIntegrationList?.map(
+      (userIntegration) => userIntegration?.integration?.id,
+    );
+    try {
+      return await this.prisma.project.findMany({
+        where: {
+          integrationId: {
+            in: jiraIntegrationIds?.map((id) => Number(id)),
+          },
+          workspaceId: user.activeWorkspaceId,
+        },
+        include: {
+          statuses: true,
+        },
+      });
+    } catch (err) {
+      throw new APIException(
+        'Can not get project list',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async deleteProjectTasks(user: User, id: number, res: Response) {
