@@ -168,34 +168,4 @@ export class TasksController {
   async getAllStatus(@GetUser() user: User) {
     return this.tasksService.getAllStatus(user);
   }
-
-  @Get('project-tasks/:projectId')
-  @UseGuards(JwtAuthGuard)
-  async importProjectTasks(
-    @GetUser() user: User,
-    @Param() param: importProjectTasks,
-    @Response() res: any,
-  ) {
-    return this.tasksService.importProjectTasks(
-      user,
-      Number(param.projectId),
-      res,
-    );
-  }
-
-  @Post('project-tasks/:id')
-  @UseGuards(JwtAuthGuard)
-  async deleteProjectTasks(
-    @GetUser() user: User,
-    @Param('id') id: string,
-    @Response() res: any,
-  ) {
-    return this.tasksService.deleteProjectTasks(user, Number(id), res);
-  }
-
-  @Get('project-list')
-  @UseGuards(JwtAuthGuard)
-  async getProjectList(@GetUser() user: User) {
-    return this.tasksService.getProjectList(user);
-  }
 }

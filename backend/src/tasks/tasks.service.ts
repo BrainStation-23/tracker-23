@@ -700,69 +700,8 @@ export class TasksService {
     }
   }
 
-  async importProjectTasks(user: User, projId: number, res?: Response) {
-    const project = await this.prisma.project.findUnique({
-      where: { id: projId },
-      include: { integration: true },
-    });
 
-    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace) {
-      throw new APIException(
-        'Can not import project tasks',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const userIntegration =
-      project?.integrationId &&
-      (await this.getUserIntegration(userWorkspace.id, project.integrationId));
-    const updatedUserIntegration =
-      userIntegration &&
-      (await this.integrationsService.getUpdatedUserIntegration(
-        user,
-        userIntegration.id,
-      ));
-
-    if (!updatedUserIntegration) {
-      await this.handleIntegrationFailure(user);
-      return [];
-    }
-
-    res && (await this.syncCall(StatusEnum.IN_PROGRESS, user));
-
-    this.setProjectStatuses(project, updatedUserIntegration);
-
-    try {
-      await this.sendImportingNotification(user);
-      await this.fetchAndProcessTasksAndWorklog(
-        userWorkspace,
-        user,
-        project,
-        updatedUserIntegration,
-      );
-      await this.sprintService.createSprintAndTask(
-        user,
-        projId,
-        updatedUserIntegration.id,
-      );
-      await this.updateProjectIntegrationStatus(projId);
-      res && (await this.syncCall(StatusEnum.DONE, user));
-      await this.sendImportedNotification(user, res);
-    } catch (error) {
-      await this.handleImportFailure(user);
-      console.log(
-        '🚀 ~ file: tasks.service.ts:752 ~ TasksService ~ importProjectTasks ~ error:',
-        error,
-      );
-      throw new APIException(
-        'Can not import project tasks',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
-  private async getUserIntegration(
+  async getUserIntegration(
     userWorkspaceId: number,
     integrationId: number,
   ) {
@@ -776,7 +715,7 @@ export class TasksService {
     });
   }
 
-  private async handleIntegrationFailure(user: User) {
+  async handleIntegrationFailure(user: User) {
     const notification = await this.createNotification(
       user,
       'Project Import Failed',
@@ -810,7 +749,7 @@ export class TasksService {
     );
   }
 
-  private async sendImportingNotification(user: User) {
+  async sendImportingNotification(user: User) {
     const notification = await this.createNotification(
       user,
       'Importing Project',
@@ -819,7 +758,7 @@ export class TasksService {
     this.myGateway.sendNotification(`${user.id}`, notification);
   }
 
-  private async fetchAndProcessTasksAndWorklog(
+  async fetchAndProcessTasksAndWorklog(
     userWorkspace: UserWorkspace,
     user: User,
     project: Project,
@@ -1071,14 +1010,14 @@ export class TasksService {
     return mappedUserWorkspaceAndJiraId;
   }
 
-  private async updateProjectIntegrationStatus(projId: number) {
+  async updateProjectIntegrationStatus(projId: number) {
     await this.prisma.project.update({
       where: { id: projId },
       data: { integrated: true },
     });
   }
 
-  private async sendImportedNotification(user: User, res?: Response) {
+  async sendImportedNotification(user: User, res?: Response) {
     const notification = await this.createNotification(
       user,
       'Project Imported',
@@ -1088,7 +1027,7 @@ export class TasksService {
     res?.json({ message: 'Project tasks Imported' });
   }
 
-  private async handleImportFailure(user: User) {
+   async handleImportFailure(user: User) {
     const notification = await this.createNotification(
       user,
       'Importing Project Failed',
@@ -2260,52 +2199,7 @@ export class TasksService {
     }
   }
 
-  async getProjectList(user: User) {
-    return await this.prisma.project.findMany({
-      where: {
-        workspaceId: user.activeWorkspaceId,
-      },
-    });
-  }
 
-  async deleteProjectTasks(user: User, id: number, res: Response) {
-    const project = await this.prisma.project.findFirst({
-      where: { id: id },
-      include: { integration: true },
-    });
-    if (!project) {
-      throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
-    }
-    try {
-      await this.prisma.task.deleteMany({
-        where: {
-          projectId: id,
-        },
-      });
-      try {
-        const projectIntegrated = await this.prisma.project.update({
-          where: { id: id },
-          data: { integrated: false },
-        });
-        console.log(
-          '🚀 ~ file: tasks.service.ts:1704 ~ TasksService ~ deleteProjectTasks ~ projectIntegrated:',
-          projectIntegrated,
-        );
-        return res.status(202).json({ message: 'Project Deleted' });
-      } catch (error) {
-        console.log(
-          '🚀 ~ file: tasks.service.ts:521 ~ TasksService ~ projectTasks ~ error:',
-          error,
-        );
-      }
-    } catch (error) {
-      console.log(
-        '🚀 ~ file: tasks.service.ts:1645 ~ TasksService ~ deleteProjectTasks ~ error:',
-        error,
-      );
-      throw new APIException('Internal server Error', HttpStatus.BAD_REQUEST);
-    }
-  }
 
   async getTimeSpentByTeam(query: GetTeamTaskQuery, user: User, type: GetTeamTaskQueryType) {
     let projectIds, projectIdArray, userIds, userIdArray;
