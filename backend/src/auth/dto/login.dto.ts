@@ -16,3 +16,19 @@ export type userDto = {
   id: number;
   picture: string | null;
 };
+
+export class ForgotPasswordDto {
+  @IsString()
+  @IsEmail()
+  email: string;
+}
+
+export class PasswordResetDto {
+  @IsString()
+  @MinLength(6)
+  password: string;
+
+  @IsString()
+  @MinLength(6)
+  confirmPassword: string;
+}
