@@ -2,7 +2,7 @@ import { Controller, Get, Query, Res, UseGuards } from '@nestjs/common';
 import { ExportService } from './export.service';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
-import { GetTaskQuery } from 'src/tasks/dto';
+import { ExportTeamTaskDataQuery, GetTaskQuery } from 'src/tasks/dto';
 import { Response } from 'express';
 import { JwtAuthGuard } from 'src/guard';
 
@@ -19,5 +19,16 @@ export class ExportController {
     @Query() query: GetTaskQuery,
   ): Promise<void> {
     await this.exportService.exportToExcel(user, query, res);
+  }
+  //TODO: only for management level roles
+  @Get('/team')
+  @UseGuards(JwtAuthGuard)
+  // @Header('Content-Type', 'text/xlsx')
+  async exportTeamDataToExcel(
+    @Res() res: Response,
+    @GetUser() user: User,
+    @Query() query: ExportTeamTaskDataQuery,
+  ): Promise<void> {
+    await this.exportService.exportTeamDataToExcel(user, query, res);
   }
 }
