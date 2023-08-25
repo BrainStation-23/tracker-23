@@ -17,8 +17,7 @@ import {
 } from './dto';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { APIException } from 'src/internal/exception/api.exception';
-import { User } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
+import { User, UserRole } from '@prisma/client';
 import { Request } from 'express';
 import { EmailService } from 'src/email/email.service';
 import * as crypto from 'crypto';
@@ -39,6 +38,7 @@ export class AuthService {
       firstName: dto?.firstName,
       lastName: dto?.lastName,
       hash: await argon.hash(dto?.password),
+      role: UserRole.USER,
     };
     try {
       const user = await this.prisma.user.create({

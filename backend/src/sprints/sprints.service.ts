@@ -83,7 +83,8 @@ export class SprintsService {
         source: IntegrationType.JIRA,
       },
     });
-    const boardId = project && mappedBoardId.get(project.projectId);
+    const boardId =
+      project && project.projectId && mappedBoardId.get(project.projectId);
     // console.log(
     //   '🚀 ~ file: sprints.service.ts:86 ~ SprintsService ~ boardId:',
     //   boardId,
