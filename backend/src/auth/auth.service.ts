@@ -8,10 +8,20 @@ import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { LoginDto, RegisterDto, userDto } from './dto';
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  PasswordResetDto,
+  RegisterDto,
+  userDto,
+} from './dto';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { APIException } from 'src/internal/exception/api.exception';
 import { User } from '@prisma/client';
+import { v4 as uuidv4 } from 'uuid';
+import { Request } from 'express';
+import { EmailService } from 'src/email/email.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +30,7 @@ export class AuthService {
     private config: ConfigService,
     private jwt: JwtService,
     private workspacesService: WorkspacesService,
+    private emailService: EmailService,
   ) {}
 
   async createUser(dto: RegisterDto) {
@@ -242,5 +253,118 @@ export class AuthService {
       // If the token is invalid or expired, throw an UnauthorizedException
       return null;
     }
+  }
+
+  async forgotPassword(reqBody: ForgotPasswordDto, req: Request) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: reqBody.email,
+      },
+    });
+    if (!user) {
+      throw new APIException(
+        'This email belong no user',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const resetToken = await this.generatePasswordResetToken(user.id);
+    console.log(
+      '🚀 ~ file: auth.service.ts:266 ~ AuthService ~ forgotPassword ~ resetToken:',
+      resetToken,
+    );
+
+    const resetURL = `${req.protocol}://${req.get(
+      'host',
+    )}/auth/resetPassword/${resetToken}`;
+    console.log(
+      '🚀 ~ file: auth.service.ts:274 ~ AuthService ~ forgotPassword ~ resetURL:',
+      resetURL,
+    );
+
+    const message = `Forgot your password? Submit  a PATCH request with your new password and passwordConfirm to:
+    ${resetURL}.\nIf you didn't forget your password. Please ignore this email`;
+    try {
+      await this.emailService.sendEmail(
+        'Your password reset token (valid for 10 min)',
+        message,
+        user.email,
+      );
+      return { message: 'Successfully, token sent to the email' };
+    } catch (err) {
+      console.log(
+        '🚀 ~ file: auth.service.ts:289 ~ AuthService ~ forgotPassword ~ err:',
+        err,
+      );
+      user.passwordResetToken = null;
+      user.passwordResetExpires = null;
+      throw new APIException(
+        'There is an error sending the email, please try again!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  private async generatePasswordResetToken(userId: number) {
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+    const resetExpires = new Date(Date.now() + 2 * 60 * 1000); // 10 minutes from now
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordResetToken: hashedToken,
+        passwordResetExpires: resetExpires,
+      },
+    });
+
+    return resetToken;
+  }
+
+  async resetPassword(uniqueToken: string, reqBody: PasswordResetDto) {
+    if (reqBody.password !== reqBody.confirmPassword) {
+      throw new APIException(
+        "Password and confirmPassword don't match",
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(uniqueToken)
+      .digest('hex');
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { gt: new Date(Date.now()) },
+      },
+    });
+    if (!user) {
+      throw new APIException(
+        'Token is invalid or has expired',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        hash: await argon.hash(reqBody.password),
+        passwordResetToken: null,
+        passwordResetExpires: null,
+      },
+    });
+
+    const token = await this.createToken(updatedUser);
+    return {
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      ...token,
+    };
   }
 }

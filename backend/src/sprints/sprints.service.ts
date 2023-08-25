@@ -292,7 +292,8 @@ export class SprintsService {
       const priority1: any = (priority as unknown as string)?.split(',');
       const status1: any = (status as unknown as string)?.split(',');
       const st = reqBody.state as unknown as string;
-      const array = st && st.split(',').map((item) => item.trim());
+      let array: string[] = [];
+      array = st.split(',').map((item) => item.trim());
       // console.log(array);
 
       const sprints = await this.prisma.sprint.findMany({

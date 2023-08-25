@@ -10,6 +10,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
+import { EmailService } from 'src/email/email.service';
 
 @Module({
   imports: [HttpModule.register({}), SprintsModule],
@@ -22,6 +23,7 @@ import { WorkspacesService } from 'src/workspaces/workspaces.service';
     JwtService,
     IntegrationsService,
     WorkspacesService,
+    EmailService,
   ],
 })
 export class JiraModule {}
