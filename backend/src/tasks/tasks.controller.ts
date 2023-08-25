@@ -26,15 +26,17 @@ import {
   StatusReqBodyDto,
   TimeSpentReqBodyDto,
   UpdatePinDto,
-  importProjectTasks, GetTeamTaskQueryType,
+  importProjectTasks,
+  GetTeamTaskQueryType,
 } from './dto';
 import { TasksService } from './tasks.service';
-
+import { RolesGuard } from 'src/guard/auth.guard';
 @Controller('tasks')
 export class TasksController {
   constructor(private tasksService: TasksService) {}
 
   @Get()
+  @UseGuards(new RolesGuard(['USER', 'ADMIN']))
   @UseGuards(JwtAuthGuard)
   async getTasks(
     @GetUser() user: User,
@@ -154,13 +156,24 @@ export class TasksController {
     @GetUser() user: User,
     @Query() query: GetTeamTaskQuery,
   ) {
-    return await this.tasksService.getTimeSpentByTeam(query, user, GetTeamTaskQueryType.DATE_RANGE);
+    return await this.tasksService.getTimeSpentByTeam(
+      query,
+      user,
+      GetTeamTaskQueryType.DATE_RANGE,
+    );
   }
 
   @Get('/team/spent-time/per-day')
   @UseGuards(JwtAuthGuard)
-  async getDailyTimeSpentByTeam(@GetUser() user: User, @Query() query: GetTeamTaskQuery) {
-    return await this.tasksService.getTimeSpentByTeam(query, user, GetTeamTaskQueryType.PER_DAY);
+  async getDailyTimeSpentByTeam(
+    @GetUser() user: User,
+    @Query() query: GetTeamTaskQuery,
+  ) {
+    return await this.tasksService.getTimeSpentByTeam(
+      query,
+      user,
+      GetTeamTaskQueryType.PER_DAY,
+    );
   }
 
   @Get('all/status')
