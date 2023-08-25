@@ -3,6 +3,7 @@ export const publicRoutes = [
   "/registration",
   "/socialLogin/redirect",
   "/forgotPassword",
+  "/resetPassword",
 ];
 export const ignoreRoutes = ["/_next", "/assets", "/integrations"];
 export const menuOptions = [

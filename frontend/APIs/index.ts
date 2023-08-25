@@ -47,6 +47,7 @@ import {
     rejectWorkspaceInvitationRest,
     getWorkspaceInvitationListRest,
     forgotPasswordRest,
+    resetPasswordRest,
 } from "./restApi";
 
 const graphqlApi: apiFunction = {
@@ -95,6 +96,7 @@ const graphqlApi: apiFunction = {
     acceptWorkspaceInvitation: acceptWorkspaceInvitationRest,
     rejectWorkspaceInvitation: rejectWorkspaceInvitationRest,
     forgotPassword: forgotPasswordRest,
+    resetPassword: resetPasswordRest,
 };
 
 const restApi: apiFunction = {
@@ -143,6 +145,7 @@ const restApi: apiFunction = {
     acceptWorkspaceInvitation: acceptWorkspaceInvitationRest,
     rejectWorkspaceInvitation: rejectWorkspaceInvitationRest,
     forgotPassword: forgotPasswordRest,
+    resetPassword: resetPasswordRest,
 };
 
 export const userAPI: apiFunction =

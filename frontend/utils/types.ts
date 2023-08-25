@@ -1,5 +1,10 @@
 import { CreateWorkspaceModel, SearchParamsModel } from "models/apiParams";
-import { ForgotPasswordDto, LoginDto, LoginResponseDto } from "models/auth";
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  LoginResponseDto,
+  ResetPasswordDto,
+} from "models/auth";
 import {
   AddWorkLogParams,
   CreateTaskDto,
@@ -60,4 +65,5 @@ export interface apiFunction {
   deleteProjectTasks: (id: number) => Promise<any>;
   getJiraActiveSprintTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   forgotPassword: (data?: ForgotPasswordDto) => Promise<any>;
+  resetPassword: (token: string, data: ResetPasswordDto) => Promise<any>;
 }

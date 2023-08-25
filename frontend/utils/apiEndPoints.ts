@@ -3,6 +3,7 @@ export const apiEndPoints = {
   googleLogin: `/auth/google/google-redirect`,
   register: `/auth/register`,
   forgotPassword: `/auth/forgot-password`,
+  resetPassword: `/auth/resetPassword`,
   tasks: `/tasks`,
   export: `/export`,
   allProjects: `/tasks/project-list`,
