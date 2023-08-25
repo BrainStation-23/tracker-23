@@ -8,6 +8,7 @@ import { StatusEnum } from "src/tasks/dto";
 import { TasksService } from "src/tasks/tasks.service";
 import { WorkspacesService } from "src/workspaces/workspaces.service";
 import { Response } from 'express';
+import { UpdateProjectRequest } from "./dto/update.project.dto";
 
 @Injectable()
 export class ProjectsService {
@@ -95,7 +96,7 @@ export class ProjectsService {
         },
       });
       try {
-        const projectIntegrated = await this.prisma.project.update({
+        await this.prisma.project.update({
           where: { id: id },
           data: { integrated: false },
         });
@@ -121,5 +122,90 @@ export class ProjectsService {
         workspaceId: user.activeWorkspaceId,
       },
     });
+  }
+
+  async createProject(user: User, projectName: string) {
+    if (!user || (user && !user?.activeWorkspaceId))
+      throw new APIException(
+        'No userworkspace detected',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    try {
+      const newProject = await this.prisma.project.create({
+        data: {
+          projectName: projectName,
+          source: 'T23',
+          integrated: true,
+          workspaceId: user?.activeWorkspaceId,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (!newProject)
+        throw new APIException(
+          'Project could not be created',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+
+      await this.prisma.statusDetail.createMany({
+        data: [
+          {
+            name: 'To Do',
+            statusCategoryName: 'TO_DO',
+            projectId: newProject.id,
+          },
+          {
+            name: 'In Progress',
+            statusCategoryName: 'IN_PROGRESS',
+            projectId: newProject.id,
+          },
+          {
+            name: 'Done',
+            statusCategoryName: 'DONE',
+            projectId: newProject.id,
+          },
+        ],
+      });
+
+      return newProject;
+    } catch (error) {
+      console.log(error);
+      throw new APIException(
+        'Could not create new project',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async updateProject(user: User, id: number, data: UpdateProjectRequest) {
+    if (!user || (user && !user?.activeWorkspaceId))
+      throw new APIException(
+        'No userworkspace detected',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    try {
+      const existingProject = await this.prisma.project.findFirst({
+        where: {
+          id: id,
+          workspaceId: user?.activeWorkspaceId,
+        },
+      });
+
+      if(!existingProject) throw new APIException('Invalid project ID', HttpStatus.BAD_REQUEST);
+
+      return await this.prisma.project.update({
+        where: {
+          id: id,
+        },
+        data: data,
+      });
+    } catch (error) {
+      console.log(error);
+      throw new APIException('Could not update project', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

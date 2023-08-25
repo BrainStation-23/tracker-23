@@ -5,12 +5,15 @@ import {
   Post,
   UseGuards,
   Response,
+  Patch,
+  Body,
 } from '@nestjs/common';
 import { ProjectsService } from "./projects.service";
 import { User } from "@prisma/client";
 import { GetUser } from 'src/decorator';
 import { JwtAuthGuard } from "src/guard";
 import { importProjectTasks } from "src/tasks/dto";
+import { UpdateProjectRequest } from './dto/update.project.dto';
 
 @Controller('projects')
 export class ProjectsController {
@@ -44,5 +47,22 @@ export class ProjectsController {
   @UseGuards(JwtAuthGuard)
   async getProjectList(@GetUser() user: User) {
     return this.projectsService.getProjectList(user);
+  }
+
+  @Post('create/:projectName')
+  async createProject(
+    @GetUser() user: User,
+    @Param('projectName') projectName: string,
+  ) {
+    return await this.projectsService.createProject(user, projectName);
+  }
+
+  @Patch('/:id')
+  async updateProject(
+    @GetUser() user: User,
+    @Param('id') id: string,
+    @Body() data: UpdateProjectRequest,
+  ) {
+    return await this.projectsService.updateProject(user, +id, data);
   }
 }
