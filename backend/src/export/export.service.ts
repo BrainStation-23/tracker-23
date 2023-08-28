@@ -104,11 +104,11 @@ export class ExportService {
       const priority1: any = (priority as unknown as string)?.split(',');
       const status1: any = (status as unknown as string)?.split(',');
       startDate = startDate && new Date(startDate);
-       endDate = endDate && new Date(endDate);
-       if (endDate) {
-         const oneDay = 3600 * 24 * 1000;
-         endDate = new Date(endDate.getTime() + oneDay);
-       }
+      endDate = endDate && new Date(endDate);
+      if (endDate) {
+        const oneDay = 3600 * 24 * 1000;
+        endDate = new Date(endDate.getTime() + oneDay);
+      }
       let tasks: any[] = [];
 
       if (sprintIdArray && sprintIdArray.length) {
@@ -179,6 +179,16 @@ export class ExportService {
                 updatedAt: true,
                 authorId: true,
                 worklogId: true,
+                userWorkspace: {
+                  include: {
+                    user: {
+                      select: {
+                        firstName: true,
+                        lastName: true,
+                      },
+                    },
+                  },
+                },
               },
             },
             url: true,
@@ -240,6 +250,16 @@ export class ExportService {
                 updatedAt: true,
                 authorId: true,
                 worklogId: true,
+                userWorkspace: {
+                  include: {
+                    user: {
+                      select: {
+                        firstName: true,
+                        lastName: true,
+                      },
+                    },
+                  },
+                },
               },
             },
             url: true,

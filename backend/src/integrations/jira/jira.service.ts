@@ -196,6 +196,14 @@ export class JiraService {
             userWorkspaceId: userWorkspace.id,
           },
         });
+        await this.prisma.session.updateMany({
+          where: {
+            authorId: getTempIntegration.jiraAccountId,
+          },
+          data: {
+            userWorkspaceId: userWorkspace.id,
+          },
+        });
         const deleteTempIntegration = await this.prisma.tempIntegration.delete({
           where: {
             id: getTempIntegration.id,
