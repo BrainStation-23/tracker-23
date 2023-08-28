@@ -1,5 +1,5 @@
-import { userAPI } from "APIs";
 import { Form, Input, message } from "antd";
+import { userAPI } from "APIs";
 import { ResetPasswordDto } from "models/auth";
 import { useRouter } from "next/router";
 import React from "react";
@@ -8,7 +8,7 @@ const ResetPasswordForm = () => {
   const router = useRouter();
 
   const { token } = router.query;
-  if (typeof token != "string") router.push("/login");
+  if (router.isReady && typeof token != "string") router.push("/login");
 
   const signIn = async (values: ResetPasswordDto) => {
     console.log(values);
