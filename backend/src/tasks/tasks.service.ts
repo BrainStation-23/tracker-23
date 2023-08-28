@@ -1052,20 +1052,35 @@ export class TasksService {
 
         taskId &&
           worklogsList[index].data.worklogs.map((log: any) => {
+            console.log(
+              '🚀 ~ file: tasks.service.ts:1059 ~ TasksService ~ worklogsList[index].data.worklogs.map ~   mappedUserWorkspaceAndJiraId.get(log.author.accountId):',
+              mappedUserWorkspaceAndJiraId.get(log.author.accountId),
+            );
             const lastTime =
               new Date(log.started).getTime() +
               Number(log.timeSpentSeconds * 1000);
-            sessionArray.push({
-              startTime: new Date(log.started),
-              endTime: new Date(lastTime),
-              status: SessionStatus.STOPPED,
-              taskId: taskId,
-              integratedTaskId: Number(log.issueId),
-              worklogId: Number(log.id),
-              authorId: log.author.accountId,
-              userWorkspaceId:
-                mappedUserWorkspaceAndJiraId.get(log.author.accountId) || null,
-            });
+            mappedUserWorkspaceAndJiraId.get(log.author.accountId)
+              ? sessionArray.push({
+                  startTime: new Date(log.started),
+                  endTime: new Date(lastTime),
+                  status: SessionStatus.STOPPED,
+                  taskId: taskId,
+                  integratedTaskId: Number(log.issueId),
+                  worklogId: Number(log.id),
+                  authorId: log.author.accountId,
+                  userWorkspaceId: mappedUserWorkspaceAndJiraId.get(
+                    log.author.accountId,
+                  ),
+                })
+              : sessionArray.push({
+                  startTime: new Date(log.started),
+                  endTime: new Date(lastTime),
+                  status: SessionStatus.STOPPED,
+                  taskId: taskId,
+                  integratedTaskId: Number(log.issueId),
+                  worklogId: Number(log.id),
+                  authorId: log.author.accountId,
+                });
           });
       }
       try {
@@ -1073,10 +1088,10 @@ export class TasksService {
           data: sessionArray,
         });
       } catch (error) {
-        console.log(
-          '🚀 ~ file: tasks.service.ts:986 ~ TasksService ~ error:',
-          error,
-        );
+        // console.log(
+        //   '🚀 ~ file: tasks.service.ts:986 ~ TasksService ~ error:',
+        //   error,
+        // );
 
         throw new APIException(
           'Can not sync with jira',

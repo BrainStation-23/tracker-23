@@ -36,7 +36,7 @@ export class TasksController {
   constructor(private tasksService: TasksService) {}
 
   @Get()
-  @UseGuards(new RolesGuard(['USER', 'ADMIN']))
+  // @UseGuards(new RolesGuard(['USER', 'ADMIN']))
   @UseGuards(JwtAuthGuard)
   async getTasks(
     @GetUser() user: User,
