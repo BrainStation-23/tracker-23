@@ -17,6 +17,7 @@ import {
 } from './dto';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { APIException } from 'src/internal/exception/api.exception';
+// import { v4 as uuidv4 } from 'uuid';
 import { User, UserRole } from '@prisma/client';
 import { Request } from 'express';
 import { EmailService } from 'src/email/email.service';
@@ -274,9 +275,7 @@ export class AuthService {
       resetToken,
     );
 
-    const resetURL = `${req.protocol}://${req.get(
-      'host',
-    )}/auth/resetPassword/${resetToken}`;
+    const resetURL = `${req.protocol}://${req.headers.referer}resetPassword/${resetToken}`;
     console.log(
       '🚀 ~ file: auth.service.ts:274 ~ AuthService ~ forgotPassword ~ resetURL:',
       resetURL,

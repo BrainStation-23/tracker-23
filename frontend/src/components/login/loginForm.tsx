@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { userAPI } from "APIs";
 import { GetCookie } from "@/services/cookie.service";
 import Line from "../dashboard/charts/lineChart";
+import Link from "next/link";
 
 type Props = {
   setIsModalOpen: Function;
@@ -47,7 +48,7 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
       autoComplete="off"
-      className="mx-auto w-full"
+      className="mx-auto w-full pb-0"
     >
       <Form.Item
         // label="Email"
@@ -75,11 +76,20 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
         // label="Password"
         name="password"
         rules={[{ required: true, message: "Please input your password!" }]}
+        className="relative"
       >
         <Input.Password
           placeholder="Password"
           className="flex rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
         />
+        <div className="absolute right-0 text-end">
+          <Link
+            href="/forgotPassword"
+            className="text-xs font-medium hover:text-[#070eff]"
+          >
+            Forgot your Password?
+          </Link>
+        </div>
       </Form.Item>
 
       {/* <Form.Item
@@ -90,8 +100,8 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
         <Checkbox>Remember me</Checkbox>
       </Form.Item> */}
 
-      <Form.Item>
-        <button className="flex w-full flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
+      <Form.Item className="mb-0">
+        <button className="mt-5 flex w-full flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
           Login
         </button>
       </Form.Item>

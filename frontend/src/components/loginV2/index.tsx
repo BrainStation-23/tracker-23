@@ -61,7 +61,7 @@ export default function LoginV2() {
                   Sign up or log in to start tracking your time
                 </p>
               </div>
-              <div className="flex max-w-md flex-col space-y-5">
+              <div className="flex max-w-md flex-col gap-5">
                 <LoginForm {...{ setIsModalOpen }} />
                 {/* <input
 									type="text"
@@ -71,6 +71,7 @@ export default function LoginV2() {
 								<button className="flex flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
 									Confirm with email
 								</button> */}
+
                 <div className="flex items-center justify-center">
                   <span className="w-full border border-black"></span>
                   <span className="px-4">Or</span>

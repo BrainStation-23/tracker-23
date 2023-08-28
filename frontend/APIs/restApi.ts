@@ -1,7 +1,13 @@
 import { message } from "antd";
 import axios from "axios";
 import { CreateWorkspaceModel, SearchParamsModel } from "models/apiParams";
-import { LoginDto, LoginResponseDto, RegisterDto } from "models/auth";
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  LoginResponseDto,
+  RegisterDto,
+  ResetPasswordDto,
+} from "models/auth";
 import {
   AddWorkLogParams,
   CreateTaskDto,
@@ -55,6 +61,34 @@ export async function registerRest(
 ): Promise<RegisterDto | undefined> {
   try {
     const res = await axios.post(`${apiEndPoints.register}`, data);
+    return res.data;
+  } catch (error: any) {
+    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
+    return null;
+  }
+}
+
+export async function forgotPasswordRest(
+  data: ForgotPasswordDto
+): Promise<any> {
+  try {
+    const res = await axios.post(`${apiEndPoints.forgotPassword}`, data);
+    return res.data;
+  } catch (error: any) {
+    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
+    return null;
+  }
+}
+
+export async function resetPasswordRest(
+  token: string,
+  data: ResetPasswordDto
+): Promise<any> {
+  try {
+    const res = await axios.patch(
+      `${apiEndPoints.resetPassword}/${token}`,
+      data
+    );
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
@@ -217,7 +251,9 @@ export async function getJiraLinkRest() {
 
 export async function sendJiraCodeRest(code: string) {
   try {
-    const res = await axios.post(`${apiEndPoints.authJira}`, { code: code });
+    const res = await axios.post(`${apiEndPoints.authJira}`, {
+      code: code,
+    });
     return res.data;
   } catch (error: any) {
     return false;
