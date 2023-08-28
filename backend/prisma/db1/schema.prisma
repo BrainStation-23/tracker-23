@@ -80,6 +80,7 @@ model User {
   hash              String?
   firstName         String?
   lastName          String?
+  role              UserRole @default(USER)
   activeWorkspaceId Int?
   picture           String?
   createdAt         DateTime @default(now())
@@ -166,7 +167,7 @@ model TempIntegration {
 
 model Project {
   id          Int            @id @default(autoincrement())
-  projectId   Int
+  projectId   Int?
   projectName String?
   projectKey  String?
   source      String
@@ -183,10 +184,10 @@ model Project {
 
 model StatusDetail {
   id                 Int     @id @default(autoincrement())
-  statusId           String
+  statusId           String?
   name               String
-  untranslatedName   String
-  statusCategoryId   String
+  untranslatedName   String?
+  statusCategoryId   String?
   statusCategoryName String
   transitionId       String?
 
@@ -336,4 +337,9 @@ enum UserWorkspaceStatus {
   INVITED
   DELETED
   REJECTED
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }
