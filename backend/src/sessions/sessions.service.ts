@@ -34,6 +34,13 @@ export class SessionsService {
   }
 
   async createSession(user: User, dto: SessionDto) {
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      throw new APIException(
+        'UserWorkspace not found!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     await this.validateTaskAccess(user, dto.taskId);
     await this.prisma.task.update({
       where: { id: dto.taskId },
@@ -50,7 +57,7 @@ export class SessionsService {
     }
 
     return await this.prisma.session.create({
-      data: { ...dto },
+      data: { ...dto, userWorkspaceId: userWorkspace.id },
     });
   }
 
@@ -239,6 +246,13 @@ export class SessionsService {
 
   async manualTimeEntry(user: User, dto: ManualTimeEntryReqBody) {
     try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new APIException(
+          'UserWorkspace not found!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const startTime = new Date(`${dto.startTime}`);
       const endTime = new Date(`${dto.endTime}`);
       const { integratedTaskId, id, projectId } = await this.validateTaskAccess(
@@ -258,19 +272,40 @@ export class SessionsService {
       let jiraSession: any;
       let updated_integration: any;
       if (integratedTaskId) {
+        const getUserIntegrationList =
+          await this.integrationsService.getUserIntegrations(user);
+        console.log(
+          '🚀 ~ file: sessions.service.ts:276 ~ SessionsService ~ manualTimeEntry ~ getUserIntegrationList:',
+          getUserIntegrationList,
+        );
         const project =
           projectId &&
           (await this.prisma.project.findFirst({
             where: { id: projectId },
             include: { integration: true },
           }));
-        if (!project)
+        if (!project) {
           throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+        }
+
+        const userIntegration: number[] = [];
+        getUserIntegrationList.map((userInt) => {
+          if (
+            project.integration?.id &&
+            userInt.integrationId === project.integration.id
+          ) {
+            userIntegration.push(userInt.id);
+          }
+        });
+        console.log(
+          '🚀 ~ file: sessions.service.ts:293 ~ SessionsService ~ userIntegration ~ userIntegration:',
+          userIntegration,
+        );
         updated_integration =
-          project.integration?.id &&
+          userIntegration.length &&
           (await this.integrationsService.getUpdatedUserIntegration(
             user,
-            project.integration.id,
+            userIntegration[0],
           ));
         if (updated_integration)
           jiraSession = await this.addWorkLog(
@@ -293,6 +328,7 @@ export class SessionsService {
               : null,
             integratedTaskId: jiraSession ? Number(jiraSession.issueId) : null,
             worklogId: jiraSession ? Number(jiraSession.id) : null,
+            userWorkspaceId: userWorkspace.id,
           },
         });
       } else {
@@ -347,6 +383,12 @@ export class SessionsService {
         session = await this.updateSessionFromLocal(Number(sessionId), reqBody);
         return session;
       }
+      const getUserIntegrationList =
+        await this.integrationsService.getUserIntegrations(user);
+      console.log(
+        '🚀 ~ file: sessions.service.ts:276 ~ SessionsService ~ manualTimeEntry ~ getUserIntegrationList:',
+        getUserIntegrationList,
+      );
       const project =
         task.projectId &&
         (await this.prisma.project.findFirst({
@@ -355,11 +397,25 @@ export class SessionsService {
         }));
       if (!project)
         throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+
+      const userIntegration: number[] = [];
+      getUserIntegrationList.map((userInt) => {
+        if (
+          project.integration?.id &&
+          userInt.integrationId === project.integration.id
+        ) {
+          userIntegration.push(userInt.id);
+        }
+      });
+      console.log(
+        '🚀 ~ file: sessions.service.ts:293 ~ SessionsService ~ userIntegration ~ userIntegration:',
+        userIntegration,
+      );
       const updated_integration =
-        project.integration?.id &&
+        userIntegration.length &&
         (await this.integrationsService.getUpdatedUserIntegration(
           user,
-          project.integration.id,
+          userIntegration[0],
         ));
 
       if (!updated_integration) {
@@ -470,6 +526,12 @@ export class SessionsService {
         return { message: 'Session Deleted Successfully!' };
       }
 
+      const getUserIntegrationList =
+        await this.integrationsService.getUserIntegrations(user);
+      console.log(
+        '🚀 ~ file: sessions.service.ts:276 ~ SessionsService ~ manualTimeEntry ~ getUserIntegrationList:',
+        getUserIntegrationList,
+      );
       const project =
         task.projectId &&
         (await this.prisma.project.findFirst({
@@ -478,11 +540,25 @@ export class SessionsService {
         }));
       if (!project)
         throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+
+      const userIntegration: number[] = [];
+      getUserIntegrationList.map((userInt) => {
+        if (
+          project.integration?.id &&
+          userInt.integrationId === project.integration.id
+        ) {
+          userIntegration.push(userInt.id);
+        }
+      });
+      console.log(
+        '🚀 ~ file: sessions.service.ts:293 ~ SessionsService ~ userIntegration ~ userIntegration:',
+        userIntegration,
+      );
       const updated_integration =
-        project.integration?.id &&
+        userIntegration.length &&
         (await this.integrationsService.getUpdatedUserIntegration(
           user,
-          project.integration.id,
+          userIntegration[0],
         ));
 
       if (!updated_integration) {

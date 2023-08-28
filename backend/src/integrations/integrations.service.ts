@@ -75,10 +75,10 @@ export class IntegrationsService {
           id: userIntegrationId,
         },
       });
-      // console.log(
-      //   '🚀 ~ file: integrations.service.ts:60 ~ IntegrationsService ~ getUpdatedUserIntegration ~ userIntegration:',
-      //   userIntegration,
-      // );
+      console.log(
+        '🚀 ~ file: integrations.service.ts:60 ~ IntegrationsService ~ getUpdatedUserIntegration ~ userIntegration:',
+        userIntegration,
+      );
 
       // const integration = await this.prisma.integration.findFirst({
       //   where: { userId: user.id, type: IntegrationType.JIRA, id: integrationID },
