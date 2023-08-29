@@ -127,6 +127,9 @@ export class JiraService {
   }
 
   async createIntegrationAndGetProjects(user: User, siteId: string) {
+    if (!user.activeWorkspaceId) {
+      throw new APIException('workspace not found', HttpStatus.BAD_REQUEST);
+    }
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
       throw new APIException(
@@ -156,6 +159,10 @@ export class JiraService {
           },
         },
       });
+      console.log(
+        '🚀 ~ file: jira.service.ts:160 ~ createIntegrationAndGetProjects ~ doesExistIntegration:',
+        doesExistIntegration,
+      );
       if (doesExistIntegration) {
         const projects = await this.prisma.project.findMany({
           where: {
@@ -175,28 +182,32 @@ export class JiraService {
           },
         });
 
-        const importedProject =
-          user.activeWorkspaceId &&
-          (await this.prisma.project.findMany({
-            where: {
-              workspaceId: user.activeWorkspaceId,
-              integrationId: doesExistIntegration.id,
-              integrated: true,
-            },
-          }));
-
-        const updatedTask = await this.prisma.task.updateMany({
+        const importedProject = await this.prisma.project.findMany({
           where: {
-            assigneeId: getTempIntegration.jiraAccountId,
-            project: {
-              integrationId: getTempIntegration.id,
-              integrated: true,
-            },
-          },
-          data: {
-            userWorkspaceId: userWorkspace.id,
+            workspaceId: user.activeWorkspaceId,
+            integrationId: doesExistIntegration.id,
+            integrated: true,
           },
         });
+        console.log(
+          '🚀 ~ file: jira.service.ts:192 ~ createIntegrationAndGetProjects ~ doesExistIntegration:',
+          importedProject,
+        );
+        const updatedTask =
+          importedProject.length &&
+          (await this.prisma.task.updateMany({
+            where: {
+              assigneeId: getTempIntegration.jiraAccountId,
+              projectId: {
+                in: importedProject.map((project: any) => {
+                  return project.id;
+                }),
+              },
+            },
+            data: {
+              userWorkspaceId: userWorkspace.id,
+            },
+          }));
         console.log(
           '🚀 ~ file: jira.service.ts:199 ~ createIntegrationAndGetProjects ~ updatedTask:',
           updatedTask,
@@ -205,9 +216,10 @@ export class JiraService {
           where: {
             authorId: getTempIntegration.jiraAccountId,
             task: {
-              project: {
-                integrationId: getTempIntegration.id,
-                integrated: true,
+              projectId: {
+                in: importedProject.map((project: any) => {
+                  return project.id;
+                }),
               },
             },
           },
@@ -224,6 +236,10 @@ export class JiraService {
             id: getTempIntegration.id,
           },
         });
+        console.log(
+          '🚀 ~ file: jira.service.ts:234 ~ createIntegrationAndGetProjects ~ deleteTempIntegration:',
+          deleteTempIntegration,
+        );
         // console.log(integration);
         if (!deleteTempIntegration) {
           throw new APIException(
