@@ -9,29 +9,44 @@ import {
 
 import JiraLogoFullSvg from "@/assets/svg/JiraFullLogoSvg";
 import TrelloLogoSvg from "@/assets/svg/TrelloLogoSvg";
+import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
 
 type Props = {
   data: Integration;
   selected: string;
   setSelected: Function;
+  handleUninstallIntegration?: Function;
   handleDeleteIntegration?: Function;
   installed?: boolean;
+  adminMode: boolean;
 };
 
 const ImportCard = ({
   data,
   selected,
   setSelected,
+  handleUninstallIntegration,
   handleDeleteIntegration,
   installed = false,
+  adminMode,
 }: Props) => {
   useEffect(() => {}, []);
 
   return (
     <div
-      className={`flex w-60 flex-col justify-between rounded-xl border-2 border-[#ECECED] p-4 hover:cursor-pointer`}
+      className={`relative flex w-60 flex-col justify-between rounded-xl border-2 border-[#ECECED] p-4 hover:cursor-pointer`}
     >
       <div>
+        {installed && adminMode && (
+          <div
+            className="absolute right-2"
+            onClick={async () => {
+              await handleDeleteIntegration(data.id);
+            }}
+          >
+            <DeleteIconSvg />
+          </div>
+        )}
         <div className="flex h-10 items-center gap-2">
           {integrationIcons[data.type]}
         </div>
@@ -58,7 +73,7 @@ const ImportCard = ({
           onClick={async () => {
             if (data.type === "JIRA") {
               if (installed) {
-                await handleDeleteIntegration(data.id);
+                await handleUninstallIntegration(data.id);
               } else {
                 try {
                   const response = await userAPI.getJiraLink();

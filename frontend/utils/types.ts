@@ -28,6 +28,7 @@ export interface apiFunction {
   syncTasks: (token?: string) => Promise<any>;
   syncStatus: (token?: string) => Promise<any>;
   getIntegrations: (token?: string) => Promise<any>;
+  uninstallIntegration: (id: number) => Promise<any>;
   deleteIntegration: (id: number) => Promise<any>;
   selectJiraIntegration: (id: string) => Promise<any>;
   createSession: (taskID: string) => Promise<any>;

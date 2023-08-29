@@ -260,9 +260,19 @@ export async function sendJiraCodeRest(code: string) {
   }
 }
 
+export async function uninstallIntegrationRest(id: number) {
+  try {
+    const res = await axios.delete(`${apiEndPoints.integrations}/user/${id}`);
+    message.success(res?.data?.message);
+    return true;
+  } catch (error: any) {
+    return false;
+  }
+}
+
 export async function deleteIntegrationRest(id: number) {
   try {
-    const res = await axios.delete(`${apiEndPoints.integrations}/${id}`);
+    const res = await axios.delete(`${apiEndPoints.integrations}/admin/${id}`);
     message.success(res?.data?.message);
     return true;
   } catch (error: any) {

@@ -1,4 +1,4 @@
-import { Spin } from "antd";
+import { Spin, Switch } from "antd";
 import { userAPI } from "APIs";
 import { Integration } from "models/integration";
 import { useEffect, useState } from "react";
@@ -10,13 +10,19 @@ import {
   setIntegrationsSlice,
 } from "@/storage/redux/integrationsSlice";
 import { resetProjectsSlice } from "@/storage/redux/projectsSlice";
+import { RootState } from "@/storage/redux/store";
+import { Roles } from "utils/constants";
 
 const ImportSection = () => {
   const dispatch = useAppDispatch();
   const [integratedTypes, setIntegratedTypes] = useState<string[] | null>(null);
   const [integrations, setIntegrations] = useState<Integration[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [adminMode, setAdminMode] = useState(false);
   const [loadingTip, setLoadingTip] = useState("");
+
+  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
+
   const getIntegrations = async () => {
     setLoading(true);
     const tmp: string[] = [];
@@ -35,8 +41,28 @@ const ImportSection = () => {
     }
     setLoading(false);
   };
+  const handleUninstallIntegration = async (id: number) => {
+    setLoadingTip("Uninstalling Integration");
+    console.log(
+      "🚀 ~ file: index.tsx:46 ~ handleUninstallIntegration ~ :",
+      "Uninstalling Integration"
+    );
+    setLoading(true);
+    const res = await userAPI.uninstallIntegration(id);
+    if (res) {
+      dispatch(deleteIntegrationsSlice(id));
+      dispatch(resetProjectsSlice());
+    }
+    getIntegrations();
+    setLoading(false);
+    setLoadingTip("");
+  };
   const handleDeleteIntegration = async (id: number) => {
     setLoadingTip("Deleting Integration");
+    console.log(
+      "🚀 ~ file: index.tsx:58 ~ handleDeleteIntegration ~ :",
+      "Deleting Integration"
+    );
     setLoading(true);
     const res = await userAPI.deleteIntegration(id);
     if (res) {
@@ -47,6 +73,9 @@ const ImportSection = () => {
     setLoading(false);
     setLoadingTip("");
   };
+  const changeAdminMode = () => {
+    setAdminMode(!adminMode);
+  };
 
   useEffect(() => {
     getIntegrations();
@@ -56,11 +85,33 @@ const ImportSection = () => {
   return (
     <div className="flex w-full flex-col gap-2">
       <div className="flex flex-col gap-2">
-        <div className="text-2xl font-semibold">Select Source of Import</div>
+        <div className="flex justify-between">
+          <div className="text-2xl font-semibold">Select Source of Import</div>
+          {userInfo.role === Roles.ADMIN && (
+            <div className="bg flex w-[150px] justify-between">
+              <div>Admin Mode </div>
+              <Switch
+                checked={adminMode}
+                onChange={changeAdminMode}
+                style={{
+                  backgroundColor: adminMode ? "#18d925" : "#f01818",
+                }}
+              />
+            </div>
+          )}
+        </div>
         <Spin spinning={loading} tip={loadingTip} className="h-full">
           {integratedTypes && (
             <ImportSelect
-              {...{ integratedTypes, integrations, handleDeleteIntegration }}
+              adminMode={adminMode}
+              {...{
+                integratedTypes,
+                integrations,
+                handleUninstallIntegration,
+                handleDeleteIntegration,
+              }}
+              handleUninstallIntegration={handleUninstallIntegration}
+              handleDeleteIntegration={handleDeleteIntegration}
             />
           )}
         </Spin>
