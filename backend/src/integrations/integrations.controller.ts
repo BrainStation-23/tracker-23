@@ -19,13 +19,13 @@ export class IntegrationsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
+  @Delete('user/:id') //integration id
   async deleteIntegration(@GetUser() user: User, @Param('id') id: number) {
     return await this.integrationsService.deleteIntegration(user, id);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete(':integrationId')
+  @Delete('admin/:integrationId')
   // need to add role system
   async deleteIntegrationByAdmin(
     @GetUser() user: User,
