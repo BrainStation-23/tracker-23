@@ -46,7 +46,7 @@ export class SessionsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch('add-work-log')
+  @Patch('manual-timeEntry')
   async manualTimeEntry(
     @GetUser() user: User,
     @Body() manualTimeEntryReqBody: ManualTimeEntryReqBody,

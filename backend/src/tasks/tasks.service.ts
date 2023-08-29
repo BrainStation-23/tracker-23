@@ -1059,28 +1059,17 @@ export class TasksService {
             const lastTime =
               new Date(log.started).getTime() +
               Number(log.timeSpentSeconds * 1000);
-            mappedUserWorkspaceAndJiraId.get(log.author.accountId)
-              ? sessionArray.push({
-                  startTime: new Date(log.started),
-                  endTime: new Date(lastTime),
-                  status: SessionStatus.STOPPED,
-                  taskId: taskId,
-                  integratedTaskId: Number(log.issueId),
-                  worklogId: Number(log.id),
-                  authorId: log.author.accountId,
-                  userWorkspaceId: mappedUserWorkspaceAndJiraId.get(
-                    log.author.accountId,
-                  ),
-                })
-              : sessionArray.push({
-                  startTime: new Date(log.started),
-                  endTime: new Date(lastTime),
-                  status: SessionStatus.STOPPED,
-                  taskId: taskId,
-                  integratedTaskId: Number(log.issueId),
-                  worklogId: Number(log.id),
-                  authorId: log.author.accountId,
-                });
+            sessionArray.push({
+              startTime: new Date(log.started),
+              endTime: new Date(lastTime),
+              status: SessionStatus.STOPPED,
+              taskId: taskId,
+              integratedTaskId: Number(log.issueId),
+              worklogId: Number(log.id),
+              authorId: log.author.accountId,
+              userWorkspaceId:
+                mappedUserWorkspaceAndJiraId.get(log.author.accountId) || null,
+            });
           });
       }
       try {
@@ -2342,17 +2331,20 @@ export class TasksService {
       (userIntegration) => userIntegration?.integration?.id,
     );
     try {
-      return await this.prisma.project.findMany({
-        where: {
-          integrationId: {
-            in: jiraIntegrationIds?.map((id) => Number(id)),
+      if (user.activeWorkspaceId) {
+        return await this.prisma.project.findMany({
+          where: {
+            integrationId: {
+              in: jiraIntegrationIds?.map((id) => Number(id)),
+            },
+            workspaceId: user.activeWorkspaceId,
           },
-          workspaceId: user.activeWorkspaceId,
-        },
-        include: {
-          statuses: true,
-        },
-      });
+          include: {
+            statuses: true,
+          },
+        });
+      }
+      return [];
     } catch (err) {
       throw new APIException(
         'Can not get project list',

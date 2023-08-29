@@ -179,8 +179,8 @@ model Project {
 
   integration   Integration? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
   integrationId Int?
-  workspace     Workspace?   @relation(fields: [workspaceId], references: [id])
-  workspaceId   Int?
+  workspace     Workspace   @relation(fields: [workspaceId], references: [id])
+  workspaceId   Int
 }
 
 model StatusDetail {

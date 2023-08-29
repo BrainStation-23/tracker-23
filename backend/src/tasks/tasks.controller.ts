@@ -127,7 +127,7 @@ export class TasksController {
     );
   }
 
-  @Patch('add-work-log/:issueId')
+  @Patch('manual-timeEntry/:issueId')
   @UseGuards(JwtAuthGuard)
   async addWorkLog(
     @GetUser() user: User,

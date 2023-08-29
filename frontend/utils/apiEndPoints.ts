@@ -21,7 +21,7 @@ export const apiEndPoints = {
   authJira: `/integrations/jira/authorization`,
   spentTime: `/tasks/spent-time/time-range`,
   spentTimePerDay: `/tasks/spent-time/per-day`,
-  addWorkLog: `/sessions/add-work-log`,
+  addWorkLog: `/sessions/manual-timeEntry`,
   updateTaskStatus: `/tasks/update/status`,
   updateTaskEstimation: `/tasks/update/estimation`,
   projectWiseStatus: `/integrations/jira/projects`,
