@@ -1,7 +1,6 @@
-import { Button } from "antd";
 import { ProjectDto } from "models/projects";
 
-import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
+import DeleteButton from "@/components/common/buttons/deleteButton";
 
 type Props = {
   project: ProjectDto;
@@ -28,15 +27,11 @@ const ImportedProject = ({ project, deleteProject }: Props) => {
         </div>
       </div>
       <div>
-        <Button
-          className="flex w-full gap-2 p-1"
+        <DeleteButton
           onClick={() => {
             deleteProjectTasks();
           }}
-          type="ghost"
-        >
-          <DeleteIconSvg />
-        </Button>
+        />
       </div>
     </div>
   );

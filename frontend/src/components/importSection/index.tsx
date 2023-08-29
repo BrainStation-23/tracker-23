@@ -12,6 +12,7 @@ import {
 import { resetProjectsSlice } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
 import { Roles } from "utils/constants";
+import AdminModeSwitch from "../common/adminMode/adminModeSwitch";
 
 const ImportSection = () => {
   const dispatch = useAppDispatch();
@@ -88,16 +89,10 @@ const ImportSection = () => {
         <div className="flex justify-between">
           <div className="text-2xl font-semibold">Select Source of Import</div>
           {userInfo.role === Roles.ADMIN && (
-            <div className="bg flex w-[150px] justify-between">
-              <div>Admin Mode </div>
-              <Switch
-                checked={adminMode}
-                onChange={changeAdminMode}
-                style={{
-                  backgroundColor: adminMode ? "#18d925" : "#f01818",
-                }}
-              />
-            </div>
+            <AdminModeSwitch
+              adminMode={adminMode}
+              changeAdminMode={changeAdminMode}
+            />
           )}
         </div>
         <Spin spinning={loading} tip={loadingTip} className="h-full">
