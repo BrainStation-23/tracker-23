@@ -13,8 +13,8 @@ import {
   getTotalSpentTime,
 } from "@/services/timeActions";
 
-import Sessions from "./components/sessions";
 import { localFormat, timeFormat } from "../datePicker";
+import Sessions from "./components/sessions";
 
 type Props = {
   task: TaskDto;
@@ -99,6 +99,20 @@ const TaskDetailsModal = ({
               </span>{" "}
               <span className="font-medium">
                 {taskDetails?.description ?? <em>No description provided.</em>}
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+                Link
+              </span>{" "}
+              <span
+                className="cursor-pointer font-medium hover:text-blue-400"
+                onClick={() => {
+                  window.open(taskDetails?.url);
+                  setIsModalOpen(true);
+                }}
+              >
+                {taskDetails?.url}
               </span>
             </div>
             <div className="grid grid-cols-2">
