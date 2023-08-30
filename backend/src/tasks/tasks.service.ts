@@ -18,7 +18,6 @@ import {
   Task,
   User,
   UserIntegration,
-  UserWorkspace,
 } from '@prisma/client';
 
 import {
@@ -229,7 +228,20 @@ export class TasksService {
               }),
             },
             include: {
-              sessions: true,
+              sessions: {
+                include: {
+                  userWorkspace: {
+                    select: {
+                      user: {
+                        select: {
+                          firstName: true,
+                          lastName: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           });
         } else {
@@ -263,7 +275,20 @@ export class TasksService {
           tasks = await this.prisma.task.findMany({
             where: databaseQuery,
             include: {
-              sessions: true,
+              sessions: {
+                include: {
+                  userWorkspace: {
+                    select: {
+                      user: {
+                        select: {
+                          firstName: true,
+                          lastName: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           });
         }
@@ -422,336 +447,11 @@ export class TasksService {
     return await this.prisma.task.delete({ where: { id } });
   }
 
-  async importProjectTasks2(user: User, projId: number, res?: Response) {
-    console.log('hello from importProjectTasks');
-
-    const project = await this.prisma.project.findUnique({
-      where: { id: projId },
-      include: { integration: true },
-    });
-    // console.log('project', project);
-
-    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace) {
-      throw new APIException(
-        'User workspace not found',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const userIntegration =
-      project?.integrationId &&
-      (await this.prisma.userIntegration.findUnique({
-        where: {
-          userIntegrationIdentifier: {
-            integrationId: project?.integrationId,
-            userWorkspaceId: userWorkspace.id,
-          },
-        },
-      }));
-
-    const updated_userIntegration =
-      userIntegration &&
-      (await this.integrationsService.getUpdatedUserIntegration(
-        user,
-        userIntegration.id,
-      ));
-
-    // console.log(updated_userIntegration);
-    if (!updated_userIntegration) {
-      try {
-        const notification =
-          user.activeWorkspaceId &&
-          (await this.prisma.notification.create({
-            data: {
-              seen: false,
-              author: 'SYSTEM',
-              title: 'Project Import Failed',
-              description: 'Project Import Failed',
-              userId: user.id,
-              workspaceId: user.activeWorkspaceId,
-            },
-          }));
-        this.myGateway.sendNotification(`${user.id}`, notification);
-        await this.syncCall(StatusEnum.FAILED, user);
-        throw new APIException(
-          'Can not sync with jira',
-          HttpStatus.BAD_REQUEST,
-        );
-      } catch (error) {
-        console.log(
-          '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
-          error.message,
-        );
-      }
-      return [];
-    }
-
-    this.setProjectStatuses(project, updated_userIntegration);
-    // console.log(projectId);
-    try {
-      const notification =
-        user.activeWorkspaceId &&
-        (await this.prisma.notification.create({
-          data: {
-            seen: false,
-            author: 'SYSTEM',
-            title: 'Importing Project',
-            description: 'Importing Project',
-            userId: user.id,
-            workspaceId: user.activeWorkspaceId,
-          },
-        }));
-      this.myGateway.sendNotification(`${user.id}`, notification);
-    } catch (error) {
-      console.log(
-        '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
-        error.message,
-      );
-    }
-
-    try {
-      const headers: any = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${updated_userIntegration.accessToken}`,
-      };
-
-      const url = `https://api.atlassian.com/ex/jira/${updated_userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId}&maxResults=1000`;
-      // const fields =
-      //   'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority';
-      let respTasks;
-      for (let startAt = 0; startAt < 5000; startAt += 100) {
-        let worklogPromises: Promise<any>[] = [];
-        // let taskPromises: Promise<any>[] = [];
-        const taskList: any[] = [],
-          worklogsList: any[] = [],
-          sessionArray: any[] = [];
-        const mappedIssues = new Map<number, any>();
-        respTasks = (
-          await lastValueFrom(
-            this.httpService.get(url, {
-              headers,
-              params: { startAt, maxResults: 100 },
-            }),
-          )
-        ).data;
-        if (respTasks.issues.length === 0) {
-          break;
-        }
-        respTasks.issues.map((issue: any) => {
-          mappedIssues.set(Number(issue.id), issue.fields);
-        });
-
-        const integratedTasks = await this.prisma.task.findMany({
-          where: {
-            workspaceId: user.activeWorkspaceId,
-            integratedTaskId: { in: [...mappedIssues.keys()] },
-            source: IntegrationType.JIRA,
-          },
-          select: {
-            integratedTaskId: true,
-          },
-        });
-
-        // console.log(respTasks);
-
-        // keep the task list that doesn't exist in the database
-        for (let j = 0, len = integratedTasks.length; j < len; j++) {
-          const key = integratedTasks[j].integratedTaskId;
-          key && mappedIssues.delete(key);
-        }
-        for (const [integratedTaskId, integratedTask] of mappedIssues) {
-          const taskStatus = integratedTask.status.name;
-          const taskPriority = this.formatPriority(
-            integratedTask.priority.name,
-          );
-          // console.log(integratedTask);
-
-          taskList.push({
-            userWorkspaceId:
-              userIntegration.jiraAccountId ===
-              integratedTask.assignee?.accountId
-                ? userWorkspace.id
-                : null,
-            workspaceId: project.workspaceId,
-            title: integratedTask.summary,
-            assigneeId: integratedTask.assignee?.accountId || null,
-            estimation: integratedTask.timeoriginalestimate
-              ? integratedTask.timeoriginalestimate / 3600
-              : null,
-            projectName: project.projectName,
-            projectId: project.id,
-            status: taskStatus,
-            statusCategoryName: integratedTask.status.statusCategory.name
-              .replace(' ', '_')
-              .toUpperCase(),
-            priority: taskPriority,
-            integratedTaskId: integratedTaskId,
-            createdAt: new Date(integratedTask.created),
-            updatedAt: new Date(integratedTask.updated),
-            jiraUpdatedAt: new Date(integratedTask.updated),
-            // parentTaskId: integratedTask.parent.id,
-            source: IntegrationType.JIRA,
-          });
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [t, tasks] = await Promise.all([
-          await this.prisma.task.createMany({
-            data: taskList,
-          }),
-          await this.prisma.task.findMany({
-            where: {
-              source: IntegrationType.JIRA,
-            },
-            select: {
-              id: true,
-              integratedTaskId: true,
-            },
-          }),
-        ]);
-        console.log(t);
-        const mappedTaskId = new Map<number, number>();
-        for (let index = 0; index < tasks.length; index++) {
-          mappedTaskId.set(
-            Number(tasks[index].integratedTaskId),
-            tasks[index].id,
-          );
-        }
-        let total = 0;
-        try {
-          for (const [integratedTaskId] of mappedIssues) {
-            const fields = 'issueId';
-            const url = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/api/3/issue/${integratedTaskId}/worklog`;
-            const config = {
-              method: 'get',
-              url,
-              headers: {
-                Authorization: `Bearer ${updated_userIntegration?.accessToken}`,
-                'Content-Type': 'application/json',
-                fields,
-              },
-            };
-            const res = axios(config);
-            worklogPromises.push(res);
-            if (worklogPromises.length >= coreConfig.promiseQuantity) {
-              total += coreConfig.promiseQuantity;
-              const resolvedPromise = await Promise.all(worklogPromises);
-              worklogsList.push(...resolvedPromise);
-              worklogPromises = [];
-            }
-          }
-
-          if (worklogPromises.length) {
-            const resolvedPromise = await Promise.all(worklogPromises);
-            worklogsList.push(...resolvedPromise);
-          }
-        } catch (error) {
-          console.log(total, mappedIssues.size);
-          console.log('🚀 ~ file: tasks.service.ts:366 ~ syncTasks ~ error:');
-        }
-
-        for (let index = 0; index < worklogsList.length; index++) {
-          const urlArray = worklogsList[index].config.url.split('/');
-          const jiraTaskId = urlArray[urlArray.length - 2];
-          const taskId = mappedTaskId.get(Number(jiraTaskId));
-
-          taskId &&
-            worklogsList[index].data.worklogs.map((log: any) => {
-              const lastTime =
-                new Date(log.started).getTime() +
-                Number(log.timeSpentSeconds * 1000);
-              sessionArray.push({
-                startTime: new Date(log.started),
-                endTime: new Date(lastTime),
-                status: SessionStatus.STOPPED,
-                taskId: taskId,
-                integratedTaskId: Number(log.issueId),
-                worklogId: Number(log.id),
-                authorId: log.author.accountId,
-              });
-            });
-        }
-        try {
-          await this.prisma.session.createMany({
-            data: sessionArray,
-          });
-        } catch (error) {
-          console.log(
-            '🚀 ~ file: tasks.service.ts:410 ~ syncTasks ~ error:',
-            error.message,
-          );
-          console.log('Error creating sessions');
-        }
-      }
-      const done = await this.syncCall(StatusEnum.DONE, user);
-      if (done) {
-        await this.sprintService.createSprintAndTask(
-          user,
-          projId,
-          updated_userIntegration.id,
-        );
-      }
-
-      //project update to add 'integrated: true'
-      await this.prisma.project.update({
-        where: { id: projId },
-        data: { integrated: true },
-      });
-
-      try {
-        const notification =
-          user.activeWorkspaceId &&
-          (await this.prisma.notification.create({
-            data: {
-              seen: false,
-              author: 'SYSTEM',
-              title: 'Importing Project',
-              description: 'Importing Project',
-              userId: user.id,
-              workspaceId: user.activeWorkspaceId,
-            },
-          }));
-        this.myGateway.sendNotification(`${user.id}`, notification);
-        res?.json({ message: 'Project Imported' });
-      } catch (error) {
-        console.log(
-          '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
-          error.message,
-        );
-      }
-    } catch (err) {
-      try {
-        const notification =
-          user.activeWorkspaceId &&
-          (await this.prisma.notification.create({
-            data: {
-              seen: false,
-              author: 'SYSTEM',
-              title: 'Importing Project Failed',
-              description: 'Importing Project Failed',
-              userId: user.id,
-              workspaceId: user.activeWorkspaceId,
-            },
-          }));
-        this.myGateway.sendNotification(`${user.id}`, notification);
-      } catch (error) {
-        console.log(
-          '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
-          error.message,
-        );
-      }
-      console.log(err);
-      throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
-    }
-  }
-
   async importProjectTasks(user: User, projId: number, res?: Response) {
     const project = await this.prisma.project.findUnique({
       where: { id: projId },
       include: { integration: true },
     });
-
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
       throw new APIException(
@@ -782,7 +482,6 @@ export class TasksService {
     try {
       await this.sendImportingNotification(user);
       await this.fetchAndProcessTasksAndWorklog(
-        userWorkspace,
         user,
         project,
         updatedUserIntegration,
@@ -794,9 +493,9 @@ export class TasksService {
       );
       await this.updateProjectIntegrationStatus(projId);
       res && (await this.syncCall(StatusEnum.DONE, user));
-      await this.sendImportedNotification(user, res);
+      await this.sendImportedNotification(user, 'Project Imported', res);
     } catch (error) {
-      await this.handleImportFailure(user);
+      await this.handleImportFailure(user, 'Importing Tasks Failed');
       console.log(
         '🚀 ~ file: tasks.service.ts:752 ~ TasksService ~ importProjectTasks ~ error:',
         error,
@@ -866,7 +565,6 @@ export class TasksService {
   }
 
   private async fetchAndProcessTasksAndWorklog(
-    userWorkspace: UserWorkspace,
     user: User,
     project: Project,
     userIntegration: UserIntegration,
@@ -1090,6 +788,284 @@ export class TasksService {
     }
   }
 
+  private async syncTasksFetchAndProcessTasksAndWorklog(
+    user: User,
+    project: Project,
+    userIntegration: UserIntegration,
+  ) {
+    const headers: any = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${userIntegration.accessToken}`,
+    };
+
+    const mappedUserWorkspaceAndJiraId =
+      await this.mappingUserWorkspaceAndJiraAccountId(user);
+
+    const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId}&maxResults=1000`;
+    const fields =
+      'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority, parent';
+    let respTasks;
+    for (let startAt = 0; startAt < 5000; startAt += 100) {
+      let worklogPromises: Promise<any>[] = [];
+      // let taskPromises: Promise<any>[] = [];
+      const taskList: any[] = [],
+        worklogsList: any[] = [],
+        sessionArray: any[] = [];
+      const mappedIssues = new Map<number, any>();
+      respTasks = (
+        await lastValueFrom(
+          this.httpService.get(url, {
+            headers,
+            params: { startAt, maxResults: 100, fields },
+          }),
+        )
+      ).data;
+      if (respTasks.issues.length === 0) {
+        break;
+      }
+      respTasks.issues.map((issue: any) => {
+        mappedIssues.set(Number(issue.id), {
+          ...issue?.fields,
+          key: issue?.key,
+        });
+      });
+
+      const integratedTasks = await this.prisma.task.findMany({
+        where: {
+          workspaceId: user.activeWorkspaceId,
+          integratedTaskId: { in: [...mappedIssues.keys()] },
+          source: IntegrationType.JIRA,
+        },
+        select: {
+          integratedTaskId: true,
+        },
+      });
+
+      for (let j = 0, len = integratedTasks.length; j < len; j++) {
+        const key = integratedTasks[j].integratedTaskId;
+        const localTask = await this.prisma.task.findFirst({
+          where: {
+            integratedTaskId: key,
+          },
+        });
+        const jiraTask = mappedIssues.get(Number(key));
+
+        if (
+          localTask &&
+          localTask.jiraUpdatedAt &&
+          localTask.jiraUpdatedAt < new Date(jiraTask.updated)
+        ) {
+          const taskPriority = this.formatPriority(jiraTask.priority.name);
+          // const updatedTask =
+          localTask &&
+            localTask.id &&
+            (await this.prisma.task.update({
+              where: {
+                id: localTask.id,
+              },
+              data: {
+                userWorkspaceId:
+                  mappedUserWorkspaceAndJiraId.get(
+                    jiraTask.assignee?.accountId,
+                  ) || null,
+                workspaceId: project.workspaceId,
+                title: jiraTask.summary,
+                assigneeId: jiraTask.assignee?.accountId || null,
+                estimation: jiraTask.timeoriginalestimate
+                  ? jiraTask.timeoriginalestimate / 3600
+                  : null,
+                projectName: jiraTask.project.name,
+                status: jiraTask.status.name,
+                statusCategoryName: jiraTask.status.statusCategory.name
+                  .replace(' ', '_')
+                  .toUpperCase(),
+                priority: taskPriority,
+                updatedAt:
+                  localTask.updatedAt <= new Date(jiraTask.updated)
+                    ? new Date(jiraTask.updated)
+                    : localTask.updatedAt,
+                jiraUpdatedAt: new Date(jiraTask.updated),
+              },
+            }));
+          // console.log(updatedTask);
+
+          // worklog delete
+          const wklogs = await this.prisma.session.deleteMany({
+            where: {
+              taskId: localTask.id,
+            },
+          });
+          console.log(wklogs);
+
+          const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/issue/${localTask.integratedTaskId}/worklog`;
+          const config = {
+            method: 'get',
+            url,
+            headers: {
+              Authorization: `Bearer ${userIntegration?.accessToken}`,
+              'Content-Type': 'application/json',
+              fields,
+            },
+          };
+          const worklog = (await axios(config)).data;
+          // console.log(worklog);
+          worklog.worklogs.map(async (log: any) => {
+            const lastTime =
+              new Date(log.started).getTime() +
+              Number(log.timeSpentSeconds * 1000);
+            localTask?.id &&
+              (await this.prisma.session.create({
+                data: {
+                  startTime: new Date(log.started),
+                  endTime: new Date(lastTime),
+                  status: SessionStatus.STOPPED,
+                  taskId: localTask.id,
+                  integratedTaskId: Number(log.issueId),
+                  worklogId: Number(log.id),
+                  authorId: log.author.accountId,
+                  userWorkspaceId:
+                    mappedUserWorkspaceAndJiraId.get(log.author.accountId) ||
+                    null,
+                },
+              }));
+          });
+        }
+        // console.log('updatedTask', updatedTask);
+      }
+
+      // keep the task list that doesn't exist in the database
+      for (let j = 0, len = integratedTasks.length; j < len; j++) {
+        const key = integratedTasks[j].integratedTaskId;
+        key && mappedIssues.delete(key);
+      }
+      for (const [integratedTaskId, integratedTask] of mappedIssues) {
+        const taskStatus = integratedTask.status.name;
+        const taskPriority = this.formatPriority(integratedTask.priority.name);
+        taskList.push({
+          userWorkspaceId:
+            mappedUserWorkspaceAndJiraId.get(
+              integratedTask.assignee?.accountId,
+            ) || null,
+          workspaceId: project.workspaceId,
+          title: integratedTask.summary,
+          assigneeId: integratedTask.assignee?.accountId || null,
+          estimation: integratedTask.timeoriginalestimate
+            ? integratedTask.timeoriginalestimate / 3600
+            : null,
+          projectName: integratedTask.project.name,
+          projectId: project.id,
+          status: taskStatus,
+          statusCategoryName: integratedTask.status.statusCategory.name
+            .replace(' ', '_')
+            .toUpperCase(),
+          priority: taskPriority,
+          integratedTaskId: integratedTaskId,
+          createdAt: new Date(integratedTask.created),
+          updatedAt: new Date(integratedTask.updated),
+          jiraUpdatedAt: new Date(integratedTask.updated),
+          parentTaskId: Number(integratedTask.parent.id),
+          source: IntegrationType.JIRA,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          url: `${userIntegration?.integration?.site}/browse/${integratedTask?.key}`,
+        });
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [t, tasks] = await Promise.all([
+        await this.prisma.task.createMany({
+          data: taskList,
+        }),
+        await this.prisma.task.findMany({
+          where: {
+            source: IntegrationType.JIRA,
+          },
+          select: {
+            id: true,
+            integratedTaskId: true,
+          },
+        }),
+      ]);
+      const mappedTaskId = new Map<number, number>();
+      for (let index = 0; index < tasks.length; index++) {
+        mappedTaskId.set(
+          Number(tasks[index].integratedTaskId),
+          tasks[index].id,
+        );
+      }
+      let total = 0;
+      try {
+        for (const [integratedTaskId] of mappedIssues) {
+          const fields = 'issueId';
+          const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/issue/${integratedTaskId}/worklog`;
+          const config = {
+            method: 'get',
+            url,
+            headers: {
+              Authorization: `Bearer ${userIntegration?.accessToken}`,
+              'Content-Type': 'application/json',
+              fields,
+            },
+          };
+          const res = axios(config);
+          worklogPromises.push(res);
+          if (worklogPromises.length >= coreConfig.promiseQuantity) {
+            total += coreConfig.promiseQuantity;
+            const resolvedPromise = await Promise.all(worklogPromises);
+            worklogsList.push(...resolvedPromise);
+            worklogPromises = [];
+          }
+        }
+
+        if (worklogPromises.length) {
+          const resolvedPromise = await Promise.all(worklogPromises);
+          worklogsList.push(...resolvedPromise);
+        }
+      } catch (error) {
+        console.log(total, mappedIssues.size);
+        console.log('🚀 ~ file: tasks.service.ts:366 ~ syncTasks ~ error:');
+      }
+
+      for (let index = 0; index < worklogsList.length; index++) {
+        const urlArray = worklogsList[index].config.url.split('/');
+        const jiraTaskId = urlArray[urlArray.length - 2];
+        const taskId = mappedTaskId.get(Number(jiraTaskId));
+
+        taskId &&
+          worklogsList[index].data.worklogs.map((log: any) => {
+            const lastTime =
+              new Date(log.started).getTime() +
+              Number(log.timeSpentSeconds * 1000);
+            sessionArray.push({
+              startTime: new Date(log.started),
+              endTime: new Date(lastTime),
+              status: SessionStatus.STOPPED,
+              taskId: taskId,
+              integratedTaskId: Number(log.issueId),
+              worklogId: Number(log.id),
+              authorId: log.author.accountId,
+              userWorkspaceId:
+                mappedUserWorkspaceAndJiraId.get(log.author.accountId) || null,
+            });
+          });
+      }
+      try {
+        await this.prisma.session.createMany({
+          data: sessionArray,
+        });
+      } catch (error) {
+        console.log(
+          '🚀 ~ file: tasks.service.ts:1058 ~ TasksService ~ error:',
+          error,
+        );
+        throw new APIException(
+          'Can not sync with jira',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+  }
+
   private async mappingUserWorkspaceAndJiraAccountId(user: User) {
     const mappedUserWorkspaceAndJiraId = new Map<string, number>();
     const workspace =
@@ -1130,417 +1106,76 @@ export class TasksService {
     });
   }
 
-  private async sendImportedNotification(user: User, res?: Response) {
-    const notification = await this.createNotification(
-      user,
-      'Project Imported',
-      'Project Imported',
-    );
+  private async sendImportedNotification(
+    user: User,
+    msg: string,
+    res?: Response,
+  ) {
+    const notification = await this.createNotification(user, msg, msg);
     this.myGateway.sendNotification(`${user.id}`, notification);
-    res?.json({ message: 'Project tasks Imported' });
+    res?.json({ message: msg });
   }
 
-  private async handleImportFailure(user: User) {
-    const notification = await this.createNotification(
-      user,
-      'Importing Project Failed',
-      'Importing Project Failed',
-    );
+  private async handleImportFailure(user: User, message: string) {
+    const notification = await this.createNotification(user, message, message);
     this.myGateway.sendNotification(`${user.id}`, notification);
   }
 
-  async syncTasks(user: User, id: number, res?: Response) {
-    const project = await this.prisma.project.findFirst({
-      where: { id: id },
+  async syncTasks(user: User, projId: number, res?: Response) {
+    const project = await this.prisma.project.findUnique({
+      where: { id: projId },
       include: { integration: true },
     });
     if (!project) {
       throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
     }
-    const projectId = project?.projectId;
-    const projectName = project?.projectName;
-    console.log(
-      '🚀 ~ file: tasks.service.ts:271 ~ TasksService ~ projectTasks ~ projectId:',
-      projectId,
-    );
-    try {
-      const notification =
-        user.activeWorkspaceId &&
-        (await this.prisma.notification.create({
-          data: {
-            seen: false,
-            author: 'SYSTEM',
-            title: 'Syncing Project ' + projectName,
-            description: 'Syncing Project ' + projectName,
-            userId: user.id,
-            workspaceId: user.activeWorkspaceId,
-          },
-        }));
-      this.myGateway.sendNotification(`${user.id}`, notification);
-    } catch (error) {
-      console.log(
-        '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
-        error.message,
+
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      throw new APIException(
+        'Can not import project tasks, userWorkspace not found!',
+        HttpStatus.BAD_REQUEST,
       );
     }
 
-    const updated_userIntegration =
-      project.integrationId &&
+    const userIntegration =
+      project?.integrationId &&
+      (await this.getUserIntegration(userWorkspace.id, project.integrationId));
+    const updatedUserIntegration =
+      userIntegration &&
       (await this.integrationsService.getUpdatedUserIntegration(
         user,
-        project.integrationId,
+        userIntegration.id,
       ));
 
-    if (!updated_userIntegration) {
-      try {
-        const notification =
-          user.activeWorkspaceId &&
-          (await this.prisma.notification.create({
-            data: {
-              seen: false,
-              author: 'SYSTEM',
-              title: 'Syncing Project ' + projectName + ' Failed',
-              description: 'Syncing Project ' + projectName + ' Failed',
-              userId: user.id,
-              workspaceId: user.activeWorkspaceId,
-            },
-          }));
-        this.myGateway.sendNotification(`${user.id}`, notification);
-        await this.syncCall(StatusEnum.FAILED, user);
-        throw new APIException(
-          'Can not sync with jira',
-          HttpStatus.BAD_REQUEST,
-        );
-      } catch (error) {
-        console.log(
-          '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
-          error.message,
-        );
-      }
+    if (!updatedUserIntegration) {
+      await this.handleIntegrationFailure(user);
       return [];
     }
+    res && (await this.syncCall(StatusEnum.IN_PROGRESS, user));
     try {
-      const headers: any = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${updated_userIntegration.accessToken}`,
-      };
-
-      const mappedUserWorkspaceAndJiraId =
-        await this.mappingUserWorkspaceAndJiraAccountId(user);
-
-      const url = `https://api.atlassian.com/ex/jira/${updated_userIntegration.siteId}/rest/api/3/search?jql=project=${projectId}&maxResults=1000`;
-      const fields =
-        'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority, parent';
-      let respTasks;
-      for (let startAt = 0; startAt < 5000; startAt += 100) {
-        let worklogPromises: Promise<any>[] = [];
-        // let taskPromises: Promise<any>[] = [];
-        const taskList: any[] = [],
-          worklogsList: any[] = [],
-          sessionArray: any[] = [];
-        const mappedIssues = new Map<number, any>();
-        respTasks = (
-          await lastValueFrom(
-            this.httpService.get(url, {
-              headers,
-              params: { startAt, maxResults: 100, fields },
-            }),
-          )
-        ).data;
-        if (respTasks.issues.length === 0) {
-          break;
-        }
-        respTasks.issues.map((issue: any) => {
-          mappedIssues.set(Number(issue.id), issue.fields);
-        });
-
-        const integratedTasks = await this.prisma.task.findMany({
-          where: {
-            workspaceId: user.activeWorkspaceId,
-            integratedTaskId: { in: [...mappedIssues.keys()] },
-            source: IntegrationType.JIRA,
-          },
-          select: {
-            integratedTaskId: true,
-          },
-        });
-
-        for (let j = 0, len = integratedTasks.length; j < len; j++) {
-          const key = integratedTasks[j].integratedTaskId;
-          const localTask = await this.prisma.task.findFirst({
-            where: {
-              integratedTaskId: key,
-            },
-          });
-          const jiraTask = mappedIssues.get(Number(key));
-
-          if (
-            localTask &&
-            localTask.jiraUpdatedAt &&
-            localTask.jiraUpdatedAt < new Date(jiraTask.updated)
-          ) {
-            const taskPriority = this.formatPriority(jiraTask.priority.name);
-            // const updatedTask =
-            localTask &&
-              localTask.id &&
-              (await this.prisma.task.update({
-                where: {
-                  id: localTask.id,
-                },
-                data: {
-                  title: jiraTask.summary,
-                  assigneeId: jiraTask.assignee?.accountId || null,
-                  estimation: jiraTask.timeoriginalestimate
-                    ? jiraTask.timeoriginalestimate / 3600
-                    : null,
-                  projectName: jiraTask.project.name,
-                  status: jiraTask.status.name,
-                  statusCategoryName: jiraTask.status.statusCategory.name
-                    .replace(' ', '_')
-                    .toUpperCase(),
-                  priority: taskPriority,
-                  updatedAt:
-                    localTask.updatedAt <= new Date(jiraTask.updated)
-                      ? new Date(jiraTask.updated)
-                      : localTask.updatedAt,
-                  jiraUpdatedAt: new Date(jiraTask.updated),
-                },
-              }));
-            // console.log(updatedTask);
-
-            // worklog delete
-            const wklogs = await this.prisma.session.deleteMany({
-              where: {
-                taskId: localTask.id,
-              },
-            });
-            console.log(wklogs);
-
-            const url = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/api/3/issue/${localTask.integratedTaskId}/worklog`;
-            const config = {
-              method: 'get',
-              url,
-              headers: {
-                Authorization: `Bearer ${updated_userIntegration?.accessToken}`,
-                'Content-Type': 'application/json',
-                fields,
-              },
-            };
-            const worklog = (await axios(config)).data;
-            // console.log(worklog);
-            worklog.worklogs.map(async (log: any) => {
-              const lastTime =
-                new Date(log.started).getTime() +
-                Number(log.timeSpentSeconds * 1000);
-              localTask?.id &&
-                (await this.prisma.session.create({
-                  data: {
-                    startTime: new Date(log.started),
-                    endTime: new Date(lastTime),
-                    status: SessionStatus.STOPPED,
-                    taskId: localTask.id,
-                    integratedTaskId: Number(log.issueId),
-                    worklogId: Number(log.id),
-                    authorId: log.author.accountId,
-                    userWorkspaceId:
-                      mappedUserWorkspaceAndJiraId.get(log.author.accountId) ||
-                      null,
-                  },
-                }));
-            });
-          }
-          // console.log('updatedTask', updatedTask);
-        }
-
-        // keep the task list that doesn't exist in the database
-        for (let j = 0, len = integratedTasks.length; j < len; j++) {
-          const key = integratedTasks[j].integratedTaskId;
-          key && mappedIssues.delete(key);
-        }
-        for (const [integratedTaskId, integratedTask] of mappedIssues) {
-          const taskStatus = integratedTask.status.name;
-          const taskPriority = this.formatPriority(
-            integratedTask.priority.name,
-          );
-          taskList.push({
-            userId: user.id,
-            title: integratedTask.summary,
-            assigneeId: integratedTask.assignee?.accountId || null,
-            estimation: integratedTask.timeoriginalestimate
-              ? integratedTask.timeoriginalestimate / 3600
-              : null,
-            projectName: integratedTask.project.name,
-            projectId: project.id,
-            status: taskStatus,
-            statusCategoryName: integratedTask.status.statusCategory.name
-              .replace(' ', '_')
-              .toUpperCase(),
-            priority: taskPriority,
-            integratedTaskId: integratedTaskId,
-            createdAt: new Date(integratedTask.created),
-            updatedAt: new Date(integratedTask.updated),
-            jiraUpdatedAt: new Date(integratedTask.updated),
-            parentTaskId: Number(integratedTask.parent.id),
-            source: IntegrationType.JIRA,
-          });
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [t, tasks] = await Promise.all([
-          await this.prisma.task.createMany({
-            data: taskList,
-          }),
-          await this.prisma.task.findMany({
-            where: {
-              source: IntegrationType.JIRA,
-            },
-            select: {
-              id: true,
-              integratedTaskId: true,
-            },
-          }),
-        ]);
-        const mappedTaskId = new Map<number, number>();
-        for (let index = 0; index < tasks.length; index++) {
-          mappedTaskId.set(
-            Number(tasks[index].integratedTaskId),
-            tasks[index].id,
-          );
-        }
-        let total = 0;
-        try {
-          for (const [integratedTaskId] of mappedIssues) {
-            const fields = 'issueId';
-            const url = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/api/3/issue/${integratedTaskId}/worklog`;
-            const config = {
-              method: 'get',
-              url,
-              headers: {
-                Authorization: `Bearer ${updated_userIntegration?.accessToken}`,
-                'Content-Type': 'application/json',
-                fields,
-              },
-            };
-            const res = axios(config);
-            worklogPromises.push(res);
-            if (worklogPromises.length >= coreConfig.promiseQuantity) {
-              total += coreConfig.promiseQuantity;
-              const resolvedPromise = await Promise.all(worklogPromises);
-              worklogsList.push(...resolvedPromise);
-              worklogPromises = [];
-            }
-          }
-
-          if (worklogPromises.length) {
-            const resolvedPromise = await Promise.all(worklogPromises);
-            worklogsList.push(...resolvedPromise);
-          }
-        } catch (error) {
-          console.log(total, mappedIssues.size);
-          console.log('🚀 ~ file: tasks.service.ts:366 ~ syncTasks ~ error:');
-        }
-
-        for (let index = 0; index < worklogsList.length; index++) {
-          const urlArray = worklogsList[index].config.url.split('/');
-          const jiraTaskId = urlArray[urlArray.length - 2];
-          const taskId = mappedTaskId.get(Number(jiraTaskId));
-
-          taskId &&
-            worklogsList[index].data.worklogs.map((log: any) => {
-              const lastTime =
-                new Date(log.started).getTime() +
-                Number(log.timeSpentSeconds * 1000);
-              sessionArray.push({
-                startTime: new Date(log.started),
-                endTime: new Date(lastTime),
-                status: SessionStatus.STOPPED,
-                taskId: taskId,
-                integratedTaskId: Number(log.issueId),
-                worklogId: Number(log.id),
-                authorId: log.author.accountId,
-                userWorkspaceId:
-                  mappedUserWorkspaceAndJiraId.get(log.author.accountId) ||
-                  null,
-              });
-            });
-        }
-        try {
-          await this.prisma.session.createMany({
-            data: sessionArray,
-          });
-        } catch (error) {
-          console.log(
-            '🚀 ~ file: tasks.service.ts:410 ~ syncTasks ~ error:',
-            error.message,
-          );
-          console.log('Error creating sessions');
-        }
-      }
+      await this.sendImportingNotification(user);
+      this.syncTasksFetchAndProcessTasksAndWorklog(
+        user,
+        project,
+        updatedUserIntegration,
+      );
       res && (await this.syncCall(StatusEnum.DONE, user));
       // if (done) {
       //   await this.createSprintAndTask(user, updated_userIntegration.id);
       // }
-      try {
-        const projectIntegrated = await this.prisma.project.update({
-          where: { id: id },
-          data: { integrated: true },
-        });
-        console.log(
-          '🚀 ~ file: tasks.service.ts:521 ~ TasksService ~ projectTasks ~ projectIntegrated:',
-          projectIntegrated,
-        );
-      } catch (error) {
-        console.log(
-          '🚀 ~ file: tasks.service.ts:521 ~ TasksService ~ projectTasks ~ error:',
-          error,
-        );
-      }
-      try {
-        const notification =
-          user.activeWorkspaceId &&
-          (await this.prisma.notification.create({
-            data: {
-              seen: false,
-              author: 'SYSTEM',
-              title: 'Project ' + projectName + ' Synced',
-              description: 'Project ' + projectName + ' Synced',
-              userId: user.id,
-              workspaceId: user.activeWorkspaceId,
-            },
-          }));
-        this.myGateway.sendNotification(`${user.id}`, notification);
-        res?.json({ message: 'Project Imported' });
-        if (!res) return true;
-      } catch (error) {
-        console.log(
-          '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
-          error.message,
-        );
-        if (!res) return false;
-      }
+      await this.updateProjectIntegrationStatus(projId);
+      await this.sendImportedNotification(user, 'Project Synced', res);
     } catch (err) {
-      try {
-        const notification =
-          user.activeWorkspaceId &&
-          (await this.prisma.notification.create({
-            data: {
-              seen: false,
-              author: 'SYSTEM',
-              title: 'Importing Project Failed',
-              description: 'Importing Project Failed',
-              userId: user.id,
-              workspaceId: user.activeWorkspaceId,
-            },
-          }));
-        this.myGateway.sendNotification(`${user.id}`, notification);
-      } catch (error) {
-        console.log(
-          '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
-          error.message,
-        );
-      }
-      console.log(err);
-      throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
+      await this.handleImportFailure(user, 'Sync Tasks Failed');
+      console.log(
+        '🚀 ~ file: tasks.service.ts:1164 ~ TasksService ~ syncTasks ~ err:',
+        err,
+      );
+      throw new APIException(
+        'Can not Sync project tasks',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -2454,7 +2089,7 @@ export class TasksService {
       }
     } else {
       try {
-        let userWorkspaces =
+        const userWorkspaces =
           user?.activeWorkspaceId &&
           (await this.prisma.userWorkspace.findMany({
             where: {
