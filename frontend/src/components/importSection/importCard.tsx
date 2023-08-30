@@ -9,7 +9,8 @@ import {
 
 import JiraLogoFullSvg from "@/assets/svg/JiraFullLogoSvg";
 import TrelloLogoSvg from "@/assets/svg/TrelloLogoSvg";
-import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
+
+import DeleteButton from "../common/buttons/deleteButton";
 
 type Props = {
   data: Integration;
@@ -38,14 +39,12 @@ const ImportCard = ({
     >
       <div>
         {installed && adminMode && (
-          <div
+          <DeleteButton
             className="absolute right-2"
             onClick={async () => {
               await handleDeleteIntegration(data.id);
             }}
-          >
-            <DeleteIconSvg />
-          </div>
+          />
         )}
         <div className="flex h-10 items-center gap-2">
           {integrationIcons[data.type]}

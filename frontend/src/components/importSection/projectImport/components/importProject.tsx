@@ -1,9 +1,10 @@
-import { Button, message } from "antd";
+import { message } from "antd";
 import { userAPI } from "APIs";
 import { ProjectDto } from "models/projects";
 import { useRouter } from "next/router";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
+import PrimaryButton from "@/components/common/buttons/primaryButton";
 
 type Props = {
   project: ProjectDto;
@@ -32,13 +33,9 @@ const ImportProject = ({ project, setSpinning }: Props) => {
         </div>
       </div>
       <div>
-        <Button
-          type="primary"
-          className="flex items-center gap-2 py-3 text-[15px] text-white"
-          onClick={() => importProjectTasks()}
-        >
+        <PrimaryButton onClick={() => importProjectTasks()}>
           <PlusIconSvg />
-        </Button>
+        </PrimaryButton>
       </div>
     </div>
   );

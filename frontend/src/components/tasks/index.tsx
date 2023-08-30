@@ -19,16 +19,17 @@ import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 import { setSprintListReducer } from "@/storage/redux/tasksSlice";
 
+import PrimaryButton from "../common/buttons/primaryButton";
 import { getDateRangeArray } from "../datePicker";
 import GlobalModal from "../modals/globalModal";
 import TaskDetailsModal from "../modals/taskDetails.modal";
+import WorkspaceSelection from "../sideMenu/components/workspaceSection";
 import CreateTaskComponent from "./components/createTaskComponent";
 import ManualTimeEntry from "./components/manualTimeEntry";
 import TableComponent from "./components/tableComponent";
 import TopPanel from "./components/topPanel/topPanel";
-import SessionStartWarning from "./components/warning";
 import TopPanelActiveSprint from "./components/topPanel/topPanelActiveSprint";
-import WorkspaceSelection from "../sideMenu/components/workspaceSection";
+import SessionStartWarning from "./components/warning";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -587,14 +588,10 @@ const TasksPage = () => {
         <div className="mb-4 flex justify-between">
           <h2 className="text-2xl font-bold">Tasks</h2>
           <div className="flex gap-1">
-            <Button
-              type="primary"
-              className="flex items-center gap-2 py-3 text-[15px] text-white"
-              onClick={() => setViewModalOpen(true)}
-            >
+            <PrimaryButton onClick={() => setViewModalOpen(true)}>
               <PlusIconSvg />
               Add Task
-            </Button>
+            </PrimaryButton>
           </div>
         </div>
         {activeTab === "ActiveSprint" ? (

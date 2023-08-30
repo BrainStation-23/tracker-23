@@ -32,7 +32,7 @@ import {
   sendJiraCodeRest,
   stopSessionRest,
   syncStatusRest,
-  syncTasksRest,
+  syncAllTasksRest,
   updateSessionRest,
   updateTaskEstimationRest,
   updateTaskSTatusRest,
@@ -49,6 +49,7 @@ import {
   forgotPasswordRest,
   resetPasswordRest,
   deleteIntegrationRest,
+  syncProjectTasksRest,
 } from "./restApi";
 
 const graphqlApi: apiFunction = {
@@ -58,7 +59,8 @@ const graphqlApi: apiFunction = {
   logout: logoutRest,
   createTask: createTaskRest,
   getTasks: getTasksRest,
-  syncTasks: syncTasksRest,
+  syncTasks: syncAllTasksRest,
+  syncProjectTasks: syncProjectTasksRest,
   syncStatus: syncStatusRest,
   deleteTask: deleteTaskRest,
   createSession: createSessionRest,
@@ -109,7 +111,8 @@ const restApi: apiFunction = {
   createTask: createTaskRest,
   getTasks: getTasksRest,
   exportTasks: exportTasksRest,
-  syncTasks: syncTasksRest,
+  syncTasks: syncAllTasksRest,
+  syncProjectTasks: syncProjectTasksRest,
   syncStatus: syncStatusRest,
   deleteTask: deleteTaskRest,
   createSession: createSessionRest,
