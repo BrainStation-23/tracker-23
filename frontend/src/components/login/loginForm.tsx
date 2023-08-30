@@ -71,18 +71,18 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
         />
         {/* <Input type="email" className="" /> */}
       </Form.Item>
-
-      <Form.Item
-        // label="Password"
-        name="password"
-        rules={[{ required: true, message: "Please input your password!" }]}
-        className="relative"
-      >
-        <Input.Password
-          placeholder="Password"
-          className="flex rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
-        />
-        <div className="absolute right-0 text-end">
+      <div className="relative">
+        <Form.Item
+          // label="Password"
+          name="password"
+          rules={[{ required: true, message: "Please input your password!" }]}
+        >
+          <Input.Password
+            placeholder="Password"
+            className="flex rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
+          />
+        </Form.Item>{" "}
+        <div className="absolute bottom-[-20px] right-0 text-end">
           <Link
             href="/forgotPassword"
             className="text-xs font-medium hover:text-[#070eff]"
@@ -90,7 +90,7 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
             Forgot your Password?
           </Link>
         </div>
-      </Form.Item>
+      </div>
 
       {/* <Form.Item
         name="remember"
@@ -99,7 +99,6 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
       >
         <Checkbox>Remember me</Checkbox>
       </Form.Item> */}
-
       <Form.Item className="mb-0">
         <button className="mt-5 flex w-full flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
           Login

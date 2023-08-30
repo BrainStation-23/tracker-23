@@ -84,6 +84,11 @@ export enum IntegrationDescriptionsEnum {
   TRELLO = "Connect Trello to your Project",
 }
 
+export enum Roles {
+  USER = "USER",
+  ADMIN = "ADMIN",
+}
+
 export const whiteListEmails = [
   "seefathimel1@gmail.com",
   "test@gmail.com",

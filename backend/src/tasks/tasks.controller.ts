@@ -30,13 +30,12 @@ import {
   GetTeamTaskQueryType,
 } from './dto';
 import { TasksService } from './tasks.service';
-import { RolesGuard } from 'src/guard/auth.guard';
 @Controller('tasks')
 export class TasksController {
   constructor(private tasksService: TasksService) {}
 
   @Get()
-  @UseGuards(new RolesGuard(['USER', 'ADMIN']))
+  // @UseGuards(new RolesGuard(['USER', 'ADMIN']))
   @UseGuards(JwtAuthGuard)
   async getTasks(
     @GetUser() user: User,
@@ -78,15 +77,15 @@ export class TasksController {
     return this.tasksService.deleteTask(id);
   }
 
-  @Get('sync/:id')
+  @Get('sync/:projectId')
   @UseGuards(JwtAuthGuard)
   async syncAndGetTasks(
     @GetUser() user: User,
-    @Param('id') id: string,
+    @Param('projectId') projectId: string,
     @Response() res: any,
   ) {
     // From PARAMS get filters so that we can bring tasks that are reasonable, for now we only bring todo and inprogress and assigned to the user.
-    return await this.tasksService.syncTasks(user, Number(id), res);
+    return await this.tasksService.syncTasks(user, Number(projectId), res);
   }
   @Get('syncAll')
   @UseGuards(JwtAuthGuard)
@@ -127,7 +126,7 @@ export class TasksController {
     );
   }
 
-  @Patch('add-work-log/:issueId')
+  @Patch('manual-timeEntry/:issueId')
   @UseGuards(JwtAuthGuard)
   async addWorkLog(
     @GetUser() user: User,
