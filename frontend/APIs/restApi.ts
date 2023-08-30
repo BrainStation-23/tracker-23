@@ -202,9 +202,20 @@ export async function syncStatusRest() {
   }
 }
 
-export async function syncTasksRest() {
+export async function syncAllTasksRest() {
   try {
     const res = await axios.get(`${apiEndPoints.synAllTasks}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function syncProjectTasksRest(projectId: number) {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.syncProjectTasks}/${projectId}`
+    );
     return res.data;
   } catch (error: any) {
     return false;

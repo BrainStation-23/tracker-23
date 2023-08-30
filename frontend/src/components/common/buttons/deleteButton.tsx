@@ -10,7 +10,9 @@ type Props = {
 const DeleteButton = ({ children, onClick, className }: Props) => {
   return (
     <Button
-      className={`${className ? className : "flex w-full gap-2 p-1"}`}
+      className={`${
+        className ? className : "flex w-full items-center gap-2 p-1"
+      }`}
       onClick={() => onClick && onClick()}
       type="ghost"
     >

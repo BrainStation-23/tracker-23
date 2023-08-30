@@ -24,11 +24,12 @@ import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 import NotificationSection from "./components/notificationSection";
+import SyncButtonComponent from "../common/buttons/syncButton";
 
 function Navbar() {
   const [userDetails, setUserDetails] = useState<LoginResponseDto>();
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
-  const syncing = useAppSelector(
+  const syncing: boolean = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
 
@@ -71,7 +72,8 @@ function Navbar() {
       key: "1",
       icon: (
         <div className="w-[200px]">
-          <Button
+          <SyncButtonComponent type="ghost" className="w-full" text="Sync" />
+          {/* <Button
             type="ghost"
             className={`flex w-full items-center ${
               syncing ? "text-green-500" : ""
@@ -82,7 +84,7 @@ function Navbar() {
           >
             <SyncOutlined spin={syncing} />{" "}
             <span className="text-[15px] font-semibold">Sync</span>
-          </Button>
+          </Button> */}
         </div>
       ),
       onClick: async () => {

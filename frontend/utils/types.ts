@@ -25,7 +25,8 @@ export interface apiFunction {
   deleteTask: (data: any) => Promise<any | undefined>;
   getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   exportTasks: (searchParams?: SearchParamsModel) => Promise<any>;
-  syncTasks: (token?: string) => Promise<any>;
+  syncTasks: () => Promise<any>;
+  syncProjectTasks: (projectId: number) => Promise<any>;
   syncStatus: (token?: string) => Promise<any>;
   getIntegrations: (token?: string) => Promise<any>;
   uninstallIntegration: (id: number) => Promise<any>;

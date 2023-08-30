@@ -9,6 +9,7 @@ export const apiEndPoints = {
   allProjects: `/tasks/project-list`,
   projectTasks: `/tasks/project-tasks`,
   synAllTasks: `/tasks/syncAll`,
+  syncProjectTasks: `/tasks/sync`,
   syncStatus: `/tasks/sync/status`,
   sessions: `/sessions`,
   deleteSession: `/sessions/delete-session/`,
