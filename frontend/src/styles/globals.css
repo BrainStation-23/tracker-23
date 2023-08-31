@@ -3,61 +3,97 @@
 @tailwind utilities;
 
 body {
-  font-family: "Inter", sans-serif;
+    font-family: "Inter", sans-serif;
 }
 
 .ant-table-wrapper .ant-table,
 .ant-dropdown-menu-item .ant-dropdown-menu-title-content,
 .ant-btn,
 .ant-form-item-label {
-  font-family: "Inter", sans-serif;
+    font-family: "Inter", sans-serif;
 }
 
 .ant-btn-primary {
-  color: #fff;
-  background-color: #1677ff;
-  box-shadow: 0 2px 0 rgb(5 145 255 / 10%);
+    color: #fff;
+    background-color: #1677ff;
+    box-shadow: 0 2px 0 rgb(5 145 255 / 10%);
 }
 .ant-table
-  .ant-table-container
-  .ant-table-content
-  table
-  thead.ant-table-thead
-  .ant-table-cell {
-  background-color: white;
+    .ant-table-container
+    .ant-table-content
+    table
+    thead.ant-table-thead
+    .ant-table-cell {
+    background-color: white;
 }
 .custom-modal-title {
-  background-color: #f6e05e; /* Set the background color */
-  color: #1a202c; /* Set the text color */
-  font-size: 20px; /* Set the font size */
-  padding: 10px; /* Add some padding */
+    background-color: #f6e05e; /* Set the background color */
+    color: #1a202c; /* Set the text color */
+    font-size: 20px; /* Set the font size */
+    padding: 10px; /* Add some padding */
 }
 .custom-spin {
-  opacity: 2;
-  background: white;
+    opacity: 2;
+    background: white;
 }
 .custom-rangePicker-dropdown .ant-picker-panel-container {
-  box-shadow: none;
+    box-shadow: none;
 }
 
 .ant-steps .ant-steps-item-process .ant-steps-item-icon,
 .ant-radio-wrapper .ant-radio-checked .ant-radio-inner {
-  background-color: #00a3de;
-  border-color: #00a3de;
+    background-color: #00a3de;
+    border-color: #00a3de;
 }
 
 .ant-btn-primary {
-  background-color: #00a3de;
+    background-color: #00a3de;
 }
 
 .ant-steps .ant-steps-item-finish .ant-steps-item-icon {
-  background-color: #97cb00;
-  border-color: #97cb00;
+    background-color: #97cb00;
+    border-color: #97cb00;
 }
 
 .ant-steps .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
-  color: #ffffff;
-  position: relative;
-  top: -4.5px;
-  line-height: 1;
+    color: #ffffff;
+    position: relative;
+    top: -4.5px;
+    line-height: 1;
+}
+
+.custom-checkbox {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.custom-checkbox.checked {
+    background-color: blue;
+    border-color: blue;
+    color: white;
+}
+.custom-checkbox {
+    /* ... your existing styles ... */
+    position: relative;
+}
+
+.custom-checkbox input[type="checkbox"] {
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    border-color: red;
+}
+.custom-checkbox .ant-checkbox {
+    display: none;
 }
