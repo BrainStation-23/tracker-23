@@ -1,14 +1,14 @@
-import { HttpStatus, Injectable } from "@nestjs/common";
-import { User } from "@prisma/client";
-import { IntegrationsService } from "src/integrations/integrations.service";
-import { APIException } from "src/internal/exception/api.exception";
-import { PrismaService } from "src/prisma/prisma.service";
-import { SprintsService } from "src/sprints/sprints.service";
-import { StatusEnum } from "src/tasks/dto";
-import { TasksService } from "src/tasks/tasks.service";
-import { WorkspacesService } from "src/workspaces/workspaces.service";
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { User } from '@prisma/client';
+import { IntegrationsService } from 'src/integrations/integrations.service';
+import { APIException } from 'src/internal/exception/api.exception';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { SprintsService } from 'src/sprints/sprints.service';
+import { StatusEnum } from 'src/tasks/dto';
+import { TasksService } from 'src/tasks/tasks.service';
+import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { Response } from 'express';
-import { UpdateProjectRequest } from "./dto/update.project.dto";
+import { UpdateProjectRequest } from './dto/update.project.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -45,13 +45,6 @@ export class ProjectsService {
           },
         },
       }));
-
-    const updated_userIntegration =
-      project.integrationId &&
-      (await this.tasksService.getUserIntegration(
-        userWorkspace.id,
-        project.integrationId,
-      ));
 
     const updatedUserIntegration =
       userIntegration &&
@@ -227,12 +220,14 @@ export class ProjectsService {
       );
 
     try {
-      const existingProject = user?.activeWorkspaceId && await this.prisma.project.findFirst({
-        where: {
-          id: id,
-          workspaceId: user?.activeWorkspaceId,
-        },
-      });
+      const existingProject =
+        user?.activeWorkspaceId &&
+        (await this.prisma.project.findFirst({
+          where: {
+            id: id,
+            workspaceId: user?.activeWorkspaceId,
+          },
+        }));
 
       if (!existingProject)
         throw new APIException('Invalid project ID', HttpStatus.BAD_REQUEST);

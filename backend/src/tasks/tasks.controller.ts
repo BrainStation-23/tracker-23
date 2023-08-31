@@ -26,7 +26,6 @@ import {
   StatusReqBodyDto,
   TimeSpentReqBodyDto,
   UpdatePinDto,
-  importProjectTasks,
   GetTeamTaskQueryType,
 } from './dto';
 import { TasksService } from './tasks.service';
