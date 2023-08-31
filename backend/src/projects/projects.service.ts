@@ -25,21 +25,34 @@ export class ProjectsService {
       where: { id: projId },
       include: { integration: true },
     });
-
+    if (!project)
+      throw new APIException('Invalid Project Id', HttpStatus.BAD_REQUEST);
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
       throw new APIException(
-        'Can not import project tasks',
+        'User workspace not found',
         HttpStatus.BAD_REQUEST,
       );
     }
 
     const userIntegration =
       project?.integrationId &&
+      (await this.prisma.userIntegration.findUnique({
+        where: {
+          userIntegrationIdentifier: {
+            integrationId: project?.integrationId,
+            userWorkspaceId: userWorkspace.id,
+          },
+        },
+      }));
+
+    const updated_userIntegration =
+      project.integrationId &&
       (await this.tasksService.getUserIntegration(
         userWorkspace.id,
         project.integrationId,
       ));
+
     const updatedUserIntegration =
       userIntegration &&
       (await this.integrationsService.getUpdatedUserIntegration(
@@ -59,7 +72,6 @@ export class ProjectsService {
     try {
       await this.tasksService.sendImportingNotification(user);
       await this.tasksService.fetchAndProcessTasksAndWorklog(
-        userWorkspace,
         user,
         project,
         updatedUserIntegration,
@@ -71,9 +83,20 @@ export class ProjectsService {
       );
       await this.tasksService.updateProjectIntegrationStatus(projId);
       res && (await this.tasksService.syncCall(StatusEnum.DONE, user));
-      await this.tasksService.sendImportedNotification(user, res);
+      await this.tasksService.sendImportedNotification(
+        user,
+        'Project Imported',
+        res,
+      );
     } catch (error) {
-      await this.tasksService.handleImportFailure(user);
+      await this.tasksService.handleImportFailure(
+        user,
+        'Importing Tasks Failed',
+      );
+      console.log(
+        '🚀 ~ file: tasks.service.ts:752 ~ TasksService ~ importProjectTasks ~ error:',
+        error,
+      );
       throw new APIException(
         'Can not import project tasks',
         HttpStatus.BAD_REQUEST,
@@ -117,8 +140,12 @@ export class ProjectsService {
   }
 
   async getProjectList(user: User) {
-    if(!user || !user.activeWorkspaceId) throw new APIException('User workspaces not detected', HttpStatus.BAD_REQUEST);
-  
+    if (!user || !user.activeWorkspaceId)
+      throw new APIException(
+        'User workspaces not detected',
+        HttpStatus.BAD_REQUEST,
+      );
+
     try {
       return await this.prisma.project.findMany({
         where: {
@@ -127,7 +154,10 @@ export class ProjectsService {
       });
     } catch (error) {
       console.log(error);
-      throw new APIException('Could not get project list', HttpStatus.INTERNAL_SERVER_ERROR)
+      throw new APIException(
+        'Could not get project list',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -139,17 +169,19 @@ export class ProjectsService {
       );
 
     try {
-      const newProject = await this.prisma.project.create({
-        data: {
-          projectName: projectName,
-          source: 'T23',
-          integrated: true,
-          workspaceId: user?.activeWorkspaceId,
-        },
-        select: {
-          id: true,
-        },
-      });
+      const newProject =
+        user?.activeWorkspaceId &&
+        (await this.prisma.project.create({
+          data: {
+            projectName: projectName,
+            source: 'T23',
+            integrated: true,
+            workspaceId: user?.activeWorkspaceId,
+          },
+          select: {
+            id: true,
+          },
+        }));
 
       if (!newProject)
         throw new APIException(
@@ -195,14 +227,15 @@ export class ProjectsService {
       );
 
     try {
-      const existingProject = await this.prisma.project.findFirst({
+      const existingProject = user?.activeWorkspaceId && await this.prisma.project.findFirst({
         where: {
           id: id,
           workspaceId: user?.activeWorkspaceId,
         },
       });
 
-      if(!existingProject) throw new APIException('Invalid project ID', HttpStatus.BAD_REQUEST);
+      if (!existingProject)
+        throw new APIException('Invalid project ID', HttpStatus.BAD_REQUEST);
 
       return await this.prisma.project.update({
         where: {
@@ -212,7 +245,10 @@ export class ProjectsService {
       });
     } catch (error) {
       console.log(error);
-      throw new APIException('Could not update project', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new APIException(
+        'Could not update project',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

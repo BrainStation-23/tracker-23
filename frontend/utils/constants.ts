@@ -3,6 +3,7 @@ export const publicRoutes = [
   "/registration",
   "/socialLogin/redirect",
   "/forgotPassword",
+  "/resetPassword",
 ];
 export const ignoreRoutes = ["/_next", "/assets", "/integrations"];
 export const menuOptions = [
@@ -81,6 +82,11 @@ export enum IntegrationTitlesEnum {
 export enum IntegrationDescriptionsEnum {
   JIRA = "Connect JIRA tickets to your Project",
   TRELLO = "Connect Trello to your Project",
+}
+
+export enum Roles {
+  USER = "USER",
+  ADMIN = "ADMIN",
 }
 
 export const whiteListEmails = [

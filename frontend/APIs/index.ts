@@ -6,7 +6,7 @@ import {
   authJiraRest,
   createSessionRest,
   createTaskRest,
-  deleteIntegrationRest,
+  uninstallIntegrationRest,
   deleteSessionRest,
   deleteTaskRest,
   exportTasksRest,
@@ -32,7 +32,7 @@ import {
   sendJiraCodeRest,
   stopSessionRest,
   syncStatusRest,
-  syncTasksRest,
+  syncAllTasksRest,
   updateSessionRest,
   updateTaskEstimationRest,
   updateTaskSTatusRest,
@@ -46,6 +46,10 @@ import {
   acceptWorkspaceInvitationRest,
   rejectWorkspaceInvitationRest,
   getWorkspaceInvitationListRest,
+  forgotPasswordRest,
+  resetPasswordRest,
+  deleteIntegrationRest,
+  syncProjectTasksRest,
 } from "./restApi";
 
 const graphqlApi: apiFunction = {
@@ -55,7 +59,8 @@ const graphqlApi: apiFunction = {
   logout: logoutRest,
   createTask: createTaskRest,
   getTasks: getTasksRest,
-  syncTasks: syncTasksRest,
+  syncTasks: syncAllTasksRest,
+  syncProjectTasks: syncProjectTasksRest,
   syncStatus: syncStatusRest,
   deleteTask: deleteTaskRest,
   createSession: createSessionRest,
@@ -65,6 +70,7 @@ const graphqlApi: apiFunction = {
   sendJiraCode: sendJiraCodeRest,
   exportTasks: exportTasksRest,
   getIntegrations: getIntegrationsRest,
+  uninstallIntegration: uninstallIntegrationRest,
   deleteIntegration: deleteIntegrationRest,
   getProjectWiseHour: getProjectWiseHourRest,
   getSpentTimePerDay: getSpentTimePerDayRest,
@@ -93,6 +99,8 @@ const graphqlApi: apiFunction = {
   sendWorkspaceInvitation: sendWorkspaceInvitationRest,
   acceptWorkspaceInvitation: acceptWorkspaceInvitationRest,
   rejectWorkspaceInvitation: rejectWorkspaceInvitationRest,
+  forgotPassword: forgotPasswordRest,
+  resetPassword: resetPasswordRest,
 };
 
 const restApi: apiFunction = {
@@ -103,7 +111,8 @@ const restApi: apiFunction = {
   createTask: createTaskRest,
   getTasks: getTasksRest,
   exportTasks: exportTasksRest,
-  syncTasks: syncTasksRest,
+  syncTasks: syncAllTasksRest,
+  syncProjectTasks: syncProjectTasksRest,
   syncStatus: syncStatusRest,
   deleteTask: deleteTaskRest,
   createSession: createSessionRest,
@@ -112,6 +121,7 @@ const restApi: apiFunction = {
   getJiraLink: getJiraLinkRest,
   sendJiraCode: sendJiraCodeRest,
   getIntegrations: getIntegrationsRest,
+  uninstallIntegration: uninstallIntegrationRest,
   deleteIntegration: deleteIntegrationRest,
   getProjectWiseHour: getProjectWiseHourRest,
   getSpentTimePerDay: getSpentTimePerDayRest,
@@ -140,6 +150,8 @@ const restApi: apiFunction = {
   sendWorkspaceInvitation: sendWorkspaceInvitationRest,
   acceptWorkspaceInvitation: acceptWorkspaceInvitationRest,
   rejectWorkspaceInvitation: rejectWorkspaceInvitationRest,
+  forgotPassword: forgotPasswordRest,
+  resetPassword: resetPasswordRest,
 };
 
 export const userAPI: apiFunction =

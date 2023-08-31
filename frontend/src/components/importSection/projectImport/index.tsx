@@ -1,8 +1,9 @@
-import { Button, message, Spin } from "antd";
+import { message, Spin } from "antd";
 import { userAPI } from "APIs";
 import { useEffect, useState } from "react";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
+import PrimaryButton from "@/components/common/buttons/primaryButton";
 import GlobalMOdal from "@/components/modals/globalModal";
 
 import AddNewProject from "./components/addNewProject";
@@ -48,14 +49,10 @@ const ProjectImport = () => {
     <Spin spinning={rootSpinning}>
       <div className="flex w-full flex-col gap-2">
         <div className="mb-4 flex justify-between">
-          <h2 className="text-2xl font-bold">Imported Projects</h2>{" "}
-          <Button
-            type="primary"
-            className="flex items-center gap-2 py-3 text-[15px] text-white"
-            onClick={() => setIsModalOpen(true)}
-          >
-            <PlusIconSvg />
-          </Button>
+          <h2 className="text-2xl font-bold">Imported Projects</h2>
+          <PrimaryButton onClick={() => setIsModalOpen(true)}>
+            <PlusIconSvg /> Add Project
+          </PrimaryButton>
         </div>
         <ImportedProjectsSection {...{ allProjects, deleteProject }} />
         <GlobalMOdal

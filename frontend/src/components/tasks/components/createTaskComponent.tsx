@@ -16,6 +16,8 @@ import dayjs, { Dayjs } from "dayjs";
 import { CreateTaskDto, CreateTaskValues } from "models/tasks";
 import React, { useState } from "react";
 
+import PrimaryButton from "@/components/common/buttons/primaryButton";
+import SecondaryButton from "@/components/common/buttons/secondaryButton";
 import { localFormat, timeFormat } from "@/components/datePicker";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 
@@ -224,16 +226,10 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
 
         <Form.Item>
           <div className="flex flex-row-reverse gap-3">
-            <Button
-              type="ghost"
-              htmlType="submit"
-              className="bg-[#00A3DE] text-white hover:bg-[#00a3deb2]"
-            >
-              Submit
-            </Button>
-            <Button htmlType="button" onClick={onReset}>
+            <PrimaryButton htmlType="submit">Submit</PrimaryButton>
+            <SecondaryButton htmlType="button" onClick={onReset}>
               Reset
-            </Button>
+            </SecondaryButton>
           </div>
         </Form.Item>
       </Form>

@@ -127,6 +127,9 @@ export class JiraService {
   }
 
   async createIntegrationAndGetProjects(user: User, siteId: string) {
+    if (!user.activeWorkspaceId) {
+      throw new APIException('workspace not found', HttpStatus.BAD_REQUEST);
+    }
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
       throw new APIException(
@@ -156,6 +159,10 @@ export class JiraService {
           },
         },
       });
+      console.log(
+        '🚀 ~ file: jira.service.ts:160 ~ createIntegrationAndGetProjects ~ doesExistIntegration:',
+        doesExistIntegration,
+      );
       if (doesExistIntegration) {
         const projects = await this.prisma.project.findMany({
           where: {
@@ -182,25 +189,57 @@ export class JiraService {
             integrated: true,
           },
         });
-
-        await this.prisma.task.updateMany({
+        console.log(
+          '🚀 ~ file: jira.service.ts:192 ~ createIntegrationAndGetProjects ~ doesExistIntegration:',
+          importedProject,
+        );
+        const updatedTask =
+          importedProject.length &&
+          (await this.prisma.task.updateMany({
+            where: {
+              assigneeId: getTempIntegration.jiraAccountId,
+              projectId: {
+                in: importedProject.map((project: any) => {
+                  return project.id;
+                }),
+              },
+            },
+            data: {
+              userWorkspaceId: userWorkspace.id,
+            },
+          }));
+        console.log(
+          '🚀 ~ file: jira.service.ts:199 ~ createIntegrationAndGetProjects ~ updatedTask:',
+          updatedTask,
+        );
+        const updatedSession = await this.prisma.session.updateMany({
           where: {
-            assigneeId: getTempIntegration.jiraAccountId,
-            projectId: {
-              in: importedProject.map((prj) => {
-                return prj.id;
-              }),
+            authorId: getTempIntegration.jiraAccountId,
+            task: {
+              projectId: {
+                in: importedProject.map((project: any) => {
+                  return project.id;
+                }),
+              },
             },
           },
           data: {
             userWorkspaceId: userWorkspace.id,
           },
         });
+        console.log(
+          '🚀 ~ file: jira.service.ts:207 ~ createIntegrationAndGetProjects ~ updatedSession:',
+          updatedSession,
+        );
         const deleteTempIntegration = await this.prisma.tempIntegration.delete({
           where: {
             id: getTempIntegration.id,
           },
         });
+        console.log(
+          '🚀 ~ file: jira.service.ts:234 ~ createIntegrationAndGetProjects ~ deleteTempIntegration:',
+          deleteTempIntegration,
+        );
         // console.log(integration);
         if (!deleteTempIntegration) {
           throw new APIException(
@@ -307,48 +346,49 @@ export class JiraService {
         },
       });
 
-      projects.push({
-        id: 0,
-        projectId: -1,
-        projectKey: 'None',
-        projectName: 'T23',
-        source: '/',
-        integrationId: -1,
-        workspaceId: user.activeWorkspaceId,
-        statuses: [
-          {
-            id: 0,
-            statusId: 'None',
-            name: 'To Do',
-            untranslatedName: 'To Do',
-            statusCategoryId: '2',
-            statusCategoryName: 'TO_DO',
-            transitionId: null,
-            projectId: 0,
-          },
-          {
-            id: 0,
-            statusId: 'None',
-            name: 'In Progress',
-            untranslatedName: 'In Progress',
-            statusCategoryId: '4',
-            statusCategoryName: 'IN_PROGRESS',
-            transitionId: null,
-            projectId: 0,
-          },
-          {
-            id: 0,
-            statusId: 'None',
-            name: 'Done',
-            untranslatedName: 'Done',
-            statusCategoryId: '3',
-            statusCategoryName: 'DONE',
-            transitionId: null,
-            projectId: 0,
-          },
-        ],
-        integrated: true,
-      });
+      user.activeWorkspaceId &&
+        projects.push({
+          id: 0,
+          projectId: -1,
+          projectKey: 'None',
+          projectName: 'T23',
+          source: '/',
+          integrationId: -1,
+          workspaceId: user.activeWorkspaceId,
+          statuses: [
+            {
+              id: 0,
+              statusId: 'None',
+              name: 'To Do',
+              untranslatedName: 'To Do',
+              statusCategoryId: '2',
+              statusCategoryName: 'TO_DO',
+              transitionId: null,
+              projectId: 0,
+            },
+            {
+              id: 0,
+              statusId: 'None',
+              name: 'In Progress',
+              untranslatedName: 'In Progress',
+              statusCategoryId: '4',
+              statusCategoryName: 'IN_PROGRESS',
+              transitionId: null,
+              projectId: 0,
+            },
+            {
+              id: 0,
+              statusId: 'None',
+              name: 'Done',
+              untranslatedName: 'Done',
+              statusCategoryId: '3',
+              statusCategoryName: 'DONE',
+              transitionId: null,
+              projectId: 0,
+            },
+          ],
+          integrated: true,
+        });
       return projects;
     } catch (error) {
       throw new APIException('Can not get Projects', HttpStatus.BAD_REQUEST);

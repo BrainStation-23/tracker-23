@@ -1,4 +1,6 @@
-import { Form, Input } from "antd";
+import { userAPI } from "APIs";
+import { Form, Input, message } from "antd";
+import { ForgotPasswordDto } from "models/auth";
 import { useRouter } from "next/router";
 import React from "react";
 
@@ -8,8 +10,12 @@ type Props = {
 
 const ForgotPasswordForm = ({ setIsModalOpen }: Props) => {
   const router = useRouter();
-  const signIn = async (values: any) => {
+  const signIn = async (values: ForgotPasswordDto) => {
     console.log(values);
+    const res = await userAPI.forgotPassword(values);
+    console.log("🚀 ~ file: forgotPasswordForm.tsx:16 ~ signIn ~ res:", res);
+    router.push("/login");
+    message.success(res.message);
   };
 
   const onFinish = async (values: any) => {
@@ -42,17 +48,17 @@ const ForgotPasswordForm = ({ setIsModalOpen }: Props) => {
         className=" w-full"
         name="email"
         rules={[
-          { required: true, message: "Please input your email!" },
           {
             type: "email",
             min: 0,
             max: 200,
             message: "Please input a valid email.",
           },
+          { required: true, message: "Please input your email!" },
         ]}
       >
         <Input
-          type="text"
+          //   type="email"
           placeholder="Email"
           className="flex w-full rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
         />

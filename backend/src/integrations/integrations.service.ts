@@ -6,7 +6,7 @@ import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
-import { Integration, Role, User } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 
 @Injectable()
 export class IntegrationsService {
@@ -75,10 +75,10 @@ export class IntegrationsService {
           id: userIntegrationId,
         },
       });
-      // console.log(
-      //   '🚀 ~ file: integrations.service.ts:60 ~ IntegrationsService ~ getUpdatedUserIntegration ~ userIntegration:',
-      //   userIntegration,
-      // );
+      console.log(
+        '🚀 ~ file: integrations.service.ts:60 ~ IntegrationsService ~ getUpdatedUserIntegration ~ userIntegration:',
+        userIntegration,
+      );
 
       // const integration = await this.prisma.integration.findFirst({
       //   where: { userId: user.id, type: IntegrationType.JIRA, id: integrationID },
@@ -172,6 +172,23 @@ export class IntegrationsService {
         this.prisma.task.updateMany({
           where: {
             userWorkspaceId: userWorkspace.id,
+            project: {
+              integrationId: id,
+            },
+          },
+          data: {
+            userWorkspaceId: null,
+          },
+        }),
+
+        this.prisma.session.updateMany({
+          where: {
+            userWorkspaceId: userWorkspace.id,
+            task: {
+              project: {
+                integrationId: id,
+              },
+            },
           },
           data: {
             userWorkspaceId: null,

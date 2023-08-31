@@ -353,6 +353,12 @@ export class SprintsService {
   }
 
   async getProjectIds(user: User): Promise<number[]> {
+    if (!user.activeWorkspaceId) {
+      throw new APIException(
+        'user workspace not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const getUserIntegrationList =
       await this.integrationsService.getUserIntegrations(user);
     const integrationIds: any[] = [];

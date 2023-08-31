@@ -3,7 +3,7 @@ import { Role, User, UserWorkspaceStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
 import { APIException } from 'src/internal/exception/api.exception';
-import { v4 as uuidv4 } from 'uuid';
+import * as crypto from 'crypto';
 @Injectable()
 export class WorkspacesService {
   constructor(private prisma: PrismaService) {}
@@ -174,11 +174,16 @@ export class WorkspacesService {
 
     if (userWorkspace) {
       throw new APIException(
-        'This user already active or exist in this workspace',
+        'This user already active or invited in this workspace',
         HttpStatus.BAD_REQUEST,
       );
     }
-    const invitationToken = uuidv4();
+    // invitationToken can be used for sending invitation with mail
+    const invitationToken = crypto.randomBytes(32).toString('hex');
+    const invitationHashedToken = crypto
+      .createHash('sha256')
+      .update(invitationToken)
+      .digest('hex');
     try {
       const newUserWorkspace =
         user.activeWorkspaceId &&
@@ -188,7 +193,7 @@ export class WorkspacesService {
             workspaceId: user.activeWorkspaceId,
             role: reqBody.role,
             inviterUserId: user.id,
-            invitationId: invitationToken,
+            invitationId: invitationHashedToken,
             status: UserWorkspaceStatus.INVITED,
             invitedAt: new Date(Date.now()),
           },

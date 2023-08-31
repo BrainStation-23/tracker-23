@@ -206,6 +206,7 @@ export class DataMigrationService {
               createdAt: session.createdAt,
               updatedAt: session.updatedAt,
               taskId: session.taskId,
+              userWorkspaceId: session.userWorkspaceId,
             },
           });
         }),

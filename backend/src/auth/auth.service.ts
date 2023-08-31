@@ -17,7 +17,8 @@ import {
 } from './dto';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
 import { APIException } from 'src/internal/exception/api.exception';
-import { User, UserRole } from '@prisma/client';
+// import { v4 as uuidv4 } from 'uuid';
+import { User, UserRole, UserWorkspaceStatus } from '@prisma/client';
 import { Request } from 'express';
 import { EmailService } from 'src/email/email.service';
 import * as crypto from 'crypto';
@@ -161,6 +162,28 @@ export class AuthService {
       if (oldUser) {
         console.log('Old User Found');
         if (!oldUser.activeWorkspaceId) {
+          const doesExist = await this.prisma.userWorkspace.findFirst({
+            where: {
+              userId: oldUser.id,
+              status: UserWorkspaceStatus.ACTIVE,
+            },
+          });
+          if (doesExist) {
+            const updatedOldUser =
+              doesExist.workspaceId &&
+              (await this.prisma.user.update({
+                where: {
+                  id: oldUser.id,
+                },
+                data: {
+                  activeWorkspaceId: doesExist.workspaceId,
+                },
+              }));
+            const updatedUser =
+              updatedOldUser &&
+              (await this.getFormattedUserData(updatedOldUser));
+            return updatedUser;
+          }
           const workspace =
             oldUser.firstName &&
             (await this.workspacesService.createWorkspace(
@@ -274,9 +297,7 @@ export class AuthService {
       resetToken,
     );
 
-    const resetURL = `${req.protocol}://${req.get(
-      'host',
-    )}/auth/resetPassword/${resetToken}`;
+    const resetURL = `${req.protocol}://${req.headers.referer}resetPassword/${resetToken}`;
     console.log(
       '🚀 ~ file: auth.service.ts:274 ~ AuthService ~ forgotPassword ~ resetURL:',
       resetURL,

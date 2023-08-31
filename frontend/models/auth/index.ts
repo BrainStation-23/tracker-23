@@ -17,3 +17,10 @@ export type RegisterDto = {
   email: string;
   password: string;
 };
+export type ForgotPasswordDto = {
+  email: string;
+};
+export type ResetPasswordDto = {
+  password: string;
+  confirmPassword: string;
+};

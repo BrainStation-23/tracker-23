@@ -1,5 +1,10 @@
 import { CreateWorkspaceModel, SearchParamsModel } from "models/apiParams";
-import { LoginDto, LoginResponseDto } from "models/auth";
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  LoginResponseDto,
+  ResetPasswordDto,
+} from "models/auth";
 import {
   AddWorkLogParams,
   CreateTaskDto,
@@ -20,9 +25,11 @@ export interface apiFunction {
   deleteTask: (data: any) => Promise<any | undefined>;
   getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   exportTasks: (searchParams?: SearchParamsModel) => Promise<any>;
-  syncTasks: (token?: string) => Promise<any>;
+  syncTasks: () => Promise<any>;
+  syncProjectTasks: (projectId: number) => Promise<any>;
   syncStatus: (token?: string) => Promise<any>;
   getIntegrations: (token?: string) => Promise<any>;
+  uninstallIntegration: (id: number) => Promise<any>;
   deleteIntegration: (id: number) => Promise<any>;
   selectJiraIntegration: (id: string) => Promise<any>;
   createSession: (taskID: string) => Promise<any>;
@@ -59,4 +66,6 @@ export interface apiFunction {
   importProject: (id: number) => Promise<any>;
   deleteProjectTasks: (id: number) => Promise<any>;
   getJiraActiveSprintTasks: (searchParams?: SearchParamsModel) => Promise<any>;
+  forgotPassword: (data?: ForgotPasswordDto) => Promise<any>;
+  resetPassword: (token: string, data: ResetPasswordDto) => Promise<any>;
 }
