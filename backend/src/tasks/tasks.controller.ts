@@ -59,7 +59,7 @@ export class TasksController {
   async createTask(
     @GetUser() user: User,
     @Body() createTaskDto: CreateTaskDto,
-  ): Promise<Task | undefined> {
+  ) {
     return this.tasksService.createTask(user, createTaskDto);
   }
 
