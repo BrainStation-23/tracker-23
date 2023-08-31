@@ -117,11 +117,18 @@ export class ProjectsService {
   }
 
   async getProjectList(user: User) {
-    return await this.prisma.project.findMany({
-      where: {
-        workspaceId: user.activeWorkspaceId,
-      },
-    });
+    if(!user || !user.activeWorkspaceId) throw new APIException('User workspaces not detected', HttpStatus.BAD_REQUEST);
+  
+    try {
+      return await this.prisma.project.findMany({
+        where: {
+          workspaceId: user.activeWorkspaceId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      throw new APIException('Could not get project list', HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 
   async createProject(user: User, projectName: string) {
