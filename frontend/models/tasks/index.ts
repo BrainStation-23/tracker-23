@@ -36,6 +36,7 @@ export type TaskDto = {
   due: any;
   priority: PriorityDto;
   labels: string[];
+  source: string;
   createdAt: string;
   sessions: Session[];
   updatedAt: string;
@@ -44,6 +45,13 @@ export type TaskDto = {
   percentage?: number;
   projectName?: string;
   projectId?: number;
+
+  integratedTaskId: number;
+  url: string;
+  jiraUpdatedAt: string;
+  userWorkspaceId: number;
+  workspaceId: number;
+  parentTaskId: number | null;
 };
 export interface TableParams {
   pagination?: TablePaginationConfig;
@@ -52,6 +60,12 @@ export interface TableParams {
   filters?: Record<string, FilterValue>;
 }
 
+export interface UserWorkspace {
+  user: {
+    firstName: string;
+    lastName: string;
+  };
+}
 export interface Session {
   id: number;
   startTime: string;
@@ -63,6 +77,8 @@ export interface Session {
   taskId: number;
   integratedTaskId: number;
   worklogId: number;
+  userWorkspaceId: number;
+  userWorkspace: UserWorkspace;
 }
 export interface AddWorkLogParams {
   startTime: Date;

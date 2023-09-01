@@ -61,3 +61,39 @@ body {
   top: -4.5px;
   line-height: 1;
 }
+
+.custom-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.custom-checkbox.checked {
+  background-color: #00a3de;
+  border-color: #00a3de;
+  color: white;
+}
+.custom-checkbox {
+  /* ... your existing styles ... */
+  position: relative;
+}
+
+.custom-checkbox input[type="checkbox"] {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  border-color: red;
+}
+.custom-checkbox .ant-checkbox {
+  display: none;
+}
