@@ -56,10 +56,14 @@ const ProjectImport = () => {
         </div>
         <ImportedProjectsSection {...{ allProjects, deleteProject }} />
         <GlobalMOdal
+          className="top-9"
           {...{ isModalOpen, setIsModalOpen, title: "Add a New Project" }}
         >
           <Spin spinning={spinning} tip="Processing">
-            <AddNewProject allProjects={allProjects} {...{ setSpinning }} />
+            <AddNewProject
+              allProjects={allProjects}
+              {...{ setSpinning, setIsModalOpen }}
+            />
           </Spin>
         </GlobalMOdal>
       </div>

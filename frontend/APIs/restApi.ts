@@ -1,6 +1,10 @@
 import { message } from "antd";
 import axios from "axios";
-import { CreateWorkspaceModel, SearchParamsModel } from "models/apiParams";
+import {
+  CreateLocalProjectModel,
+  CreateWorkspaceModel,
+  SearchParamsModel,
+} from "models/apiParams";
 import {
   ForgotPasswordDto,
   LoginDto,
@@ -491,7 +495,16 @@ export async function getAllProjectsRest() {
 
 export async function importProjectRest(id: number) {
   try {
-    const res = await axios.get(`${apiEndPoints.projectTasks}/${id}`);
+    const res = await axios.get(`${apiEndPoints.projects}/${id}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function createProjectRest(data: CreateLocalProjectModel) {
+  try {
+    const res = await axios.post(`${apiEndPoints.projects}/create`, data);
     return res.data;
   } catch (error: any) {
     return false;
@@ -499,7 +512,7 @@ export async function importProjectRest(id: number) {
 }
 export async function deleteProjectTasksRest(id: number) {
   try {
-    const res = await axios.post(`${apiEndPoints.projectTasks}/${id}`);
+    const res = await axios.post(`${apiEndPoints.projects}/${id}`);
     return res.data;
   } catch (error: any) {
     return false;

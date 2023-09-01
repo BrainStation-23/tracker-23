@@ -1,14 +1,21 @@
 import { Button } from "antd";
-import AddProjectList from "./addProjectList";
-import { useEffect, useState } from "react";
 import { userAPI } from "APIs";
+import { useEffect, useState } from "react";
 
-const AddNewProject = ({ allProjects, setSpinning }: any) => {
+import AddLocalProject from "./addLocalProject";
+import AddProjectList from "./addProjectList";
+
+const AddNewProject = ({ allProjects, setSpinning, setIsModalOpen }: any) => {
   const [fromExistingSite, setFromExistingSite] = useState(false);
+  const [localProject, setLocalProject] = useState(false);
 
   const importableProjects = allProjects.filter(
     (project: any) => !project.integrated
   );
+  const closeDropdowns = () => {
+    setLocalProject(false);
+    setFromExistingSite(false);
+  };
   console.log(
     "🚀 ~ file: addNewProject.tsx:12 ~ importableProjects:",
     importableProjects
@@ -33,7 +40,7 @@ const AddNewProject = ({ allProjects, setSpinning }: any) => {
         }}
       >
         Add from new Site
-      </Button>{" "}
+      </Button>
       <Button onClick={() => setFromExistingSite(!fromExistingSite)}>
         Add from Existing Site
       </Button>
@@ -42,6 +49,13 @@ const AddNewProject = ({ allProjects, setSpinning }: any) => {
           importableProjects={importableProjects}
           {...{ setSpinning }}
         />
+      )}
+      <Button onClick={() => setLocalProject(!localProject)}>
+        Add Local Project
+      </Button>
+
+      {localProject && (
+        <AddLocalProject {...{ setSpinning, setIsModalOpen, closeDropdowns }} />
       )}
     </div>
   );

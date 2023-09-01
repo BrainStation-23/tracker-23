@@ -7,7 +7,7 @@ export const apiEndPoints = {
   tasks: `/tasks`,
   export: `/export`,
   allProjects: `/projects`,
-  projectTasks: `/projects`,
+  projects: `/projects`,
   synAllTasks: `/tasks/syncAll`,
   syncProjectTasks: `/tasks/sync`,
   syncStatus: `/tasks/sync/status`,

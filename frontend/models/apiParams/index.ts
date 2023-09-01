@@ -12,3 +12,6 @@ export interface CreateWorkspaceModel {
   changeWorkspace?: boolean;
   icon?: string;
 }
+export interface CreateLocalProjectModel {
+  projectName: string;
+}
