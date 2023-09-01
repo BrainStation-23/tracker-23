@@ -61,4 +61,12 @@ export class CreateTaskDto {
   @IsOptional()
   @IsString()
   endDate: Date;
+
+  @IsNotEmpty()
+  @IsNumber()
+  projectId: number;
+
+  @IsOptional()
+  @IsString()
+  projectName?: string;
 }

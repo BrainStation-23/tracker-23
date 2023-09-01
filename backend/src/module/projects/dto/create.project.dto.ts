@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class importProjectTasks {
+export class CreateProjectRequest {
   @IsString()
   @IsNotEmpty()
-  projectId: string;
+  projectName: string;
 }

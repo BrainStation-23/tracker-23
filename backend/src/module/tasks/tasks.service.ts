@@ -72,7 +72,7 @@ export class TasksService {
         const oneDay = 3600 * 24 * 1000;
         endDate = new Date(endDate.getTime() + oneDay);
       }
-      let tasks: Task[] = [];
+      let tasks: any[] = [];
 
       if (sprintIdArray && sprintIdArray.length) {
         // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
@@ -304,6 +304,7 @@ export class TasksService {
       return [];
     }
   }
+
   async createTask(user: User, dto: CreateTaskDto) {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
@@ -312,10 +313,30 @@ export class TasksService {
         HttpStatus.BAD_REQUEST,
       );
     }
+    const project = await this.prisma.project.findFirst({
+      where: {
+        id: dto?.projectId,
+      },
+      select: {
+        projectName: true,
+        id: true,
+      },
+    });
+
+    if (!project)
+      throw new APIException('Invalid ProjectId', HttpStatus.BAD_REQUEST);
+
     if (dto.isRecurrent) {
-      await this.recurrentTask(user, userWorkspace.id, dto);
+      return (
+        project.projectName &&
+        (await this.recurrentTask(user, userWorkspace.id, {
+          ...dto,
+          projectName: project.projectName,
+          projectId: project.id,
+        }))
+      );
     } else {
-      const task = await this.prisma.task.create({
+      return await this.prisma.task.create({
         data: {
           userWorkspaceId: userWorkspace.id,
           title: dto.title,
@@ -326,9 +347,10 @@ export class TasksService {
           status: dto.status,
           labels: dto.labels,
           workspaceId: user.activeWorkspaceId,
+          projectName: project?.projectName,
+          projectId: project?.id,
         },
       });
-      return task;
     }
   }
 
@@ -361,6 +383,8 @@ export class TasksService {
                 createdAt: new Date(startTime),
                 updatedAt: new Date(endTime),
                 workspaceId: user.activeWorkspaceId,
+                projectName: dto?.projectName,
+                projectId: dto?.projectId,
               },
             })
             .then(async (task: any) => {
@@ -446,70 +470,7 @@ export class TasksService {
     return await this.prisma.task.delete({ where: { id } });
   }
 
-  async importProjectTasks(user: User, projId: number, res?: Response) {
-    const project = await this.prisma.project.findUnique({
-      where: { id: projId },
-      include: { integration: true },
-    });
-    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace) {
-      throw new APIException(
-        'Can not import project tasks',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const userIntegration =
-      project?.integrationId &&
-      (await this.getUserIntegration(userWorkspace.id, project.integrationId));
-    const updatedUserIntegration =
-      userIntegration &&
-      (await this.integrationsService.getUpdatedUserIntegration(
-        user,
-        userIntegration.id,
-      ));
-
-    if (!updatedUserIntegration) {
-      await this.handleIntegrationFailure(user);
-      return [];
-    }
-
-    res && (await this.syncCall(StatusEnum.IN_PROGRESS, user));
-
-    this.setProjectStatuses(project, updatedUserIntegration);
-
-    try {
-      await this.sendImportingNotification(user);
-      await this.fetchAndProcessTasksAndWorklog(
-        user,
-        project,
-        updatedUserIntegration,
-      );
-      await this.sprintService.createSprintAndTask(
-        user,
-        projId,
-        updatedUserIntegration.id,
-      );
-      await this.updateProjectIntegrationStatus(projId);
-      res && (await this.syncCall(StatusEnum.DONE, user));
-      await this.sendImportedNotification(user, 'Project Imported', res);
-    } catch (error) {
-      await this.handleImportFailure(user, 'Importing Tasks Failed');
-      console.log(
-        '🚀 ~ file: tasks.service.ts:752 ~ TasksService ~ importProjectTasks ~ error:',
-        error,
-      );
-      throw new APIException(
-        'Can not import project tasks',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
-  private async getUserIntegration(
-    userWorkspaceId: number,
-    integrationId: number,
-  ) {
+  async getUserIntegration(userWorkspaceId: number, integrationId: number) {
     return this.prisma.userIntegration.findUnique({
       where: {
         userIntegrationIdentifier: {
@@ -520,7 +481,7 @@ export class TasksService {
     });
   }
 
-  private async handleIntegrationFailure(user: User) {
+  async handleIntegrationFailure(user: User) {
     const notification = await this.createNotification(
       user,
       'Project Import Failed',
@@ -554,7 +515,7 @@ export class TasksService {
     );
   }
 
-  private async sendImportingNotification(user: User) {
+  async sendImportingNotification(user: User) {
     const notification = await this.createNotification(
       user,
       'Importing Project',
@@ -563,7 +524,7 @@ export class TasksService {
     this.myGateway.sendNotification(`${user.id}`, notification);
   }
 
-  private async fetchAndProcessTasksAndWorklog(
+  async fetchAndProcessTasksAndWorklog(
     user: User,
     project: Project,
     userIntegration: UserIntegration,
@@ -1098,24 +1059,20 @@ export class TasksService {
     return mappedUserWorkspaceAndJiraId;
   }
 
-  private async updateProjectIntegrationStatus(projId: number) {
+  async updateProjectIntegrationStatus(projId: number) {
     await this.prisma.project.update({
       where: { id: projId },
       data: { integrated: true },
     });
   }
 
-  private async sendImportedNotification(
-    user: User,
-    msg: string,
-    res?: Response,
-  ) {
+  async sendImportedNotification(user: User, msg: string, res?: Response) {
     const notification = await this.createNotification(user, msg, msg);
     this.myGateway.sendNotification(`${user.id}`, notification);
     res?.json({ message: msg });
   }
 
-  private async handleImportFailure(user: User, message: string) {
+  async handleImportFailure(user: User, message: string) {
     const notification = await this.createNotification(user, message, message);
     this.myGateway.sendNotification(`${user.id}`, notification);
   }

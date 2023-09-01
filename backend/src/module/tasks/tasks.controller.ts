@@ -26,7 +26,6 @@ import {
   StatusReqBodyDto,
   TimeSpentReqBodyDto,
   UpdatePinDto,
-  importProjectTasks,
   GetTeamTaskQueryType,
 } from './dto';
 import { TasksService } from './tasks.service';
@@ -58,7 +57,7 @@ export class TasksController {
   async createTask(
     @GetUser() user: User,
     @Body() createTaskDto: CreateTaskDto,
-  ): Promise<Task | undefined> {
+  ) {
     return this.tasksService.createTask(user, createTaskDto);
   }
 
@@ -179,35 +178,5 @@ export class TasksController {
   @UseGuards(JwtAuthGuard)
   async getAllStatus(@GetUser() user: User) {
     return this.tasksService.getAllStatus(user);
-  }
-
-  @Get('project-tasks/:projectId')
-  @UseGuards(JwtAuthGuard)
-  async importProjectTasks(
-    @GetUser() user: User,
-    @Param() param: importProjectTasks,
-    @Response() res: any,
-  ) {
-    return this.tasksService.importProjectTasks(
-      user,
-      Number(param.projectId),
-      res,
-    );
-  }
-
-  @Post('project-tasks/:id')
-  @UseGuards(JwtAuthGuard)
-  async deleteProjectTasks(
-    @GetUser() user: User,
-    @Param('id') id: string,
-    @Response() res: any,
-  ) {
-    return this.tasksService.deleteProjectTasks(user, Number(id), res);
-  }
-
-  @Get('project-list')
-  @UseGuards(JwtAuthGuard)
-  async getProjectList(@GetUser() user: User) {
-    return this.tasksService.getProjectList(user);
   }
 }
