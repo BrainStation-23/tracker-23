@@ -963,7 +963,6 @@ export class TasksService {
           createdAt: new Date(integratedTask.created),
           updatedAt: new Date(integratedTask.updated),
           jiraUpdatedAt: new Date(integratedTask.updated),
-          parentTaskId: Number(integratedTask.parent.id),
           source: IntegrationType.JIRA,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
