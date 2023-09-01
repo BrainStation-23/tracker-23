@@ -171,9 +171,6 @@ export class ProjectsService {
             integrated: true,
             workspaceId: user?.activeWorkspaceId,
           },
-          select: {
-            id: true,
-          },
         }));
 
       if (!newProject)
@@ -187,17 +184,17 @@ export class ProjectsService {
           {
             name: 'To Do',
             statusCategoryName: 'TO_DO',
-            projectId: newProject.id,
+            projectId: newProject?.id,
           },
           {
             name: 'In Progress',
             statusCategoryName: 'IN_PROGRESS',
-            projectId: newProject.id,
+            projectId: newProject?.id,
           },
           {
             name: 'Done',
             statusCategoryName: 'DONE',
-            projectId: newProject.id,
+            projectId: newProject?.id,
           },
         ],
       });
