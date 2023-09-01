@@ -73,7 +73,7 @@ export class TasksService {
         const oneDay = 3600 * 24 * 1000;
         endDate = new Date(endDate.getTime() + oneDay);
       }
-      let tasks: Task[] = [];
+      let tasks: any[] = [];
 
       if (sprintIdArray && sprintIdArray.length) {
         // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
@@ -305,6 +305,7 @@ export class TasksService {
       return [];
     }
   }
+
   async createTask(user: User, dto: CreateTaskDto) {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
@@ -313,10 +314,28 @@ export class TasksService {
         HttpStatus.BAD_REQUEST,
       );
     }
+    const project = await this.prisma.project.findFirst({
+      where: {
+        id: dto?.projectId,
+      },
+      select: {
+        projectName: true,
+        id: true,
+      },
+    });
+
+    if (!project)
+      throw new APIException('Invalid ProjectId', HttpStatus.BAD_REQUEST);
+
     if (dto.isRecurrent) {
-      await this.recurrentTask(user, userWorkspace.id, dto);
+      return await this.recurrentTask(user, userWorkspace.id, {
+        ...dto,
+        //@ts-ignore
+        projectName: project?.projectName,
+        projectId: project?.id,
+      });
     } else {
-      const task = await this.prisma.task.create({
+      return await this.prisma.task.create({
         data: {
           userWorkspaceId: userWorkspace.id,
           title: dto.title,
@@ -327,9 +346,10 @@ export class TasksService {
           status: dto.status,
           labels: dto.labels,
           workspaceId: user.activeWorkspaceId,
+          projectName: project?.projectName,
+          projectId: project?.id,
         },
       });
-      return task;
     }
   }
 
@@ -362,6 +382,8 @@ export class TasksService {
                 createdAt: new Date(startTime),
                 updatedAt: new Date(endTime),
                 workspaceId: user.activeWorkspaceId,
+                projectName: dto?.projectName,
+                projectId: dto?.projectId,
               },
             })
             .then(async (task: any) => {
@@ -447,67 +469,79 @@ export class TasksService {
     return await this.prisma.task.delete({ where: { id } });
   }
 
-  async importProjectTasks(user: User, projId: number, res?: Response) {
-    const project = await this.prisma.project.findUnique({
-      where: { id: projId },
-      include: { integration: true },
-    });
-    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace) {
-      throw new APIException(
-        'Can not import project tasks',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+  // async importProjectTasks(user: User, projId: number, res?: Response) {
+  //   const project = await this.prisma.project.findUnique({
+  //     where: { id: projId },
+  //     include: { integration: true },
+  //   });
+  //   if(!project) throw new APIException('Invalid Project Id', HttpStatus.BAD_REQUEST)
+  //   const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+  //   if (!userWorkspace) {
+  //     throw new APIException(
+  //       'User workspace not found',
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
 
-    const userIntegration =
-      project?.integrationId &&
-      (await this.getUserIntegration(userWorkspace.id, project.integrationId));
-    const updatedUserIntegration =
-      userIntegration &&
-      (await this.integrationsService.getUpdatedUserIntegration(
-        user,
-        userIntegration.id,
-      ));
+  //   const userIntegration =
+  //     project?.integrationId &&
+  //     (await this.prisma.userIntegration.findUnique({
+  //       where: {
+  //         userIntegrationIdentifier: {
+  //           integrationId: project?.integrationId,
+  //           userWorkspaceId: userWorkspace.id,
+  //         },
+  //       },
+  //     }));
 
-    if (!updatedUserIntegration) {
-      await this.handleIntegrationFailure(user);
-      return [];
-    }
+  //   const updated_userIntegration = project.integrationId &&
+  //     await this.getUserIntegration(userWorkspace.id, project.integrationId);
 
-    res && (await this.syncCall(StatusEnum.IN_PROGRESS, user));
+  //   const updatedUserIntegration =
+  //     userIntegration &&
+  //     (await this.integrationsService.getUpdatedUserIntegration(
+  //       user,
+  //       userIntegration.id,
+  //     ));
 
-    this.setProjectStatuses(project, updatedUserIntegration);
+  //   if (!updatedUserIntegration) {
+  //     await this.handleIntegrationFailure(user);
+  //     return [];
+  //   }
 
-    try {
-      await this.sendImportingNotification(user);
-      await this.fetchAndProcessTasksAndWorklog(
-        user,
-        project,
-        updatedUserIntegration,
-      );
-      await this.sprintService.createSprintAndTask(
-        user,
-        projId,
-        updatedUserIntegration.id,
-      );
-      await this.updateProjectIntegrationStatus(projId);
-      res && (await this.syncCall(StatusEnum.DONE, user));
-      await this.sendImportedNotification(user, 'Project Imported', res);
-    } catch (error) {
-      await this.handleImportFailure(user, 'Importing Tasks Failed');
-      console.log(
-        '🚀 ~ file: tasks.service.ts:752 ~ TasksService ~ importProjectTasks ~ error:',
-        error,
-      );
-      throw new APIException(
-        'Can not import project tasks',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
+  //   res && (await this.syncCall(StatusEnum.IN_PROGRESS, user));
 
-  private async getUserIntegration(
+  //   this.setProjectStatuses(project, updatedUserIntegration);
+
+  //   try {
+  //     await this.sendImportingNotification(user);
+  //     await this.fetchAndProcessTasksAndWorklog(
+  //       user,
+  //       project,
+  //       updatedUserIntegration,
+  //     );
+  //     await this.sprintService.createSprintAndTask(
+  //       user,
+  //       projId,
+  //       updatedUserIntegration.id,
+  //     );
+  //     await this.updateProjectIntegrationStatus(projId);
+  //     res && (await this.syncCall(StatusEnum.DONE, user));
+  //     await this.sendImportedNotification(user, 'Project Imported', res);
+  //   } catch (error) {
+  //     await this.handleImportFailure(user, 'Importing Tasks Failed');
+  //     console.log(
+  //       '🚀 ~ file: tasks.service.ts:752 ~ TasksService ~ importProjectTasks ~ error:',
+  //       error,
+  //     );
+  //     throw new APIException(
+  //       'Can not import project tasks',
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+  // }
+
+  async getUserIntegration(
     userWorkspaceId: number,
     integrationId: number,
   ) {
@@ -521,7 +555,7 @@ export class TasksService {
     });
   }
 
-  private async handleIntegrationFailure(user: User) {
+  async handleIntegrationFailure(user: User) {
     const notification = await this.createNotification(
       user,
       'Project Import Failed',
@@ -555,7 +589,7 @@ export class TasksService {
     );
   }
 
-  private async sendImportingNotification(user: User) {
+  async sendImportingNotification(user: User) {
     const notification = await this.createNotification(
       user,
       'Importing Project',
@@ -564,7 +598,7 @@ export class TasksService {
     this.myGateway.sendNotification(`${user.id}`, notification);
   }
 
-  private async fetchAndProcessTasksAndWorklog(
+  async fetchAndProcessTasksAndWorklog(
     user: User,
     project: Project,
     userIntegration: UserIntegration,
@@ -1098,14 +1132,14 @@ export class TasksService {
     return mappedUserWorkspaceAndJiraId;
   }
 
-  private async updateProjectIntegrationStatus(projId: number) {
+  async updateProjectIntegrationStatus(projId: number) {
     await this.prisma.project.update({
       where: { id: projId },
       data: { integrated: true },
     });
   }
 
-  private async sendImportedNotification(
+  async sendImportedNotification(
     user: User,
     msg: string,
     res?: Response,
@@ -1115,7 +1149,7 @@ export class TasksService {
     res?.json({ message: msg });
   }
 
-  private async handleImportFailure(user: User, message: string) {
+  async handleImportFailure(user: User, message: string) {
     const notification = await this.createNotification(user, message, message);
     this.myGateway.sendNotification(`${user.id}`, notification);
   }
@@ -1955,74 +1989,6 @@ export class TasksService {
         '🚀 ~ file: jira.service.ts:261 ~ setProjectStatuses ~ error:',
         error.message,
       );
-    }
-  }
-
-  async getProjectList(user: User) {
-    const getUserIntegrationList =
-      await this.integrationsService.getUserIntegrations(user);
-    const jiraIntegrationIds = getUserIntegrationList?.map(
-      (userIntegration) => userIntegration?.integration?.id,
-    );
-    try {
-      if (user.activeWorkspaceId) {
-        return await this.prisma.project.findMany({
-          where: {
-            integrationId: {
-              in: jiraIntegrationIds?.map((id) => Number(id)),
-            },
-            workspaceId: user.activeWorkspaceId,
-          },
-          include: {
-            statuses: true,
-          },
-        });
-      }
-      return [];
-    } catch (err) {
-      throw new APIException(
-        'Can not get project list',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
-  async deleteProjectTasks(user: User, id: number, res: Response) {
-    const project = await this.prisma.project.findFirst({
-      where: { id: id },
-      include: { integration: true },
-    });
-    if (!project) {
-      throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
-    }
-    try {
-      await this.prisma.task.deleteMany({
-        where: {
-          projectId: id,
-        },
-      });
-      try {
-        const projectIntegrated = await this.prisma.project.update({
-          where: { id: id },
-          data: { integrated: false },
-        });
-        console.log(
-          '🚀 ~ file: tasks.service.ts:1704 ~ TasksService ~ deleteProjectTasks ~ projectIntegrated:',
-          projectIntegrated,
-        );
-        return res.status(202).json({ message: 'Project Deleted' });
-      } catch (error) {
-        console.log(
-          '🚀 ~ file: tasks.service.ts:521 ~ TasksService ~ projectTasks ~ error:',
-          error,
-        );
-      }
-    } catch (error) {
-      console.log(
-        '🚀 ~ file: tasks.service.ts:1645 ~ TasksService ~ deleteProjectTasks ~ error:',
-        error,
-      );
-      throw new APIException('Internal server Error', HttpStatus.BAD_REQUEST);
     }
   }
 
