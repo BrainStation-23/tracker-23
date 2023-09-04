@@ -145,7 +145,11 @@ export class ProjectsService {
       return await this.prisma.project.findMany({
         where: {
           workspaceId: user.activeWorkspaceId,
+          integrated: true,
         },
+        include: {
+          statuses: true
+        }
       });
     } catch (error) {
       console.log(error);
@@ -174,7 +178,7 @@ export class ProjectsService {
         'Project name already exists',
         HttpStatus.BAD_REQUEST,
       );
-      
+
     try {
       const newProject =
         user?.activeWorkspaceId &&
