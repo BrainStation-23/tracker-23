@@ -39,12 +39,32 @@ export class CreateTaskDto {
   @IsArray()
   labels: Labels[];
 
+  @IsNotEmpty()
+  @IsNumber()
+  projectId: number;
+
+  @IsNotEmpty()
+  @IsDate()
+  startDate: Date;
+
   @IsOptional()
   isRecurrent: boolean;
 
   @IsOptional()
+  @IsNumber()
+  repeat: number;
+
+  @IsOptional()
   @IsString()
-  frequency: string;
+  repeatType: TaskRepeatType; // day, week, month
+
+  @IsOptional()
+  @IsArray()
+  weekDays: WeekDaysType[]; // sun, mon, ....
+
+  @IsOptional()
+  @IsString()
+  monthlyRepeat: MonthlyRepeatType;
 
   @IsOptional()
   @IsString()
@@ -55,18 +75,10 @@ export class CreateTaskDto {
   endTime: Date;
 
   @IsOptional()
-  @IsString()
-  startDate: Date;
-
-  @IsOptional()
-  @IsString()
+  @IsDate()
   endDate: Date;
 
-  @IsNotEmpty()
-  @IsNumber()
-  projectId: number;
-
   @IsOptional()
-  @IsString()
-  projectName?: string;
+  @IsNumber()
+  occurrences: number;
 }
