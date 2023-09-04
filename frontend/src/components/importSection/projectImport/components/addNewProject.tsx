@@ -39,10 +39,10 @@ const AddNewProject = ({ allProjects, setSpinning, setIsModalOpen }: any) => {
           }
         }}
       >
-        Add from new Site
+        Import from new Site
       </Button>
       <Button onClick={() => setFromExistingSite(!fromExistingSite)}>
-        Add from Existing Site
+        Import from Existing Site
       </Button>
       {fromExistingSite && (
         <AddProjectList

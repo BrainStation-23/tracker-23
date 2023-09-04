@@ -49,7 +49,7 @@ const ProjectImport = () => {
     <Spin spinning={rootSpinning}>
       <div className="flex w-full flex-col gap-2">
         <div className="mb-4 flex justify-between">
-          <h2 className="text-2xl font-bold">Imported Projects</h2>
+          <h2 className="text-2xl font-bold">Your Projects</h2>
           <PrimaryButton onClick={() => setIsModalOpen(true)}>
             <PlusIconSvg /> Add Project
           </PrimaryButton>
