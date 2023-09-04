@@ -50,6 +50,7 @@ import {
   resetPasswordRest,
   deleteIntegrationRest,
   syncProjectTasksRest,
+  createProjectRest,
 } from "./restApi";
 
 const graphqlApi: apiFunction = {
@@ -89,6 +90,7 @@ const graphqlApi: apiFunction = {
   getJiraActiveSprintTasks: getJiraActiveSprintTasksRest,
   getAllProjects: getAllProjectsRest,
   importProject: importProjectRest,
+  createProject: createProjectRest,
   deleteProjectTasks: deleteProjectTasksRest,
   getWorkspaceList: getWorkspaceListRest,
   createWorkspace: createWorkspaceRest,
@@ -140,6 +142,7 @@ const restApi: apiFunction = {
   getJiraActiveSprintTasks: getJiraActiveSprintTasksRest,
   getAllProjects: getAllProjectsRest,
   importProject: importProjectRest,
+  createProject: createProjectRest,
   deleteProjectTasks: deleteProjectTasksRest,
   getWorkspaceList: getWorkspaceListRest,
   createWorkspace: createWorkspaceRest,

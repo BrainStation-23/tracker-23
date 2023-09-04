@@ -8,10 +8,10 @@ import {
   Patch,
   Body,
 } from '@nestjs/common';
-import { ProjectsService } from "./projects.service";
-import { User } from "@prisma/client";
+import { ProjectsService } from './projects.service';
+import { User } from '@prisma/client';
 import { GetUser } from 'src/decorator';
-import { JwtAuthGuard } from "src/guard";
+import { JwtAuthGuard } from 'src/guard';
 import { UpdateProjectRequest } from './dto/update.project.dto';
 import { CreateProjectRequest } from './dto/create.project.dto';
 
