@@ -347,9 +347,10 @@ export class JiraService {
       });
 
       const localProjects = user.activeWorkspaceId &&
-      (await this.projectDatabase.getLocalProjects({
+      (await this.projectDatabase.getLocalProjectsWithStatus({
         source: 'T23',
         workspaceId: user.activeWorkspaceId,
+        integrated: true,
       }));
 
       localProjects && projects.push(...localProjects);

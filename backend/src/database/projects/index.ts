@@ -17,13 +17,24 @@ export class ProjectDatabase {
     }
   }
 
-  async getLocalProjects(filter: Record<string, any>){
+  async getLocalProjects(filter: Record<string, any>) {
+    try {
+      return await this.prisma.project.findMany({
+        where: filter,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getLocalProjectsWithStatus(filter: Record<string, any>) {
     try {
       return await this.prisma.project.findMany({
         where: filter,
         include: {
           statuses: true,
-        },
+        }
       });
     } catch (error) {
       console.log(error);

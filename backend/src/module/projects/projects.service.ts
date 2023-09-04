@@ -140,7 +140,7 @@ export class ProjectsService {
         'User workspaces not detected',
         HttpStatus.BAD_REQUEST,
       );
-      
+
     const getUserIntegrationList =
       await this.integrationsService.getUserIntegrations(user);
 
@@ -149,28 +149,14 @@ export class ProjectsService {
     );
 
     try {
-      const projects = await this.prisma.project.findMany({
+      return await this.prisma.project.findMany({
         where: {
-          integrated: true,
           integrationId: {
             in: jiraIntegrationIds?.map((id: any) => Number(id)),
           },
-        },
-        include: {
-          statuses: true,
+          workspaceId: user.activeWorkspaceId,
         },
       });
-
-      const localProjects =
-        user.activeWorkspaceId &&
-        (await this.projectDatabase.getLocalProjects({
-          source: 'T23',
-          workspaceId: user.activeWorkspaceId,
-        }));
-
-      localProjects && projects.push(...localProjects);
-
-      return projects;
     } catch (error) {
       throw new APIException('Can not get Projects', HttpStatus.BAD_REQUEST);
     }
