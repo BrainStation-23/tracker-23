@@ -9,6 +9,7 @@ import { TasksService } from '../tasks/tasks.service';
 import { SprintsService } from '../sprints/sprints.service';
 import { APIException } from '../exception/api.exception';
 import { StatusEnum } from '../tasks/dto';
+import { ProjectDatabase } from 'src/database/projects';
 
 @Injectable()
 export class ProjectsService {
@@ -18,6 +19,7 @@ export class ProjectsService {
     private workspacesService: WorkspacesService,
     private tasksService: TasksService,
     private sprintService: SprintsService,
+    private projectDatabase: ProjectDatabase,
   ) {}
 
   async importProjects(user: User, projId: number, res?: Response) {
@@ -161,6 +163,18 @@ export class ProjectsService {
         HttpStatus.BAD_REQUEST,
       );
 
+    const projectExists = await this.projectDatabase.getProject({
+      projectName,
+      source: 'T23',
+      workspaceId: user?.activeWorkspaceId,
+    });
+
+    if (projectExists)
+      throw new APIException(
+        'Project name already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+      
     try {
       const newProject =
         user?.activeWorkspaceId &&
