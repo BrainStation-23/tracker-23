@@ -486,7 +486,7 @@ export async function getJiraActiveSprintTasksRest(
 
 export async function getAllProjectsRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.allProjects}`);
+    const res = await axios.get(`${apiEndPoints.projects}`);
     return res.data;
   } catch (error: any) {
     return false;
