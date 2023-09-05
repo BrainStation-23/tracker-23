@@ -654,20 +654,20 @@ export class SessionsService {
     if(!user || !user.activeWorkspaceId)
       throw new APIException('No workspace id detected', HttpStatus.BAD_REQUEST);
     //first get the useWorkspaceID
-    const userWorkspaceId = await this.userWorkspaceDatabase.getUserWorkspace({
+    const userWorkspace = await this.userWorkspaceDatabase.getUserWorkspace({
       userId: user.id,
       workspaceId: user.activeWorkspaceId,
     });
 
-    if(!userWorkspaceId) throw new APIException('Could not get userworkspace', HttpStatus.INTERNAL_SERVER_ERROR);
-
+    if(!userWorkspace) throw new APIException('Could not get userworkspace', HttpStatus.INTERNAL_SERVER_ERROR);
+    const userWorkspaceId = userWorkspace?.id;
     const sessions = await this.sessionDatabase.getSessions({
       userWorkspaceId,
     });
     if(!sessions)
       return {
         TotalSpentTime: 0,
-        value: null,
+        //value: null,
       };
     //let { startDate, endDate } = query;
     let startDate = query?.startDate ? new Date(query.startDate) : new Date()
