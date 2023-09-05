@@ -24,7 +24,7 @@ export const apiEndPoints = {
   addWorkLog: `/sessions/manual-timeEntry`,
   updateTaskStatus: `/tasks/update/status`,
   updateTaskEstimation: `/tasks/update/estimation`,
-  projectWiseStatus: `/projects`,
+  projectWiseStatus: `/integrations/jira/projects`,
   jiraSprints: `/sprints/sprint-list`,
   activeSprintTasks: `/sprints/active-sprintTasks`,
   workspaces: `workspaces`,

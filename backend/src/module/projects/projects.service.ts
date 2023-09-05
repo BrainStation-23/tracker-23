@@ -141,22 +141,24 @@ export class ProjectsService {
         HttpStatus.BAD_REQUEST,
       );
 
+    const getUserIntegrationList =
+      await this.integrationsService.getUserIntegrations(user);
+
+    const jiraIntegrationIds = getUserIntegrationList?.map(
+      (userIntegration: any) => userIntegration?.integration?.id,
+    );
+
     try {
       return await this.prisma.project.findMany({
         where: {
+          integrationId: {
+            in: jiraIntegrationIds?.map((id: any) => Number(id)),
+          },
           workspaceId: user.activeWorkspaceId,
-          integrated: true,
         },
-        include: {
-          statuses: true
-        }
       });
     } catch (error) {
-      console.log(error);
-      throw new APIException(
-        'Could not get project list',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new APIException('Can not get Projects', HttpStatus.BAD_REQUEST);
     }
   }
 
