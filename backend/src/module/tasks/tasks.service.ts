@@ -134,10 +134,10 @@ export class TasksService {
             },
           }),
         };
-        console.log(
-          '🚀 ~ file: tasks.service.ts:126 ~ TasksService ~ getTasks ~ databaseQuery:',
-          databaseQuery,
-        );
+        // console.log(
+        //   '🚀 ~ file: tasks.service.ts:126 ~ TasksService ~ getTasks ~ databaseQuery:',
+        //   databaseQuery,
+        // );
         try {
           tasks = await this.prisma.task.findMany({
             where: databaseQuery,
@@ -210,7 +210,7 @@ export class TasksService {
           const taskIds = await this.sprintService.getSprintTasksIds(
             sprintIdArray,
           );
-          console.log(taskIds);
+          //console.log(taskIds);
 
           return await this.prisma.task.findMany({
             where: {
@@ -291,7 +291,7 @@ export class TasksService {
             },
           });
         }
-        console.log(tasks.length);
+        //console.log(tasks.length);
         return tasks;
       }
 
@@ -537,10 +537,10 @@ export class TasksService {
     const mappedUserWorkspaceAndJiraId =
       await this.mappingUserWorkspaceAndJiraAccountId(user);
 
-    console.log(
-      '🚀 ~ file: tasks.service.ts:833 ~ TasksService ~ mappedUserWorkspaceAndJiraId:',
-      mappedUserWorkspaceAndJiraId,
-    );
+    // console.log(
+    //   '🚀 ~ file: tasks.service.ts:833 ~ TasksService ~ mappedUserWorkspaceAndJiraId:',
+    //   mappedUserWorkspaceAndJiraId,
+    // );
 
     const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId}&maxResults=1000`;
     const fields =
@@ -711,10 +711,10 @@ export class TasksService {
 
         taskId &&
           worklogsList[index].data.worklogs.map((log: any) => {
-            console.log(
-              '🚀 ~ file: tasks.service.ts:1059 ~ TasksService ~ worklogsList[index].data.worklogs.map ~   mappedUserWorkspaceAndJiraId.get(log.author.accountId):',
-              mappedUserWorkspaceAndJiraId.get(log.author.accountId),
-            );
+            // console.log(
+            //   '🚀 ~ file: tasks.service.ts:1059 ~ TasksService ~ worklogsList[index].data.worklogs.map ~   mappedUserWorkspaceAndJiraId.get(log.author.accountId):',
+            //   mappedUserWorkspaceAndJiraId.get(log.author.accountId),
+            // );
             const lastTime =
               new Date(log.started).getTime() +
               Number(log.timeSpentSeconds * 1000);
@@ -856,7 +856,7 @@ export class TasksService {
               taskId: localTask.id,
             },
           });
-          console.log(wklogs);
+          //console.log(wklogs);
 
           const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/issue/${localTask.integratedTaskId}/worklog`;
           const config = {
@@ -982,7 +982,7 @@ export class TasksService {
           worklogsList.push(...resolvedPromise);
         }
       } catch (error) {
-        console.log(total, mappedIssues.size);
+        //console.log(total, mappedIssues.size);
         console.log('🚀 ~ file: tasks.service.ts:366 ~ syncTasks ~ error:');
       }
 
@@ -1143,10 +1143,10 @@ export class TasksService {
     try {
       for (const projectId of projectIds) {
         const synced = await this.syncTasks(user, projectId);
-        console.log(
-          '🚀 ~ file: tasks.service.ts:1436 ~ TasksService ~ syncAll ~ synced:',
-          synced,
-        );
+        // console.log(
+        //   '🚀 ~ file: tasks.service.ts:1436 ~ TasksService ~ syncAll ~ synced:',
+        //   synced,
+        // );
         if (synced) syncedProjects++;
       }
       try {
@@ -1460,10 +1460,10 @@ export class TasksService {
             ],
           },
         });
-        console.log(
-          '🚀 ~ file: tasks.service.ts:661 ~ TasksService ~ updateIssueEstimation ~ esmationBody:',
-          estimationBody,
-        );
+        // console.log(
+        //   '🚀 ~ file: tasks.service.ts:661 ~ TasksService ~ updateIssueEstimation ~ esmationBody:',
+        //   estimationBody,
+        // );
         const config = {
           method: 'put',
           url,
@@ -1530,66 +1530,7 @@ export class TasksService {
     }
   }
 
-  async weeklySpentTime(user: User, query: GetTaskQuery) {
-    let { startDate, endDate } = query;
-    startDate = startDate && new Date(startDate);
-    endDate = endDate && new Date(endDate);
-    const taskList: any[] = await this.getTasks(user, query);
-
-    let totalTimeSpent = 0;
-    const map = new Map<string, number>();
-    for (const task of taskList) {
-      let taskTimeSpent = 0;
-      task?.sessions?.forEach((session: any) => {
-        const start = new Date(session.startTime);
-        let end = new Date(session.endTime);
-        if (end.getTime() === 0) {
-          end = new Date();
-        }
-        let sessionTimeSpent = 0;
-        if (start >= startDate && end <= endDate) {
-          sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
-        } else if (startDate >= start && end >= endDate) {
-          sessionTimeSpent =
-            (endDate.getTime() - startDate.getTime()) / (1000 * 60);
-        } else if (end >= startDate) {
-          sessionTimeSpent =
-            Math.min(
-              Math.max(endDate.getTime() - start.getTime(), 0),
-              end.getTime() - startDate.getTime(),
-            ) /
-            (1000 * 60);
-        }
-        totalTimeSpent += sessionTimeSpent;
-        taskTimeSpent += sessionTimeSpent;
-      });
-
-      if (!task.projectName) task.projectName = 'T23';
-
-      if (!map.has(task.projectName)) {
-        map.set(task.projectName, taskTimeSpent);
-      } else {
-        let getValue = map.get(task.projectName);
-        if (!getValue) getValue = 0;
-        map.set(task.projectName, getValue + taskTimeSpent);
-      }
-    }
-    const ar = [];
-    const iterator = map[Symbol.iterator]();
-    for (const item of iterator) {
-      ar.push({
-        projectName: item[0],
-        value: this.getHourFromMinutes(item[1]),
-      });
-    }
-
-    return {
-      TotalSpentTime: this.getHourFromMinutes(totalTimeSpent),
-      value: ar,
-    };
-  }
-
-  async getSpentTimeByDay(user: User, query: GetTaskQuery) {
+ async getSpentTimeByDay(user: User, query: GetTaskQuery) {
     let { startDate, endDate } = query;
     startDate = startDate ? new Date(startDate) : new Date();
     endDate = endDate ? new Date(endDate) : new Date();
@@ -1734,7 +1675,7 @@ export class TasksService {
       //   };
       //   statusProjectId && statusArray.push(statusDetail);
       // }
-      console.log('statusArray1', statusArray);
+      //console.log('statusArray1', statusArray);
       if (projectsWithoutStatuses.size > 0) {
         for (const projectId of projectsWithoutStatuses) {
           const getStatusByProjectIdUrl = `https://api.atlassian.com/ex/jira/${updated_userIntegration.siteId}/rest/api/3/project/${projectId}/statuses`;
@@ -1760,11 +1701,11 @@ export class TasksService {
             };
             statusProjectId && statusArray.push(statusDetail);
           }
-          console.log('statusArray1', statusArray);
+          //console.log('statusArray1', statusArray);
         }
       }
       try {
-        console.log(statusArray);
+        // console.log(statusArray);
         await this.prisma.statusDetail.createMany({
           data: statusArray,
         });
@@ -1963,10 +1904,10 @@ export class TasksService {
           where: { id: id },
           data: { integrated: false },
         });
-        console.log(
-          '🚀 ~ file: tasks.service.ts:1704 ~ TasksService ~ deleteProjectTasks ~ projectIntegrated:',
-          projectIntegrated,
-        );
+        // console.log(
+        //   '🚀 ~ file: tasks.service.ts:1704 ~ TasksService ~ deleteProjectTasks ~ projectIntegrated:',
+        //   projectIntegrated,
+        // );
         return res.status(202).json({ message: 'Project Deleted' });
       } catch (error) {
         console.log(
