@@ -16,7 +16,7 @@ import { User } from '@prisma/client';
 
 import { ManualTimeEntryReqBody, SessionDto, SessionReqBodyDto } from './dto';
 import { SessionsService } from './sessions.service';
-import {GetTaskQuery} from "../tasks/dto";
+import {GetTaskQuery, GetTeamTaskQuery, GetTeamTaskQueryType} from "../tasks/dto";
 
 @Controller('sessions')
 export class SessionsController {
@@ -77,4 +77,36 @@ export class SessionsController {
     return this.sessionsService.weeklySpentTime(user, query);
   }
 
+  @Get('spent-time/per-day')
+  @UseGuards(JwtAuthGuard)
+  async getSpentTimeByDay(@GetUser() user: User, @Query() query: GetTaskQuery) {
+    return this.sessionsService.getSpentTimeByDay(user, query);
+  }
+
+  //TODO: only for superior role, example: Project Manager, Admin
+  @Get('/team/spent-time')
+  @UseGuards(JwtAuthGuard)
+  async getTimeSpentByTeam(
+      @GetUser() user: User,
+      @Query() query: GetTeamTaskQuery,
+  ) {
+    return await this.sessionsService.getTimeSpentByTeam(
+        query,
+        user,
+        GetTeamTaskQueryType.DATE_RANGE,
+    );
+  }
+
+  @Get('/team/spent-time/per-day')
+  @UseGuards(JwtAuthGuard)
+  async getDailyTimeSpentByTeam(
+      @GetUser() user: User,
+      @Query() query: GetTeamTaskQuery,
+  ) {
+    return await this.sessionsService.getTimeSpentByTeam(
+        query,
+        user,
+        GetTeamTaskQueryType.PER_DAY,
+    );
+  }
 }
