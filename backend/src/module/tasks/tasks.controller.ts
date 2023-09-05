@@ -76,6 +76,12 @@ export class TasksController {
     return this.tasksService.deleteTask(id);
   }
 
+  @Get('sync/status')
+  @UseGuards(JwtAuthGuard)
+  async callSync(@GetUser() user: User) {
+    return await this.tasksService.getCallSync(user);
+  }
+  
   @Get('sync/:projectId')
   @UseGuards(JwtAuthGuard)
   async syncAndGetTasks(
@@ -90,12 +96,6 @@ export class TasksController {
   @UseGuards(JwtAuthGuard)
   async syncAllAndUpdateTasks(@GetUser() user: User) {
     return await this.tasksService.syncAll(user);
-  }
-
-  @Get('sync/status')
-  @UseGuards(JwtAuthGuard)
-  async callSync(@GetUser() user: User) {
-    return await this.tasksService.getCallSync(user);
   }
 
   @Patch('update/status/:taskId')
