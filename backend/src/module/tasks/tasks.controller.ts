@@ -135,11 +135,11 @@ export class TasksController {
     return this.tasksService.addWorkLog(user, issueId, timeSpentReqBody);
   }
 
-  @Get('spent-time/time-range')
-  @UseGuards(JwtAuthGuard)
-  async weeklySpentTime(@GetUser() user: User, @Query() query: GetTaskQuery) {
-    return this.tasksService.weeklySpentTime(user, query);
-  }
+  // @Get('spent-time/time-range')
+  // @UseGuards(JwtAuthGuard)
+  // async weeklySpentTime(@GetUser() user: User, @Query() query: GetTaskQuery) {
+  //   return this.tasksService.weeklySpentTime(user, query);
+  // }
 
   @Get('spent-time/per-day')
   @UseGuards(JwtAuthGuard)

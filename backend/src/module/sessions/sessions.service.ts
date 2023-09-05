@@ -14,6 +14,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { TasksService } from '../tasks/tasks.service';
 import { APIException } from '../exception/api.exception';
+import {GetTaskQuery} from "../tasks/dto";
+import {UserWorkspaceDatabase} from "../../database/userWorkspaces";
+import {SessionDatabase} from "../../database/sessions";
 
 @Injectable()
 export class SessionsService {
@@ -22,6 +25,8 @@ export class SessionsService {
     private prisma: PrismaService,
     private tasksService: TasksService,
     private workspacesService: WorkspacesService,
+    private userWorkspaceDatabase: UserWorkspaceDatabase,
+    private sessionDatabase: SessionDatabase,
   ) {}
 
   async getSessions(user: User, taskId: number) {
@@ -643,5 +648,82 @@ export class SessionsService {
         updatedAt: date,
       },
     });
+  }
+
+  async weeklySpentTime(user: User, query: GetTaskQuery) {
+    if(!user || !user.activeWorkspaceId)
+      throw new APIException('No workspace id detected', HttpStatus.BAD_REQUEST);
+    //first get the useWorkspaceID
+    const userWorkspace = await this.userWorkspaceDatabase.getUserWorkspace({
+      userId: user.id,
+      workspaceId: user.activeWorkspaceId,
+    });
+
+    if(!userWorkspace) throw new APIException('Could not get userworkspace', HttpStatus.INTERNAL_SERVER_ERROR);
+    const userWorkspaceId = userWorkspace?.id;
+    const sessions = await this.sessionDatabase.getSessions({
+      userWorkspaceId,
+    });
+    if(!sessions)
+      return {
+        TotalSpentTime: 0,
+        //value: null,
+      };
+    //let { startDate, endDate } = query;
+    let startDate = query?.startDate ? new Date(query.startDate) : new Date()
+    let endDate = query?.endDate ? new Date(query.endDate) : new Date()
+
+    //const taskList: any[] = await this.getTasks(user, query);
+
+    let totalTimeSpent = 0;
+    const map = new Map<string, number>();
+    for (const session of sessions) {
+      let taskTimeSpent = 0;
+      const start = session && session.startTime && new Date(session.startTime);
+      let end = session && session.endTime && new Date(session.endTime);
+      if (end && end.getTime() === 0) {
+        end = new Date();
+      }
+      let sessionTimeSpent = 0;
+      if (start >= startDate && end && end <= endDate) {
+        sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
+      } else if (startDate >= start && end && end >= endDate) {
+        sessionTimeSpent =
+            (endDate.getTime() - startDate.getTime()) / (1000 * 60);
+      } else if (end && end >= startDate) {
+        sessionTimeSpent =
+            Math.min(
+                Math.max(endDate.getTime() - start.getTime(), 0),
+                end.getTime() - startDate.getTime(),
+            ) /
+            (1000 * 60);
+      }
+      totalTimeSpent += sessionTimeSpent;
+      taskTimeSpent += sessionTimeSpent;
+
+      if (!session?.task?.projectName) session.task.projectName = 'T23';
+
+      if (!map.has(session?.task?.projectName)) {
+        map.set(session?.task.projectName, taskTimeSpent);
+      } else {
+        let getValue = map.get(session?.task?.projectName);
+        if (!getValue) getValue = 0;
+        map.set(session?.task?.projectName, getValue + taskTimeSpent);
+      }
+    }
+
+    const ar = [];
+    const iterator = map[Symbol.iterator]();
+    for (const item of iterator) {
+      ar.push({
+        projectName: item[0],
+        value: this.tasksService.getHourFromMinutes(item[1]),
+      });
+    }
+
+    return {
+      TotalSpentTime: this.tasksService.getHourFromMinutes(totalTimeSpent),
+      value: ar,
+    };
   }
 }

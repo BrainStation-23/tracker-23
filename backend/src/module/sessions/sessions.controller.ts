@@ -9,13 +9,14 @@ import {
   Param,
   ParseIntPipe,
   Patch,
-  Post,
+  Post, Query,
   UseGuards,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 
 import { ManualTimeEntryReqBody, SessionDto, SessionReqBodyDto } from './dto';
 import { SessionsService } from './sessions.service';
+import {GetTaskQuery} from "../tasks/dto";
 
 @Controller('sessions')
 export class SessionsController {
@@ -61,7 +62,7 @@ export class SessionsController {
     @Param('sessionId') sessionId: string,
     @Body() reqBody: SessionReqBodyDto,
   ) {
-    console.log(sessionId);
+    //console.log(sessionId);
     return this.sessionsService.updateSession(user, sessionId, reqBody);
   }
 
@@ -70,4 +71,10 @@ export class SessionsController {
   async deleteSession(@GetUser() user: User, @Param('id') id: string) {
     return this.sessionsService.deleteSession(user, id);
   }
+  @Get('spent-time/time-range')
+  @UseGuards(JwtAuthGuard)
+  async weeklySpentTime(@GetUser() user: User, @Query() query: GetTaskQuery) {
+    return this.sessionsService.weeklySpentTime(user, query);
+  }
+
 }
