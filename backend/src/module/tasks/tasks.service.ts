@@ -4,6 +4,7 @@ import { Response } from 'express';
 import { lastValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
+import * as dayjs from 'dayjs';
 import {
   Integration,
   IntegrationType,
@@ -24,6 +25,7 @@ import {
   StatusEnum,
   TimeSpentReqBodyDto,
   UpdatePinDto,
+  WeekDaysType,
 } from './dto';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { SprintsService } from '../sprints/sprints.service';
@@ -31,6 +33,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { MyGateway } from '../notifications/socketGateway';
 import { APIException } from '../exception/api.exception';
+import { WorkspaceDatabase } from 'src/database/workspaces';
+import { TasksDatabase } from 'src/database/tasks';
 @Injectable()
 export class TasksService {
   constructor(
@@ -40,10 +44,15 @@ export class TasksService {
     private myGateway: MyGateway,
     private workspacesService: WorkspacesService,
     private sprintService: SprintsService,
+    private workspaceDatabase: WorkspaceDatabase,
+    private tasksDatabase: TasksDatabase,
   ) {}
 
   async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
     try {
+      if (!user.activeWorkspaceId) {
+        return [];
+      }
       const { priority, status, text } = query;
       const sprintIds = query.sprintId as unknown as string;
       const projectIds = query.projectIds as unknown as string;
@@ -52,14 +61,7 @@ export class TasksService {
         sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
       const projectIdArray =
         projectIds && projectIds.split(',').map((item) => Number(item.trim()));
-      const userWorkspace =
-        user.activeWorkspaceId &&
-        (await this.prisma.userWorkspace.findFirst({
-          where: {
-            userId: user.id,
-            workspaceId: user.activeWorkspaceId,
-          },
-        }));
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
       if (!userWorkspace) {
         return [];
       }
@@ -313,15 +315,9 @@ export class TasksService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const project = await this.prisma.project.findFirst({
-      where: {
-        id: dto?.projectId,
-      },
-      select: {
-        projectName: true,
-        id: true,
-      },
-    });
+    // console.log(dto);
+
+    const project = await this.tasksDatabase.getProject(Number(dto.projectId));
 
     if (!project)
       throw new APIException('Invalid ProjectId', HttpStatus.BAD_REQUEST);
@@ -329,11 +325,15 @@ export class TasksService {
     if (dto.isRecurrent) {
       return (
         project.projectName &&
-        (await this.recurrentTask(user, userWorkspace.id, {
-          ...dto,
-          projectName: project.projectName,
-          projectId: project.id,
-        }))
+        (await this.recurrentTask(
+          user,
+          userWorkspace.id,
+          {
+            ...dto,
+            projectId: Number(project.id),
+          },
+          project.projectName,
+        ))
       );
     } else {
       return await this.prisma.task.create({
@@ -354,108 +354,338 @@ export class TasksService {
     }
   }
 
-  async recurrentTask(user: User, userWorkspaceId: number, dto: CreateTaskDto) {
-    const endDate = new Date(dto.endDate);
-    const timeMultiplier =
-      dto.frequency === 'DAILY' ? 1 : dto.frequency === 'WEEKLY' ? 7 : 14;
-    const timeInterval = timeMultiplier * 3600 * 24 * 1000;
-    const oneDay = 3600 * 24 * 1000;
-    let taskPromises: Promise<any>[] = [];
-    try {
-      for (
-        let startTime = new Date(dto.startTime).getTime(),
-          endTime = new Date(dto.endTime).getTime();
-        endTime <= endDate.getTime() + oneDay;
-        startTime += timeInterval, endTime += timeInterval
-      ) {
-        taskPromises.push(
-          this.prisma.task
-            .create({
-              data: {
-                userWorkspaceId: userWorkspaceId,
-                title: dto.title,
-                description: dto.description,
-                estimation: dto.estimation,
-                due: dto.due,
-                priority: dto.priority,
-                status: dto.status,
-                labels: dto.labels,
-                createdAt: new Date(startTime),
-                updatedAt: new Date(endTime),
-                workspaceId: user.activeWorkspaceId,
-                projectName: dto?.projectName,
-                projectId: dto?.projectId,
-              },
-            })
-            .then(async (task: any) => {
-              await this.prisma.session.create({
-                data: {
-                  startTime: new Date(startTime),
-                  endTime: new Date(endTime),
-                  status: SessionStatus.STOPPED,
-                  taskId: task.id,
-                  userWorkspaceId,
-                },
-              });
-            }),
+  async recurrentTask(
+    user: User,
+    userWorkspaceId: number,
+    dto: CreateTaskDto,
+    projectName: string,
+  ) {
+    const { repeat, repeatType, startDate } = dto;
+    let repeatTime = repeat * 3600 * 24 * 1000;
+    if (repeatType === 'DAY') {
+      if (dto.endDate) {
+        return await this.createDayTaskWithEndDate(
+          user,
+          userWorkspaceId,
+          dto,
+          projectName,
+          startDate,
+          repeatTime,
         );
-        if (taskPromises.length > 500) {
-          await Promise.allSettled(taskPromises);
-          taskPromises = [];
-        }
+      } else if (dto.occurrences) {
+        return await this.createDayTaskWithOccurrences(
+          user,
+          userWorkspaceId,
+          dto,
+          projectName,
+          startDate,
+          repeatTime,
+        );
       }
-      await Promise.allSettled(taskPromises);
-      return { message: 'Recurrent Tasks created' };
-    } catch (error) {
-      throw new APIException(
-        error.message || 'Session creation Failed',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+    } else if (repeatType === 'WEEK') {
+      repeatTime *= 7;
+      const myMap = new Map<string, number>();
+      for (const day of Object.values(WeekDaysType)) {
+        myMap.set(day, myMap.size + 1);
+      }
+      if (dto.endDate) {
+        return await this.createWeeklyTaskWithEndDate(
+          user,
+          userWorkspaceId,
+          dto,
+          projectName,
+          myMap,
+          startDate,
+          repeatTime,
+        );
+      } else if (dto.occurrences) {
+        return await this.createWeeklyTaskWithOccurrences(
+          user,
+          userWorkspaceId,
+          dto,
+          projectName,
+          myMap,
+          startDate,
+          repeatTime,
+        );
+      }
+    } else if (repeatType === 'MONTH') {
+      const currentDate = dayjs(dto.startDate);
+      const daysInMonth = currentDate.daysInMonth();
+      repeatTime *= daysInMonth;
+      console.log(
+        '🚀 ~ file: tasks.service.ts:426 ~ TasksService ~ daysInMonth:',
+        daysInMonth,
       );
+      if (dto.endDate) {
+        return await this.createDayTaskWithEndDate(
+          user,
+          userWorkspaceId,
+          dto,
+          projectName,
+          startDate,
+          repeatTime,
+        );
+      } else if (dto.occurrences) {
+        return await this.createDayTaskWithOccurrences(
+          user,
+          userWorkspaceId,
+          dto,
+          projectName,
+          startDate,
+          repeatTime,
+        );
+      }
     }
   }
 
-  // for future use
-  recurrentSession = async (user: User, dto: CreateTaskDto, task: Task) => {
-    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace) {
-      throw new APIException(
-        'UserWorkspace not found!',
-        HttpStatus.BAD_REQUEST,
+  private async createDayTaskWithEndDate(
+    user: User,
+    userWorkspaceId: number,
+    dto: CreateTaskDto,
+    projectName: string,
+    startDate: Date,
+    repeatTime: number,
+  ) {
+    let SessionStartTime = new Date(dto.startTime).getTime();
+    let SessionEndTime = new Date(dto.endTime).getTime();
+    let taskPromises: Promise<any>[] = [];
+    for (
+      let startTime = new Date(startDate).getTime();
+      startTime <= new Date(dto.endDate).getTime();
+      startTime += repeatTime
+    ) {
+      taskPromises.push(
+        this.tasksDatabase.createTaskAndSession(
+          user,
+          userWorkspaceId,
+          dto,
+          projectName,
+          startTime,
+          SessionStartTime,
+          SessionEndTime,
+        ),
       );
+      SessionStartTime += repeatTime;
+      SessionEndTime += repeatTime;
     }
-    if (dto.isRecurrent) {
-      const endDate = new Date(dto.endDate);
-      const timeMultiplier =
-        dto.frequency === 'DAILY' ? 1 : dto.frequency === 'WEEKLY' ? 7 : 14;
-      const timeInterval = timeMultiplier * 3600 * 24 * 1000;
-      const oneDay = 3600 * 24 * 1000;
-      const sessions: any = [];
-      try {
-        for (
-          let startTime = new Date(dto.startTime).getTime(),
-            endTime = new Date(dto.endTime).getTime();
-          endTime <= endDate.getTime() + oneDay;
-          startTime += timeInterval, endTime += timeInterval
-        ) {
-          const session = await this.prisma.session.create({
-            data: {
-              startTime: new Date(startTime),
-              endTime: new Date(endTime),
-              status: SessionStatus.STOPPED,
-              taskId: task.id,
-              userWorkspaceId: userWorkspace.id,
-            },
-          });
-          if (session) sessions.push(session);
+    if (taskPromises.length > 500) {
+      await Promise.allSettled(taskPromises);
+      taskPromises = [];
+    }
+    await Promise.allSettled(taskPromises);
+    return { message: 'Recurrent Tasks created' };
+  }
+
+  private async createDayTaskWithOccurrences(
+    user: User,
+    userWorkspaceId: number,
+    dto: CreateTaskDto,
+    projectName: string,
+    startDate: Date,
+    repeatTime: number,
+  ) {
+    let SessionStartTime = new Date(dto.startTime).getTime();
+    let SessionEndTime = new Date(dto.endTime).getTime();
+    let taskPromises: Promise<any>[] = [];
+    let count = 0;
+    for (
+      let startTime = new Date(startDate).getTime();
+      count < dto.occurrences;
+      startTime += repeatTime
+    ) {
+      taskPromises.push(
+        this.tasksDatabase.createTaskAndSession(
+          user,
+          userWorkspaceId,
+          dto,
+          projectName,
+          startTime,
+          SessionStartTime,
+          SessionEndTime,
+        ),
+      );
+      count++;
+      SessionStartTime += repeatTime;
+      SessionEndTime += repeatTime;
+    }
+    if (taskPromises.length > 500) {
+      await Promise.allSettled(taskPromises);
+      taskPromises = [];
+    }
+    await Promise.allSettled(taskPromises);
+    return { message: 'Recurrent Tasks created' };
+  }
+
+  private async createWeeklyTaskWithEndDate(
+    user: User,
+    userWorkspaceId: number,
+    dto: CreateTaskDto,
+    projectName: string,
+    myMap: Map<string, number>,
+    startDate: Date,
+    repeatTime: number,
+  ) {
+    let SessionStartTime = new Date(dto.startTime).getTime();
+    let SessionEndTime = new Date(dto.endTime).getTime();
+    let taskPromises: Promise<any>[] = [];
+    for (
+      let startTime = new Date(startDate).getTime();
+      startTime <= new Date(dto.endDate).getTime();
+      startTime += repeatTime
+    ) {
+      const weekday = dayjs(new Date(startTime)).format('dddd');
+      console.log(
+        '🚀 ~ file: index.ts:248 ~ TasksDatabase ~ weekday:',
+        weekday,
+      );
+      const firstPos = myMap?.get(weekday);
+      for (let index = 0; index < dto.weekDays.length; index++) {
+        let target = myMap?.get(dto.weekDays[index]);
+        if (firstPos && target && target < firstPos) {
+          target = 7 - firstPos + target;
+        } else {
+          target = firstPos && target ? target - firstPos : 0;
         }
-      } catch (error) {
-        throw new APIException(
-          'Session creation Failed',
-          HttpStatus.INTERNAL_SERVER_ERROR,
+        const SessionStartFinalTime =
+          SessionStartTime + target * 24 * 3600 * 1000;
+        const SessionEndFinalTime = SessionEndTime + target * 24 * 3600 * 1000;
+        const startFinalTime = startTime + target * 24 * 3600 * 1000;
+        if (startFinalTime > new Date(dto.endDate).getTime()) {
+          continue;
+        }
+        taskPromises.push(
+          this.tasksDatabase.createTaskAndSession(
+            user,
+            userWorkspaceId,
+            dto,
+            projectName,
+            startFinalTime,
+            SessionStartFinalTime,
+            SessionEndFinalTime,
+          ),
         );
       }
+      SessionStartTime += repeatTime;
+      SessionEndTime += repeatTime;
     }
-  };
+    if (taskPromises.length > 500) {
+      await Promise.allSettled(taskPromises);
+      taskPromises = [];
+    }
+    await Promise.allSettled(taskPromises);
+    return { message: 'Recurrent Tasks created' };
+  }
+
+  private async createWeeklyTaskWithOccurrences(
+    user: User,
+    userWorkspaceId: number,
+    dto: CreateTaskDto,
+    projectName: string,
+    myMap: Map<string, number>,
+    startDate: Date,
+    repeatTime: number,
+  ) {
+    let SessionStartTime = new Date(dto.startTime).getTime();
+    let SessionEndTime = new Date(dto.endTime).getTime();
+    let taskPromises: Promise<any>[] = [];
+    let count = 0;
+    for (
+      let startTime = new Date(startDate).getTime();
+      count < dto.occurrences;
+      startTime += repeatTime
+    ) {
+      const weekday = dayjs(new Date(startTime)).format('dddd');
+      const firstPos = myMap?.get(weekday);
+      for (let index = 0; index < dto.weekDays.length; index++) {
+        let target = myMap?.get(dto.weekDays[index]);
+        if (firstPos && target && target < firstPos) {
+          target = 7 - firstPos + target;
+        } else {
+          target = firstPos && target ? target - firstPos : 0;
+        }
+        const SessionStartFinalTime =
+          SessionStartTime + target * 24 * 3600 * 1000;
+        const SessionEndFinalTime = SessionEndTime + target * 24 * 3600 * 1000;
+        const startFinalTime = startTime + target * 24 * 3600 * 1000;
+        console.log(
+          '🚀 ~ file: tasks.service.ts:537 ~ TasksService ~ startFinalTime:',
+          new Date(startFinalTime),
+        );
+        if (count >= dto.occurrences) {
+          console.log(
+            '🚀 ~ file: tasks.service.ts:542 ~ TasksService ~ count:',
+            count,
+          );
+
+          break;
+        } // Have to think into deep.
+        taskPromises.push(
+          this.tasksDatabase.createTaskAndSession(
+            user,
+            userWorkspaceId,
+            dto,
+            projectName,
+            startFinalTime,
+            SessionStartFinalTime,
+            SessionEndFinalTime,
+          ),
+        );
+        count++;
+      }
+      SessionStartTime += repeatTime;
+      SessionEndTime += repeatTime;
+    }
+    if (taskPromises.length > 500) {
+      await Promise.allSettled(taskPromises);
+      taskPromises = [];
+    }
+    await Promise.allSettled(taskPromises);
+    return { message: 'Recurrent Tasks created' };
+  }
+
+  // for future use
+  // recurrentSession = async (user: User, dto: CreateTaskDto, task: Task) => {
+  //   const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+  //   if (!userWorkspace) {
+  //     throw new APIException(
+  //       'UserWorkspace not found!',
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+  //   if (dto.isRecurrent) {
+  //     const endDate = new Date(dto.endDate);
+  //     const timeMultiplier =
+  //       dto.frequency === 'DAILY' ? 1 : dto.frequency === 'WEEKLY' ? 7 : 14;
+  //     const timeInterval = timeMultiplier * 3600 * 24 * 1000;
+  //     const oneDay = 3600 * 24 * 1000;
+  //     const sessions: any = [];
+  //     try {
+  //       for (
+  //         let startTime = new Date(dto.startTime).getTime(),
+  //           endTime = new Date(dto.endTime).getTime();
+  //         endTime <= endDate.getTime() + oneDay;
+  //         startTime += timeInterval, endTime += timeInterval
+  //       ) {
+  //         const session = await this.prisma.session.create({
+  //           data: {
+  //             startTime: new Date(startTime),
+  //             endTime: new Date(endTime),
+  //             status: SessionStatus.STOPPED,
+  //             taskId: task.id,
+  //             userWorkspaceId: userWorkspace.id,
+  //           },
+  //         });
+  //         if (session) sessions.push(session);
+  //       }
+  //     } catch (error) {
+  //       throw new APIException(
+  //         'Session creation Failed',
+  //         HttpStatus.INTERNAL_SERVER_ERROR,
+  //       );
+  //     }
+  //   }
+  // };
 
   async updatePin(id: number, dto: UpdatePinDto): Promise<Task> {
     return await this.prisma.task.update({

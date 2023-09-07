@@ -52,13 +52,13 @@ export class TasksController {
     return this.tasksService.getWorkspaceTasks(user, query);
   }
 
-  @Post()
+  @Post('create')
   @UseGuards(JwtAuthGuard)
   async createTask(
     @GetUser() user: User,
     @Body() createTaskDto: CreateTaskDto,
   ) {
-    return this.tasksService.createTask(user, createTaskDto);
+    return await this.tasksService.createTask(user, createTaskDto);
   }
 
   @Patch(':id')

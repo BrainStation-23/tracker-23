@@ -1,6 +1,7 @@
 import { Labels } from '@prisma/client';
 import {
   IsArray,
+  IsDate,
   IsDateString,
   IsNotEmpty,
   IsNumber,
@@ -39,12 +40,32 @@ export class CreateTaskDto {
   @IsArray()
   labels: Labels[];
 
+  @IsNotEmpty()
+  @IsNumber()
+  projectId: number;
+
+  @IsNotEmpty()
+  @IsString()
+  startDate: Date;
+
   @IsOptional()
   isRecurrent: boolean;
 
   @IsOptional()
+  @IsNumber()
+  repeat: number;
+
+  @IsOptional()
   @IsString()
-  frequency: string;
+  repeatType: TaskRepeatType; // day, week, month
+
+  @IsOptional()
+  @IsArray()
+  weekDays: WeekDaysType[]; // sun, mon, ....
+
+  @IsOptional()
+  @IsString()
+  monthlyRepeat: MonthlyRepeatType;
 
   @IsOptional()
   @IsString()
@@ -56,17 +77,30 @@ export class CreateTaskDto {
 
   @IsOptional()
   @IsString()
-  startDate: Date;
-
-  @IsOptional()
-  @IsString()
   endDate: Date;
 
-  @IsNotEmpty()
-  @IsNumber()
-  projectId: number;
-
   @IsOptional()
-  @IsString()
-  projectName?: string;
+  @IsNumber()
+  occurrences: number;
+}
+
+export enum WeekDaysType {
+  Saturday = 'Saturday',
+  Sunday = 'Sunday',
+  Monday = 'Monday',
+  Tuesday = 'Tuesday',
+  Wednesday = 'Wednesday',
+  Thursday = 'Thursday',
+  Friday = 'Friday',
+}
+
+enum MonthlyRepeatType {
+  Date = 'DATE',
+  Day = 'DAY',
+}
+
+enum TaskRepeatType {
+  Day = 'DAY',
+  Week = 'WEEK',
+  Month = 'MONTH',
 }
