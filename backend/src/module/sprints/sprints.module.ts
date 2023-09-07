@@ -10,6 +10,7 @@ import { ProjectDatabase } from 'src/database/projects';
 import { SprintDatabase } from 'src/database/sprints';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
 import { TasksDatabase } from 'src/database/tasks';
+import { WorkspaceDatabase } from 'src/database/workspaces';
 
 @Module({
   imports: [HttpModule.register({}), IntegrationsModule],
@@ -17,6 +18,7 @@ import { TasksDatabase } from 'src/database/tasks';
     SprintsService,
     IntegrationsService,
     WorkspacesService,
+    WorkspaceDatabase,
     ProjectDatabase,
     SprintDatabase,
     SprintTaskDatabase,

@@ -8,6 +8,7 @@ import { GetActiveSprintTasks } from 'src/module/sprints/dto/get.active.sprint.t
 @Injectable()
 export class TasksDatabase {
   constructor(private prisma: PrismaService) {}
+  
   async getSprintTasks(
     userWorkspaceId: number,
     taskIds: number[],
