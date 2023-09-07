@@ -12,7 +12,7 @@ export class EmailController {
     @Body('to') to: string,
     @Body() dt: any,
   ) {
-    console.log(dt);
+    //console.log(dt);
     const success: any = await this.emailService.sendEmail(subject, body, to);
     if (success) {
       return { message: 'Email sent successfully' };

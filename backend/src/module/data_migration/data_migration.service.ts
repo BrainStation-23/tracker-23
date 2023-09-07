@@ -50,7 +50,7 @@ export class DataMigrationService {
           take: pageSize,
         });
 
-        console.log(`Fetching users: skip=${skip}, count=${users.length}`);
+        //console.log(`Fetching users: skip=${skip}, count=${users.length}`);
 
         await Promise.all(
           users.map(async (user) => {
@@ -60,7 +60,7 @@ export class DataMigrationService {
               },
             });
             if (!doesExist) {
-              console.log('hello');
+              //console.log('hello');
 
               await this.createUser(user);
             }
@@ -135,7 +135,7 @@ export class DataMigrationService {
           take: pageSize,
         });
 
-        console.log(`Fetching tasks: skip=${skip}, count=${tasks.length}`);
+        //console.log(`Fetching tasks: skip=${skip}, count=${tasks.length}`);
 
         await Promise.all(
           tasks.map(async (task) => {

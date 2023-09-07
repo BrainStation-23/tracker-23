@@ -1,19 +1,25 @@
+import { TasksDatabase } from 'src/database/tasks';
 import axios from 'axios';
 
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { IntegrationType, User } from '@prisma/client';
+import { User } from '@prisma/client';
 
 import { GetSprintListQueryDto } from './dto';
 import { WorkspacesService } from '../workspaces/workspaces.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { APIException } from '../exception/api.exception';
+import { ProjectDatabase } from 'src/database/projects';
+import { SprintDatabase } from 'src/database/sprints';
+import { SprintTaskDatabase } from 'src/database/sprintTasks';
 @Injectable()
 export class SprintsService {
   constructor(
-    private prisma: PrismaService,
     private integrationsService: IntegrationsService,
     private workspacesService: WorkspacesService,
+    private projectDatabase: ProjectDatabase,
+    private sprintDatabase: SprintDatabase,
+    private sprintTaskDatabase: SprintTaskDatabase,
+    private tasksDatabase: TasksDatabase,
   ) {}
 
   async createSprintAndTask(
@@ -28,33 +34,20 @@ export class SprintsService {
     const sprintPromises: Promise<any>[] = [];
     const issuePromises: Promise<any>[] = [];
 
-    const project = await this.prisma.project.findUnique({
-      where: {
-        id: projectId,
-      },
-    });
+    const project = await this.projectDatabase.getProjectById(projectId);
 
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace) {
-      console.log(
-        '🚀 ~ file: sprints.service.ts:41 ~ SprintsService ~ userWorkspace:',
-        userWorkspace,
-      );
-      throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
-    }
+    if (!userWorkspace) throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
+
     const updated_userIntegration =
       await this.integrationsService.getUpdatedUserIntegration(
         user,
         userIntegrationId,
       );
-    if (!updated_userIntegration) {
-      console.log(
-        '🚀 ~ file: sprints.service.ts:31 ~ SprintsService ~ createSprintAndTask ~ updated_userIntegration:',
-        updated_userIntegration,
-      );
-      return [];
-    }
-    console.log(updated_userIntegration);
+
+    if (!updated_userIntegration) return [];
+
+
     const boardUrl = `https://api.atlassian.com/ex/jira/${updated_userIntegration.siteId}/rest/agile/1.0/board`;
     const boardConfig = {
       method: 'get',
@@ -65,34 +58,21 @@ export class SprintsService {
       },
     };
     const boardList = await (await axios(boardConfig)).data;
-    console.log(
-      '🚀 ~ file: sprints.service.ts:70 ~ SprintsService ~ boardList:',
-      boardList,
-    );
     const mappedBoardId = new Map<number, number>();
     for (let index = 0; index < boardList.total; index++) {
       const board = boardList.values[index];
       mappedBoardId.set(Number(board.location.projectId), Number(board.id));
     }
 
-    console.log('mappedBoardId', mappedBoardId);
+    const task_list = await this.sprintDatabase.getTaskByProjectIdAndSource(projectId);
 
-    const task_list = await this.prisma.task.findMany({
-      where: {
-        projectId,
-        source: IntegrationType.JIRA,
-      },
-    });
     const boardId =
       project && project.projectId && mappedBoardId.get(project.projectId);
-    // console.log(
-    //   '🚀 ~ file: sprints.service.ts:86 ~ SprintsService ~ boardId:',
-    //   boardId,
-    // );
 
     if (!boardId) {
       return [];
     }
+
     const sprintUrl = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/agile/1.0/board/${boardId}/sprint`;
     const sprintConfig = {
       method: 'get',
@@ -104,7 +84,6 @@ export class SprintsService {
     };
     const res = axios(sprintConfig);
     sprintPromises.push(res);
-    // }
 
     const sprintResponses = await Promise.all(
       sprintPromises.map((p) =>
@@ -125,7 +104,6 @@ export class SprintsService {
         res.data &&
         res.data.values.map((val: any) => {
           if (val) {
-            // console.log(val);
             validSprint.push(val);
             if (val.startDate && val.endDate && val.completeDate) {
               sprint_list.push({
@@ -147,10 +125,6 @@ export class SprintsService {
               });
             }
 
-            console.log(
-              '🚀 ~ file: sprints.service.ts:155 ~ SprintsService ~ res.data.values.map ~ sprint_list:',
-              sprint_list,
-            );
             const sprintIssueUrl = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/agile/1.0/sprint/${val.id}/issue`;
             const sprintIssueConfig = {
               method: 'get',
@@ -170,19 +144,9 @@ export class SprintsService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [delSprint, crtSprint, sprints] = await Promise.all([
-      await this.prisma.sprint.deleteMany({
-        where: {
-          projectId: projectId,
-        },
-      }),
-      await this.prisma.sprint.createMany({
-        data: sprint_list,
-      }),
-      await this.prisma.sprint.findMany({
-        where: {
-          projectId: projectId,
-        },
-      }),
+      await this.sprintDatabase.deleteSprintByProjectId(projectId),
+      await this.sprintDatabase.createSprints(sprint_list),
+      await this.sprintDatabase.findSprintListByProjectId(projectId),
     ]);
 
     //relation between sprintId and jiraSprintId
@@ -193,8 +157,6 @@ export class SprintsService {
         sprints[index].id,
       );
     }
-
-    console.log('mappedSprintId', mappedSprintId);
 
     //relation between taskId and integratedTaskId
     const mappedTaskId = new Map<number, number>();
@@ -224,59 +186,18 @@ export class SprintsService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [DelSprintTask, CST, sprintTasks] = await Promise.all([
-      await this.prisma.sprintTask.deleteMany({
-        where: {
-          sprintId: { in: sprintIds },
-        },
-      }),
-      await this.prisma.sprintTask.createMany({
-        data: issue_list,
-      }),
-
-      await this.prisma.sprintTask.findMany({
-        where: {
-          sprintId: { in: sprintIds },
-        },
-      }),
+      await this.sprintTaskDatabase.deleteSprintTaskBySprintIds(sprintIds),
+      await this.sprintTaskDatabase.createSprintTask(issue_list),
+      await this.sprintTaskDatabase.findSprintTaskBySprintIds(sprintIds),
     ]);
 
     return { total: sprintTasks.length, sprintTasks };
   }
 
-  async getSprintList(user: User, reqBody: GetSprintListQueryDto) {
-    try {
-      const projectIds: number[] = await this.getProjectIds(user);
+  async getSprintList(user: User) {
+    const projectIds: number[] = await this.getProjectIds(user);
 
-      const st = reqBody.state as unknown as string;
-      const array =
-        st &&
-        st
-          .slice(1, -1)
-          .split(',')
-          .map((item) => item.trim());
-      console.log(
-        '🚀 ~ file: sprints.service.ts:278 ~ SprintsService ~ getSprintList ~ array:',
-        array,
-      );
-
-      const sprintList = await this.prisma.sprint.findMany({
-        where: {
-          projectId: { in: projectIds },
-        },
-      });
-      console.log(
-        '🚀 ~ file: sprints.service.ts:276 ~ getSprintList ~ sprintList:',
-        sprintList,
-      );
-
-      return sprintList || [];
-    } catch (error) {
-      console.log(
-        '🚀 ~ file: sprints.service.ts:290 ~ SprintsService ~ getSprintList ~ error:',
-        error,
-      );
-      return [];
-    }
+    return await this.sprintDatabase.findSprintListByProjectIdList(projectIds);
   }
 
   async getActiveSprintTasks(user: User, reqBody: GetSprintListQueryDto) {
@@ -288,68 +209,41 @@ export class SprintsService {
       );
 
     const projectIds: number[] = await this.getProjectIds(user);
-    try {
-      const { priority, status, text } = reqBody;
-      const priority1: any = (priority as unknown as string)?.split(',');
-      const status1: any = (status as unknown as string)?.split(',');
-      const st = reqBody.state as unknown as string;
-      let array: string[] = [];
-      array = st.split(',').map((item) => item.trim());
-      // console.log(array);
+    const { priority, status, text } = reqBody;
+    const priority1: any[] = (priority as unknown as string)?.split(',');
+    const status1: any[] = (status as unknown as string)?.split(',');
+    const st = reqBody.state as unknown as string;
+    let array: string[] = [];
+    array = st.split(',').map((item) => item.trim());
 
-      const sprints = await this.prisma.sprint.findMany({
-        where: {
-          projectId: { in: projectIds },
-          state: { in: array },
-        },
-      });
+    const sprints = await this.sprintDatabase.getSprintList({
+      projectId: { in: projectIds },
+      state: { in: array },
+    });
 
-      const sprintIds = sprints.map((sprint) => sprint.id);
-      // console.log(sprintIds);
-      const taskIds = await this.getSprintTasksIds(sprintIds);
-      // console.log(taskIds);
+    const sprintIds = sprints.map((sprint) => Number(sprint.id));
+    const taskIds = await this.getSprintTasksIds(sprintIds);
 
-      const taskList = await this.prisma.task.findMany({
-        where: {
-          userWorkspaceId: userWorkspace.id,
-          source: IntegrationType.JIRA,
-          id: { in: taskIds },
-          ...(priority1 && { priority: { in: priority1 } }),
-          ...(status1 && { status: { in: status1 } }),
-          ...(text && {
-            title: {
-              contains: text,
-              mode: 'insensitive',
-            },
-          }),
-        },
-        include: {
-          sessions: true,
-        },
-      });
-      // console.log(taskList);
-      return taskList;
-    } catch (error) {
-      console.log('🚀 ~ file: sprints.service.ts:372 ~ error:', error);
-      return [];
-    }
+    return await this.tasksDatabase.getActiveSprintTasksWithSessions({
+      taskIds,
+      userWorkspaceId: userWorkspace.id,
+      ...(priority1 && { priority: priority1 }),
+      ...(status1 && { status: status1 }),
+      ...(text && { text }),
+    });
+
   }
+
   async getSprintTasksIds(sprintIds: number[]) {
-    try {
-      const getSprintTasks = await this.prisma.sprintTask.findMany({
-        where: {
-          sprintId: { in: sprintIds.map((id) => Number(id)) },
-        },
-      });
+      const getSprintTasks = await this.sprintTaskDatabase.findSprintTaskBySprintIds(sprintIds);
+
       const taskIds: number[] = [];
       for (let index = 0; index < getSprintTasks.length; index++) {
         const val = getSprintTasks[index];
-        taskIds.push(val.taskId);
+        val && taskIds.push(val.taskId);
       }
+
       return taskIds;
-    } catch (error) {
-      return [];
-    }
   }
 
   async getProjectIds(user: User): Promise<number[]> {
@@ -359,38 +253,25 @@ export class SprintsService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
     const getUserIntegrationList =
       await this.integrationsService.getUserIntegrations(user);
     const integrationIds: any[] = [];
     const projectIds: any[] = [];
+
     for (let i = 0, len = getUserIntegrationList.length; i < len; i++) {
       integrationIds.push(getUserIntegrationList[i].integrationId);
     }
 
-    console.log(
-      '🚀 ~ file: sprints.service.ts:364 ~ getProjectIds ~ integrationIds:',
-      integrationIds,
-    );
-    const projectList = await this.prisma.project.findMany({
-      where: {
-        integrated: true,
-        workspaceId: user.activeWorkspaceId,
-        integrationId: { in: integrationIds },
-      },
+    const projectList = await this.projectDatabase.getProjects({
+      integrated: true,
+      workspaceId: user.activeWorkspaceId,
+      integrationId: { in: integrationIds },
     });
-    console.log(
-      '🚀 ~ file: sprints.service.ts:379 ~ getProjectIds ~ projectList:',
-      projectList,
-    );
 
     for (let i = 0, len = projectList.length; i < len; i++) {
       projectIds.push(projectList[i].id);
     }
-
-    console.log(
-      '🚀 ~ file: sprints.service.ts:378 ~ getProjectIds ~ projectIds:',
-      projectIds,
-    );
 
     return projectIds;
   }

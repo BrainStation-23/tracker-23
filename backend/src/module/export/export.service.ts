@@ -231,7 +231,7 @@ export class ExportService {
             },
           }),
         };
-        console.log(databaseQuery);
+        //console.log(databaseQuery);
 
         tasks = await this.prisma.task.findMany({
           where: databaseQuery,

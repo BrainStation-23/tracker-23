@@ -3,16 +3,11 @@ import { IntegrationType, SessionStatus, User } from '@prisma/client';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 import { CreateTaskDto } from 'src/module/tasks/dto';
 import * as dayjs from 'dayjs';
+import { GetActiveSprintTasks } from 'src/module/sprints/dto/get.active.sprint.tasks.filter.dto';
+
 @Injectable()
 export class TasksDatabase {
   constructor(private prisma: PrismaService) {}
-
-  //   try {
-
-  //   } catch (err) {
-  //     return null;
-  //   }
-
   async getSprintTasks(
     userWorkspaceId: number,
     taskIds: number[],
@@ -114,6 +109,32 @@ export class TasksDatabase {
         });
     } catch (err) {
       return null;
+    }
+  }
+
+  async getActiveSprintTasksWithSessions(filter: GetActiveSprintTasks) {
+    try {
+      return await this.prisma.task.findMany({
+        where: {
+          userWorkspaceId: filter.userWorkspaceId,
+          source: IntegrationType.JIRA,
+          id: { in: filter.taskIds },
+          ...(filter.priority && { priority: { in: filter.priority } }),
+          ...(filter.status && { status: { in: filter.status } }),
+          ...(filter.text && {
+            title: {
+              contains: filter.text,
+              mode: 'insensitive',
+            },
+          }),
+        },
+        include: {
+          sessions: true,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return [];
     }
   }
 }

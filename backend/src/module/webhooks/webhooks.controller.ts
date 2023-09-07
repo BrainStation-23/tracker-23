@@ -58,7 +58,6 @@ export class WebhooksController {
     @GetUser() user: User,
     @Body() reqBody: extendWebhookLifeReqDto,
   ) {
-    console.log(reqBody);
     return this.webhooksService.extendWebhookLife(user, reqBody);
   }
 }
