@@ -1,6 +1,7 @@
 import { Labels } from '@prisma/client';
 import {
   IsArray,
+  IsDate,
   IsDateString,
   IsNotEmpty,
   IsNumber,
@@ -44,7 +45,7 @@ export class CreateTaskDto {
   projectId: number;
 
   @IsNotEmpty()
-  @IsDate()
+  @IsString()
   startDate: Date;
 
   @IsOptional()
@@ -75,10 +76,31 @@ export class CreateTaskDto {
   endTime: Date;
 
   @IsOptional()
-  @IsDate()
+  @IsString()
   endDate: Date;
 
   @IsOptional()
   @IsNumber()
   occurrences: number;
+}
+
+export enum WeekDaysType {
+  Saturday = 'Saturday',
+  Sunday = 'Sunday',
+  Monday = 'Monday',
+  Tuesday = 'Tuesday',
+  Wednesday = 'Wednesday',
+  Thursday = 'Thursday',
+  Friday = 'Friday',
+}
+
+enum MonthlyRepeatType {
+  Date = 'DATE',
+  Day = 'DAY',
+}
+
+enum TaskRepeatType {
+  Day = 'DAY',
+  Week = 'WEEK',
+  Month = 'MONTH',
 }

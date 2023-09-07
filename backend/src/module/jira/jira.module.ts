@@ -11,6 +11,7 @@ import { IntegrationsService } from '../integrations/integrations.service';
 import { WorkspacesService } from 'src/module/workspaces/workspaces.service';
 import { EmailService } from 'src/module/email/email.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
+import { TasksDatabase } from 'src/database/tasks';
 import { ProjectDatabase } from 'src/database/projects';
 
 @Module({
@@ -26,6 +27,7 @@ import { ProjectDatabase } from 'src/database/projects';
     WorkspacesService,
     EmailService,
     WorkspaceDatabase,
+    TasksDatabase,
     ProjectDatabase,
   ],
 })

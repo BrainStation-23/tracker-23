@@ -12,8 +12,9 @@ import { WorkspacesService } from '../workspaces/workspaces.service';
 import { EmailService } from '../email/email.service';
 import { SprintsService } from '../sprints/sprints.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
-import {UserWorkspaceDatabase} from "../../database/userWorkspaces";
-import {SessionDatabase} from "../../database/sessions";
+import { TasksDatabase } from 'src/database/tasks';
+import { UserWorkspaceDatabase } from '../../database/userWorkspaces';
+import { SessionDatabase } from '../../database/sessions';
 
 @Module({
   imports: [HttpModule.register({}), IntegrationsModule],
@@ -29,6 +30,7 @@ import {SessionDatabase} from "../../database/sessions";
     SprintsService,
     EmailService,
     WorkspaceDatabase,
+    TasksDatabase,
     UserWorkspaceDatabase,
     SessionDatabase,
   ],

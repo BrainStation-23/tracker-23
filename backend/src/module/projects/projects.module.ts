@@ -12,6 +12,7 @@ import { SprintsService } from '../sprints/sprints.service';
 import { AuthService } from '../auth/auth.service';
 import { EmailService } from '../email/email.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
+import { TasksDatabase } from 'src/database/tasks';
 import { ProjectDatabase } from '../../database/projects';
 
 @Module({
@@ -27,6 +28,7 @@ import { ProjectDatabase } from '../../database/projects';
     JwtService,
     EmailService,
     WorkspaceDatabase,
+    TasksDatabase,
     ProjectDatabase,
   ],
   controllers: [ProjectsController],

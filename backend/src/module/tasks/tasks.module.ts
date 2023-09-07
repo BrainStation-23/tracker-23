@@ -13,6 +13,7 @@ import { WorkspacesService } from '../workspaces/workspaces.service';
 import { SprintsService } from '../sprints/sprints.service';
 import { EmailService } from '../email/email.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
+import { TasksDatabase } from 'src/database/tasks';
 
 @Module({
   imports: [HttpModule.register({}), SprintsModule, IntegrationsModule],
@@ -26,6 +27,7 @@ import { WorkspaceDatabase } from 'src/database/workspaces';
     SprintsService,
     EmailService,
     WorkspaceDatabase,
+    TasksDatabase,
   ],
   controllers: [TasksController],
   exports: [TasksService],
