@@ -1,3 +1,4 @@
+import { ProjectDatabase } from './../../database/projects/index';
 import { lastValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
@@ -21,6 +22,7 @@ export class JiraService {
     private sprintsService: SprintsService,
     private workspacesService: WorkspacesService,
     private integrationsService: IntegrationsService,
+    private projectDatabase: ProjectDatabase,
   ) {}
   async getIntegrationLink(state: string | undefined) {
     let stateParam = '';
@@ -344,49 +346,15 @@ export class JiraService {
         },
       });
 
-      user.activeWorkspaceId &&
-        projects.push({
-          id: 0,
-          projectId: -1,
-          projectKey: 'None',
-          projectName: 'T23',
-          source: '/',
-          integrationId: -1,
-          workspaceId: user.activeWorkspaceId,
-          statuses: [
-            {
-              id: 0,
-              statusId: 'None',
-              name: 'To Do',
-              untranslatedName: 'To Do',
-              statusCategoryId: '2',
-              statusCategoryName: 'TO_DO',
-              transitionId: null,
-              projectId: 0,
-            },
-            {
-              id: 0,
-              statusId: 'None',
-              name: 'In Progress',
-              untranslatedName: 'In Progress',
-              statusCategoryId: '4',
-              statusCategoryName: 'IN_PROGRESS',
-              transitionId: null,
-              projectId: 0,
-            },
-            {
-              id: 0,
-              statusId: 'None',
-              name: 'Done',
-              untranslatedName: 'Done',
-              statusCategoryId: '3',
-              statusCategoryName: 'DONE',
-              transitionId: null,
-              projectId: 0,
-            },
-          ],
-          integrated: true,
-        });
+      const localProjects = user.activeWorkspaceId &&
+      (await this.projectDatabase.getLocalProjectsWithStatus({
+        source: 'T23',
+        workspaceId: user.activeWorkspaceId,
+        integrated: true,
+      }));
+
+      localProjects && projects.push(...localProjects);
+
       return projects;
     } catch (error) {
       throw new APIException('Can not get Projects', HttpStatus.BAD_REQUEST);

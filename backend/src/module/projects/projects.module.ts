@@ -13,6 +13,7 @@ import { AuthService } from '../auth/auth.service';
 import { EmailService } from '../email/email.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
 import { TasksDatabase } from 'src/database/tasks';
+import { ProjectDatabase } from '../../database/projects';
 
 @Module({
   imports: [HttpModule.register({}), IntegrationsModule],
@@ -28,6 +29,7 @@ import { TasksDatabase } from 'src/database/tasks';
     EmailService,
     WorkspaceDatabase,
     TasksDatabase,
+    ProjectDatabase,
   ],
   controllers: [ProjectsController],
   exports: [ProjectsService],

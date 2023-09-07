@@ -9,13 +9,14 @@ import {
   Param,
   ParseIntPipe,
   Patch,
-  Post,
+  Post, Query,
   UseGuards,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 
 import { ManualTimeEntryReqBody, SessionDto, SessionReqBodyDto } from './dto';
 import { SessionsService } from './sessions.service';
+import {GetTaskQuery, GetTeamTaskQuery, GetTeamTaskQueryType} from "../tasks/dto";
 
 @Controller('sessions')
 export class SessionsController {
@@ -61,7 +62,7 @@ export class SessionsController {
     @Param('sessionId') sessionId: string,
     @Body() reqBody: SessionReqBodyDto,
   ) {
-    console.log(sessionId);
+    //console.log(sessionId);
     return this.sessionsService.updateSession(user, sessionId, reqBody);
   }
 
@@ -69,5 +70,43 @@ export class SessionsController {
   @UseGuards(JwtAuthGuard)
   async deleteSession(@GetUser() user: User, @Param('id') id: string) {
     return this.sessionsService.deleteSession(user, id);
+  }
+  @Get('spent-time/time-range')
+  @UseGuards(JwtAuthGuard)
+  async weeklySpentTime(@GetUser() user: User, @Query() query: GetTaskQuery) {
+    return this.sessionsService.weeklySpentTime(user, query);
+  }
+
+  @Get('spent-time/per-day')
+  @UseGuards(JwtAuthGuard)
+  async getSpentTimeByDay(@GetUser() user: User, @Query() query: GetTaskQuery) {
+    return this.sessionsService.getSpentTimeByDay(user, query);
+  }
+
+  //TODO: only for superior role, example: Project Manager, Admin
+  @Get('/team/spent-time')
+  @UseGuards(JwtAuthGuard)
+  async getTimeSpentByTeam(
+      @GetUser() user: User,
+      @Query() query: GetTeamTaskQuery,
+  ) {
+    return await this.sessionsService.getTimeSpentByTeam(
+        query,
+        user,
+        GetTeamTaskQueryType.DATE_RANGE,
+    );
+  }
+
+  @Get('/team/spent-time/per-day')
+  @UseGuards(JwtAuthGuard)
+  async getDailyTimeSpentByTeam(
+      @GetUser() user: User,
+      @Query() query: GetTeamTaskQuery,
+  ) {
+    return await this.sessionsService.getTimeSpentByTeam(
+        query,
+        user,
+        GetTeamTaskQueryType.PER_DAY,
+    );
   }
 }

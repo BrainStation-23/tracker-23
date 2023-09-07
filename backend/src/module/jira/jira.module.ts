@@ -12,6 +12,7 @@ import { WorkspacesService } from 'src/module/workspaces/workspaces.service';
 import { EmailService } from 'src/module/email/email.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
 import { TasksDatabase } from 'src/database/tasks';
+import { ProjectDatabase } from 'src/database/projects';
 
 @Module({
   imports: [HttpModule.register({}), SprintsModule],
@@ -27,6 +28,7 @@ import { TasksDatabase } from 'src/database/tasks';
     EmailService,
     WorkspaceDatabase,
     TasksDatabase,
+    ProjectDatabase,
   ],
 })
 export class JiraModule {}

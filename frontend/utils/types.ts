@@ -1,4 +1,8 @@
-import { CreateWorkspaceModel, SearchParamsModel } from "models/apiParams";
+import {
+  CreateLocalProjectModel,
+  CreateWorkspaceModel,
+  SearchParamsModel,
+} from "models/apiParams";
 import {
   ForgotPasswordDto,
   LoginDto,
@@ -64,6 +68,7 @@ export interface apiFunction {
   acceptWorkspaceInvitation: (id: number) => Promise<any>;
   rejectWorkspaceInvitation: (id: number) => Promise<any>;
   importProject: (id: number) => Promise<any>;
+  createProject: (data: CreateLocalProjectModel) => Promise<any>;
   deleteProjectTasks: (id: number) => Promise<any>;
   getJiraActiveSprintTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   forgotPassword: (data?: ForgotPasswordDto) => Promise<any>;

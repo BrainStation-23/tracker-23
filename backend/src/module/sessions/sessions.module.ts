@@ -13,6 +13,8 @@ import { EmailService } from '../email/email.service';
 import { SprintsService } from '../sprints/sprints.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
 import { TasksDatabase } from 'src/database/tasks';
+import { UserWorkspaceDatabase } from '../../database/userWorkspaces';
+import { SessionDatabase } from '../../database/sessions';
 
 @Module({
   imports: [HttpModule.register({}), IntegrationsModule],
@@ -29,6 +31,8 @@ import { TasksDatabase } from 'src/database/tasks';
     EmailService,
     WorkspaceDatabase,
     TasksDatabase,
+    UserWorkspaceDatabase,
+    SessionDatabase,
   ],
   exports: [SessionsService],
 })

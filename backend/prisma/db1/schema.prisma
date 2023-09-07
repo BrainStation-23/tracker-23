@@ -181,6 +181,8 @@ model Project {
   integrationId Int?
   workspace     Workspace   @relation(fields: [workspaceId], references: [id])
   workspaceId   Int
+
+  @@unique([projectName, source, workspaceId], name: "ProjectIdentifier")
 }
 
 model StatusDetail {

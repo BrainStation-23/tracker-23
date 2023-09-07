@@ -76,6 +76,12 @@ export class TasksController {
     return this.tasksService.deleteTask(id);
   }
 
+  @Get('sync/status')
+  @UseGuards(JwtAuthGuard)
+  async callSync(@GetUser() user: User) {
+    return await this.tasksService.getCallSync(user);
+  }
+  
   @Get('sync/:projectId')
   @UseGuards(JwtAuthGuard)
   async syncAndGetTasks(
@@ -90,12 +96,6 @@ export class TasksController {
   @UseGuards(JwtAuthGuard)
   async syncAllAndUpdateTasks(@GetUser() user: User) {
     return await this.tasksService.syncAll(user);
-  }
-
-  @Get('sync/status')
-  @UseGuards(JwtAuthGuard)
-  async callSync(@GetUser() user: User) {
-    return await this.tasksService.getCallSync(user);
   }
 
   @Patch('update/status/:taskId')
@@ -133,45 +133,6 @@ export class TasksController {
     @Body() timeSpentReqBody: TimeSpentReqBodyDto,
   ) {
     return this.tasksService.addWorkLog(user, issueId, timeSpentReqBody);
-  }
-
-  @Get('spent-time/time-range')
-  @UseGuards(JwtAuthGuard)
-  async weeklySpentTime(@GetUser() user: User, @Query() query: GetTaskQuery) {
-    return this.tasksService.weeklySpentTime(user, query);
-  }
-
-  @Get('spent-time/per-day')
-  @UseGuards(JwtAuthGuard)
-  async getSpentTimeByDay(@GetUser() user: User, @Query() query: GetTaskQuery) {
-    return this.tasksService.getSpentTimeByDay(user, query);
-  }
-
-  //TODO: only for superior role, example: Project Manager, Admin
-  @Get('/team/spent-time')
-  @UseGuards(JwtAuthGuard)
-  async getTimeSpentByTeam(
-    @GetUser() user: User,
-    @Query() query: GetTeamTaskQuery,
-  ) {
-    return await this.tasksService.getTimeSpentByTeam(
-      query,
-      user,
-      GetTeamTaskQueryType.DATE_RANGE,
-    );
-  }
-
-  @Get('/team/spent-time/per-day')
-  @UseGuards(JwtAuthGuard)
-  async getDailyTimeSpentByTeam(
-    @GetUser() user: User,
-    @Query() query: GetTeamTaskQuery,
-  ) {
-    return await this.tasksService.getTimeSpentByTeam(
-      query,
-      user,
-      GetTeamTaskQueryType.PER_DAY,
-    );
   }
 
   @Get('all/status')
