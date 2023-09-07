@@ -20,7 +20,7 @@ export const apiEndPoints = {
   markAllNotificationsSeen: `/notifications/seen-all/`,
   authJira: `/integrations/jira/authorization`,
   spentTime: `/sessions/spent-time/time-range`,
-  spentTimePerDay: `/tasks/spent-time/per-day`,
+  spentTimePerDay: `/sessions/spent-time/per-day`,
   addWorkLog: `/sessions/manual-timeEntry`,
   updateTaskStatus: `/tasks/update/status`,
   updateTaskEstimation: `/tasks/update/estimation`,

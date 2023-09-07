@@ -7,7 +7,7 @@ import {UserWorkspace} from "@prisma/client";
 export class UserWorkspaceDatabase {
     constructor(private prisma: PrismaService) {}
 
-    async getUserWorkspace(filter: GetUserWorkspaceFilter): Promise<UserWorkspace | null> {
+    async getSingleUserWorkspace(filter: GetUserWorkspaceFilter): Promise<UserWorkspace | null> {
         try {
             return await this.prisma.userWorkspace.findFirst({
                 where: filter,
@@ -15,6 +15,17 @@ export class UserWorkspaceDatabase {
         } catch (e) {
             console.log(e);
             return null;
+        }
+    }
+
+    async getUserWorkspaceList(filter: any): Promise<UserWorkspace[] | []> {
+        try {
+            return await this.prisma.userWorkspace.findMany({
+                where: filter,
+            })
+        } catch (e) {
+            console.log(e);
+            return [];
         }
     }
 }
