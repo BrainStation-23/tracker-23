@@ -31,7 +31,7 @@ export class RolesGuard extends AuthGuard('jwt') {
       );
     }
 
-    const role = user.role;
+    const role = user.userWorkspace.role;
     const doesRoleMatch = this.roles.some((r) => r === role);
     if (!doesRoleMatch) {
       throw new UnauthorizedException(
