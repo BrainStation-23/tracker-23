@@ -3,9 +3,12 @@ import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Role, User } from '@prisma/client';
+
 import { PrismaService } from '../prisma/prisma.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { APIException } from '../exception/api.exception';
+import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import { IntegrationDatabase } from 'src/database/integrations/index';
 
 @Injectable()
 export class IntegrationsService {
@@ -14,6 +17,8 @@ export class IntegrationsService {
     private prisma: PrismaService,
     private httpService: HttpService,
     private workspacesService: WorkspacesService,
+    private userIntegrationDatabase: UserIntegrationDatabase,
+    private integrationDatabase: IntegrationDatabase,
   ) {}
 
   async getUserIntegrations(user: User) {
@@ -24,14 +29,14 @@ export class IntegrationsService {
         HttpStatus.BAD_REQUEST,
       );
 
-    return await this.prisma.userIntegration.findMany({
-      where: {
+    return await this.userIntegrationDatabase.getUserIntegrationListWithIntegrations(
+      {
         userWorkspaceId: userWorkspace.id,
         workspaceId: user.activeWorkspaceId,
       },
-      include: { integration: true },
-    });
+    );
   }
+
   async getIntegrations(user: User) {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
@@ -40,124 +45,111 @@ export class IntegrationsService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const integrations = await this.prisma.integration.findMany({
-      where: { workspaceId: userWorkspace.workspaceId },
-    });
+
+    const integrations =
+      await this.integrationDatabase.getIntegrationListByWorkspaceId(
+        userWorkspace.workspaceId,
+      );
+
+    const integrationIds = integrations.map(
+      (integration: any) => integration.id,
+    );
+
     const userIntegrations =
       userWorkspace &&
-      (await this.prisma.userIntegration.findMany({
-        where: {
-          userWorkspaceId: userWorkspace.id,
-          integrationId: {
-            in: integrations.map((int: any) => {
-              return int.id;
-            }),
-          },
-        },
-        include: {
-          integration: true,
-        },
-      }));
-    return userIntegrations?.map((userIntegration: any) => {
-      return userIntegration.integration;
-    });
+      (await this.userIntegrationDatabase.getUserIntegrationListByIntegrationIds(
+        userWorkspace.id,
+        integrationIds,
+      ));
+
+    return userIntegrations?.map(
+      (userIntegration: any) => userIntegration.integration,
+    );
   }
 
   async getUpdatedUserIntegration(user: User, userIntegrationId: number) {
+    const url = 'https://auth.atlassian.com/oauth/token';
+    const headers: any = { 'Content-Type': 'application/json' };
+    if (!user.activeWorkspaceId)
+      throw new APIException('No active Workspace', HttpStatus.BAD_REQUEST);
+
+    const userIntegration =
+      await this.userIntegrationDatabase.getUserIntegrationById(
+        userIntegrationId,
+      );
+    // const integration = await this.prisma.integration.findFirst({
+    //   where: { userId: user.id, type: IntegrationType.JIRA, id: integrationID },
+    // });
+    if (!userIntegration) {
+      throw new APIException(
+        'User integration not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const data = {
+      grant_type: 'refresh_token',
+      client_id: this.config.get('JIRA_CLIENT_ID'),
+      client_secret: this.config.get('JIRA_SECRET_KEY'),
+      refresh_token: userIntegration?.refreshToken,
+    };
+    let tokenResp;
     try {
-      const url = 'https://auth.atlassian.com/oauth/token';
-      const headers: any = { 'Content-Type': 'application/json' };
-      if (!user.activeWorkspaceId)
-        throw new APIException('No active Workspace', HttpStatus.BAD_REQUEST);
-      const userIntegration = await this.prisma.userIntegration.findUnique({
-        where: {
-          id: userIntegrationId,
-        },
-      });
-      console.log(
-        '🚀 ~ file: integrations.service.ts:60 ~ IntegrationsService ~ getUpdatedUserIntegration ~ userIntegration:',
-        userIntegration,
-      );
-
-      // const integration = await this.prisma.integration.findFirst({
-      //   where: { userId: user.id, type: IntegrationType.JIRA, id: integrationID },
-      // });
-      if (!userIntegration) {
-        throw new APIException(
-          'User integration not found',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      // console.log(userIntegration?.refreshToken);
-
-      const data = {
-        grant_type: 'refresh_token',
-        client_id: this.config.get('JIRA_CLIENT_ID'),
-        client_secret: this.config.get('JIRA_SECRET_KEY'),
-        refresh_token: userIntegration?.refreshToken,
-      };
-      let tokenResp;
-      try {
-        tokenResp = (
-          await lastValueFrom(this.httpService.post(url, data, headers))
-        ).data;
-        console.log(
-          '🚀 ~ file: integrations.service.ts:82 ~ IntegrationsService ~ getUpdatedUserIntegration ~ tokenResp:',
-          tokenResp,
-        );
-      } catch (err) {
-        throw new APIException(
-          'Can not update user integration',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-
-      const updatedUserIntegration =
-        userIntegration &&
-        (await this.prisma.userIntegration.update({
-          where: { id: userIntegration?.id },
-          data: {
-            accessToken: tokenResp.access_token,
-            refreshToken: tokenResp.refresh_token,
-          },
-          include: { integration: true },
-        }));
-      return updatedUserIntegration;
+      tokenResp = (
+        await lastValueFrom(this.httpService.post(url, data, headers))
+      ).data;
+      // console.log(
+      //   '🚀 ~ file: integrations.service.ts:82 ~ IntegrationsService ~ getUpdatedUserIntegration ~ tokenResp:',
+      //   tokenResp,
+      // );
     } catch (err) {
-      console.log(
-        '🚀 ~ file: integrations.service.ts:99 ~ IntegrationsService ~ getUpdatedUserIntegration ~ err:',
-        err,
-      );
       throw new APIException(
         'Can not update user integration',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+
+    const updatedUserIntegration =
+      userIntegration &&
+      (await this.userIntegrationDatabase.updateUserIntegrationById(
+        userIntegration?.id,
+        {
+          accessToken: tokenResp.access_token,
+          refreshToken: tokenResp.refresh_token,
+        },
+      ));
+
+    if (!updatedUserIntegration)
+      throw new APIException(
+        'Can not update user integration',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+
+    return updatedUserIntegration;
   }
 
-  async deleteUserIntegration(user: User, userIntegrationId: number) {
-    try {
-      const id = Number(userIntegrationId);
-      await this.prisma.userIntegration.delete({
-        where: { id },
-      });
-      return { message: 'Successfully user integration deleted' };
-    } catch (err) {
-      console.log(err.message);
+  async deleteUserIntegration(userIntegrationId: number) {
+    const userIntegrationDeleted =
+      await this.userIntegrationDatabase.deleteUserIntegrationById(
+        userIntegrationId,
+      );
+
+    if (!userIntegrationDeleted)
       throw new APIException(
-        err.message || 'Can not delete user integration',
+        'Can not delete user integration',
         HttpStatus.BAD_REQUEST,
       );
-    }
+
+    return { message: 'Successfully user integration deleted' };
   }
 
-  async deleteIntegration(user: User, integrationId: number) {
+  async deleteIntegration(user: User, id: number) {
     try {
       const userWorkspace = await this.workspacesService.getUserWorkspace(user);
       if (!userWorkspace) {
         throw new APIException('Can not delete integration');
       }
-      const id = Number(integrationId);
+
       const transactionRes = await this.prisma.$transaction([
         this.prisma.userIntegration.delete({
           where: {
@@ -194,14 +186,15 @@ export class IntegrationsService {
           },
         }),
       ]);
-      console.log(
-        '🚀 ~ file: integrations.service.ts:170 ~ IntegrationsService ~ deleteIntegration ~ transactionRes:',
-        transactionRes,
-      );
+      // console.log(
+      //   '🚀 ~ file: integrations.service.ts:170 ~ IntegrationsService ~ deleteIntegration ~ transactionRes:',
+      //   transactionRes,
+      // );
 
       if (transactionRes) {
         return { message: 'Successfully user integration deleted' };
       }
+
       throw new APIException(
         'Can not delete user integration',
         HttpStatus.BAD_REQUEST,
@@ -215,29 +208,27 @@ export class IntegrationsService {
     }
   }
 
-  async deleteIntegrationByAdmin(user: User, integrationId: number) {
-    try {
-      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-      if (!userWorkspace) {
-        throw new APIException(
-          'User Workspace not found',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      if (userWorkspace.role === Role.ADMIN) {
-        const id = Number(integrationId);
-        await this.prisma.integration.delete({
-          where: { id },
-        });
-        return { message: 'Successfully user integration deleted' };
-      }
-      return { message: 'You are not allowed to perform this action.' };
-    } catch (err) {
-      console.log(err.message);
+  async deleteIntegrationByAdmin(user: User, id: number) {
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
       throw new APIException(
-        err.message || 'Can not delete user integration',
+        'User Workspace not found',
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    if (userWorkspace.role === Role.ADMIN) {
+      const integrationDeleted =
+        await this.integrationDatabase.deleteIntegrationById(id);
+      if (!integrationDeleted)
+        throw new APIException(
+          'Can not delete user integration',
+          HttpStatus.BAD_REQUEST,
+        );
+
+      return { message: 'Successfully user integration deleted' };
+    }
+
+    return { message: 'You are not allowed to perform this action.' };
   }
 }

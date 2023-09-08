@@ -11,6 +11,8 @@ import { ProjectDatabase } from 'src/database/projects';
 import { SprintDatabase } from 'src/database/sprints';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
 import { TasksDatabase } from 'src/database/tasks';
+import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import { IntegrationDatabase } from 'src/database/integrations';
 
 @Module({
   imports: [HttpModule.register({})],
@@ -25,7 +27,9 @@ import { TasksDatabase } from 'src/database/tasks';
     ProjectDatabase,
     SprintDatabase,
     SprintTaskDatabase,
-    TasksDatabase
+    TasksDatabase,
+    IntegrationDatabase,
+    UserIntegrationDatabase,
   ],
 })
 export class ExportModule {}

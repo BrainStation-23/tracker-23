@@ -17,6 +17,8 @@ import { TasksDatabase } from 'src/database/tasks';
 import { ProjectDatabase } from 'src/database/projects';
 import { SprintDatabase } from 'src/database/sprints';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
+import { IntegrationDatabase } from 'src/database/integrations';
+import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 
 @Module({
   imports: [HttpModule.register({}), SprintsModule, IntegrationsModule],
@@ -34,6 +36,8 @@ import { SprintTaskDatabase } from 'src/database/sprintTasks';
     ProjectDatabase,
     SprintDatabase,
     SprintTaskDatabase,
+    IntegrationDatabase,
+    UserIntegrationDatabase,
   ],
   controllers: [TasksController],
   exports: [TasksService],
