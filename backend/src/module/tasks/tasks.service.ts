@@ -767,14 +767,9 @@ export class TasksService {
     const mappedUserWorkspaceAndJiraId =
       await this.mappingUserWorkspaceAndJiraAccountId(user);
 
-    // console.log(
-    //   '🚀 ~ file: tasks.service.ts:833 ~ TasksService ~ mappedUserWorkspaceAndJiraId:',
-    //   mappedUserWorkspaceAndJiraId,
-    // );
-
     const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId}&maxResults=1000`;
     const fields =
-      'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority';
+      'summary, assignee,timeoriginalestimate,project, comment,parent, created, updated,status,priority';
     let respTasks;
     for (let startAt = 0; startAt < 5000; startAt += 100) {
       let worklogPromises: Promise<any>[] = [];
@@ -820,17 +815,19 @@ export class TasksService {
         const key = integratedTasks[j].integratedTaskId;
         key && mappedIssues.delete(key);
       }
+
+      const parentChildMapped = new Map<number, number>();
       for (const [integratedTaskId, integratedTask] of mappedIssues) {
         const taskStatus = integratedTask.status.name;
         const taskPriority = this.formatPriority(integratedTask.priority.name);
-        // console.log(integratedTask);
+        integratedTask.parent &&
+          integratedTask.parent.id &&
+          parentChildMapped.set(
+            integratedTaskId,
+            Number(integratedTask.parent.id),
+          );
 
         taskList.push({
-          // userWorkspaceId:
-          //   userIntegration.jiraAccountId === integratedTask.assignee?.accountId
-          //     ? userWorkspace.id
-          //     : null,
-
           userWorkspaceId:
             mappedUserWorkspaceAndJiraId.get(
               integratedTask.assignee?.accountId,
@@ -852,16 +849,14 @@ export class TasksService {
           createdAt: new Date(integratedTask.created),
           updatedAt: new Date(integratedTask.updated),
           jiraUpdatedAt: new Date(integratedTask.updated),
-          // parentTaskId: integratedTask.parent.id,
           source: IntegrationType.JIRA,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           url: `${userIntegration?.integration?.site}/browse/${integratedTask?.key}`,
         });
       }
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const mappedTaskId = new Map<number, number>();
+      const updateTaskPromises: Promise<any>[] = [];
       try {
         const [t, tasks] = await Promise.all([
           await this.prisma.task.createMany({
@@ -885,6 +880,26 @@ export class TasksService {
             tasks[index].id,
           );
         }
+
+        for (let index = 0; index < tasks.length; index++) {
+          const task = tasks[index];
+          const parentJiraId =
+            task.integratedTaskId &&
+            parentChildMapped.get(task.integratedTaskId);
+          const parentLocalId = parentJiraId && mappedTaskId.get(parentJiraId);
+          updateTaskPromises.push(
+            this.prisma.task.update({
+              where: {
+                id: task.id,
+              },
+              data: {
+                parentTaskId: parentLocalId,
+              },
+            }),
+          );
+        }
+
+        await Promise.allSettled(updateTaskPromises);
       } catch (err) {
         console.log(
           '🚀 ~ file: tasks.service.ts:924 ~ TasksService ~ err:',
@@ -1760,7 +1775,7 @@ export class TasksService {
     }
   }
 
-   getHourFromMinutes(min: number) {
+  getHourFromMinutes(min: number) {
     if (!min) return 0;
     const hour = Number((min / 60).toFixed(2));
     return hour;
