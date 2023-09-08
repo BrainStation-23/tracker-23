@@ -15,6 +15,9 @@ import { TasksDatabase } from 'src/database/tasks';
 import { AuthService } from '../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { EmailService } from '../email/email.service';
+import { ProjectDatabase } from 'src/database/projects';
+import { SprintDatabase } from 'src/database/sprints';
+import { SprintTaskDatabase } from 'src/database/sprintTasks';
 
 @Module({
   imports: [HttpModule.register({})],
@@ -33,6 +36,9 @@ import { EmailService } from '../email/email.service';
     AuthService,
     JwtService,
     EmailService,
+    ProjectDatabase,
+    SprintDatabase,
+    SprintTaskDatabase,
   ],
   controllers: [WebhooksController],
 })
