@@ -22,33 +22,39 @@ export class WebhooksService {
   ) {}
 
   async getWebhooks(user: User) {
+    const userIntegrationIds: any[] = [];
     const getUserIntegrationList =
       await this.integrationsService.getUserIntegrations(user);
-    return getUserIntegrationList.map(async (userIntegration: any) => {
-      await this.getAllWebhooks(user, userIntegration);
+    getUserIntegrationList.map(async (userIntegration: any) => {
+      userIntegrationIds.push(userIntegration.id);
     });
+    return await this.getAllWebhooks(user, userIntegrationIds);
   }
 
-  async getAllWebhooks(user: User, userIntegration: UserIntegration) {
-    const updated_integration =
-      await this.integrationsService.getUpdatedUserIntegration(
-        user,
-        userIntegration.id,
-      );
-    if (!updated_integration) {
-      return null;
+  async getAllWebhooks(user: User, userIntegrationIds: number[]) {
+    const webhooks = [];
+    for (let index = 0, len = userIntegrationIds.length; index < len; index++) {
+      const updated_integration =
+        await this.integrationsService.getUpdatedUserIntegration(
+          user,
+          userIntegrationIds[index],
+        );
+      if (!updated_integration) {
+        return [];
+      }
+      const url = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/webhook`;
+      const config = {
+        method: 'get',
+        url,
+        headers: {
+          Authorization: `Bearer ${updated_integration.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      };
+      const webhookJira = (await axios(config)).data;
+      webhooks.push(webhookJira);
     }
-
-    const url = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/webhook`;
-    const config = {
-      method: 'get',
-      url,
-      headers: {
-        Authorization: `Bearer ${updated_integration.accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    };
-    return (await axios(config)).data;
+    return webhooks;
   }
 
   async handleWebhook(payload: any) {
@@ -202,8 +208,19 @@ export class WebhooksService {
         },
         data: formateReqBody,
       };
-
-      const webhook = await (await axios(config)).data;
+      let webhook;
+      try {
+        webhook = await (await axios(config)).data;
+        console.log(
+          '🚀 ~ file: webhooks.service.ts:217 ~ WebhooksService ~ registerWebhook ~ webhook:',
+          webhook,
+        );
+      } catch (err) {
+        console.log(
+          '🚀 ~ file: webhooks.service.ts:223 ~ WebhooksService ~ registerWebhook ~ err:',
+          err,
+        );
+      }
 
       const currentDate = new Date(Date.now());
       currentDate.setDate(currentDate.getDate() + 30);

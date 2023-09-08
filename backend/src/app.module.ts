@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ExportModule } from './module/export/export.module';
-// import { WebhooksModule } from './webhooks/webhooks.module';
 import { TestModule } from './test/test.module';
 import { AuthModule } from './module/auth/auth.module';
 import { PrismaModule } from './module/prisma/prisma.module';
@@ -16,6 +15,7 @@ import { EmailModule } from './module/email/email.module';
 import { PrismaModule2 } from './module/prisma2/prisma.module';
 import { DataMigrationModule } from './module/data_migration/data_migration.module';
 import { ProjectsModule } from './module/projects/projects.module';
+import { WebhooksModule } from './module/webhooks/webhooks.module';
 
 @Module({
   imports: [
@@ -31,7 +31,7 @@ import { ProjectsModule } from './module/projects/projects.module';
     WorkspacesModule,
     IntegrationsModule,
     ExportModule,
-    // WebhooksModule,
+    WebhooksModule,
     NotificationModule,
     SprintsModule,
     JiraModule,
