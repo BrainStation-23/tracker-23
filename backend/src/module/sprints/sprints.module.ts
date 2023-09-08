@@ -11,6 +11,8 @@ import { SprintDatabase } from 'src/database/sprints';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
 import { TasksDatabase } from 'src/database/tasks';
 import { WorkspaceDatabase } from 'src/database/workspaces';
+import { IntegrationDatabase } from 'src/database/integrations';
+import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 
 @Module({
   imports: [HttpModule.register({}), IntegrationsModule],
@@ -23,6 +25,8 @@ import { WorkspaceDatabase } from 'src/database/workspaces';
     SprintDatabase,
     SprintTaskDatabase,
     TasksDatabase,
+    IntegrationDatabase,
+    UserIntegrationDatabase,
   ],
   controllers: [SprintsController],
   exports: [SprintsService],

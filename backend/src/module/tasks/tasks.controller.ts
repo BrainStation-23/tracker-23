@@ -22,11 +22,9 @@ import {
   CreateTaskDto,
   EstimationReqBodyDto,
   GetTaskQuery,
-  GetTeamTaskQuery,
   StatusReqBodyDto,
   TimeSpentReqBodyDto,
   UpdatePinDto,
-  GetTeamTaskQueryType,
 } from './dto';
 import { TasksService } from './tasks.service';
 @Controller('tasks')
@@ -81,7 +79,7 @@ export class TasksController {
   async callSync(@GetUser() user: User) {
     return await this.tasksService.getCallSync(user);
   }
-  
+
   @Get('sync/:projectId')
   @UseGuards(JwtAuthGuard)
   async syncAndGetTasks(
