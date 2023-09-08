@@ -34,11 +34,35 @@ export class ProjectDatabase {
         where: filter,
         include: {
           statuses: true,
-        }
+        },
       });
     } catch (error) {
       console.log(error);
       return null;
+    }
+  }
+
+  async getProjectById(projectId: number): Promise<Project | null> {
+    try {
+      return await this.prisma.project.findUnique({
+        where: {
+          id: projectId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getProjects(filter: Record<string, any>): Promise<Project[] | []> {
+    try {
+      return await this.prisma.project.findMany({
+        where: filter,
+      });
+    } catch (error) {
+      console.log(error);
+      return [];
     }
   }
 }

@@ -39,7 +39,7 @@ export class MyGateway implements OnModuleInit {
       return next();
     });
     this.server.on('connection', async (socket: any) => {
-      console.log('Connected to', socket.user.firstName, 'id', socket.id);
+      //console.log('Connected to', socket.user.firstName, 'id', socket.id);
     });
     this.server.on('disconnect', (socket) => {
       console.log('disconnect', socket.id);
@@ -48,7 +48,7 @@ export class MyGateway implements OnModuleInit {
 
   @SubscribeMessage('onNotification')
   onNewNotification(@MessageBody() body: any): void {
-    console.log('🚀 ~ file: notification.ts:65 ~ MyGateway ~ Body:', body);
+    //console.log('🚀 ~ file: notification.ts:65 ~ MyGateway ~ Body:', body);
     this.server.emit('onNotification', {
       msg: 'New message',
       content: body,
@@ -56,7 +56,7 @@ export class MyGateway implements OnModuleInit {
   }
 
   sendNotification(eventName: string, data: any) {
-    console.log(eventName, data);
+    //console.log(eventName, data);
     this.server.emit(eventName, data);
   }
 }

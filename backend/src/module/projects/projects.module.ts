@@ -14,6 +14,8 @@ import { EmailService } from '../email/email.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
 import { TasksDatabase } from 'src/database/tasks';
 import { ProjectDatabase } from '../../database/projects';
+import { SprintDatabase } from 'src/database/sprints';
+import { SprintTaskDatabase } from 'src/database/sprintTasks';
 
 @Module({
   imports: [HttpModule.register({}), IntegrationsModule],
@@ -30,6 +32,8 @@ import { ProjectDatabase } from '../../database/projects';
     WorkspaceDatabase,
     TasksDatabase,
     ProjectDatabase,
+    SprintDatabase,
+    SprintTaskDatabase,
   ],
   controllers: [ProjectsController],
   exports: [ProjectsService],

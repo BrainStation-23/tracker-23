@@ -144,11 +144,11 @@ export class AuthService {
 
   async googleLogin(req: any) {
     if (!req.user) {
-      console.log('No user from google');
+      //console.log('No user from google');
       return 'No user from google';
     }
-    console.log(req.user);
-    console.log('User information from google...');
+    //console.log(req.user);
+    //console.log('User information from google...');
     const queryData = {
       email: req.user.email,
       firstName: req.user.firstName,
@@ -160,7 +160,7 @@ export class AuthService {
         where: { email: req.user.email },
       });
       if (oldUser) {
-        console.log('Old User Found');
+        //console.log('Old User Found');
         if (!oldUser.activeWorkspaceId) {
           const doesExist = await this.prisma.userWorkspace.findFirst({
             where: {

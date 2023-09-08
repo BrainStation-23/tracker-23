@@ -94,7 +94,7 @@ export class WebhooksService {
       });
     } else if (doesExistWebhook && jiraEvent === 'jira:issue_updated') {
       let sendToModify;
-      console.log(payload);
+      //console.log(payload);
       if (
         payload.changelog.items[0].field === 'summary' ||
         payload.changelog.items[0].field === 'priority' ||
@@ -108,7 +108,7 @@ export class WebhooksService {
         payload.changelog.items[0].field,
         sendToModify,
       );
-      console.log(toBeUpdateField);
+      //console.log(toBeUpdateField);
 
       await this.prisma.task.updateMany({
         where: { integratedTaskId: Number(payload.issue.id) },
@@ -197,7 +197,7 @@ export class WebhooksService {
           },
         ],
       };
-      // console.log(formateReqBody);
+      // //console.log(formateReqBody);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook`;
       const config = {
         method: 'post',
@@ -261,7 +261,7 @@ export class WebhooksService {
       const jiraReqBody = {
         webhookIds: [reqBody.webhookId],
       };
-      console.log(jiraReqBody);
+      //console.log(jiraReqBody);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook`;
       const config = {
         method: 'delete',
@@ -316,7 +316,7 @@ export class WebhooksService {
       };
 
       const webhooks = (await axios(config)).data;
-      console.log('Get failed', webhooks);
+      //console.log('Get failed', webhooks);
       return webhooks;
     } catch (err) {
       console.log(err.message);
@@ -336,7 +336,7 @@ export class WebhooksService {
       if (!updated_integration) {
         return null;
       }
-      console.log(reqBody);
+      //console.log(reqBody);
       const body = {
         webhookIds: [reqBody.webhookId],
       };
@@ -369,7 +369,7 @@ export class WebhooksService {
             expirationDate: time,
           },
         }));
-      console.log(updatedLocal);
+      //console.log(updatedLocal);
       return updatedLocal;
     } catch (err) {
       console.log(err.message);

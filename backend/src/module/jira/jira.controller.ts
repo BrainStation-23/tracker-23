@@ -20,8 +20,8 @@ export class JiraController {
 
   @Get('callback')
   callback(@Req() req: Request) {
-    console.log(req.headers);
-    console.log(req.query);
+    //console.log(req.headers);
+    //console.log(req.query);
   }
 
   @UseGuards(JwtAuthGuard)
