@@ -65,6 +65,10 @@ export class IntegrationsService {
 
   async getUpdatedUserIntegration(user: User, userIntegrationId: number) {
     try {
+      console.log(
+        '🚀 ~ file: integrations.service.ts:67 ~ IntegrationsService ~ getUpdatedUserIntegration ~ userIntegrationId:',
+        userIntegrationId,
+      );
       const url = 'https://auth.atlassian.com/oauth/token';
       const headers: any = { 'Content-Type': 'application/json' };
       if (!user.activeWorkspaceId)
@@ -74,10 +78,10 @@ export class IntegrationsService {
           id: userIntegrationId,
         },
       });
-      console.log(
-        '🚀 ~ file: integrations.service.ts:60 ~ IntegrationsService ~ getUpdatedUserIntegration ~ userIntegration:',
-        userIntegration,
-      );
+      // console.log(
+      //   '🚀 ~ file: integrations.service.ts:60 ~ IntegrationsService ~ getUpdatedUserIntegration ~ userIntegration:',
+      //   userIntegration,
+      // );
 
       // const integration = await this.prisma.integration.findFirst({
       //   where: { userId: user.id, type: IntegrationType.JIRA, id: integrationID },
@@ -96,16 +100,17 @@ export class IntegrationsService {
         client_secret: this.config.get('JIRA_SECRET_KEY'),
         refresh_token: userIntegration?.refreshToken,
       };
+
       let tokenResp;
       try {
         tokenResp = (
           await lastValueFrom(this.httpService.post(url, data, headers))
         ).data;
-        console.log(
-          '🚀 ~ file: integrations.service.ts:82 ~ IntegrationsService ~ getUpdatedUserIntegration ~ tokenResp:',
-          tokenResp,
-        );
       } catch (err) {
+        console.log(
+          '🚀 ~ file: integrations.service.ts:118 ~ IntegrationsService ~ getUpdatedUserIntegration ~ err:',
+          err,
+        );
         throw new APIException(
           'Can not update user integration',
           HttpStatus.INTERNAL_SERVER_ERROR,
