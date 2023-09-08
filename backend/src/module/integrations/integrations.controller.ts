@@ -21,7 +21,7 @@ export class IntegrationsController {
   @UseGuards(JwtAuthGuard)
   @Delete('user/:id') //integration id
   async deleteIntegration(@GetUser() user: User, @Param('id') id: number) {
-    return await this.integrationsService.deleteIntegration(user, id);
+    return await this.integrationsService.deleteIntegration(user, +id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -33,7 +33,7 @@ export class IntegrationsController {
   ) {
     return await this.integrationsService.deleteIntegrationByAdmin(
       user,
-      integrationId,
+      +integrationId,
     );
   }
 }
