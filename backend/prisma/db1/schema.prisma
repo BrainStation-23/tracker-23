@@ -206,7 +206,7 @@ model Task {
   description        String?
   assigneeId         String?
   projectName        String?
-  estimation         Decimal?        @db.Decimal(5, 2)
+  estimation         Float?
   status             String?         @default("To Do")
   statusCategoryName String?         @default("TO_DO")
   due                DateTime?

@@ -167,6 +167,11 @@ export class TasksService {
           );
         }
       }
+
+      console.log(
+        '🚀 ~ file: tasks.service.ts:172 ~ TasksService ~ getTasks ~ tasks:',
+        tasks,
+      );
       return tasks;
     } catch (err) {
       return [];
