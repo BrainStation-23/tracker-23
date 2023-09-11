@@ -18,6 +18,8 @@ import { EmailService } from '../email/email.service';
 import { ProjectDatabase } from 'src/database/projects';
 import { SprintDatabase } from 'src/database/sprints';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
+import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import { IntegrationDatabase } from 'src/database/integrations';
 
 @Module({
   imports: [HttpModule.register({})],
@@ -39,6 +41,9 @@ import { SprintTaskDatabase } from 'src/database/sprintTasks';
     ProjectDatabase,
     SprintDatabase,
     SprintTaskDatabase,
+    UserIntegrationDatabase,
+    UserIntegrationDatabase,
+    IntegrationDatabase,
   ],
   controllers: [WebhooksController],
 })
