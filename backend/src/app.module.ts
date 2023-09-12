@@ -16,6 +16,7 @@ import { PrismaModule2 } from './module/prisma2/prisma.module';
 import { DataMigrationModule } from './module/data_migration/data_migration.module';
 import { ProjectsModule } from './module/projects/projects.module';
 import { WebhooksModule } from './module/webhooks/webhooks.module';
+import { UsersModule } from './module/user/users.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { WebhooksModule } from './module/webhooks/webhooks.module';
     DataMigrationModule,
     EmailModule,
     ProjectsModule,
+    UsersModule,
   ],
 })
 export class AppModule {}
