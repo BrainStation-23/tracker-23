@@ -55,7 +55,7 @@ model UserWorkspace {
   workspaceId Int
   inviter       User?       @relation("InviterUser", fields: [inviterUserId], references: [id])
   inviterUserId Int?
-
+  designation Designation @default(DEVELOPER)
   // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
   // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
 }
@@ -81,7 +81,6 @@ model User {
   hash              String?
   firstName         String?
   lastName          String?
-  role              UserRole @default(USER)
   activeWorkspaceId Int?
   picture           String?
   createdAt         DateTime @default(now())
@@ -347,4 +346,9 @@ enum UserWorkspaceStatus {
 enum UserRole {
   USER
   ADMIN
+}
+
+enum Designation {
+  DEVELOPER
+  MANAGER
 }
