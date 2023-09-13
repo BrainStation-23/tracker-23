@@ -9,7 +9,6 @@ import { TasksService } from '../tasks/tasks.service';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { SessionDatabase } from 'src/database/sessions';
 import { WorkspaceDatabase } from 'src/database/workspaces';
-import { MyGateway } from '../notifications/socketGateway';
 import { SprintsService } from '../sprints/sprints.service';
 import { TasksDatabase } from 'src/database/tasks';
 import { AuthService } from '../auth/auth.service';
@@ -20,9 +19,10 @@ import { SprintDatabase } from 'src/database/sprints';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { IntegrationDatabase } from 'src/database/integrations';
+import { NotificationModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [HttpModule.register({})],
+  imports: [HttpModule.register({}), NotificationModule],
   providers: [
     WebhooksService,
     IntegrationsService,
@@ -32,7 +32,6 @@ import { IntegrationDatabase } from 'src/database/integrations';
     UserWorkspaceDatabase,
     SessionDatabase,
     WorkspaceDatabase,
-    MyGateway,
     SprintsService,
     TasksDatabase,
     AuthService,

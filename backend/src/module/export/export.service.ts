@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { IntegrationType, Task, User, UserIntegration } from '@prisma/client';
+import { IntegrationType, Task, User } from '@prisma/client';
 import * as tmp from 'tmp';
 import { Workbook } from 'exceljs';
 import { Response } from 'express';

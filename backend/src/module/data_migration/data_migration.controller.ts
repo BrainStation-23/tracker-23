@@ -1,5 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/guard';
+import { Controller, Get } from '@nestjs/common';
 import { DataMigrationService } from './data_migration.service';
 
 @Controller('migrate')

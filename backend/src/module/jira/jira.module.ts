@@ -5,7 +5,6 @@ import { SprintsModule } from 'src/module/sprints/sprints.module';
 import { JiraController } from './jira.controller';
 import { JiraService } from './jira.service';
 import { TasksService } from 'src/module/tasks/tasks.service';
-import { MyGateway } from 'src/module/notifications/socketGateway';
 import { AuthService } from 'src/module/auth/auth.service';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { WorkspacesService } from 'src/module/workspaces/workspaces.service';
@@ -15,14 +14,14 @@ import { TasksDatabase } from 'src/database/tasks';
 import { ProjectDatabase } from 'src/database/projects';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import { NotificationModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [HttpModule.register({}), SprintsModule],
+  imports: [HttpModule.register({}), SprintsModule, NotificationModule],
   controllers: [JiraController],
   providers: [
     JiraService,
     TasksService,
-    MyGateway,
     AuthService,
     JwtService,
     IntegrationsService,

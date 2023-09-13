@@ -20,14 +20,14 @@ import { SprintDatabase } from 'src/database/sprints';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { IntegrationDatabase } from 'src/database/integrations';
+import { NotificationModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [HttpModule.register({}), IntegrationsModule],
+  imports: [HttpModule.register({}), IntegrationsModule, NotificationModule],
   controllers: [SessionsController],
   providers: [
     SessionsService,
     TasksService,
-    MyGateway,
     AuthService,
     JwtService,
     IntegrationsService,

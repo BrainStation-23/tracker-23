@@ -4,7 +4,6 @@ import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 import { JwtService } from '@nestjs/jwt';
 import { IntegrationsModule } from '../integrations/integrations.module';
-import { MyGateway } from '../notifications/socketGateway';
 import { TasksService } from '../tasks/tasks.service';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
@@ -18,11 +17,11 @@ import { SprintDatabase } from 'src/database/sprints';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { IntegrationDatabase } from 'src/database/integrations';
+import { NotificationModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [HttpModule.register({}), IntegrationsModule],
+  imports: [HttpModule.register({}), IntegrationsModule, NotificationModule],
   providers: [
-    MyGateway,
     TasksService,
     IntegrationsService,
     WorkspacesService,
