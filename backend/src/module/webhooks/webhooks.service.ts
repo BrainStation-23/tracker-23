@@ -3,7 +3,6 @@ import {
   IntegrationType,
   SessionStatus,
   User,
-  UserIntegration,
 } from '@prisma/client';
 import axios from 'axios';
 import { RegisterWebhookDto, extendWebhookLifeReqDto } from './dto/index.js';

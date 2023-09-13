@@ -6,7 +6,6 @@ import { SprintsModule } from '../sprints/sprints.module';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 import { IntegrationsModule } from '../integrations/integrations.module';
-import { MyGateway } from '../notifications/socketGateway';
 import { AuthService } from '../auth/auth.service';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
@@ -19,12 +18,12 @@ import { SprintDatabase } from 'src/database/sprints';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import { NotificationModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [HttpModule.register({}), SprintsModule, IntegrationsModule],
+  imports: [HttpModule.register({}), SprintsModule, IntegrationsModule, NotificationModule],
   providers: [
     TasksService,
-    MyGateway,
     AuthService,
     JwtService,
     IntegrationsService,
