@@ -35,7 +35,6 @@ export class UsersDatabase {
             email: true,
             firstName: true,
             lastName: true,
-            role: true,
           },
         }))
       );
