@@ -242,7 +242,6 @@ export class WorkspaceDatabase {
                   id: true,
                   firstName: true,
                   lastName: true,
-                  role: true,
                   picture: true,
                 },
               },
