@@ -30,6 +30,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
     dayjs(),
     dayjs(),
   ]);
+  const [startDate, setStartDate] = useState(dayjs());
   const dateFormat = "DD/MM/YYYY";
   const [form] = Form.useForm();
   const onFinish = async (values: CreateTaskValues) => {
@@ -501,7 +502,9 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
           >
             <DatePicker
               defaultValue={dayjs()}
-              // onChange={(e) => handelDateChange(e)}
+              onChange={(e) => {
+                setStartDate(e);
+              }}
               className="m-0"
               // value={dateValue}
               // disabled={radioButtonValue !== 1}
@@ -541,7 +544,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
           <Checkbox onChange={onCheckBoxChange}>Recurrent Task</Checkbox>
         </Form.Item>
         {recurrentTask && (
-          <RecurrentTaskCreationComponent />
+          <RecurrentTaskCreationComponent startDate={startDate} />
           // <div className="grid w-full grid-cols-12 gap-3">
           //     <Form.Item
           //         name="frequency"
