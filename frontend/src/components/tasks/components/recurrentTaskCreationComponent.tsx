@@ -1,4 +1,3 @@
-import { QuestionCircleOutlined } from "@ant-design/icons";
 import {
   Checkbox,
   DatePicker,
@@ -8,10 +7,13 @@ import {
   Select,
   Tooltip,
 } from "antd";
+import { Option } from "antd/es/mentions";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const RecurrentTaskCreationComponent = () => {
+import { QuestionCircleOutlined } from "@ant-design/icons";
+
+const RecurrentTaskCreationComponent = ({ startDate }: any) => {
   const handleFrequencyChange = (value: string) => {
     console.log(`Selected: ${value}`);
     setFrequencyValue(value);
@@ -49,6 +51,7 @@ const RecurrentTaskCreationComponent = () => {
   const handelOccurrenceChange = (value: number) => {
     setOccurrenceValue(value);
   };
+  useEffect(() => {}, [startDate]);
 
   return (
     <>
@@ -124,6 +127,23 @@ const RecurrentTaskCreationComponent = () => {
             </Form.Item>
           </div>
         )}
+        {/* {frequencyValue === "MONTH" && (
+          <>
+            <Form.Item
+              name="monthlyRepeat"
+              rules={[{ required: true }]}
+              className="m-0 w-[150px]"
+              initialValue={""}
+            >
+              <Select
+                placeholder="Select Frequency"
+                onChange={handleFrequencyChange}
+              >
+                <Option value={""}>Monthly on {startDate?.date()}</Option>
+              </Select>
+            </Form.Item>
+          </>
+        )} */}
         <div>
           <div className=" font-medium">Ends</div>
           <Radio.Group
