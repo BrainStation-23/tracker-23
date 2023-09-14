@@ -8,12 +8,21 @@ import {
   Tooltip,
 } from "antd";
 import { Option } from "antd/es/mentions";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
 
 import { QuestionCircleOutlined } from "@ant-design/icons";
+import { capitalizeFirstLetter, getPositionSuffix } from "@/services/helpers";
 
-const RecurrentTaskCreationComponent = ({ startDate }: any) => {
+type Props = {
+  startDate: Dayjs;
+};
+
+const RecurrentTaskCreationComponent = ({ startDate }: Props) => {
+  console.log(
+    "🚀 ~ file: recurrentTaskCreationComponent.tsx:17 ~ RecurrentTaskCreationComponent ~ startDate:",
+    startDate
+  );
   const handleFrequencyChange = (value: string) => {
     console.log(`Selected: ${value}`);
     setFrequencyValue(value);
@@ -22,14 +31,18 @@ const RecurrentTaskCreationComponent = ({ startDate }: any) => {
   const [occurrenceValue, setOccurrenceValue] = useState(1);
   const [dateValue, setDateValue] = useState(dayjs());
   const [frequencyValue, setFrequencyValue] = useState("");
+  console.log(
+    "🚀 ~ file: recurrentTaskCreationComponent.tsx:33 ~ RecurrentTaskCreationComponent ~ frequencyValue:",
+    frequencyValue
+  );
   const [week, setWeek] = useState([
-    { day: "Sunday", checked: false },
-    { day: "Monday", checked: false },
-    { day: "Tuesday", checked: false },
-    { day: "Wednesday", checked: false },
-    { day: "Thursday", checked: false },
-    { day: "Friday", checked: false },
-    { day: "Saturday", checked: false },
+    { day: "SUNDAY", checked: false },
+    { day: "MONDAY", checked: false },
+    { day: "TUESDAY", checked: false },
+    { day: "WEDNESDAY", checked: false },
+    { day: "THURSDAY", checked: false },
+    { day: "FRIDAY", checked: false },
+    { day: "SATURDAY", checked: false },
   ]);
   const handleDayCheck = (value: boolean, dayName: string) => {
     console.log(
@@ -51,8 +64,37 @@ const RecurrentTaskCreationComponent = ({ startDate }: any) => {
   const handelOccurrenceChange = (value: number) => {
     setOccurrenceValue(value);
   };
+  const validateEndDate = (_: any, value: any) => {
+    if (value && startDate.isValid()) {
+      const endDate = dayjs(value);
+      if (
+        endDate.isSame(startDate, "day") ||
+        endDate.isAfter(startDate, "day")
+      ) {
+        return Promise.resolve();
+      }
+      return Promise.reject(
+        "End date must be greater than or equal to start date"
+      );
+    }
+    return Promise.reject("Please select a valid end date");
+  };
+
   useEffect(() => {}, [startDate]);
 
+  const getDayFreq = () => {
+    const dayNumber = startDate.date();
+    const dayOfWeek = capitalizeFirstLetter(
+      week[dayNumber % 7].day.toLowerCase()
+    );
+    const totalDaysInMonth = startDate.daysInMonth();
+    if (totalDaysInMonth - dayNumber <= 7) {
+      return "last " + dayOfWeek;
+    } else {
+      return getPositionSuffix(Math.round(dayNumber / 7)) + " " + dayOfWeek;
+    }
+  };
+  useEffect(() => {}, [dateValue]);
   return (
     <>
       <div className="flex flex-col gap-4">
@@ -127,23 +169,22 @@ const RecurrentTaskCreationComponent = ({ startDate }: any) => {
             </Form.Item>
           </div>
         )}
-        {/* {frequencyValue === "MONTH" && (
-          <>
-            <Form.Item
-              name="monthlyRepeat"
-              rules={[{ required: true }]}
-              className="m-0 w-[150px]"
-              initialValue={""}
-            >
-              <Select
-                placeholder="Select Frequency"
-                onChange={handleFrequencyChange}
-              >
-                <Option value={""}>Monthly on {startDate?.date()}</Option>
-              </Select>
-            </Form.Item>
-          </>
-        )} */}
+        {frequencyValue === "MONTH" && startDate && (
+          <Form.Item
+            name="monthlyRepeat"
+            rules={[{ required: true }]}
+            className="m-0 w-[250px]"
+            initialValue={"1"}
+          >
+            <Select
+              placeholder="Select Frequency"
+              options={[
+                { value: "1", label: `Monthly on ${startDate.date()}` },
+                { value: "2", label: `Monthly on ${getDayFreq()}` },
+              ]}
+            />
+          </Form.Item>
+        )}
         <div>
           <div className=" font-medium">Ends</div>
           <Radio.Group
@@ -158,8 +199,11 @@ const RecurrentTaskCreationComponent = ({ startDate }: any) => {
                 <Form.Item
                   name={radioButtonValue === 1 ? "endDate" : null}
                   initialValue={dateValue}
-                  rules={[{ required: true }]}
                   className="m-0"
+                  rules={[
+                    { required: true, message: "Please select an end date" },
+                    { validator: validateEndDate },
+                  ]}
                 >
                   <DatePicker
                     defaultValue={dayjs()}

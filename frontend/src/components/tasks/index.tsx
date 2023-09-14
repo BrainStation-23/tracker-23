@@ -85,24 +85,26 @@ const TasksPage = () => {
     setLoading(true);
     try {
       const res = await userAPI.createTask(data);
-      message.success("Task created successfully");
-      if (data.isRecurrent) {
-        setViewModalOpen(false);
-        getTasks();
-      } else {
-        setTasks((tasks) => [res, ...tasks]);
-        if (tasks) {
-          tasks.map((task) => {
-            if (
-              task.sessions &&
-              task.sessions[task.sessions?.length - 1]?.status === "STARTED"
-            ) {
-              setRunningTask(task);
-            }
-          });
+      if (res) {
+        message.success("Task created successfully");
+        if (data.isRecurrent) {
+          setViewModalOpen(false);
+          getTasks();
+        } else {
+          setTasks((tasks) => [res, ...tasks]);
+          if (tasks) {
+            tasks.map((task) => {
+              if (
+                task.sessions &&
+                task.sessions[task.sessions?.length - 1]?.status === "STARTED"
+              ) {
+                setRunningTask(task);
+              }
+            });
+          }
         }
-        setViewModalOpen(false);
       }
+      setViewModalOpen(false);
     } catch (error) {
       message.error("Error creating task");
       setViewModalOpen(false);

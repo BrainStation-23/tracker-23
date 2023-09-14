@@ -116,7 +116,7 @@ export async function logoutRest() {
 
 export async function createTaskRest(data: CreateTaskDto) {
   try {
-    const res = await axios.post(`${apiEndPoints.tasks}`, data);
+    const res = await axios.post(`${apiEndPoints.tasks}/create`, data);
     return res.data;
   } catch (error: any) {
     return false;

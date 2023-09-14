@@ -18,12 +18,14 @@ export type CreateTaskDto = {
 export type CreateTaskValues = {
   title: string;
   estimation: number;
+  projectId: number;
   priority: PriorityDto;
   label: string[];
   isRecurrent: boolean;
   frequency?: FrequencyDto;
   timeRange?: Date[];
-  dateRange?: Date[];
+  startDate: Date;
+  // dateRange?: Date[];
 };
 
 export type TaskDto = {
