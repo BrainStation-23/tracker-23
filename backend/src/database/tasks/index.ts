@@ -1,14 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { IntegrationType, SessionStatus, User } from '@prisma/client';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { IntegrationType, SessionStatus, Settings, User } from '@prisma/client';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 import { CreateTaskDto } from 'src/module/tasks/dto';
-import * as dayjs from 'dayjs';
 import { GetActiveSprintTasks } from 'src/module/sprints/dto/get.active.sprint.tasks.filter.dto';
+import { APIException } from 'src/module/exception/api.exception';
 
 @Injectable()
 export class TasksDatabase {
   constructor(private prisma: PrismaService) {}
-  
+
   async getSprintTasks(
     userWorkspaceId: number,
     taskIds: number[],
@@ -136,6 +136,29 @@ export class TasksDatabase {
     } catch (error) {
       console.log(error);
       return [];
+    }
+  }
+
+  async getSettings(user: User): Promise<Settings | null>{
+    try {
+      const userWorkspace = user.activeWorkspaceId && await this.prisma.userWorkspace.findFirst({
+        where: {
+          userId: user.id,
+          workspaceId: user.activeWorkspaceId,
+        },
+      });
+
+      if(!userWorkspace) throw new APIException('No workspace detected', HttpStatus.BAD_REQUEST);
+
+      return await this.prisma.settings.findFirst({
+        where: {
+          userId: user.id,
+          userWorkspaceId: userWorkspace.id,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
     }
   }
 }

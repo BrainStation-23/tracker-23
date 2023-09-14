@@ -67,4 +67,22 @@ export class UsersDatabase {
       return null;
     }
   }
+
+  async createSettings(settings: {
+    userId: number;
+    userWorkspaceId: number;
+    syncTime: number;
+  }) {
+    try {
+      return await this.prisma.settings.create({
+        data: settings,
+      });
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: index.ts:80 ~ UsersDatabase ~ error:',
+        error,
+      );
+      return null;
+    }
+  }
 }
