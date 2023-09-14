@@ -20,11 +20,12 @@ const SprintSelectorComponent = ({ sprints, setSprints }: Props) => {
   const sprintList = useAppSelector(
     (state: RootState) => state.tasksSlice.sprintList
   );
-  const Options: { value: number; label: string }[] = [];
+  const Options: { value: number; label: string; key: number }[] = [];
   for (const st of sprintList) {
     Options.push({
       value: st.id,
       label: st.name,
+      key: st.id,
     });
   }
 
@@ -33,6 +34,7 @@ const SprintSelectorComponent = ({ sprints, setSprints }: Props) => {
       Options.push({
         value: val.id,
         label: val.name,
+        key: val.id,
       });
     }
   }

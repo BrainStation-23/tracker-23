@@ -13,7 +13,7 @@ import {
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import { SizeType } from "antd/es/config-provider/SizeContext";
 import dayjs from "dayjs";
-import { CreateTaskValues } from "models/tasks";
+import { CreateTaskDto, CreateTaskValues } from "models/tasks";
 import React, { useState } from "react";
 
 import PrimaryButton from "@/components/common/buttons/primaryButton";
@@ -22,6 +22,8 @@ import { localFormat, timeFormat } from "@/components/datePicker";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import RecurrentTaskCreationComponent from "./recurrentTaskCreationComponent";
 import Link from "next/link";
+import { useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
 
 const { RangePicker } = DatePicker;
 
@@ -38,11 +40,11 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
       "🚀 ~ file: createTaskComponent.tsx:35 ~ onFinish ~ values:",
       values
     );
-    // setCreatingTask(true);
-    // const formattedValues: CreateTaskDto = getFormattedValues(values);
-    // const res = await createTask(formattedValues);
+    setCreatingTask(true);
+    const formattedValues: CreateTaskDto = getFormattedValues(values);
+    const res = await createTask(formattedValues);
 
-    // setCreatingTask(false);
+    setCreatingTask(false);
   };
 
   const demoData = [
@@ -377,9 +379,15 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
       workspaceId: 2,
     },
   ];
+  const allProjects = useAppSelector(
+    (state: RootState) => state.projectList.projects
+  );
+  const localProjects = allProjects
+    ? allProjects.filter((project) => project.source === "T23")
+    : [];
 
-  const projectData = demoData
-    ? demoData.map((data: any) => {
+  const projectData = localProjects
+    ? localProjects.map((data: any) => {
         return {
           value: data.id.toString(),
           label: data.projectName,
@@ -501,7 +509,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
             className="col-span-1 m-0"
           >
             <DatePicker
-              defaultValue={dayjs()}
+              // defaultValue={dayjs()}
               onChange={(e) => {
                 setStartDate(e);
               }}
@@ -515,7 +523,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
             label="Time Range"
             labelCol={{ span: 24 }}
             className="col-span-1"
-            rules={[{ required: true }]}
+            // rules={[{ required: true }]}
           >
             <TimePicker.RangePicker use12Hours format="h:mm a" />
           </Form.Item>
@@ -650,35 +658,20 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
 export default CreateTaskComponent;
 
 const getFormattedValues = (values: CreateTaskValues) => {
-  if (values.isRecurrent)
-    return {
-      title: values.title,
-      estimation:
-        typeof values.estimation !== "number"
-          ? +values.estimation
-          : values.estimation,
-      priority: values.priority,
-      label: values.label ? values.label : [],
-      isRecurrent: values.isRecurrent ? true : false,
-      frequency: values.frequency,
-      startTime: new Date(
-        `${localFormat(values.dateRange[0])} ${timeFormat(values.timeRange[0])}`
-      ),
-      endTime: new Date(
-        `${localFormat(values.dateRange[0])} ${timeFormat(values.timeRange[1])}`
-      ),
-      startDate: localFormat(values.dateRange[0]),
-      endDate: localFormat(values.dateRange[1]),
-    };
-  else
-    return {
-      title: values.title,
-      estimation:
-        typeof values.estimation !== "number"
-          ? +values.estimation
-          : values.estimation,
-      priority: values.priority,
-      label: values.label ? values.label : [],
-      isRecurrent: values.isRecurrent ? true : false,
-    };
+  console.log(
+    "🚀 ~ file: createTaskComponent.tsx:661 ~ getFormattedValues ~ values:",
+    values
+  );
+  return {
+    ...values,
+    estimation:
+      typeof values.estimation !== "number"
+        ? +values.estimation
+        : values.estimation,
+    projectId:
+      typeof values.projectId !== "number"
+        ? +values.projectId
+        : values.projectId,
+    label: values.label ? values.label : [],
+  };
 };
