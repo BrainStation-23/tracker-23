@@ -39,7 +39,6 @@ export class AuthService {
       firstName: dto?.firstName,
       lastName: dto?.lastName,
       hash: await argon.hash(dto?.password),
-      role: Role.USER,
     };
     try {
       const user = await this.prisma.user.create({
@@ -94,6 +93,7 @@ export class AuthService {
     dto.email = email;
 
     const doesExistUser = await this.getUser(dto);
+
     if (doesExistUser) {
       throw new APIException('Email already in Use!', HttpStatus.BAD_REQUEST);
       // const token = await this.createToken(doesExistUser);
