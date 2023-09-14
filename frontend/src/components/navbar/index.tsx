@@ -1,30 +1,25 @@
-import { GetCookie } from "@/services/cookie.service";
-import {
-  Avatar,
-  Button,
-  Dropdown,
-  Menu,
-  MenuProps,
-  message,
-  Space,
-  Tooltip,
-} from "antd";
-import LogOutButton from "../logout/logOutButton";
-import { useRouter } from "next/router";
-import { getLocalStorage } from "@/storage/storage";
-import { useEffect, useState } from "react";
-import { LoginResponseDto } from "models/auth";
-import BellIconSvg from "@/assets/svg/BellIconSvg";
-import { FiChevronDown, FiChevronUp } from "react-icons/fi";
-import { sideMenuOptions } from "../sideMenu";
-import { SyncOutlined } from "@ant-design/icons";
+import { Avatar, Button, Dropdown, MenuProps, Tooltip } from "antd";
 import { userAPI } from "APIs";
+import { LoginResponseDto } from "models/auth";
+import { UserDto } from "models/user";
+import { WorkspaceDto } from "models/workspaces";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+
+import BellIconSvg from "@/assets/svg/BellIconSvg";
 import ProfileIconSvg from "@/assets/svg/ProfileIconSvg";
+import { GetCookie } from "@/services/cookie.service";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
-import NotificationSection from "./components/notificationSection";
+import { getLocalStorage } from "@/storage/storage";
+import { SyncOutlined } from "@ant-design/icons";
+
 import SyncButtonComponent from "../common/buttons/syncButton";
+import LogOutButton from "../logout/logOutButton";
+import { sideMenuOptions } from "../sideMenu";
+import NotificationSection from "./components/notificationSection";
 
 function Navbar() {
   const [userDetails, setUserDetails] = useState<LoginResponseDto>();
@@ -36,7 +31,7 @@ function Navbar() {
   const router = useRouter();
   const path = router.asPath;
   const btnText = path === "/login" ? "Register" : "Login";
-  const access_token = GetCookie("access_token");
+
   const [pageInfo, setPageInfo] = useState([]);
 
   const dispatch = useAppDispatch();
@@ -46,6 +41,12 @@ function Navbar() {
     res && dispatch(setSyncStatus(res));
   };
   const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
+
+  const activeUserWorkspace = getActiveUserWorSpace(
+    useAppSelector((state: RootState) => state.workspacesSlice.workspaces),
+    userInfo
+  );
+
   useEffect(() => {
     const tmp = getLocalStorage("userDetails");
     if (!userDetails && tmp) setUserDetails(tmp);
@@ -203,7 +204,8 @@ function Navbar() {
                       {userDetails?.firstName} {userDetails?.lastName}
                     </div>
                     <div className="font-normal">
-                      {userInfo?.role ? userInfo?.role : "Project Manager"}
+                      {activeUserWorkspace.designation}
+                      {/* {userInfo?.role ? userInfo?.role : "Project Manager"} */}
                     </div>
                   </div>
                 </div>
@@ -227,3 +229,21 @@ function Navbar() {
 }
 
 export default Navbar;
+
+const getActiveUserWorSpace = (
+  allWorkspaces: WorkspaceDto[],
+  userInfo: UserDto
+) => {
+  const activeWorkspace = allWorkspaces
+    ? allWorkspaces.find(
+        (workSpace) => workSpace.id === userInfo.activeWorkspaceId
+      )
+    : null;
+
+  const activeUserWorkspace = activeWorkspace
+    ? activeWorkspace.userWorkspaces?.find(
+        (userWorkspace) => userWorkspace.userId === userInfo.id
+      )
+    : null;
+  return activeUserWorkspace;
+};
