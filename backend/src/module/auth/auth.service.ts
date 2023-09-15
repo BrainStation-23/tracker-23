@@ -1,3 +1,4 @@
+import { UsersDatabase } from 'src/database/users';
 import {
   HttpStatus,
   Injectable,
@@ -31,6 +32,7 @@ export class AuthService {
     private jwt: JwtService,
     private workspacesService: WorkspacesService,
     private emailService: EmailService,
+    private usersDatabase: UsersDatabase,
   ) {}
 
   async createUser(dto: RegisterDto) {
@@ -67,6 +69,8 @@ export class AuthService {
             activeWorkspaceId: workspace.id,
           },
         }));
+
+      updateUser && await this.usersDatabase.createSettings(updateUser);
       return updateUser;
     } catch (err) {
       throw new APIException(

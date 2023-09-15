@@ -3,7 +3,7 @@ import { UsersService } from "./users.service";
 import { GetUser } from "src/decorator";
 import { User } from "@prisma/client";
 import { JwtAuthGuard } from "src/guard";
-import { CreateSettingsReqDto } from "./dto/create.settings.dto";
+import { UpdateSettingsReqDto } from './dto/create.settings.dto';
 
 @Controller('users')
 export class UsersController {
@@ -22,8 +22,11 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('/settings')
-  async createSettings(@GetUser() user: User, @Body() data: CreateSettingsReqDto) {
-    return await this.usersService.createSettings(user, data);
+  @Patch('/settings')
+  async updateSettings(
+    @GetUser() user: User,
+    @Body() data: UpdateSettingsReqDto,
+  ) {
+    return await this.usersService.updateSettings(user, data);
   }
 }

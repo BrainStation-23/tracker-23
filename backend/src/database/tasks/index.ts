@@ -141,19 +141,12 @@ export class TasksDatabase {
 
   async getSettings(user: User){
     try {
-      const userWorkspace = user.activeWorkspaceId && await this.prisma.userWorkspace.findFirst({
+      return user.activeWorkspaceId && await this.prisma.settings.findFirst({
         where: {
-          userId: user.id,
           workspaceId: user.activeWorkspaceId,
-        },
-        select: {
-          settings: true,
+          userId: user.id,
         }
       });
-
-      if(!userWorkspace) throw new APIException('No user workspace detected', HttpStatus.BAD_REQUEST);
-
-      return userWorkspace.settings;
     } catch (error) {
       console.log(error);
       return null;

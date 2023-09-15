@@ -4,11 +4,16 @@ import { User } from "@prisma/client";
 import { WorkspaceDatabase } from 'src/database/workspaces/index';
 import { UsersDatabase } from "src/database/users";
 import { APIException } from "../exception/api.exception";
-import { CreateSettingsReqDto } from "./dto/create.settings.dto";
+import { UpdateSettingsReqDto } from './dto/create.settings.dto';
+import { TasksDatabase } from "src/database/tasks";
 
 @Injectable()
 export class UsersService {
-  constructor(private usersDatabase: UsersDatabase, private workspaceDatabase: WorkspaceDatabase) {}
+  constructor(
+    private usersDatabase: UsersDatabase,
+    private workspaceDatabase: WorkspaceDatabase,
+    private tasksDatabase: TasksDatabase,
+  ) {}
 
   async getUsers(user: User) {
     if (!user || !user.activeWorkspaceId)
@@ -37,14 +42,20 @@ export class UsersService {
     return updateUserRole;
   }
 
-  async createSettings(user: User, data: CreateSettingsReqDto){
-    const userWorkspace = user.activeWorkspaceId && await this.workspaceDatabase.getUserWorkspace(user.id, user.activeWorkspaceId);
-    if(!userWorkspace)
-      throw new APIException('No workspace detected', HttpStatus.BAD_REQUEST);
+  async updateSettings(user: User, data: UpdateSettingsReqDto) {
+    if(!user.activeWorkspaceId) throw new APIException('No workspace detected', HttpStatus.BAD_REQUEST);
 
-    const newSettings = await this.usersDatabase.createSettings({...data, userId: user.id, userWorkspaceId: userWorkspace.id});
-    if(!newSettings) throw new APIException('Could not create settings',HttpStatus.INTERNAL_SERVER_ERROR);
+    const settingsExists = await this.tasksDatabase.getSettings(user);
+    if(!settingsExists)
+      throw new APIException(
+        'Cannot update settings',
+        HttpStatus.BAD_REQUEST,
+      );
 
-    return newSettings;
+    const updatedSettings = await this.usersDatabase.updateSettings(user, data);
+    if (!updatedSettings)
+      throw new APIException('Cannot update settings', HttpStatus.INTERNAL_SERVER_ERROR);
+
+    return updatedSettings;
   }
 }

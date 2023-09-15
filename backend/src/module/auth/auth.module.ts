@@ -12,6 +12,7 @@ import { HttpModule } from '@nestjs/axios';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { EmailService } from '../email/email.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
+import { UsersDatabase } from 'src/database/users';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { WorkspaceDatabase } from 'src/database/workspaces';
     WorkspacesService,
     EmailService,
     WorkspaceDatabase,
-
+    UsersDatabase,
     {
       provide: APP_FILTER,
       useClass: TokenErrorFilter,

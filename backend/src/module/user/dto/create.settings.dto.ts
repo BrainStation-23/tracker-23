@@ -1,6 +1,6 @@
-import { IsNotEmpty, IsOptional } from "class-validator";
+import { IsOptional } from "class-validator";
 
-export class CreateSettingsReqDto {
-  @IsNotEmpty()
+export class UpdateSettingsReqDto {
+  @IsOptional()
   syncTime: number;
 }
