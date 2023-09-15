@@ -237,6 +237,8 @@ export class WorkspaceDatabase {
         select: {
           userWorkspaces: {
             select: {
+              role: true,
+              designation: true,
               user: {
                 select: {
                   id: true,
