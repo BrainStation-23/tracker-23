@@ -221,8 +221,16 @@ export class WorkspacesService {
     }
 
     const users = workspace.userWorkspaces.map((userWorkspace) => {
-      return userWorkspace.user;
+      return {
+        role: userWorkspace.role,
+        designation: userWorkspace.designation,
+        firstName: userWorkspace.user.firstName,
+        lastName: userWorkspace.user.lastName,
+        picture: userWorkspace.user.picture,
+        id: userWorkspace.user.id,
+      };
     });
+
     return users;
   }
 }
