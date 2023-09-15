@@ -59,6 +59,7 @@ export interface apiFunction {
   getJiraSprints: () => Promise<any>;
   getAllProjects: () => Promise<any>;
   getWorkspaceList: () => Promise<any>;
+  getWorkspaceMembers: () => Promise<any>;
   createWorkspace: (data: CreateWorkspaceModel) => Promise<any>;
   updateWorkspace: (data: CreateWorkspaceModel, id: number) => Promise<any>;
   changeWorkspace: (id: number) => Promise<any>;

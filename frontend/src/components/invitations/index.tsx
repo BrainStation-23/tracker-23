@@ -117,7 +117,6 @@ const InvitationsComponent = () => {
 };
 
 export default InvitationsComponent;
-// const demoData: InviteUserWorkspaceDto[] = [
 //   {
 //     id: 1,
 //     role: "ADMIN",

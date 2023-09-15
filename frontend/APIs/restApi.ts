@@ -526,6 +526,15 @@ export async function getWorkspaceListRest() {
     return false;
   }
 }
+
+export async function getWorkspaceMembersRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.members}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
 export async function createWorkspaceRest(data: CreateWorkspaceModel) {
   try {
     const res = await axios.post(`${apiEndPoints.workspaces}`, data);
