@@ -15,6 +15,7 @@ import { ProjectDatabase } from 'src/database/projects';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { NotificationModule } from '../notifications/notifications.module';
+import { UsersDatabase } from 'src/database/users';
 
 @Module({
   imports: [HttpModule.register({}), SprintsModule, NotificationModule],
@@ -32,6 +33,7 @@ import { NotificationModule } from '../notifications/notifications.module';
     ProjectDatabase,
     IntegrationDatabase,
     UserIntegrationDatabase,
+    UsersDatabase,
   ],
 })
 export class JiraModule {}

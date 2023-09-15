@@ -19,9 +19,15 @@ import { SprintTaskDatabase } from 'src/database/sprintTasks';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { NotificationModule } from '../notifications/notifications.module';
+import { UsersDatabase } from 'src/database/users';
 
 @Module({
-  imports: [HttpModule.register({}), SprintsModule, IntegrationsModule, NotificationModule],
+  imports: [
+    HttpModule.register({}),
+    SprintsModule,
+    IntegrationsModule,
+    NotificationModule,
+  ],
   providers: [
     TasksService,
     AuthService,
@@ -37,6 +43,7 @@ import { NotificationModule } from '../notifications/notifications.module';
     SprintTaskDatabase,
     IntegrationDatabase,
     UserIntegrationDatabase,
+    UsersDatabase,
   ],
   controllers: [TasksController],
   exports: [TasksService],
