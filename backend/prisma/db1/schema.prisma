@@ -31,6 +31,8 @@ model Workspace {
   creatorUserId    Int
   tempIntegration  TempIntegration[]
   userIntegrations UserIntegration[]
+
+  settings Settings?
 }
 
 model UserWorkspace {
@@ -93,7 +95,7 @@ model User {
   notifications   Notification[]
   // UserIntegrations    UserIntegration[]
   invitationsSent UserWorkspace[] @relation("InviterUser")
-
+  settings Settings?
   // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
   // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
 }
@@ -294,6 +296,19 @@ model SprintTask {
   taskId   Int
 
   @@unique([sprintId, taskId], name: "sprintTaskIdentifier")
+}
+
+model Settings {
+  id       Int    @id @default(autoincrement())
+  syncTime Int @default(6)
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId Int @unique
+
+  user User @relation(fields: [userId], references: [id])
+  userId Int @unique
+
+  @@unique([id, workspaceId], name: "workspaceSettingsIdentifier")
 }
 
 enum Priority {

@@ -1,14 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { IntegrationType, SessionStatus, User } from '@prisma/client';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { IntegrationType, SessionStatus, Settings, User } from '@prisma/client';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 import { CreateTaskDto } from 'src/module/tasks/dto';
-import * as dayjs from 'dayjs';
 import { GetActiveSprintTasks } from 'src/module/sprints/dto/get.active.sprint.tasks.filter.dto';
+import { APIException } from 'src/module/exception/api.exception';
 
 @Injectable()
 export class TasksDatabase {
   constructor(private prisma: PrismaService) {}
-  
+
   async getSprintTasks(
     userWorkspaceId: number,
     taskIds: number[],
@@ -136,6 +136,20 @@ export class TasksDatabase {
     } catch (error) {
       console.log(error);
       return [];
+    }
+  }
+
+  async getSettings(user: User){
+    try {
+      return user.activeWorkspaceId && await this.prisma.settings.findFirst({
+        where: {
+          workspaceId: user.activeWorkspaceId,
+          userId: user.id,
+        }
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
     }
   }
 }

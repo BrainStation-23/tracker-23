@@ -9,6 +9,7 @@ import { WorkspacesService } from '../workspaces/workspaces.service';
 import { EmailService } from '../email/email.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
 import { NotificationModule } from '../notifications/notifications.module';
+import { TasksDatabase } from 'src/database/tasks';
 
 @Module({
   imports: [HttpModule.register({}), NotificationModule],
@@ -21,6 +22,7 @@ import { NotificationModule } from '../notifications/notifications.module';
     WorkspacesService,
     EmailService,
     WorkspaceDatabase,
+    TasksDatabase,
   ],
   exports: [],
 })

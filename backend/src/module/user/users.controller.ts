@@ -1,8 +1,9 @@
-import { Controller, Delete, Get, Param, Patch, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { GetUser } from "src/decorator";
 import { User } from "@prisma/client";
 import { JwtAuthGuard } from "src/guard";
+import { UpdateSettingsReqDto } from './dto/create.settings.dto';
 
 @Controller('users')
 export class UsersController {
@@ -18,5 +19,14 @@ export class UsersController {
   @Patch('/update-role/:userId')
   async updateRole(@GetUser() user: User, @Param('userId') userId: number) {
     return await this.usersService.updateRole(user, +userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('/settings')
+  async updateSettings(
+    @GetUser() user: User,
+    @Body() data: UpdateSettingsReqDto,
+  ) {
+    return await this.usersService.updateSettings(user, data);
   }
 }

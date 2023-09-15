@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Role, User } from "@prisma/client";
 import { PrismaService } from "src/module/prisma/prisma.service";
+import { UpdateSettingsReqDto } from "src/module/user/dto/create.settings.dto";
 
 @Injectable()
 export class UsersDatabase {
@@ -64,6 +65,41 @@ export class UsersDatabase {
       });
     } catch (error) {
       //console.log(error);
+      return null;
+    }
+  }
+
+  async createSettings(user: User) {
+    try {
+      return user.activeWorkspaceId && await this.prisma.settings.create({
+        data: {
+          userId: user.id,
+          workspaceId: user.activeWorkspaceId
+        },
+      });
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: index.ts:80 ~ UsersDatabase ~ error:',
+        error,
+      );
+      return null;
+    }
+  }
+
+  async updateSettings(user: User, settings: UpdateSettingsReqDto){
+    try {
+      return (
+        user.activeWorkspaceId &&
+        (await this.prisma.settings.update({
+          where: {
+            userId: user.id,
+            workspaceId: user.activeWorkspaceId,
+          },
+          data: settings,
+        }))
+      );
+    } catch (error) {
+      console.log(error);
       return null;
     }
   }

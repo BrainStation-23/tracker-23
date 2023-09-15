@@ -8,11 +8,21 @@ import { JwtService } from '@nestjs/jwt';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { EmailService } from '../email/email.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
+import { UsersDatabase } from 'src/database/users';
 
 @Module({
   imports: [HttpModule.register({})],
   controllers: [NotificationController],
-  providers: [NotificationsService, AuthService, JwtService, WorkspacesService, EmailService, WorkspaceDatabase, MyGateway],
+  providers: [
+    NotificationsService,
+    AuthService,
+    JwtService,
+    WorkspacesService,
+    EmailService,
+    WorkspaceDatabase,
+    MyGateway,
+    UsersDatabase,
+  ],
   exports: [MyGateway],
 })
 export class NotificationModule {}

@@ -18,6 +18,7 @@ import { SprintTaskDatabase } from 'src/database/sprintTasks';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { NotificationModule } from '../notifications/notifications.module';
+import { UsersDatabase } from 'src/database/users';
 
 @Module({
   imports: [HttpModule.register({}), IntegrationsModule, NotificationModule],
@@ -37,6 +38,7 @@ import { NotificationModule } from '../notifications/notifications.module';
     SprintTaskDatabase,
     IntegrationDatabase,
     UserIntegrationDatabase,
+    UsersDatabase,
   ],
   controllers: [ProjectsController],
   exports: [ProjectsService],
