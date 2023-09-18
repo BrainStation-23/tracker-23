@@ -1,8 +1,9 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/module/prisma/prisma.service';
+import { APIException } from 'src/module/exception/api.exception';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -27,7 +28,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     const userWorkspace =
-      user && user.activeWorkspaceId &&
+      user &&
+      user.activeWorkspaceId &&
       (await this.prisma.userWorkspace.findFirst({
         where: {
           userId: user.id,
@@ -35,9 +37,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         },
         select: {
           role: true,
-        }
+        },
       }));
 
-    return {...user, userWorkspace};
+    if (!userWorkspace) {
+      throw new APIException(
+        'Sorry! You are not a valid user for this action.',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    return { ...user, userWorkspace };
   }
 }
