@@ -1687,17 +1687,29 @@ export class TasksService {
         if (!project)
           throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
 
+        const userIntegration =
+          project?.integrationId &&
+          (await this.prisma.userIntegration.findUnique({
+            where: {
+              userIntegrationIdentifier: {
+                integrationId: project?.integrationId,
+                userWorkspaceId: userWorkspace.id,
+              },
+            },
+          }));
+
         const updated_userIntegration =
-          project.integration?.id &&
+          userIntegration &&
           (await this.integrationsService.getUpdatedUserIntegration(
             user,
-            project.integration.id,
+            userIntegration.id,
           ));
-        if (!updated_userIntegration)
+        if (!updated_userIntegration) {
           throw new APIException(
             'Updating Integration Failed',
             HttpStatus.BAD_REQUEST,
           );
+        }
         const url = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}`;
 
         const estimationBody = JSON.stringify({
