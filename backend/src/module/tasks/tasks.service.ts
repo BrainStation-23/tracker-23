@@ -1013,7 +1013,7 @@ export class TasksService {
     const settings = await this.tasksDatabase.getSettings(user);
     const syncTime: number = settings ? settings.syncTime : 6;
 
-    const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND created >= startOfMonth(-${syncTime}M) AND created <= endOfMonth(-1M)&maxResults=1000`;
+    const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND created >= startOfMonth(-${syncTime}M) AND created <= endOfDay()&maxResults=1000`;
     const fields =
       'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority, parent';
     let respTasks;
