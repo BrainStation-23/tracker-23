@@ -4,6 +4,7 @@ import { GetUser } from "src/decorator";
 import { User } from "@prisma/client";
 import { JwtAuthGuard } from "src/guard";
 import { UpdateSettingsReqDto } from './dto/create.settings.dto';
+import { UpdateRoleRequest } from "./dto/update.role.request.dto";
 
 @Controller('users')
 export class UsersController {
@@ -17,8 +18,8 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Patch('/update-role/:userId')
-  async updateRole(@GetUser() user: User, @Param('userId') userId: number) {
-    return await this.usersService.updateRole(user, +userId);
+  async updateRole(@GetUser() user: User, @Param('userId') userId: number, @Body() req: UpdateRoleRequest) {
+    return await this.usersService.updateRole(user, +userId, req?.role);
   }
 
   @UseGuards(JwtAuthGuard)

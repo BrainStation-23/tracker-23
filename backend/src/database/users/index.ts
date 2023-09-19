@@ -45,7 +45,7 @@ export class UsersDatabase {
     }
   }
 
-  async updateRole(user: User, userId: number) {
+  async updateRole(user: User, userId: number, role: Role) {
     try {
       const userWorkspace =
         user.activeWorkspaceId &&
@@ -56,12 +56,10 @@ export class UsersDatabase {
           },
         }));
       if (!userWorkspace) return null;
-      const updatedRole =
-        userWorkspace.role === Role.ADMIN ? Role.USER : Role.ADMIN;
 
       return await this.prisma.userWorkspace.update({
         where: { id: userWorkspace.id },
-        data: { role: { set: updatedRole } },
+        data: { role: { set: role } },
       });
     } catch (error) {
       //console.log(error);
@@ -71,22 +69,22 @@ export class UsersDatabase {
 
   async createSettings(user: User) {
     try {
-      return user.activeWorkspaceId && await this.prisma.settings.create({
-        data: {
-          userId: user.id,
-          workspaceId: user.activeWorkspaceId
-        },
-      });
-    } catch (error) {
-      console.log(
-        '🚀 ~ file: index.ts:80 ~ UsersDatabase ~ error:',
-        error,
+      return (
+        user.activeWorkspaceId &&
+        (await this.prisma.settings.create({
+          data: {
+            userId: user.id,
+            workspaceId: user.activeWorkspaceId,
+          },
+        }))
       );
+    } catch (error) {
+      console.log('🚀 ~ file: index.ts:80 ~ UsersDatabase ~ error:', error);
       return null;
     }
   }
 
-  async updateSettings(user: User, settings: UpdateSettingsReqDto){
+  async updateSettings(user: User, settings: UpdateSettingsReqDto) {
     try {
       return (
         user.activeWorkspaceId &&
