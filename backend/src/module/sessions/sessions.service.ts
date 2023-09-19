@@ -14,9 +14,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { TasksService } from '../tasks/tasks.service';
 import { APIException } from '../exception/api.exception';
-import {GetTaskQuery, GetTeamTaskQuery, GetTeamTaskQueryType} from "../tasks/dto";
-import {UserWorkspaceDatabase} from "../../database/userWorkspaces";
-import {SessionDatabase} from "../../database/sessions";
+import {
+  GetTaskQuery,
+  GetTeamTaskQuery,
+  GetTeamTaskQueryType,
+} from '../tasks/dto';
+import { UserWorkspaceDatabase } from '../../database/userWorkspaces';
+import { SessionDatabase } from '../../database/sessions';
 
 @Injectable()
 export class SessionsService {
@@ -66,6 +70,13 @@ export class SessionsService {
   }
 
   async stopSession(user: User, taskId: number) {
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      throw new APIException(
+        'User workspace not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const task = await this.validateTaskAccess(user, taskId);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.tasksService.updateIssueStatus(user, taskId + '', task.status + '');
@@ -99,12 +110,23 @@ export class SessionsService {
         }));
       if (!project)
         throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+
+      const userIntegration =
+        project?.integrationId &&
+        (await this.prisma.userIntegration.findUnique({
+          where: {
+            userIntegrationIdentifier: {
+              integrationId: project?.integrationId,
+              userWorkspaceId: userWorkspace.id,
+            },
+          },
+        }));
       const session =
-        project.integration?.id &&
+        userIntegration &&
         (await this.logToIntegrations(
           user,
           task.integratedTaskId,
-          project.integration.id,
+          userIntegration.id,
           updated_session,
         ));
       if (!session) {
@@ -149,7 +171,7 @@ export class SessionsService {
   async logToIntegrations(
     user: User,
     integratedTaskId: number,
-    integrationId: number,
+    userIntegrationId: number,
     session: Session,
   ) {
     if (session.endTime == null) {
@@ -164,7 +186,7 @@ export class SessionsService {
     const updated_integration =
       await this.integrationsService.getUpdatedUserIntegration(
         user,
-        integrationId,
+        userIntegrationId,
       );
     if (!updated_integration) {
       return null;
@@ -652,15 +674,15 @@ export class SessionsService {
 
   async weeklySpentTime(user: User, query: GetTaskQuery) {
     const sessions = await this.getSessionsByUserWorkspace(user);
-    if(!sessions)
+    if (!sessions)
       return {
         TotalSpentTime: 0,
         //value: null,
       };
 
     //let { startDate, endDate } = query;
-    let startDate = query?.startDate ? new Date(query.startDate) : new Date()
-    let endDate = query?.endDate ? new Date(query.endDate) : new Date()
+    const startDate = query?.startDate ? new Date(query.startDate) : new Date();
+    const endDate = query?.endDate ? new Date(query.endDate) : new Date();
 
     //const taskList: any[] = await this.getTasks(user, query);
 
@@ -678,14 +700,14 @@ export class SessionsService {
         sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
       } else if (startDate >= start && end && end >= endDate) {
         sessionTimeSpent =
-            (endDate.getTime() - startDate.getTime()) / (1000 * 60);
+          (endDate.getTime() - startDate.getTime()) / (1000 * 60);
       } else if (end && end >= startDate) {
         sessionTimeSpent =
-            Math.min(
-                Math.max(endDate.getTime() - start.getTime(), 0),
-                end.getTime() - startDate.getTime(),
-            ) /
-            (1000 * 60);
+          Math.min(
+            Math.max(endDate.getTime() - start.getTime(), 0),
+            end.getTime() - startDate.getTime(),
+          ) /
+          (1000 * 60);
       }
       totalTimeSpent += sessionTimeSpent;
       taskTimeSpent += sessionTimeSpent;
@@ -718,7 +740,7 @@ export class SessionsService {
 
   async getSpentTimeByDay(user: User, query: GetTaskQuery) {
     const sessions = await this.getSessionsByUserWorkspace(user);
-    if(!sessions)
+    if (!sessions)
       return {
         TotalSpentTime: 0,
         //value: null,
@@ -732,26 +754,26 @@ export class SessionsService {
   }
 
   async getTimeSpentByTeam(
-      query: GetTeamTaskQuery,
-      user: User,
-      type: GetTeamTaskQueryType,
+    query: GetTeamTaskQuery,
+    user: User,
+    type: GetTeamTaskQueryType,
   ) {
     let projectIds, projectIdArray, userIds, userIdArray;
     if (query?.projectIds) {
       projectIds = query?.projectIds as unknown as string;
       projectIdArray =
-          projectIds && projectIds.split(',').map((item) => Number(item.trim()));
+        projectIds && projectIds.split(',').map((item) => Number(item.trim()));
     }
     if (query?.userIds) {
       userIds = query?.userIds as unknown as string;
       userIdArray =
-          userIds && userIds.split(',').map((item) => Number(item.trim()));
+        userIds && userIds.split(',').map((item) => Number(item.trim()));
     }
 
     if (!user?.activeWorkspaceId)
       throw new APIException(
-          'No user workspace detected',
-          HttpStatus.BAD_REQUEST,
+        'No user workspace detected',
+        HttpStatus.BAD_REQUEST,
       );
 
     let { startDate, endDate } = query;
@@ -761,8 +783,9 @@ export class SessionsService {
 
     if (!userIdArray || userIdArray?.length === 0) {
       sessions = await this.sessionDatabase.getSessions({
-          ...(query?.status && { task: { status: query?.status }}),
-          ...(projectIdArray && projectIdArray?.length !== 0 && {
+        ...(query?.status && { task: { status: query?.status } }),
+        ...(projectIdArray &&
+          projectIdArray?.length !== 0 && {
             task: {
               projectId: { in: projectIdArray },
               workspaceId: user?.activeWorkspaceId,
@@ -771,52 +794,62 @@ export class SessionsService {
               },
             },
           }),
-          startTime: { gte: startDate },
-        });
+        startTime: { gte: startDate },
+      });
     } else {
-        const userWorkspaces =
-            user?.activeWorkspaceId && await this.userWorkspaceDatabase.getUserWorkspaceList({
-              userId: {
-                in: userIdArray,
-              },
-              workspaceId: user?.activeWorkspaceId,
-            });
+      const userWorkspaces =
+        user?.activeWorkspaceId &&
+        (await this.userWorkspaceDatabase.getUserWorkspaceList({
+          userId: {
+            in: userIdArray,
+          },
+          workspaceId: user?.activeWorkspaceId,
+        }));
 
-        //@ts-ignore
-        const userWorkspaceIds: number[] = userWorkspaces?.map(
-            (userWorkspace: any) => userWorkspace?.id,
-        );
+      //@ts-ignore
+      const userWorkspaceIds: number[] = userWorkspaces?.map(
+        (userWorkspace: any) => userWorkspace?.id,
+      );
 
-        sessions = await this.sessionDatabase.getSessions({
-          ...(query?.status && { task: { status: query?.status }}),
-          ...(projectIdArray && projectIdArray?.length !== 0 && {
+      sessions = await this.sessionDatabase.getSessions({
+        ...(query?.status && { task: { status: query?.status } }),
+        ...(projectIdArray &&
+          projectIdArray?.length !== 0 && {
             task: {
-              projectId: { in: projectIdArray }
+              projectId: { in: projectIdArray },
             },
           }),
-          userWorkspaceId: { in: userWorkspaceIds },
-          startTime: { gte: startDate },
-        });
+        userWorkspaceId: { in: userWorkspaceIds },
+        startTime: { gte: startDate },
+      });
     }
 
     if (!sessions) return { value: 0, message: 'No tasks available' };
 
     return type === GetTeamTaskQueryType.DATE_RANGE
-        ? this.getSpentTimeInRange(sessions, startDate, endDate)
-        : this.getSpentTimePerDay(sessions, startDate, endDate);
+      ? this.getSpentTimeInRange(sessions, startDate, endDate)
+      : this.getSpentTimePerDay(sessions, startDate, endDate);
   }
 
   //private functions
   private async getSessionsByUserWorkspace(user: User) {
-    if(!user || !user.activeWorkspaceId)
-      throw new APIException('No workspace id detected', HttpStatus.BAD_REQUEST);
+    if (!user || !user.activeWorkspaceId)
+      throw new APIException(
+        'No workspace id detected',
+        HttpStatus.BAD_REQUEST,
+      );
 
-    const userWorkspace = await this.userWorkspaceDatabase.getSingleUserWorkspace({
-      userId: user.id,
-      workspaceId: user.activeWorkspaceId,
-    });
+    const userWorkspace =
+      await this.userWorkspaceDatabase.getSingleUserWorkspace({
+        userId: user.id,
+        workspaceId: user.activeWorkspaceId,
+      });
 
-    if(!userWorkspace) throw new APIException('Could not get userworkspace', HttpStatus.INTERNAL_SERVER_ERROR);
+    if (!userWorkspace)
+      throw new APIException(
+        'Could not get userworkspace',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
 
     return await this.sessionDatabase.getSessions({
       userWorkspaceId: userWorkspace?.id,
@@ -829,9 +862,9 @@ export class SessionsService {
     let totalTimeSpent = 0;
     const oneDay = 3600 * 24 * 1000;
     for (
-        let endDay = startDate.getTime() + oneDay, startDay = startDate.getTime();
-        endDay <= endDate.getTime() + oneDay;
-        endDay += oneDay, startDay += oneDay
+      let endDay = startDate.getTime() + oneDay, startDay = startDate.getTime();
+      endDay <= endDate.getTime() + oneDay;
+      endDay += oneDay, startDay += oneDay
     ) {
       for (const session of sessions) {
         const start = new Date(session.startTime);
@@ -847,11 +880,11 @@ export class SessionsService {
           sessionTimeSpent = (endDay - startDay) / (1000 * 60);
         } else if (end.getTime() >= startDay) {
           sessionTimeSpent =
-              Math.min(
-                  Math.max(endDay - start.getTime(), 0),
-                  end.getTime() - startDay,
-              ) /
-              (1000 * 60);
+            Math.min(
+              Math.max(endDay - start.getTime(), 0),
+              end.getTime() - startDay,
+            ) /
+            (1000 * 60);
         }
         totalTimeSpent += sessionTimeSpent;
       }
@@ -859,8 +892,8 @@ export class SessionsService {
       let tmp = map.get(new Date(startDay));
       if (!tmp) tmp = 0;
       map.set(
-          new Date(startDay),
-          tmp + this.tasksService.getHourFromMinutes(totalTimeSpent),
+        new Date(startDay),
+        tmp + this.tasksService.getHourFromMinutes(totalTimeSpent),
       );
       totalTimeSpent = 0;
     }
@@ -892,14 +925,14 @@ export class SessionsService {
         sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
       } else if (startDate >= start && end >= endDate) {
         sessionTimeSpent =
-            (endDate.getTime() - startDate.getTime()) / (1000 * 60);
+          (endDate.getTime() - startDate.getTime()) / (1000 * 60);
       } else if (end >= startDate) {
         sessionTimeSpent =
-            Math.min(
-                Math.max(endDate.getTime() - start.getTime(), 0),
-                end.getTime() - startDate.getTime(),
-            ) /
-            (1000 * 60);
+          Math.min(
+            Math.max(endDate.getTime() - start.getTime(), 0),
+            end.getTime() - startDate.getTime(),
+          ) /
+          (1000 * 60);
       }
       totalTimeSpent += sessionTimeSpent;
       taskTimeSpent += sessionTimeSpent;
@@ -928,5 +961,4 @@ export class SessionsService {
       value: ar,
     };
   }
-
 }

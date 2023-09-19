@@ -9,14 +9,19 @@ import {
   Param,
   ParseIntPipe,
   Patch,
-  Post, Query,
+  Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 
 import { ManualTimeEntryReqBody, SessionDto, SessionReqBodyDto } from './dto';
 import { SessionsService } from './sessions.service';
-import {GetTaskQuery, GetTeamTaskQuery, GetTeamTaskQueryType} from "../tasks/dto";
+import {
+  GetTaskQuery,
+  GetTeamTaskQuery,
+  GetTeamTaskQueryType,
+} from '../tasks/dto';
 
 @Controller('sessions')
 export class SessionsController {
@@ -87,26 +92,26 @@ export class SessionsController {
   @Get('/team/spent-time')
   @UseGuards(JwtAuthGuard)
   async getTimeSpentByTeam(
-      @GetUser() user: User,
-      @Query() query: GetTeamTaskQuery,
+    @GetUser() user: User,
+    @Query() query: GetTeamTaskQuery,
   ) {
     return await this.sessionsService.getTimeSpentByTeam(
-        query,
-        user,
-        GetTeamTaskQueryType.DATE_RANGE,
+      query,
+      user,
+      GetTeamTaskQueryType.DATE_RANGE,
     );
   }
 
   @Get('/team/spent-time/per-day')
   @UseGuards(JwtAuthGuard)
   async getDailyTimeSpentByTeam(
-      @GetUser() user: User,
-      @Query() query: GetTeamTaskQuery,
+    @GetUser() user: User,
+    @Query() query: GetTeamTaskQuery,
   ) {
     return await this.sessionsService.getTimeSpentByTeam(
-        query,
-        user,
-        GetTeamTaskQueryType.PER_DAY,
+      query,
+      user,
+      GetTeamTaskQueryType.PER_DAY,
     );
   }
 }
