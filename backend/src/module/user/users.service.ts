@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
-import { User } from "@prisma/client";
+import { Role, User } from "@prisma/client";
 
 import { WorkspaceDatabase } from 'src/database/workspaces/index';
 import { UsersDatabase } from "src/database/users";
@@ -25,14 +25,14 @@ export class UsersService {
     return await this.usersDatabase.findUsers(user);
   }
 
-  async updateRole(user: User, userId: number) {
+  async updateRole(user: User, userId: number, role: Role) {
     if (!user || !user.activeWorkspaceId)
       throw new APIException(
         'No user workspace detected',
         HttpStatus.BAD_REQUEST,
       );
 
-    const updateUserRole = await this.usersDatabase.updateRole(user, userId);
+    const updateUserRole = await this.usersDatabase.updateRole(user, userId, role);
     if (!updateUserRole)
       throw new APIException(
         'Restricted Action: User is not in your workspace.',
