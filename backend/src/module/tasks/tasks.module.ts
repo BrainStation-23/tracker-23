@@ -20,6 +20,7 @@ import { IntegrationDatabase } from 'src/database/integrations';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { NotificationModule } from '../notifications/notifications.module';
 import { UsersDatabase } from 'src/database/users';
+import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { UsersDatabase } from 'src/database/users';
     IntegrationDatabase,
     UserIntegrationDatabase,
     UsersDatabase,
+    UserWorkspaceDatabase,
   ],
   controllers: [TasksController],
   exports: [TasksService],
