@@ -83,7 +83,6 @@ body {
   /* ... your existing styles ... */
   position: relative;
 }
-
 .custom-checkbox input[type="checkbox"] {
   opacity: 0;
   position: absolute;

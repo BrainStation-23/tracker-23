@@ -45,7 +45,8 @@ export async function loginRest(
     }
     return res.data;
   } catch (error: any) {
-    return error;
+    console.log("🚀 ~ file: restApi.ts:48 ~ error:", error);
+    return null;
   }
 }
 
@@ -56,7 +57,8 @@ export async function googleLoginRest(
     const res = await axios.post(`${apiEndPoints.googleLogin}?code=${code}`);
     return res.data;
   } catch (error: any) {
-    return error;
+    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
+    return null;
   }
 }
 

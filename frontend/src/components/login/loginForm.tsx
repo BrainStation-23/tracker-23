@@ -6,6 +6,10 @@ import { userAPI } from "APIs";
 import { GetCookie } from "@/services/cookie.service";
 import Line from "../dashboard/charts/lineChart";
 import Link from "next/link";
+import MyFormItem from "../common/form/MyFormItem";
+import MyLink from "../common/MyLink";
+import MyInput from "../common/form/MyInput";
+import MyPasswordInput from "../common/form/MyPasswordInput";
 
 type Props = {
   setIsModalOpen: Function;
@@ -16,22 +20,16 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
   const signIn = async (values: any) => {
     console.log(values);
     const data = await userAPI.login(values);
-
-    console.log(
-      "🚀 ~ file: loginForm.tsx:12 ~ signIn ~ data",
-      data,
-      GetCookie("access_token")
-    );
+    console.log("🚀 ~ file: loginForm.tsx:23 ~ signIn ~ data:", data);
     if (GetCookie("access_token")) router.push("/taskList");
+    !data && setIsModalOpen(false);
   };
 
   const onFinish = async (values: any) => {
     console.log("Success:", values);
     setIsModalOpen(true);
-    try {
-      await signIn(values);
-    } catch (error) {}
-    setIsModalOpen(false);
+    const res = await signIn(values);
+    console.log("🚀 ~ file: loginForm.tsx:32 ~ onFinish ~ res:", res);
     // router.push("/taskList");
   };
 
@@ -46,14 +44,18 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
       // wrapperCol={{ span: 16 }}
       initialValues={{ remember: true }}
       onFinish={onFinish}
+      layout="vertical"
       onFinishFailed={onFinishFailed}
       autoComplete="off"
+      labelAlign="left"
+      requiredMark={false}
       className="mx-auto w-full pb-0"
     >
-      <Form.Item
-        // label="Email"
+      <MyFormItem
+        label="Email Address"
         className=" w-full"
         name="email"
+        colon={false}
         rules={[
           { required: true, message: "Please input your email!" },
           {
@@ -64,46 +66,40 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
           },
         ]}
       >
-        <Input
-          type="text"
-          placeholder="Email"
-          className="flex w-full rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
-        />
-        {/* <Input type="email" className="" /> */}
-      </Form.Item>
+        <MyInput type="text" placeholder="Enter your email" />
+      </MyFormItem>
       <div className="relative">
-        <Form.Item
-          // label="Password"
+        <MyFormItem
+          label="Enter your password"
           name="password"
           rules={[{ required: true, message: "Please input your password!" }]}
         >
-          <Input.Password
-            placeholder="Password"
-            className="flex rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
-          />
-        </Form.Item>{" "}
-        <div className="absolute bottom-[-20px] right-0 text-end">
-          <Link
-            href="/forgotPassword"
-            className="text-xs font-medium hover:text-[#070eff]"
-          >
-            Forgot your Password?
-          </Link>
-        </div>
+          <MyPasswordInput placeholder="Password" />
+        </MyFormItem>
       </div>
 
-      {/* <Form.Item
-        name="remember"
-        valuePropName="checked"
-        wrapperCol={{ offset: 8, span: 16 }}
-      >
-        <Checkbox>Remember me</Checkbox>
-      </Form.Item> */}
-      <Form.Item className="mb-0">
-        <button className="mt-5 flex w-full flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
+      <div className="flex items-center justify-between">
+        <MyFormItem
+          name="remember"
+          valuePropName="checked"
+          // wrapperCol={{ offset: 8, span: 16 }}
+          className="m-0"
+        >
+          <Checkbox>Remember me for 30 days</Checkbox>
+        </MyFormItem>
+        <div className="m-0">
+          <MyLink href="/forgotPassword">Forgot your Password?</MyLink>
+        </div>
+      </div>
+      <MyFormItem className="m-4">
+        <button className="flex w-full flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
           Login
         </button>
-      </Form.Item>
+      </MyFormItem>
+      <div className="flex items-center justify-center gap-2">
+        Not a member?
+        <MyLink href="/forgotPassword">Create Account</MyLink>
+      </div>
     </Form>
   );
 };
