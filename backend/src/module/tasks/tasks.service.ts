@@ -1367,6 +1367,11 @@ export class TasksService {
         project,
         updatedUserIntegration,
       );
+      await this.sprintService.createSprintAndTask(
+        user,
+        projId,
+        updatedUserIntegration.id,
+      );
       res && (await this.syncCall(StatusEnum.DONE, user));
       // if (done) {
       //   await this.createSprintAndTask(user, updated_userIntegration.id);

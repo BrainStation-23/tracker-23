@@ -37,7 +37,8 @@ export class SprintsService {
     const project = await this.projectDatabase.getProjectById(projectId);
 
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace) throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
+    if (!userWorkspace)
+      throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
 
     const updated_userIntegration =
       await this.integrationsService.getUpdatedUserIntegration(
@@ -46,7 +47,6 @@ export class SprintsService {
       );
 
     if (!updated_userIntegration) return [];
-
 
     const boardUrl = `https://api.atlassian.com/ex/jira/${updated_userIntegration.siteId}/rest/agile/1.0/board`;
     const boardConfig = {
@@ -64,7 +64,9 @@ export class SprintsService {
       mappedBoardId.set(Number(board.location.projectId), Number(board.id));
     }
 
-    const task_list = await this.sprintDatabase.getTaskByProjectIdAndSource(projectId);
+    const task_list = await this.sprintDatabase.getTaskByProjectIdAndSource(
+      projectId,
+    );
 
     const boardId =
       project && project.projectId && mappedBoardId.get(project.projectId);
@@ -231,19 +233,19 @@ export class SprintsService {
       ...(status1 && { status: status1 }),
       ...(text && { text }),
     });
-
   }
 
   async getSprintTasksIds(sprintIds: number[]) {
-      const getSprintTasks = await this.sprintTaskDatabase.findSprintTaskBySprintIds(sprintIds);
+    const getSprintTasks =
+      await this.sprintTaskDatabase.findSprintTaskBySprintIds(sprintIds);
 
-      const taskIds: number[] = [];
-      for (let index = 0; index < getSprintTasks.length; index++) {
-        const val = getSprintTasks[index];
-        val && taskIds.push(val.taskId);
-      }
+    const taskIds: number[] = [];
+    for (let index = 0; index < getSprintTasks.length; index++) {
+      const val = getSprintTasks[index];
+      val && taskIds.push(val.taskId);
+    }
 
-      return taskIds;
+    return taskIds;
   }
 
   async getProjectIds(user: User): Promise<number[]> {
