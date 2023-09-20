@@ -49,7 +49,7 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
       autoComplete="off"
       labelAlign="left"
       requiredMark={false}
-      className="mx-auto w-full pb-0"
+      className="mx-auto w-full pb-0 "
     >
       <MyFormItem
         label="Email Address"
@@ -85,7 +85,9 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
           // wrapperCol={{ offset: 8, span: 16 }}
           className="m-0"
         >
-          <Checkbox>Remember me for 30 days</Checkbox>
+          <Checkbox>
+            <span className="2xl:text-lg">Remember me for 30 days</span>
+          </Checkbox>
         </MyFormItem>
         <div className="m-0">
           <MyLink href="/forgotPassword">Forgot your Password?</MyLink>
@@ -96,7 +98,7 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
           Login
         </button>
       </MyFormItem>
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-2 2xl:text-lg">
         Not a member?
         <MyLink href="/forgotPassword">Create Account</MyLink>
       </div>
