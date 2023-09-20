@@ -62,7 +62,7 @@ const Sessions = ({
       <h3 className="w-full  text-left text-base font-semibold">Sessions</h3>
       <div className="flex max-h-64 w-full flex-col gap-3 overflow-y-scroll">
         {endedSessions?.length > 0 && (
-          <div className="grid grid-cols-12 gap-4 font-semibold">
+          <div className="grid grid-cols-12 gap-4 font-semibold text-secondary">
             <div className="col-span-1">No</div>
             <div className="col-span-3">Date</div>
             <div className="col-span-4">Time Stamp</div>
@@ -141,13 +141,19 @@ const Sessions = ({
                     session.id !== sessionInEdit ? (
                       <>
                         <Tooltip title="Edit Session">
-                          <div onClick={() => handleInitialValues(session)}>
+                          <div
+                            onClick={() => handleInitialValues(session)}
+                            className="cursor-pointer"
+                          >
                             <EditIconSvg />
                           </div>
                         </Tooltip>
 
                         <Tooltip title="Delete Session">
-                          <div onClick={() => deleteSession(session.id)}>
+                          <div
+                            onClick={() => deleteSession(session.id)}
+                            className="cursor-pointer"
+                          >
                             <DeleteIconSvg />
                           </div>
                         </Tooltip>

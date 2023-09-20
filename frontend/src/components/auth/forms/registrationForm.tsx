@@ -1,10 +1,12 @@
-import React from "react";
-import { Button, Form, Input, message } from "antd";
-import { useState } from "react";
+import { Form, Input, message } from "antd";
 import { useRouter } from "next/router";
-import { userAPI } from "../../../../APIs/index";
+import React, { useState } from "react";
+
 import MyFormItem from "@/components/common/form/MyFormItem";
-import MyLink from "@/components/common/MyLink";
+import MyLink from "@/components/common/link/MyLink";
+
+import { userAPI } from "../../../../APIs/index";
+
 type Props = {
   setIsModalOpen: Function;
 };
