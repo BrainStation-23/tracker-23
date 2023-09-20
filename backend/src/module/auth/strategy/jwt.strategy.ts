@@ -27,8 +27,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       },
     });
 
+    if (!user) {
+      throw new APIException(
+        'Sorry! You are not a valid user for this action.',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
     const userWorkspace =
-      user &&
       user.activeWorkspaceId &&
       (await this.prisma.userWorkspace.findFirst({
         where: {
@@ -39,13 +45,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           role: true,
         },
       }));
-
-    if (!userWorkspace) {
-      throw new APIException(
-        'Sorry! You are not a valid user for this action.',
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
 
     return { ...user, userWorkspace };
   }
