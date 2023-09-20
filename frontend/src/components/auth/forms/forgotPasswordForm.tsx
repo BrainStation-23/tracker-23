@@ -75,7 +75,7 @@ const ForgotPasswordForm = ({ setIsModalOpen }: Props) => {
           Reset Password
         </button>
       </MyFormItem>
-      <div className="flex items-center justify-center gap-2 2xl:text-lg">
+      <div className="flex items-center justify-center gap-2 2xl:text-base">
         Back to
         <MyLink href="/login">Login</MyLink>
       </div>

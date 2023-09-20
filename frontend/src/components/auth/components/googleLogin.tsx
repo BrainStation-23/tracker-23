@@ -5,7 +5,7 @@ type Props = {
 const GoogleLogin = ({ setIsModalOpen }: Props) => {
   return (
     <div
-      className="relative flex flex-none cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-secondary px-3 py-2 font-medium md:px-4 md:py-3  2xl:text-2xl"
+      className="relative flex flex-none cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-secondary px-3 py-2 font-medium md:px-4 md:py-3  2xl:text-xl"
       onClick={() => {
         window.open(`${config?.baseUrl}/auth/google`, "_self");
         setIsModalOpen(true);

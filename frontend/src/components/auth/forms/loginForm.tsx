@@ -98,9 +98,9 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
           Login
         </button>
       </MyFormItem>
-      <div className="flex items-center justify-center gap-2 2xl:text-lg">
+      <div className="flex items-center justify-center gap-2 2xl:text-base">
         Not a member?
-        <MyLink href="/forgotPassword">Create Account</MyLink>
+        <MyLink href="/registration">Create Account</MyLink>
       </div>
     </Form>
   );

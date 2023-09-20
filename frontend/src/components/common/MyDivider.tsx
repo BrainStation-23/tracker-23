@@ -7,7 +7,7 @@ const MyDivider = ({ children, ...restProps }: any) => {
       {...restProps}
     >
       <div className="h-1 w-[49%] bg-secondary" />
-      <div className="2xl:text-2xl"> {children}</div>
+      <div className="2xl:text-xl"> {children}</div>
       <div className="h-1 w-[40%] bg-secondary" />
     </div>
   );

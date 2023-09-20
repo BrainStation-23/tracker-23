@@ -3,6 +3,7 @@ import { Button } from "antd";
 import Image from "next/image";
 import LeftPanelTopPicture from "./leftPanelTopPicture";
 import { useRouter } from "next/router";
+import PrimaryButton2 from "@/components/common/buttons/primaryButton2";
 
 const AuthLeftPanel = () => {
   const router = useRouter();
@@ -21,21 +22,22 @@ const AuthLeftPanel = () => {
           /> */}
           <LeftPanelTopPicture />
         </div>
-        <div className=" z-10 mt-[32%] flex flex-col gap-6 lg:mt-[72%] 2xl:mt-[55%]">
-          <div className=" w-3/4 text-3xl font-semibold text-white xl:text-5xl 2xl:text-6xl">
-            Have you heard about Tracker23 Tasks?
+        <div className=" z-10 mt-[32%] flex flex-col gap-20 lg:mt-[72%] 2xl:mt-[55%]">
+          <div className="flex flex-col gap-6">
+            <div className=" w-3/4 text-3xl font-semibold text-white xl:text-5xl 2xl:text-6xl">
+              Have you heard about Tracker23 Tasks?
+            </div>
+            <div className="text-white  2xl:text-2xl">
+              Sign up or log in to start tracking your time
+            </div>
           </div>
-          <div className="text-white  2xl:text-2xl">
-            Sign up or log in to start tracking your time
-          </div>
-          <Button
-            className="mt-12  flex w-min items-center rounded-lg bg-white py-6 px-3 font-semibold 2xl:text-2xl"
+          <PrimaryButton2
             onClick={() => {
               router.push("/registration");
             }}
           >
             Try Tracker23 Now
-          </Button>
+          </PrimaryButton2>
         </div>
       </div>
     </div>
