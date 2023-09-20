@@ -2,8 +2,10 @@ import AuthPageLeftPanelMiddlePicture from "@/assets/svg/AuthPageLeftPanelMiddle
 import { Button } from "antd";
 import Image from "next/image";
 import LeftPanelTopPicture from "./leftPanelTopPicture";
+import { useRouter } from "next/router";
 
 const AuthLeftPanel = () => {
+  const router = useRouter();
   return (
     <div className=" bg-[url('/images/bg_login.svg')] bg-cover bg-no-repeat">
       <div className="relative ml-[8%] flex h-full w-full flex-col">
@@ -26,7 +28,12 @@ const AuthLeftPanel = () => {
           <div className="text-white  2xl:text-2xl">
             Sign up or log in to start tracking your time
           </div>
-          <Button className="mt-12  flex w-min items-center rounded-lg bg-white py-6 px-3 font-semibold 2xl:text-2xl">
+          <Button
+            className="mt-12  flex w-min items-center rounded-lg bg-white py-6 px-3 font-semibold 2xl:text-2xl"
+            onClick={() => {
+              router.push("/registration");
+            }}
+          >
             Try Tracker23 Now
           </Button>
         </div>

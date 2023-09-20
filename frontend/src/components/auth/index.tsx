@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import AuthLeftPanel from "./components/authLeftPanel";
 import LoginPanel from "./components/loginPanel";
+import ForgotPasswordPanel from "./components/forgotPasswordPanel";
 
 const AuthPage = () => {
   const router = useRouter();
@@ -19,6 +20,7 @@ const AuthPage = () => {
     >
       <AuthLeftPanel />
       {path.includes("login") && <LoginPanel />}
+      {path.includes("forgotPassword") && <ForgotPasswordPanel />}
     </div>
   );
 };

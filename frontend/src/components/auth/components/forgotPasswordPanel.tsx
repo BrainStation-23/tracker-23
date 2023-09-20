@@ -5,21 +5,20 @@ import GoogleLogin from "./googleLogin";
 import MyDivider from "../../common/MyDivider";
 import { useState } from "react";
 import { LoadingOutlined } from "@ant-design/icons";
+import ForgotPasswordForm from "@/components/auth/forms/forgotPasswordForm";
 import BSLogoSvg from "@/assets/svg/BSLogoSvg";
 
-const LoginPanel = () => {
+const ForgotPasswordPanel = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <div className="flex">
       <div className="m-auto flex h-fit max-w-[60%] flex-col gap-6 lg:max-w-[70%]">
-        <BSLogoSvg height={100}  width={250} />
+        <BSLogoSvg height={100} width={250} />
         <AuthHeader
-          title={"Sign in to account"}
-          subTitle={"   Sign up or log in to start tracking your time"}
+          title={"Forget Password"}
+          subTitle={"Sign up or log in to start tracking your time"}
         />
-        <GoogleLogin setIsModalOpen={setIsModalOpen} />
-        <MyDivider>or</MyDivider>
-        <LoginForm setIsModalOpen={setIsModalOpen} />
+        <ForgotPasswordForm setIsModalOpen={setIsModalOpen} />
       </div>
       <Modal
         open={isModalOpen}
@@ -41,4 +40,4 @@ const LoginPanel = () => {
   );
 };
 
-export default LoginPanel;
+export default ForgotPasswordPanel;

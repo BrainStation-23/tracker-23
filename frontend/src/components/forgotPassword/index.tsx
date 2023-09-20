@@ -6,7 +6,7 @@ import { useState } from "react";
 import BSLogoWhiteSvg from "@/assets/svg/BSLogoWhiteSvg";
 import { LoadingOutlined } from "@ant-design/icons";
 
-import ForgotPasswordForm from "./forgotPasswordForm";
+import ForgotPasswordForm from "../auth/forms/forgotPasswordForm";
 
 export default function ForgotPassword() {
   const [isModalOpen, setIsModalOpen] = useState(false);

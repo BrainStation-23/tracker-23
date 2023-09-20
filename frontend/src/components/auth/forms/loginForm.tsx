@@ -44,9 +44,9 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
       // wrapperCol={{ span: 16 }}
       initialValues={{ remember: true }}
       onFinish={onFinish}
-      layout="vertical"
       onFinishFailed={onFinishFailed}
-      autoComplete="off"
+      // autoComplete="off"
+      layout="vertical"
       labelAlign="left"
       requiredMark={false}
       className="mx-auto w-full pb-0 "
