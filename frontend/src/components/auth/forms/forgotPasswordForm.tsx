@@ -3,6 +3,9 @@ import { Form, Input, message } from "antd";
 import { ForgotPasswordDto } from "models/auth";
 import { useRouter } from "next/router";
 import React from "react";
+import MyFormItem from "../../common/form/MyFormItem";
+import MyInput from "@/components/common/form/MyInput";
+import MyLink from "@/components/common/MyLink";
 
 type Props = {
   setIsModalOpen: Function;
@@ -40,11 +43,14 @@ const ForgotPasswordForm = ({ setIsModalOpen }: Props) => {
       initialValues={{ remember: true }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
-      autoComplete="off"
+      // autoComplete="off"
+      requiredMark={false}
+      layout="vertical"
+      labelAlign="left"
       className="mx-auto w-full"
     >
-      <Form.Item
-        // label="Email"
+      <MyFormItem
+        label="Email Address"
         className=" w-full"
         name="email"
         rules={[
@@ -57,18 +63,22 @@ const ForgotPasswordForm = ({ setIsModalOpen }: Props) => {
           { required: true, message: "Please input your email!" },
         ]}
       >
-        <Input
+        <MyInput
           //   type="email"
-          placeholder="Email"
+          placeholder="Enter your email"
           className="flex w-full rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
         />
-      </Form.Item>
+      </MyFormItem>
 
-      <Form.Item>
+      <MyFormItem>
         <button className="flex w-full flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
           Reset Password
         </button>
-      </Form.Item>
+      </MyFormItem>
+      <div className="flex items-center justify-center gap-2 2xl:text-base">
+        Back to
+        <MyLink href="/login">Login</MyLink>
+      </div>
     </Form>
   );
 };

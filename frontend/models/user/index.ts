@@ -6,4 +6,5 @@ export interface UserDto {
   activeWorkspaceId?: number;
   role?: string;
   picture?: string;
+  designation?: string;
 }

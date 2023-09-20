@@ -103,6 +103,12 @@ export const sideMenuOptions = [
     // icon: <TiExport className="h-6 w-6" />,
   },
   {
+    link: "/members",
+    title: "Members",
+    icon: <MailOutlined />,
+    // icon: <TiExport className="h-6 w-6" />,
+  },
+  {
     link: "suggestion",
     title: "Suggestion/Support",
     icon: <BulbOutlined style={{ fontSize: "24px" }} />,
