@@ -1,8 +1,8 @@
 import { Divider, Modal, Spin } from "antd";
-import LoginForm from "../login/loginForm";
+import LoginForm from "../forms/loginForm";
 import AuthHeader from "./authHeader";
 import GoogleLogin from "./googleLogin";
-import MyDivider from "../common/MyDivider";
+import MyDivider from "../../common/MyDivider";
 import { useState } from "react";
 import { LoadingOutlined } from "@ant-design/icons";
 

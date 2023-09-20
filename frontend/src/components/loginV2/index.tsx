@@ -6,7 +6,7 @@ import { Modal, Spin } from "antd";
 import { config } from "config";
 import Link from "next/link";
 import { useState } from "react";
-import LoginForm from "../login/loginForm";
+import LoginForm from "../auth/forms/loginForm";
 
 export default function LoginV2() {
   const [isModalOpen, setIsModalOpen] = useState(false);

@@ -1,7 +1,15 @@
-import AuthLeftPanel from "./authLeftPanel";
-import LoginPanel from "./loginPanel";
+import { useRouter } from "next/router";
+import AuthLeftPanel from "./components/authLeftPanel";
+import LoginPanel from "./components/loginPanel";
 
 const AuthPage = () => {
+  const router = useRouter();
+  const path = router.asPath;
+  console.log(
+    "🚀 ~ file: index.tsx:8 ~ AuthPage ~ path:",
+    path,
+    path.includes("login")
+  );
   return (
     <div
       className="grid h-screen w-full grid-cols-2"
@@ -10,7 +18,7 @@ const AuthPage = () => {
       }}
     >
       <AuthLeftPanel />
-      <LoginPanel />
+      {path.includes("login") && <LoginPanel />}
     </div>
   );
 };
