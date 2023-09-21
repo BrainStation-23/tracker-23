@@ -1,0 +1,19 @@
+import { Button } from "antd";
+type Props = {
+  children: React.ReactNode;
+  onClick?: Function;
+  htmlType?: "button" | "submit" | "reset";
+};
+const PrimaryButton2 = ({ children, onClick, htmlType }: Props) => {
+  return (
+    <Button
+      htmlType={htmlType}
+      className="flex w-min items-center rounded-lg bg-white py-8 px-5 font-semibold 2xl:text-xl"
+      onClick={() => onClick && onClick()}
+    >
+      {children}
+    </Button>
+  );
+};
+
+export default PrimaryButton2;

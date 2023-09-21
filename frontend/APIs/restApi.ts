@@ -45,7 +45,8 @@ export async function loginRest(
     }
     return res.data;
   } catch (error: any) {
-    return error;
+    console.log("🚀 ~ file: restApi.ts:48 ~ error:", error);
+    return null;
   }
 }
 
@@ -56,7 +57,8 @@ export async function googleLoginRest(
     const res = await axios.post(`${apiEndPoints.googleLogin}?code=${code}`);
     return res.data;
   } catch (error: any) {
-    return error;
+    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
+    return null;
   }
 }
 
@@ -521,6 +523,15 @@ export async function deleteProjectTasksRest(id: number) {
 export async function getWorkspaceListRest() {
   try {
     const res = await axios.get(`${apiEndPoints.workspaces}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getWorkspaceMembersRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.members}`);
     return res.data;
   } catch (error: any) {
     return false;

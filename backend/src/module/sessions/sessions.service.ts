@@ -568,39 +568,32 @@ export class SessionsService {
       if (!project)
         throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
 
-      const userIntegration: number[] = [];
-      getUserIntegrationList.map((userInt: any) => {
-        if (
-          project.integration?.id &&
-          userInt.integrationId === project.integration.id
-        ) {
-          userIntegration.push(userInt.id);
-        }
-      });
-      console.log(
-        '🚀 ~ file: sessions.service.ts:293 ~ SessionsService ~ userIntegration ~ userIntegration:',
-        userIntegration,
-      );
-      const updated_integration =
-        userIntegration.length &&
+      const userIntegration =
+        project?.integrationId &&
+        (await this.tasksService.getUserIntegration(
+          userWorkspace.id,
+          project.integrationId,
+        ));
+      const updatedUserIntegration =
+        userIntegration &&
         (await this.integrationsService.getUpdatedUserIntegration(
           user,
-          userIntegration[0],
+          userIntegration.id,
         ));
 
-      if (!updated_integration) {
+      if (!updatedUserIntegration) {
         throw new APIException(
           'Integration Not Found',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
-      if (doesExistWorklog.authorId === updated_integration.jiraAccountId) {
-        const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${doesExistWorklog?.integratedTaskId}/worklog/${doesExistWorklog.worklogId}`;
+      if (doesExistWorklog.authorId === updatedUserIntegration.jiraAccountId) {
+        const url = `https://api.atlassian.com/ex/jira/${updatedUserIntegration?.siteId}/rest/api/3/issue/${doesExistWorklog?.integratedTaskId}/worklog/${doesExistWorklog.worklogId}`;
         const config = {
           method: 'delete',
           url,
           headers: {
-            Authorization: `Bearer ${updated_integration?.accessToken}`,
+            Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
             'Content-Type': 'application/json',
           },
         };

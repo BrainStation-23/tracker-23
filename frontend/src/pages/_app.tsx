@@ -73,7 +73,7 @@ export default function App({ Component, pageProps }: AppProps) {
             {validUser ? (
               <CustomLayout>
                 <Head>
-                  <link rel="icon" href="/bsIcon.png" />
+                  <link rel="icon" href="/images/bsIcon.png" />
                   <title>Tracker23</title>
                 </Head>{" "}
                 <Component {...pageProps} />

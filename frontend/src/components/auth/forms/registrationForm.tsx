@@ -3,6 +3,8 @@ import { Button, Form, Input, message } from "antd";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { userAPI } from "../../../../APIs/index";
+import MyFormItem from "@/components/common/form/MyFormItem";
+import MyLink from "@/components/common/MyLink";
 type Props = {
   setIsModalOpen: Function;
 };
@@ -51,9 +53,13 @@ const RegistrationForm = ({ setIsModalOpen }: Props) => {
       onFinish={onFinish}
       onValuesChange={(e) => setEmailStatus("validating")}
       onFinishFailed={onFinishFailed}
-      autoComplete="off"
+      layout="vertical"
+      labelAlign="left"
+      requiredMark={false}
+      className="mx-auto w-full pb-0 "
     >
-      <Form.Item
+      <MyFormItem
+        label="First Name"
         name="firstName"
         rules={[{ required: true, message: "Please input your First Name!" }]}
       >
@@ -61,8 +67,9 @@ const RegistrationForm = ({ setIsModalOpen }: Props) => {
           placeholder="First Name"
           className="flex w-full rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
         />
-      </Form.Item>
-      <Form.Item
+      </MyFormItem>
+      <MyFormItem
+        label="Last Name"
         name="lastName"
         rules={[{ required: true, message: "Please input your Last Name!" }]}
       >
@@ -70,9 +77,10 @@ const RegistrationForm = ({ setIsModalOpen }: Props) => {
           placeholder="Last Name"
           className="flex w-full rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
         />
-      </Form.Item>
+      </MyFormItem>
 
-      <Form.Item
+      <MyFormItem
+        label="Email Address"
         name="email"
         validateFirst={true}
         rules={[
@@ -90,27 +98,29 @@ const RegistrationForm = ({ setIsModalOpen }: Props) => {
         <Input
           type="email"
           id="validating"
-          placeholder="Email"
+          placeholder="Enter your email"
           className="flex w-full rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
         />
-      </Form.Item>
+      </MyFormItem>
 
-      <Form.Item
+      <MyFormItem
+        label="Password"
         name="password"
         rules={[{ required: true, message: "Please input your password!" }]}
       >
         <Input.Password
-          placeholder="Password"
+          placeholder="Enter your password"
           className="flex rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
         />
-      </Form.Item>
+      </MyFormItem>
 
-      <Form.Item
+      <MyFormItem
+        label="Re-type Password"
         name="passwordRe"
         rules={[
           { required: true, message: "Please re-input your password!" },
-          ({ getFieldValue }) => ({
-            validator(_, value) {
+          ({ getFieldValue }: any) => ({
+            validator(_: any, value: any) {
               if (!value || getFieldValue("password") === value) {
                 return Promise.resolve();
               }
@@ -123,13 +133,17 @@ const RegistrationForm = ({ setIsModalOpen }: Props) => {
           placeholder="Re-type Password"
           className="flex rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
         />
-      </Form.Item>
+      </MyFormItem>
 
-      <Form.Item>
+      <MyFormItem>
         <button className="flex w-full flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
           Sign up
         </button>
-      </Form.Item>
+      </MyFormItem>
+      <div className="flex items-center justify-center gap-2 2xl:text-base">
+        Already have account?
+        <MyLink href="/login">Login</MyLink>
+      </div>
     </Form>
   );
 };

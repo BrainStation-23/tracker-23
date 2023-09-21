@@ -51,6 +51,7 @@ import {
   deleteIntegrationRest,
   syncProjectTasksRest,
   createProjectRest,
+  getWorkspaceMembersRest,
 } from "./restApi";
 
 const graphqlApi: apiFunction = {
@@ -80,6 +81,7 @@ const graphqlApi: apiFunction = {
   pinTask: pinTaskRest,
   selectJiraIntegration: selectJiraIntegrationRest,
   getIntegratedProjectStatuses: getIntegratedProjectStatusesRest,
+  getWorkspaceMembers: getWorkspaceMembersRest,
   getNotifications: getNotificationsRest,
   deleteSession: deleteSessionRest,
   updateSession: updateSessionRest,
@@ -150,6 +152,7 @@ const restApi: apiFunction = {
   deleteWorkspace: deleteWorkspaceRest,
   updateWorkspace: updateWorkspaceRest,
   getWorkspaceInvitationList: getWorkspaceInvitationListRest,
+  getWorkspaceMembers: getWorkspaceMembersRest,
   sendWorkspaceInvitation: sendWorkspaceInvitationRest,
   acceptWorkspaceInvitation: acceptWorkspaceInvitationRest,
   rejectWorkspaceInvitation: rejectWorkspaceInvitationRest,

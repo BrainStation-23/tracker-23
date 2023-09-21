@@ -29,5 +29,6 @@ export const apiEndPoints = {
   activeSprintTasks: `/sprints/active-sprintTasks`,
   workspaces: `workspaces`,
   invitation: `workspaces/invitation`,
+  members: `workspaces/users`,
   changeWorkspace: `workspaces/change-workspace`,
 };
