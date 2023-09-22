@@ -34,6 +34,10 @@ export class SessionsService {
   ) {}
 
   async getSessions(user: User, taskId: number) {
+    // console.log(
+    //   '🚀 ~ file: sessions.service.ts:37 ~ SessionsService ~ getSessions ~ user:',
+    //   user,
+    // );
     await this.validateTaskAccess(user, taskId);
 
     return await this.prisma.session.findMany({
