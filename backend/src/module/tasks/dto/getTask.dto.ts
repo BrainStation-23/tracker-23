@@ -1,5 +1,5 @@
 import { UserWorkspaceStatus } from '@prisma/client';
-import { IsEnum, IsNumber, IsOptional, IsString} from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString} from 'class-validator';
 
 export enum PriorityEnum {
   HIGH = 'HIGH',
@@ -94,6 +94,21 @@ export class GetTeamTaskQuery {
   @IsOptional()
   projectIds?: string;
 }
+
+export class GetTimesheetQuery {
+  @IsString()
+  @IsOptional()
+  startDate?: Date;
+
+  @IsString()
+  @IsOptional()
+  endDate?: Date;
+
+  @IsString()
+  @IsOptional()
+  userIds?: string;
+}
+
 export class ProjectTaskDeto {
   @IsNumber()
   projectId: string;

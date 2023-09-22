@@ -18,6 +18,7 @@ import {
   GetTaskQuery,
   GetTeamTaskQuery,
   GetTeamTaskQueryType,
+  GetTimesheetQuery,
 } from '../tasks/dto';
 import { UserWorkspaceDatabase } from '../../database/userWorkspaces';
 import { SessionDatabase } from '../../database/sessions';
@@ -735,8 +736,12 @@ export class SessionsService {
     };
   }
 
-  async getSpentTimeByDay(user: User, query: GetTaskQuery) {
-    const sessions = await this.getSessionsByUserWorkspace(user);
+  async getSpentTimeByDay(
+    loggedInUser: Partial<User>,
+    query: GetTaskQuery | GetTimesheetQuery,
+    user?: Partial<User>,
+  ) {
+    const sessions = loggedInUser && (await this.getSessionsByUserWorkspace(loggedInUser, user));
     if (!sessions)
       return {
         TotalSpentTime: 0,
@@ -803,6 +808,7 @@ export class SessionsService {
           workspaceId: user?.activeWorkspaceId,
         }));
 
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       const userWorkspaceIds: number[] = userWorkspaces?.map(
         (userWorkspace: any) => userWorkspace?.id,
@@ -828,25 +834,74 @@ export class SessionsService {
       : this.getSpentTimePerDay(sessions, startDate, endDate);
   }
 
+  async getTimesheetPerDay(loggedInUser: User, query: GetTimesheetQuery) {
+    let userIds, userIdArray, users;
+
+    if (!loggedInUser?.activeWorkspaceId)
+      throw new APIException(
+        'No user workspace detected',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    if (query?.userIds) {
+      userIds = query?.userIds as unknown as string;
+
+      userIdArray =
+        userIds && userIds.split(',').map((item) => Number(item.trim()));
+
+      users = userIdArray && (await this.sessionDatabase.getUsers(userIdArray));
+    } else {
+      const userWorkspaces = await this.sessionDatabase.getUserWorkspaceList({
+        workspaceId: loggedInUser?.activeWorkspaceId,
+      });
+
+      users = userWorkspaces?.map((userWorkspace) => userWorkspace?.user);
+    }
+
+    if (!users)
+      throw new APIException(
+        'Could not get users',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+
+    return await Promise.all(
+      users?.map(async (user) => {
+        const sessions = await this.getSpentTimeByDay(
+          loggedInUser,
+          query,
+          user,
+        );
+        return {
+          ...user,
+          sessions,
+        };
+      }),
+    );
+  }
+
   //private functions
-  private async getSessionsByUserWorkspace(user: User) {
-    if (!user || !user.activeWorkspaceId)
+  private async getSessionsByUserWorkspace(
+    loggedInUser: Partial<User>,
+    user?: Partial<User>,
+  ) {
+    if (!loggedInUser || !loggedInUser.activeWorkspaceId)
       throw new APIException(
         'No workspace id detected',
         HttpStatus.BAD_REQUEST,
       );
 
+    const userId = user ? user.id : loggedInUser.id;
     const userWorkspace =
       await this.userWorkspaceDatabase.getSingleUserWorkspace({
-        userId: user.id,
-        workspaceId: user.activeWorkspaceId,
+        userId,
+        workspaceId: loggedInUser.activeWorkspaceId,
       });
 
-    if (!userWorkspace)
-      throw new APIException(
-        'Could not get userworkspace',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    // if (!userWorkspace)
+    //   throw new APIException(
+    //     'Could not get userworkspace',
+    //     HttpStatus.INTERNAL_SERVER_ERROR,
+    //   );
 
     return await this.sessionDatabase.getSessions({
       userWorkspaceId: userWorkspace?.id,
