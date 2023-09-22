@@ -10,7 +10,7 @@ import { RootState } from "@/storage/redux/store";
 import { userAPI } from "APIs";
 import { setSyncStatus, setSyncRunning } from "@/storage/redux/syncSlice";
 import { Spin, message } from "antd";
-import { publicRoutes } from "utils/constants";
+import { noNavbar, publicRoutes } from "utils/constants";
 import { setProjectsSlice } from "@/storage/redux/projectsSlice";
 import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
 import { initializeSocket } from "@/services/socket.service";
@@ -60,7 +60,9 @@ const CustomLayout = ({ children }: any) => {
   const projectStatuses = useAppSelector(
     (state: RootState) => state.projectList.projects
   );
-
+  const workspacesList = useAppSelector(
+    (state: RootState) => state.workspacesSlice.workspaces
+  );
   const getProjectWiseStatues = async () => {
     if (!projectStatuses) {
       {
@@ -174,34 +176,51 @@ const CustomLayout = ({ children }: any) => {
   useEffect(() => {
     if (syncRunning !== syncing) setSyncing(syncRunning);
   }, [syncing, syncRunning]);
-
+  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
   const getWorkspaces = async () => {
     const res: GetWorkspaceListWithUserDto = await userAPI.getWorkspaceList();
     console.log("🚀 ~ file: layout.tsx:159 ~ getWorkspaces ~ res:", res);
-    const user = res.user;
     if (res.user) {
       const activeWorkspace = res.workspaces.filter(
-        (workspace) => workspace.id === user.activeWorkspaceId
+        (workspace) => workspace.id === res.user.activeWorkspaceId
       )[0];
       const workspaces = res.workspaces.map((workspace) => {
         return {
           ...workspace,
-          active: workspace.id === user.activeWorkspaceId,
+          active: workspace.id === res.user.activeWorkspaceId,
         };
       });
       const userWorkspace = activeWorkspace?.userWorkspaces.filter(
-        (userWorkspace) => userWorkspace.userId === user.id
+        (userWorkspace) => userWorkspace.userId === res.user.id
       )[0];
-      dispatch(setUserSlice({ ...user, role: userWorkspace?.role }));
+      dispatch(setUserSlice({ ...res.user, role: userWorkspace?.role }));
       dispatch(setWorkspacesSlice(workspaces));
     } else {
       const errorRes: any = res;
       errorRes?.error?.message && message.error(errorRes?.error?.message);
       // logOutFunction();
     }
-    if (user?.activeWorkspaceId) setHasActiveWorkSpace(true);
+    if (res.user?.activeWorkspaceId) setHasActiveWorkSpace(true);
     setLoading(false);
   };
+
+  useEffect(() => {
+    console.log(
+      !publicRoutes.some((route) => path.includes(route)),
+      !path.includes("socialLogin")
+    );
+
+    if (
+      !publicRoutes.some((route) => path.includes(route)) &&
+      !path.includes("socialLogin")
+    ) {
+      if (!(workspacesList?.length > 0)) {
+        setLoading(true);
+        getWorkspaces();
+      } else setLoading(false);
+      if (userInfo?.activeWorkspaceId) setHasActiveWorkSpace(true);
+    }
+  }, [router, path]);
 
   useEffect(() => {
     console.log(
@@ -216,8 +235,7 @@ const CustomLayout = ({ children }: any) => {
       setLoading(true);
       getWorkspaces();
     }
-  }, [router, path, reloadWorkspace]);
-
+  }, [reloadWorkspace]);
   return (
     <>
       {loading &&
@@ -273,7 +291,9 @@ const CustomLayout = ({ children }: any) => {
                 "px-8": !isPublicRoute && !path.includes("onBoarding"),
               })}
             >
-              {!isPublicRoute && !path.includes("onBoarding") && <Navbar />}
+              {!isPublicRoute &&
+                !path.includes("onBoarding") &&
+                !noNavbar.some((route) => path.includes(route)) && <Navbar />}
               <div className="h-full w-full bg-white">
                 {!isPublicRoute && !path.includes("onBoarding") && (
                   <GlobalClock />

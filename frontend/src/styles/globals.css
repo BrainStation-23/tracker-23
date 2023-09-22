@@ -5,7 +5,10 @@
 body {
   font-family: "Inter", sans-serif;
 }
-
+.ant-typography {
+  font-family: "Inter", sans-serif; /* Set your desired font family */
+  /* Add any other custom styles you want here */
+}
 .ant-table-wrapper .ant-table,
 .ant-dropdown-menu-item .ant-dropdown-menu-title-content,
 .ant-btn,

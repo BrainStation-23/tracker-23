@@ -4,8 +4,10 @@ import LogoutIconSvg from "@/assets/svg/LogoutIconSvg";
 import { resetProjectsSlice } from "@/storage/redux/projectsSlice";
 import { resetIntegrationsSlice } from "@/storage/redux/integrationsSlice";
 import { setSocket } from "@/storage/redux/notificationsSlice";
-
-const LogOutButton = () => {
+type Props = {
+  className?: string;
+};
+const LogOutButton = ({ className }: Props) => {
   const dispatch = useDispatch();
   const handleLogOut = async () => {
     dispatch(resetIntegrationsSlice());
@@ -16,11 +18,12 @@ const LogOutButton = () => {
   };
   return (
     <button
-      className="flex w-full items-center gap-1"
+      className={` flex w-full items-center gap-1 rounded 
+       ${className ? className : ""}`}
       onClick={() => handleLogOut()}
     >
       <LogoutIconSvg />
-      <span className="text-[15px] font-semibold">Log out</span>
+      <div className="text-[15px] font-semibold">Log out</div>
     </button>
   );
 };

@@ -8,6 +8,7 @@ export const publicRoutes = [
   // "/images",
 ];
 export const ignoreRoutes = ["/_next", "/assets", "/integrations", "/images"];
+export const noNavbar = ["/taskList"];
 export const menuOptions = [
   { link: "/taskList", title: "Tasks Page" },
   // { link: "/dashboard", title: "Dashboard Page" },
