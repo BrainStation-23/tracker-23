@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import MyFormItem from "../../common/form/MyFormItem";
 import MyInput from "@/components/common/form/MyInput";
-import MyLink from "@/components/common/MyLink";
+import MyLink from "@/components/common/link/MyLink";
 
 type Props = {
   setIsModalOpen: Function;

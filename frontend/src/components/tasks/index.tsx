@@ -30,6 +30,7 @@ import TableComponent from "./components/tableComponent";
 import TopPanel from "./components/topPanel/topPanel";
 import TopPanelActiveSprint from "./components/topPanel/topPanelActiveSprint";
 import SessionStartWarning from "./components/warning";
+import Navbar from "../navbar";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -583,18 +584,26 @@ const TasksPage = () => {
         setRunningTask,
       }}
     >
+      <Navbar
+        extraComponent={
+          <PrimaryButton onClick={() => setViewModalOpen(true)}>
+            <PlusIconSvg />
+            Add Task
+          </PrimaryButton>
+        }
+      />
       <div
         className="overflow-y-auto"
         // style={{ height: "calc(100vh - 100px)" }}
       >
         <div className="mb-4 flex justify-between">
           <h2 className="text-2xl font-bold">Tasks</h2>
-          <div className="flex gap-1">
+          {/* <div className="flex gap-1">
             <PrimaryButton onClick={() => setViewModalOpen(true)}>
               <PlusIconSvg />
               Add Task
             </PrimaryButton>
-          </div>
+          </div> */}
         </div>
         {activeTab === "ActiveSprint" ? (
           <TopPanelActiveSprint

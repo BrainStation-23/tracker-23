@@ -1,15 +1,15 @@
-import React from "react";
-import { Button, Checkbox, Form, Input } from "antd";
-import { toast } from "react-toastify";
-import { useRouter } from "next/router";
+import { Checkbox, Form } from "antd";
 import { userAPI } from "APIs";
+import { useRouter } from "next/router";
+import React from "react";
+
 import { GetCookie } from "@/services/cookie.service";
-import Line from "../../dashboard/charts/lineChart";
-import Link from "next/link";
+
 import MyFormItem from "../../common/form/MyFormItem";
-import MyLink from "../../common/MyLink";
 import MyInput from "../../common/form/MyInput";
 import MyPasswordInput from "../../common/form/MyPasswordInput";
+import MyLink from "../../common/link/MyLink";
+import Line from "../../dashboard/charts/lineChart";
 
 type Props = {
   setIsModalOpen: Function;

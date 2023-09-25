@@ -20,8 +20,13 @@ import SyncButtonComponent from "../common/buttons/syncButton";
 import LogOutButton from "../logout/logOutButton";
 import { sideMenuOptions } from "../sideMenu";
 import NotificationSection from "./components/notificationSection";
+import { getActiveUserWorSpace } from "@/services/globalFunctions";
 
-function Navbar() {
+type Props = {
+  extraComponent?: any;
+};
+
+const Navbar = ({ extraComponent }: Props) => {
   const [userDetails, setUserDetails] = useState<LoginResponseDto>();
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const syncing: boolean = useAppSelector(
@@ -169,7 +174,7 @@ function Navbar() {
             overlayClassName='w-32'
             className="flex w-[300px] items-center rounded bg-gray-50 p-2 hover:bg-gray-100"
           > */}
-          <div>
+          {/* <div>
             <Dropdown
               menu={menuProps}
               dropdownRender={dropdownRender}
@@ -205,7 +210,6 @@ function Navbar() {
                     </div>
                     <div className="font-normal">
                       {activeUserWorkspace.designation}
-                      {/* {userInfo?.role ? userInfo?.role : "Project Manager"} */}
                     </div>
                   </div>
                 </div>
@@ -219,31 +223,14 @@ function Navbar() {
                 </div>
               </div>
             </Dropdown>
-          </div>
+          </div> */}
           {/* </Dropdown> */}
           {/* <LogOutButton /> */}
+          {extraComponent}
         </div>
       )}
     </div>
   );
-}
+};
 
 export default Navbar;
-
-const getActiveUserWorSpace = (
-  allWorkspaces: WorkspaceDto[],
-  userInfo: UserDto
-) => {
-  const activeWorkspace = allWorkspaces
-    ? allWorkspaces.find(
-        (workSpace) => workSpace.id === userInfo.activeWorkspaceId
-      )
-    : null;
-
-  const activeUserWorkspace = activeWorkspace
-    ? activeWorkspace.userWorkspaces?.find(
-        (userWorkspace) => userWorkspace.userId === userInfo.id
-      )
-    : null;
-  return activeUserWorkspace;
-};

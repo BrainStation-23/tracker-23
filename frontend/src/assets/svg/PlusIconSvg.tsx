@@ -1,4 +1,4 @@
-const PlusIconSvg = () => {
+const PlusIconSvg = ({ stroke = "white" }: any) => {
   return (
     <svg
       width="24"
@@ -10,14 +10,14 @@ const PlusIconSvg = () => {
       <g clipPath="url(#clip0_230_8977)">
         <path
           d="M12 5V19"
-          stroke="white"
+          stroke={stroke}
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
           d="M5 12H19"
-          stroke="white"
+          stroke={stroke}
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"

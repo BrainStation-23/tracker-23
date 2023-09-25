@@ -1,19 +1,21 @@
 import { Dropdown, Input, MenuProps } from "antd";
 import { debounce } from "lodash";
+import { SearchParamsModel } from "models/apiParams";
 import { SprintDto, TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
 
 import FilterIconSvg from "@/assets/svg/filterIconSvg";
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
+import MyActiveTab from "@/components/common/tabs/MyActiveTab";
+import MyInactiveTab from "@/components/common/tabs/MyInactiveTab";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
 import PrioritySelectorComponent from "./components/prioritySelector";
+import ProjectSelectorComponent from "./components/projectSelector";
 import SprintSelectorComponent from "./components/sprintSelector";
 import StatusSelectorComponent from "./components/statusSelector";
-import { SearchParamsModel } from "models/apiParams";
-import ProjectSelectorComponent from "./components/projectSelector";
 
 type Props = {
   tasks: TaskDto[];
@@ -33,7 +35,9 @@ const TopPanel = ({
 }: Props) => {
   const [searchText, setSearchText] = useState(searchParams.searchText);
   const [status, setStatus] = useState<string[]>(searchParams.status);
-  const [projectIds, setProjectIds] = useState<number[]>(searchParams.projectIds);
+  const [projectIds, setProjectIds] = useState<number[]>(
+    searchParams.projectIds
+  );
   const [priority, setPriority] = useState(searchParams.priority);
   const [sprints, setSprints] = useState(searchParams.sprints);
   const [active, setActive] = useState("");
@@ -50,62 +54,6 @@ const TopPanel = ({
   );
   const totalPinned = tasks?.filter((task) => task.pinned)?.length;
   const tabs = ["All", "Pin", "ActiveSprint"];
-  const activeButton = (tab: string, setActiveTab: Function) => (
-    <div
-      key={Math.random()}
-      className="flex cursor-pointer items-center gap-2 p-[11px]"
-      style={{
-        // background: "#00A3DE",
-        border: "1px solid #00A3DE",
-        borderRadius: "8px",
-      }}
-    >
-      <div
-        className="px-1 text-xs font-medium text-white"
-        style={{
-          background: "#00A3DE",
-          borderRadius: "4px",
-          color: "white",
-        }}
-      >
-        {tab === "Pin"
-          ? totalPinned
-          : tab === "ActiveSprint"
-          ? activeSprintTasks?.length
-          : tasks?.length}
-      </div>
-      <div className="text-[15px]">{tab}</div>
-    </div>
-  );
-
-  const inactiveButton = (tab: string, setActiveTab: Function) => (
-    <div
-      key={Math.random()}
-      className="flex cursor-pointer items-center gap-2 p-[11px]"
-      style={{
-        // background: "#00A3DE",
-        border: "1px solid #ECECED",
-        borderRadius: "8px",
-      }}
-      onClick={() => setActiveTab(tab)}
-    >
-      <div
-        className="px-1 text-xs font-medium text-white"
-        style={{
-          background: "#E7E7E7",
-          borderRadius: "4px",
-          color: "black",
-        }}
-      >
-        {tab === "Pin"
-          ? totalPinned
-          : tab === "ActiveSprint"
-          ? activeSprintTasks?.length
-          : tasks?.length}
-      </div>
-      <div className="text-[15px] text-[#4D4E55]">{tab}</div>
-    </div>
-  );
 
   const handleInputChange = (event: any) => {
     setSearchText(event.target.value);
@@ -140,7 +88,7 @@ const TopPanel = ({
       JSON.stringify(searchParams.priority) != JSON.stringify(priority) ||
       JSON.stringify(searchParams.selectedDate) !=
         JSON.stringify(selectedDate) ||
-      JSON.stringify(searchParams.status) != JSON.stringify(status)||
+      JSON.stringify(searchParams.status) != JSON.stringify(status) ||
       JSON.stringify(searchParams.projectIds) != JSON.stringify(projectIds)
     ) {
       setSearchParams({
@@ -207,9 +155,23 @@ const TopPanel = ({
     <div className="my-5 flex w-full justify-between">
       <div className="flex gap-3">
         {tabs?.map((tab) => {
-          return activeTab === tab
-            ? activeButton(tab, setActiveTab)
-            : inactiveButton(tab, setActiveTab);
+          return activeTab === tab ? (
+            <MyActiveTab {...{ tab, setActiveTab }}>
+              {tab === "Pin"
+                ? totalPinned
+                : tab === "ActiveSprint"
+                ? activeSprintTasks?.length
+                : tasks?.length}
+            </MyActiveTab>
+          ) : (
+            <MyInactiveTab {...{ tab, setActiveTab }}>
+              {tab === "Pin"
+                ? totalPinned
+                : tab === "ActiveSprint"
+                ? activeSprintTasks?.length
+                : tasks?.length}
+            </MyInactiveTab>
+          );
         })}
       </div>
       <div className="flex items-center gap-12">

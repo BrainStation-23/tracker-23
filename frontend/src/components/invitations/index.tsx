@@ -40,8 +40,8 @@ const InvitationsComponent = () => {
         {tab === "All"
           ? inviteList?.length
           : tab === "Pending"
-          ? inviteList.filter((invite) => invite.status === "INVITED")?.length
-          : inviteList.filter((invite) => invite.status !== "INVITED")?.length}
+          ? inviteList?.filter((invite) => invite.status === "INVITED")?.length
+          : inviteList?.filter((invite) => invite.status !== "INVITED")?.length}
       </div>
       <div className="text-[15px]">{tab}</div>
     </div>
@@ -72,8 +72,8 @@ const InvitationsComponent = () => {
         {tab === "All"
           ? inviteList?.length
           : tab === "Pending"
-          ? inviteList.filter((invite) => invite.status === "INVITED")?.length
-          : inviteList.filter((invite) => invite.status !== "INVITED")?.length}
+          ? inviteList?.filter((invite) => invite.status === "INVITED")?.length
+          : inviteList?.filter((invite) => invite.status !== "INVITED")?.length}
       </div>
       <div className="text-[15px] text-[#4D4E55]">{tab}</div>
     </div>

@@ -15,6 +15,7 @@ import {
 
 import { localFormat, timeFormat } from "../datePicker";
 import Sessions from "./components/sessions";
+import OpenLinkInNewTab from "../common/link/OpenLinkInNewTab";
 
 type Props = {
   task: TaskDto;
@@ -88,44 +89,43 @@ const TaskDetailsModal = ({
         <Spin spinning={spinning}>
           <div className="flex flex-col gap-4">
             <div className="flex w-full items-center gap-4">
-              <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+              <span className="w-[120px] text-sm font-semibold text-secondary ">
                 TItle
               </span>
               <span className="font-medium">{task?.title}</span>
             </div>
             <div className="flex items-center gap-4">
-              <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+              <span className="w-[120px] text-sm font-semibold text-secondary ">
                 Description
-              </span>{" "}
+              </span>
               <span className="font-medium">
                 {taskDetails?.description ?? <em>No description provided.</em>}
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+              <span className="w-[120px] text-sm font-semibold text-secondary ">
                 Link
-              </span>{" "}
-              <span
-                className="cursor-pointer font-medium hover:text-blue-400"
+              </span>
+              <OpenLinkInNewTab
                 onClick={() => {
                   window.open(taskDetails?.url);
                   setIsModalOpen(true);
                 }}
               >
                 {taskDetails?.url}
-              </span>
+              </OpenLinkInNewTab>
             </div>
             <div className="grid grid-cols-2">
               <div className="flex items-center gap-4">
-                <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+                <span className="w-[120px] text-sm font-semibold text-secondary ">
                   Estimation
-                </span>{" "}
+                </span>
                 <span className="font-medium">
                   {taskDetails?.estimation ?? <em>No estimation provided.</em>}
                 </span>
               </div>
               <div className="flex items-center gap-4">
-                <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+                <span className="w-[120px] text-sm font-semibold text-secondary ">
                   Time Left
                 </span>
                 <span className="font-medium">
@@ -134,13 +134,13 @@ const TaskDetailsModal = ({
                         taskDetails?.estimation * 3600000 -
                           getTotalSpentTime(task.sessions)
                       )
-                    : "No estimation"}{" "}
+                    : "No estimation"}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
+              <span className="w-[120px] text-sm font-semibold text-secondary ">
                 Status
               </span>
               <div
@@ -167,8 +167,8 @@ const TaskDetailsModal = ({
             </div>
 
             <div className="flex items-center gap-4">
-              <span className="w-[120px] text-sm font-semibold text-[#4D4E55] ">
-                Total Spent{" "}
+              <span className="w-[120px] text-sm font-semibold text-secondary ">
+                Total Spent
               </span>
               <span className="font-medium">
                 {getFormattedTotalTime(getTotalSpentTime(task?.sessions))
