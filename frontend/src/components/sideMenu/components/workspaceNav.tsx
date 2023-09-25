@@ -32,7 +32,7 @@ const { Text } = Typography;
 const WorkspaceNav = () => {
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDropdownOpen, setDropdownOpen] = useState(true);
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [mode, setMode] = useState(0);
   // const workspacesList = tmp;
   const workspacesList = useAppSelector(
