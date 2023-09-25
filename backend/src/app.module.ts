@@ -17,6 +17,7 @@ import { DataMigrationModule } from './module/data_migration/data_migration.modu
 import { ProjectsModule } from './module/projects/projects.module';
 import { WebhooksModule } from './module/webhooks/webhooks.module';
 import { UsersModule } from './module/user/users.module';
+import { CronService } from './module/cron/cron.service';
 
 @Module({
   imports: [
@@ -41,5 +42,6 @@ import { UsersModule } from './module/user/users.module';
     ProjectsModule,
     UsersModule,
   ],
+  providers: [CronService],
 })
 export class AppModule {}
