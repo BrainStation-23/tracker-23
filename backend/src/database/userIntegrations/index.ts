@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { UserIntegration } from '@prisma/client';
 import { GetUserIntegrationsByUserWorkspaceIdAndWorkspaceId } from 'src/module/integrations/dto/get.userIntegrations.filter.dto';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 
@@ -76,6 +75,17 @@ export class UserIntegrationDatabase {
     try {
       return await this.prisma.userIntegration.delete({
         where: { id },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async createUserIntegration(userIntegration: any) {
+    try {
+      return await this.prisma.userIntegration.create({
+        data: userIntegration,
       });
     } catch (error) {
       console.log(error);
