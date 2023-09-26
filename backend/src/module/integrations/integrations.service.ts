@@ -77,9 +77,7 @@ export class IntegrationsService {
       await this.userIntegrationDatabase.getUserIntegrationById(
         userIntegrationId,
       );
-    // const integration = await this.prisma.integration.findFirst({
-    //   where: { userId: user.id, type: IntegrationType.JIRA, id: integrationID },
-    // });
+
     if (!userIntegration) {
       throw new APIException(
         'User integration not found',
@@ -98,10 +96,6 @@ export class IntegrationsService {
       tokenResp = (
         await lastValueFrom(this.httpService.post(url, data, headers))
       ).data;
-      // console.log(
-      //   '🚀 ~ file: integrations.service.ts:82 ~ IntegrationsService ~ getUpdatedUserIntegration ~ tokenResp:',
-      //   tokenResp,
-      // );
     } catch (err) {
       throw new APIException(
         'Can not update user integration',
@@ -186,10 +180,6 @@ export class IntegrationsService {
           },
         }),
       ]);
-      // console.log(
-      //   '🚀 ~ file: integrations.service.ts:170 ~ IntegrationsService ~ deleteIntegration ~ transactionRes:',
-      //   transactionRes,
-      // );
 
       if (transactionRes) {
         return { message: 'Successfully user integration deleted' };
