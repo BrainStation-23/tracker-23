@@ -99,3 +99,13 @@ body {
 .custom-checkbox .ant-checkbox {
   display: none;
 }
+
+.custom-checkbox-noMarginInline-wrapper
+  + .custom-checkbox-noMarginInline-wrapper {
+  margin-inline-start: 0px;
+}
+
+.custom-dropdown-bg .ant-dropdown-menu .ant-dropdown-menu-item:hover {
+  background-color: white !important;
+  cursor: auto;
+}
