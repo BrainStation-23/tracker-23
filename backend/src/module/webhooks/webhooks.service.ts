@@ -1,9 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import {
-  IntegrationType,
-  SessionStatus,
-  User,
-} from '@prisma/client';
+import { IntegrationType, SessionStatus, User } from '@prisma/client';
 import axios from 'axios';
 import { RegisterWebhookDto, extendWebhookLifeReqDto } from './dto/index.js';
 import { deleteWebhookDto } from './dto/deleteWebhook.dto.js';
@@ -57,43 +53,73 @@ export class WebhooksService {
   }
 
   async handleWebhook(payload: any) {
-    console.log(payload);
     const jiraEvent = payload.webhookEvent;
-
-    const projectKey = payload.issue.fields.project.key;
-    const siteId = 'payload.self.sideId';
-    // const siteUrl = payload.user.self.split('/')[2];
-    const webhookId = payload.matchedWebhookIds;
-    const doesExistWebhook = await this.prisma.webhook.findUnique({
+    const projectKey = payload.issue.key;
+    const siteUrl = payload.user.self.split('/rest/');
+    const integration = await this.prisma.integration.findFirst({
       where: {
-        webhookIdentifier: {
-          webhookId,
-          siteId,
+        site: siteUrl[0],
+      },
+    });
+    const siteId = integration?.siteId;
+    const url = `${siteUrl[0]}/browse/${projectKey}`;
+    // https://pm23.atlassian.net/browse/T23-261
+    const webhookId: number[] = payload.matchedWebhookIds;
+    const doesExistWebhook =
+      siteId &&
+      (await this.prisma.webhook.findUnique({
+        where: {
+          webhookIdentifier: {
+            webhookId: webhookId[0],
+            siteId,
+          },
         },
+      }));
+    const projects = await this.prisma.project.findMany({
+      where: {
+        projectId: Number(payload.issue.fields.project.id),
+        integrated: true,
       },
     });
     if (doesExistWebhook && payload.webhookEvent === 'jira:issue_created') {
-      // console.log('project', projectKey, siteUrl, webhookId);
-      await this.prisma.task.create({
-        data: {
-          // userId: 1, //unknown user or search user from integration
-          title: payload.issue.fields.summary,
-          assigneeId: payload.issue.fields.assignee?.accountId || null,
-          estimation: payload.issue.fields.timeoriginalestimate
-            ? payload.issue.timeoriginalestimate / 3600
-            : null,
-          projectName: payload.issue.fields.project.name,
-          status: payload.issue.fields.status.name,
-          priority: payload.issue.fields.priority.name,
-          integratedTaskId: Number(payload.issue.id),
-          createdAt: new Date(payload.issue.fields.created),
-          updatedAt: new Date(payload.issue.fields.updated),
-          source: IntegrationType.JIRA,
-        },
-      });
+      for (const project of projects) {
+        const mappedUserWorkspaceAndJiraId =
+          await this.mappingUserWorkspaceAndJiraAccountId(project.workspaceId);
+        const mappedProjectIds = await this.mappingProjectIdAndJiraProjectId(
+          project.workspaceId,
+        );
+        await this.prisma.task.create({
+          data: {
+            userWorkspaceId:
+              mappedUserWorkspaceAndJiraId.get(
+                payload.issue.fields.assignee?.accountId,
+              ) || null,
+            workspaceId: project.workspaceId,
+            title: payload.issue.fields.summary,
+            assigneeId: payload.issue.fields.assignee?.accountId || null,
+            estimation: payload.issue.fields.timeoriginalestimate
+              ? payload.issue.timeoriginalestimate / 3600
+              : null,
+            projectName: payload.issue.fields.project.name,
+            projectId: mappedProjectIds.get(
+              Number(payload.issue.fields.project.id),
+            ),
+            status: payload.issue.fields.status.name,
+            statusCategoryName: payload.issue.fields.status.statusCategory.name
+              .replace(' ', '_')
+              .toUpperCase(),
+            priority: payload.issue.fields.priority.name,
+            integratedTaskId: Number(payload.issue.id),
+            createdAt: new Date(payload.issue.fields.created),
+            updatedAt: new Date(payload.issue.fields.updated),
+            jiraUpdatedAt: new Date(payload.issue.fields.updated),
+            source: IntegrationType.JIRA,
+            url,
+          },
+        });
+      }
     } else if (doesExistWebhook && jiraEvent === 'jira:issue_updated') {
       let sendToModify;
-      //console.log(payload);
       if (
         payload.changelog.items[0].field === 'summary' ||
         payload.changelog.items[0].field === 'priority' ||
@@ -103,16 +129,33 @@ export class WebhooksService {
       } else {
         sendToModify = payload.changelog.items[0].to;
       }
-      const toBeUpdateField = this.toBeUpdateField(
+      let toBeUpdateField = this.toBeUpdateField(
         payload.changelog.items[0].field,
         sendToModify,
       );
-      //console.log(toBeUpdateField);
-
-      await this.prisma.task.updateMany({
-        where: { integratedTaskId: Number(payload.issue.id) },
-        data: toBeUpdateField,
-      });
+      for (const project of projects) {
+        if (toBeUpdateField.assigneeId) {
+          const mappedUserWorkspaceAndJiraId =
+            await this.mappingUserWorkspaceAndJiraAccountId(
+              project.workspaceId,
+            );
+          const updatedField = {
+            ...toBeUpdateField,
+            userWorkspaceId: mappedUserWorkspaceAndJiraId.get(
+              toBeUpdateField.assigneeId,
+            ),
+          };
+          toBeUpdateField = updatedField;
+        }
+        await this.prisma.task.updateMany({
+          where: {
+            projectId: project.id,
+            workspaceId: project.workspaceId,
+            integratedTaskId: Number(payload.issue.id),
+          },
+          data: toBeUpdateField,
+        });
+      }
     } else if (jiraEvent === 'worklog_created') {
       const lastTime =
         new Date(payload.worklog.started).getTime() +
@@ -130,6 +173,58 @@ export class WebhooksService {
         },
       });
     }
+  }
+
+  private async mappingUserWorkspaceAndJiraAccountId(workspaceId: number) {
+    const mappedUserWorkspaceAndJiraId = new Map<string, number>();
+    const workspace = await this.prisma.workspace.findUnique({
+      where: {
+        id: workspaceId,
+      },
+      include: {
+        userWorkspaces: {
+          include: {
+            userIntegration: true,
+          },
+        },
+      },
+    });
+
+    workspace &&
+      workspace.userWorkspaces &&
+      workspace.userWorkspaces?.map((userWorkspace) => {
+        if (
+          userWorkspace.userIntegration.length > 0 &&
+          userWorkspace.userIntegration[0].jiraAccountId
+        ) {
+          mappedUserWorkspaceAndJiraId.set(
+            userWorkspace.userIntegration[0].jiraAccountId,
+            userWorkspace.id,
+          );
+        }
+      });
+    return mappedUserWorkspaceAndJiraId;
+  }
+
+  private async mappingProjectIdAndJiraProjectId(workspaceId: number) {
+    const mappedProjectAndJiraId = new Map<number, number>();
+    const workspace = await this.prisma.workspace.findUnique({
+      where: {
+        id: workspaceId,
+      },
+      include: {
+        projects: true,
+      },
+    });
+
+    workspace &&
+      workspace.projects &&
+      workspace.projects?.map((project) => {
+        if (project && project.projectId) {
+          mappedProjectAndJiraId.set(project.projectId, project.id);
+        }
+      });
+    return mappedProjectAndJiraId;
   }
 
   toBeUpdateField(key: any, value: any) {
@@ -166,6 +261,10 @@ export class WebhooksService {
           user,
           reqBody.userIntegrationId,
         );
+      console.log(
+        '🚀 ~ file: webhooks.service.ts:161 ~ WebhooksService ~ registerWebhook ~ updated_integration:',
+        updated_integration,
+      );
       if (!updated_integration) {
         return null;
       }
@@ -196,6 +295,10 @@ export class WebhooksService {
           },
         ],
       };
+      console.log(
+        '🚀 ~ file: webhooks.service.ts:195 ~ WebhooksService ~ registerWebhook ~ formateReqBody:',
+        formateReqBody,
+      );
       // //console.log(formateReqBody);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook`;
       const config = {
@@ -212,7 +315,7 @@ export class WebhooksService {
         webhook = await (await axios(config)).data;
         console.log(
           '🚀 ~ file: webhooks.service.ts:217 ~ WebhooksService ~ registerWebhook ~ webhook:',
-          webhook,
+          webhook.webhookRegistrationResult[0],
         );
       } catch (err) {
         console.log(

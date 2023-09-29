@@ -92,4 +92,15 @@ export class UserIntegrationDatabase {
       return null;
     }
   }
+
+  async getUserIntegration(filter: any) {
+    try {
+      return await this.prisma.userIntegration.findUnique({
+          where: filter,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
 }

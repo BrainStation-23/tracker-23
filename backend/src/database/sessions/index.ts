@@ -61,4 +61,72 @@ export class SessionDatabase {
       return [];
     }
   }
+
+  async updateTask(filter: any, update: any) {
+    try {
+      return await this.prisma.task.update({
+        where: filter,
+        data: update,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getSession(taskId: number) {
+    try {
+      return await this.prisma.session.findFirst({
+        where: { taskId, endTime: null },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async createSession(newSession: any) {
+    try {
+      return await this.prisma.session.create({
+        data: newSession,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async deleteSession(sessionId: number) {
+    try {
+      return await this.prisma.session.delete({
+        where: { id: sessionId },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async updateSessionById(sessionId: number, update: any) {
+    try {
+      return await this.prisma.session.update({
+        where: { id: sessionId },
+        data: update,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getSessionById(sessionId: number) {
+    try {
+      return await this.prisma.session.findUnique({
+        where: { id: sessionId },
+      });
+    } catch(err) {
+      console.log(err);
+      return null;
+    }
+  }
 }

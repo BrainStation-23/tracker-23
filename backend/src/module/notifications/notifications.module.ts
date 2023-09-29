@@ -9,6 +9,7 @@ import { WorkspacesService } from '../workspaces/workspaces.service';
 import { EmailService } from '../email/email.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
 import { UsersDatabase } from 'src/database/users';
+import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 
 @Module({
   imports: [HttpModule.register({})],
@@ -22,6 +23,7 @@ import { UsersDatabase } from 'src/database/users';
     WorkspaceDatabase,
     MyGateway,
     UsersDatabase,
+    UserWorkspaceDatabase,
   ],
   exports: [MyGateway],
 })

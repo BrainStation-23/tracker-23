@@ -22,28 +22,27 @@ import {
 } from '../tasks/dto';
 import { UserWorkspaceDatabase } from '../../database/userWorkspaces';
 import { SessionDatabase } from '../../database/sessions';
+import { ProjectDatabase } from 'src/database/projects';
+import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import { TasksDatabase } from 'src/database/tasks';
 
 @Injectable()
 export class SessionsService {
   constructor(
     private integrationsService: IntegrationsService,
-    private prisma: PrismaService,
     private tasksService: TasksService,
     private workspacesService: WorkspacesService,
     private userWorkspaceDatabase: UserWorkspaceDatabase,
     private sessionDatabase: SessionDatabase,
+    private projectDatabase: ProjectDatabase,
+    private userIntegrationDatabase: UserIntegrationDatabase,
+    private tasksDatabase: TasksDatabase,
   ) {}
 
   async getSessions(user: User, taskId: number) {
-    // console.log(
-    //   '🚀 ~ file: sessions.service.ts:37 ~ SessionsService ~ getSessions ~ user:',
-    //   user,
-    // );
     await this.validateTaskAccess(user, taskId);
 
-    return await this.prisma.session.findMany({
-      where: { taskId },
-    });
+    return await this.sessionDatabase.getSessions({ taskId });
   }
 
   async createSession(user: User, dto: SessionDto) {
@@ -54,23 +53,23 @@ export class SessionsService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
     await this.validateTaskAccess(user, dto.taskId);
-    await this.prisma.task.update({
-      where: { id: dto.taskId },
-      data: { status: 'In Progress', statusCategoryName: 'IN_PROGRESS' },
-    });
+    await this.sessionDatabase.updateTask(
+      { id: dto.taskId },
+      { status: 'In Progress', statusCategoryName: 'IN_PROGRESS' },
+    );
 
     // Checking for previous active session
-    const activeSession = await this.prisma.session.findFirst({
-      where: { taskId: dto.taskId, endTime: null },
-    });
+    const activeSession = await this.sessionDatabase.getSession(dto.taskId);
 
     if (activeSession) {
       await this.stopSession(user, activeSession.taskId);
     }
 
-    return await this.prisma.session.create({
-      data: { ...dto, userWorkspaceId: userWorkspace.id },
+    return await this.sessionDatabase.createSession({
+      ...dto,
+      userWorkspaceId: userWorkspace.id,
     });
   }
 
@@ -85,9 +84,7 @@ export class SessionsService {
     const task = await this.validateTaskAccess(user, taskId);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.tasksService.updateIssueStatus(user, taskId + '', task.status + '');
-    const activeSession = await this.prisma.session.findFirst({
-      where: { taskId, endTime: null },
-    });
+    const activeSession = await this.sessionDatabase.getSession(taskId);
 
     if (!activeSession) {
       throw new BadRequestException('No active session');
@@ -97,9 +94,7 @@ export class SessionsService {
         1000,
     );
     if (timeSpent < 60) {
-      await this.prisma.session.delete({
-        where: { id: activeSession.id },
-      });
+      await this.sessionDatabase.deleteSession(activeSession.id);
       throw new BadRequestException({
         message: 'Session canceled due to insufficient time',
       });
@@ -109,31 +104,33 @@ export class SessionsService {
     if (task.integratedTaskId) {
       const project =
         task.projectId &&
-        (await this.prisma.project.findFirst({
-          where: { id: task.projectId },
-          include: { integration: true },
-        }));
+        (await this.projectDatabase.getProject(
+          { id: task.projectId },
+          { integration: true },
+        ));
+
       if (!project)
         throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
 
       const userIntegration =
         project?.integrationId &&
-        (await this.prisma.userIntegration.findUnique({
-          where: {
-            userIntegrationIdentifier: {
-              integrationId: project?.integrationId,
-              userWorkspaceId: userWorkspace.id,
-            },
+        (await this.userIntegrationDatabase.getUserIntegration({
+          userIntegrationIdentifier: {
+            integrationId: project?.integrationId,
+            userWorkspaceId: userWorkspace.id,
           },
         }));
+
       const session =
         userIntegration &&
+        updated_session &&
         (await this.logToIntegrations(
           user,
           task.integratedTaskId,
           userIntegration.id,
           updated_session,
         ));
+
       if (!session) {
         throw new BadRequestException({
           message: 'Session canceled due to insufficient time',
@@ -152,9 +149,7 @@ export class SessionsService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const task = await this.prisma.task.findFirst({
-      where: { id: taskId },
-    });
+    const task = await this.tasksDatabase.getTasksbyId(taskId);
 
     if (!task) {
       throw new BadRequestException('Task not found');
@@ -167,10 +162,7 @@ export class SessionsService {
   }
 
   async stopSessionUtil(sessionId: number) {
-    return await this.prisma.session.update({
-      where: { id: sessionId },
-      data: { endTime: new Date(), status: SessionStatus.STOPPED },
-    });
+    return await this.sessionDatabase.updateSessionById(sessionId, { endTime: new Date(), status: SessionStatus.STOPPED });
   }
 
   async logToIntegrations(
@@ -182,12 +174,14 @@ export class SessionsService {
     if (session.endTime == null) {
       return null;
     }
+
     const timeSpent = Math.ceil(
       (session.endTime.getTime() - session.startTime.getTime()) / 1000,
     );
     if (timeSpent < 60) {
       return null;
     }
+
     const updated_integration =
       await this.integrationsService.getUpdatedUserIntegration(
         user,
@@ -203,19 +197,19 @@ export class SessionsService {
       this.timeConverter(timeSpent),
       updated_integration,
     );
+
     const localSession =
       jiraSession &&
-      (await this.prisma.session.update({
-        where: { id: session.id },
-        data: {
-          authorId: updated_integration?.jiraAccountId
-            ? updated_integration?.jiraAccountId
-            : null,
-          integratedTaskId: jiraSession ? Number(jiraSession.issueId) : null,
-          worklogId: jiraSession ? Number(jiraSession.id) : null,
-        },
+      (await this.sessionDatabase.updateSessionById(session.id, {
+        authorId: updated_integration?.jiraAccountId
+          ? updated_integration?.jiraAccountId
+          : null,
+        integratedTaskId: jiraSession ? Number(jiraSession.issueId) : null,
+        worklogId: jiraSession ? Number(jiraSession.id) : null,
       }));
+
     if (!localSession) return null;
+
     return { success: true, msg: 'Successfully Updated to jira' };
   }
 
@@ -254,6 +248,7 @@ export class SessionsService {
       return null;
     }
   }
+
   getUtcTime(date: any) {
     const targetTimezoneOffset = '';
     // Create a moment object with the original timestamp
@@ -268,108 +263,99 @@ export class SessionsService {
       formattedString.substr(0, formattedString.length - 3) +
       formattedString[formattedString.length - 2] +
       formattedString[formattedString.length - 1];
-    console.log(
-      '🚀 ~ file: sessions.service.ts:211 ~ SessionsService ~ getUtcTime ~ tmp:',
-      tmp,
-    );
+
     return `${tmp}`;
   }
 
   async manualTimeEntry(user: User, dto: ManualTimeEntryReqBody) {
-    try {
-      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-      if (!userWorkspace) {
-        throw new APIException(
-          'UserWorkspace not found!',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      const startTime = new Date(`${dto.startTime}`);
-      const endTime = new Date(`${dto.endTime}`);
-      const { integratedTaskId, id, projectId } = await this.validateTaskAccess(
-        user,
-        dto.taskId,
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      throw new APIException(
+        'UserWorkspace not found!',
+        HttpStatus.BAD_REQUEST,
       );
+    }
 
-      const timeSpent = Math.ceil(
-        (endTime.getTime() - startTime.getTime()) / 1000,
+    const startTime = new Date(`${dto.startTime}`);
+    const endTime = new Date(`${dto.endTime}`);
+
+    const { integratedTaskId, id, projectId } = await this.validateTaskAccess(
+      user,
+      dto.taskId,
+    );
+
+    const timeSpent = Math.ceil(
+      (endTime.getTime() - startTime.getTime()) / 1000,
+    );
+    if (timeSpent < 60) {
+      throw new APIException(
+        'Insufficient TimeSpent',
+        HttpStatus.BAD_REQUEST,
       );
-      if (timeSpent < 60) {
-        throw new APIException(
-          'Insufficient TimeSpent',
-          HttpStatus.BAD_REQUEST,
-        );
+    }
+
+    let jiraSession: any;
+    let updated_integration: any;
+
+    if (integratedTaskId) {
+      const getUserIntegrationList =
+        await this.integrationsService.getUserIntegrations(user);
+
+      const project =
+        projectId &&
+        (await this.projectDatabase.getProject(
+          { id: projectId },
+          { integration: true },
+        ));
+
+      if (!project) {
+        throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
       }
-      let jiraSession: any;
-      let updated_integration: any;
-      if (integratedTaskId) {
-        const getUserIntegrationList =
-          await this.integrationsService.getUserIntegrations(user);
-        console.log(
-          '🚀 ~ file: sessions.service.ts:276 ~ SessionsService ~ manualTimeEntry ~ getUserIntegrationList:',
-          getUserIntegrationList,
-        );
-        const project =
-          projectId &&
-          (await this.prisma.project.findFirst({
-            where: { id: projectId },
-            include: { integration: true },
-          }));
-        if (!project) {
-          throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+
+      const userIntegration: number[] = [];
+      getUserIntegrationList.map((userInt: any) => {
+        if (
+          project.integrationId &&
+          userInt.integrationId === project.integrationId
+        ) {
+          userIntegration.push(userInt.id);
         }
+      });
 
-        const userIntegration: number[] = [];
-        getUserIntegrationList.map((userInt: any) => {
-          if (
-            project.integration?.id &&
-            userInt.integrationId === project.integration.id
-          ) {
-            userIntegration.push(userInt.id);
-          }
-        });
-        console.log(
-          '🚀 ~ file: sessions.service.ts:293 ~ SessionsService ~ userIntegration ~ userIntegration:',
-          userIntegration,
+      updated_integration =
+        userIntegration.length &&
+        (await this.integrationsService.getUpdatedUserIntegration(
+          user,
+          userIntegration[0],
+        ));
+      if (updated_integration)
+        jiraSession = await this.addWorkLog(
+          startTime,
+          integratedTaskId as unknown as string,
+          this.timeConverter(Number(timeSpent)),
+          updated_integration,
         );
-        updated_integration =
-          userIntegration.length &&
-          (await this.integrationsService.getUpdatedUserIntegration(
-            user,
-            userIntegration[0],
-          ));
-        if (updated_integration)
-          jiraSession = await this.addWorkLog(
-            startTime,
-            integratedTaskId as unknown as string,
-            this.timeConverter(Number(timeSpent)),
-            updated_integration,
-          );
-        jiraSession && this.updateTaskUpdatedAt(dto.taskId);
-      }
-      if (id) {
-        return await this.prisma.session.create({
-          data: {
-            startTime: startTime,
-            endTime: endTime,
-            status: SessionStatus.STOPPED,
-            taskId: id,
-            authorId: updated_integration?.jiraAccountId
-              ? updated_integration?.jiraAccountId
-              : null,
-            integratedTaskId: jiraSession ? Number(jiraSession.issueId) : null,
-            worklogId: jiraSession ? Number(jiraSession.id) : null,
-            userWorkspaceId: userWorkspace.id,
-          },
-        });
-      } else {
-        throw new APIException(
-          'Something is wrong in manual time entry',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    } catch (err) {
-      console.log(err);
+
+      jiraSession && this.updateTaskUpdatedAt(dto.taskId);
+    }
+    if (id) {
+      const createdSession = await this.sessionDatabase.createSession({
+        startTime: startTime,
+        endTime: endTime,
+        status: SessionStatus.STOPPED,
+        taskId: id,
+        authorId: updated_integration?.jiraAccountId
+          ? updated_integration?.jiraAccountId
+          : null,
+        integratedTaskId: jiraSession ? Number(jiraSession.issueId) : null,
+        worklogId: jiraSession ? Number(jiraSession.id) : null,
+        userWorkspaceId: userWorkspace.id,
+      });
+
+      if(!createdSession) throw new APIException('Could not create session', HttpStatus.INTERNAL_SERVER_ERROR);
+
+      return createdSession;
+    } else {
       throw new APIException(
         'Something is wrong in manual time entry',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -390,19 +376,19 @@ export class SessionsService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      const doesExistWorklog = await this.prisma.session.findUnique({
-        where: { id: Number(sessionId) },
-      });
+
+      const doesExistWorklog = await this.sessionDatabase.getSessionById(
+        +sessionId,
+      );
       if (!doesExistWorklog) {
         throw new APIException('No session found', HttpStatus.BAD_REQUEST);
       }
 
-      let session: Session | false | null = null;
-      const task = await this.prisma.task.findFirst({
-        where: {
-          id: doesExistWorklog.taskId,
-          userWorkspaceId: userWorkspace.id,
-        },
+      //let session: Session | false | null = null;
+
+      const task = await this.tasksDatabase.getTask({
+        id: doesExistWorklog.taskId,
+        userWorkspaceId: userWorkspace.id,
       });
       if (!task) {
         throw new APIException(
@@ -410,38 +396,33 @@ export class SessionsService {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
+
       if (task && task.source === IntegrationType.TRACKER23) {
-        session = await this.updateSessionFromLocal(Number(sessionId), reqBody);
-        return session;
+        return await this.updateSessionFromLocal(Number(sessionId), reqBody);
+        //return session;
       }
+
       const getUserIntegrationList =
         await this.integrationsService.getUserIntegrations(user);
-      console.log(
-        '🚀 ~ file: sessions.service.ts:276 ~ SessionsService ~ manualTimeEntry ~ getUserIntegrationList:',
-        getUserIntegrationList,
-      );
+
       const project =
         task.projectId &&
-        (await this.prisma.project.findFirst({
-          where: { id: task.projectId },
-          include: { integration: true },
-        }));
+        (await this.projectDatabase.getProject(
+          { id: task.projectId },
+          { integration: true },
+        ));
       if (!project)
         throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
 
       const userIntegration: number[] = [];
       getUserIntegrationList.map((userInt: any) => {
         if (
-          project.integration?.id &&
-          userInt.integrationId === project.integration.id
+          userInt.integrationId === project.integrationId
         ) {
           userIntegration.push(userInt.id);
         }
       });
-      console.log(
-        '🚀 ~ file: sessions.service.ts:293 ~ SessionsService ~ userIntegration ~ userIntegration:',
-        userIntegration,
-      );
+
       const updated_integration =
         userIntegration.length &&
         (await this.integrationsService.getUpdatedUserIntegration(
@@ -455,6 +436,7 @@ export class SessionsService {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
+
       if (doesExistWorklog.authorId === updated_integration.jiraAccountId) {
         const startTime = new Date(`${reqBody.startTime}`);
         const endTime = new Date(`${reqBody.endTime}`);
@@ -485,19 +467,19 @@ export class SessionsService {
         };
 
         const response = (await axios(config)).data;
-        session =
+        let session =
           response &&
           (await this.updateSessionFromLocal(Number(sessionId), reqBody));
         task && (await this.updateTaskUpdatedAt(task.id));
-      }
 
-      if (!session) {
-        throw new APIException(
-          'You are not allowed to update this session!',
-          HttpStatus.BAD_REQUEST,
-        );
+        if (!session) {
+          throw new APIException(
+            'You are not allowed to update this session!',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        return session;
       }
-      return session;
     } catch (err) {
       throw new APIException(
         err.message || 'Something is wrong to update this session!',
@@ -507,18 +489,14 @@ export class SessionsService {
   }
 
   async updateSessionFromLocal(sessionId: number, reqBody: SessionReqBodyDto) {
-    const updateFromLocal = await this.prisma.session.update({
-      where: {
-        id: Number(sessionId),
-      },
-      data: reqBody,
-    });
+    const updateFromLocal = await this.sessionDatabase.updateSessionById(+sessionId, reqBody);
     if (!updateFromLocal) {
       throw new APIException(
         'Can not update this session!',
         HttpStatus.BAD_REQUEST,
       );
     }
+
     return updateFromLocal;
   }
 
@@ -531,44 +509,35 @@ export class SessionsService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      const doesExistWorklog = await this.prisma.session.findUnique({
-        where: { id: Number(sessionId) },
-      });
+
+      const doesExistWorklog = await this.sessionDatabase.getSessionById(+sessionId);
       if (!doesExistWorklog) {
         throw new APIException('No session found', HttpStatus.BAD_REQUEST);
       }
 
-      let session: Session | false | null = null;
-      const task = await this.prisma.task.findFirst({
-        where: {
-          id: doesExistWorklog.taskId,
-          userWorkspaceId: userWorkspace.id,
-        },
+      const task = await this.tasksDatabase.getTask({
+        id: doesExistWorklog.taskId,
+        userWorkspaceId: userWorkspace.id,
       });
-
       if (!task) {
         throw new APIException(
           'Task Not Found',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
+
       if (task && task.source === IntegrationType.TRACKER23) {
-        session = await this.deleteSessionFromLocal(Number(sessionId));
+        await this.deleteSessionFromLocal(Number(sessionId));
+
         return { message: 'Session Deleted Successfully!' };
       }
 
-      const getUserIntegrationList =
-        await this.integrationsService.getUserIntegrations(user);
-      console.log(
-        '🚀 ~ file: sessions.service.ts:276 ~ SessionsService ~ manualTimeEntry ~ getUserIntegrationList:',
-        getUserIntegrationList,
-      );
       const project =
         task.projectId &&
-        (await this.prisma.project.findFirst({
-          where: { id: task.projectId },
-          include: { integration: true },
-        }));
+        (await this.projectDatabase.getProject(
+          { id: task.projectId },
+          { integration: true },
+        ));
       if (!project)
         throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
 
@@ -578,6 +547,7 @@ export class SessionsService {
           userWorkspace.id,
           project.integrationId,
         ));
+
       const updatedUserIntegration =
         userIntegration &&
         (await this.integrationsService.getUpdatedUserIntegration(
@@ -591,6 +561,7 @@ export class SessionsService {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
+
       if (doesExistWorklog.authorId === updatedUserIntegration.jiraAccountId) {
         const url = `https://api.atlassian.com/ex/jira/${updatedUserIntegration?.siteId}/rest/api/3/issue/${doesExistWorklog?.integratedTaskId}/worklog/${doesExistWorklog.worklogId}`;
         const config = {
@@ -603,18 +574,20 @@ export class SessionsService {
         };
 
         const status = (await axios(config)).status;
-        session =
+        let session =
           status === 204 &&
           (await this.deleteSessionFromLocal(Number(sessionId)));
-        task && this.updateTaskUpdatedAt(task.id);
+
+          task && this.updateTaskUpdatedAt(task.id);
+
+         if (!session) {
+           throw new APIException(
+             'You are not allowed to delete this session!',
+             HttpStatus.BAD_REQUEST,
+           );
+         }
       }
 
-      if (!session) {
-        throw new APIException(
-          'You are not allowed to delete this session!',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
       return { message: 'Session deleted successfully!' };
     } catch (err) {
       throw new APIException(
@@ -625,29 +598,26 @@ export class SessionsService {
   }
 
   async deleteSessionFromLocal(sessionId: number) {
-    const deleteFromLocal = await this.prisma.session.delete({
-      where: {
-        id: Number(sessionId),
-      },
-    });
+    const deleteFromLocal = await this.sessionDatabase.deleteSession(+sessionId);
     if (!deleteFromLocal) {
       throw new APIException(
         'Can not delete this session!',
         HttpStatus.BAD_REQUEST,
       );
     }
+
     return deleteFromLocal;
   }
 
   async updateTaskUpdatedAt(taskId: number) {
-    const task = await this.prisma.task.findUnique({
-      where: {
+    const task = await this.tasksDatabase.getTaskWithCustomResponse(
+      {
         id: taskId,
       },
-      include: {
+      {
         sessions: true,
       },
-    });
+    );
 
     const sessionDate: any = task?.sessions
       .map((el: any) => {
@@ -660,14 +630,15 @@ export class SessionsService {
 
     let date = new Date(Date.now());
     if (sessionDate?.length > 0 && date < sessionDate[0]) date = sessionDate[0];
-    await this.prisma.task.update({
-      where: {
+
+    await this.sessionDatabase.updateTask(
+      {
         id: taskId,
       },
-      data: {
+      {
         updatedAt: date,
       },
-    });
+    );
   }
 
   async weeklySpentTime(user: User, query: GetTaskQuery) {
@@ -741,7 +712,9 @@ export class SessionsService {
     query: GetTaskQuery | GetTimesheetQuery,
     user?: Partial<User>,
   ) {
-    const sessions = loggedInUser && (await this.getSessionsByUserWorkspace(loggedInUser, user));
+    const sessions =
+      loggedInUser &&
+      (await this.getSessionsByUserWorkspace(loggedInUser, user));
     if (!sessions)
       return {
         TotalSpentTime: 0,
