@@ -29,8 +29,9 @@ export class MyGateway implements OnModuleInit {
     let user;
     this.server.use(async (socket: any, next) => {
       const token = socket.handshake.query.token;
-      user = await this.authService.getUserFromAccessToken(`${token}`);
+      if(token === 'undefined' || !token) return next(new Error('Invalid token'));
 
+      user = await this.authService.getUserFromAccessToken(`${token}`);
       if (!user) {
         return next(new Error('Invalid token'));
       }
