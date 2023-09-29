@@ -18,10 +18,20 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Patch('/update-role/:userId')
-  async updateRole(@GetUser() user: User, @Param('userId') userId: number, @Body() req: UpdateRoleRequest) {
+  async updateRole(
+    @GetUser() user: User,
+    @Param('userId') userId: number,
+    @Body() req: UpdateRoleRequest,
+  ) {
     return await this.usersService.updateRole(user, +userId, req?.role);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('/settings')
+  async getSettings(@GetUser() user: User) {
+    return await this.usersService.getSettings(user);
+  }
+  
   @UseGuards(JwtAuthGuard)
   @Patch('/settings')
   async updateSettings(
