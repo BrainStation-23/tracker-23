@@ -231,8 +231,6 @@ export class AuthService {
   }
 
   async getUserFromAccessToken(accessToken: string): Promise<userDto | null> {
-    console.log(accessToken);
-
       const decoded = this.jwt.verify(accessToken, {
         secret: this.config.get('JWT_SECRET'),
       });
