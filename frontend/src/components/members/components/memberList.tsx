@@ -10,7 +10,7 @@ const MemberList = ({ memberList }: Props) => {
     memberList
   );
   return (
-    <div className="my-5">
+    <div className="my-5 flex gap-4">
       {memberList.map((member) => (
         <SingleMember key={member.id} member={member} />
       ))}

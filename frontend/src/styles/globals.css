@@ -65,6 +65,17 @@ body {
   line-height: 1;
 }
 
+.ant-checkbox-wrapper:hover .ant-checkbox-inner,
+.ant-checkbox-checked .ant-checkbox-inner,
+.ant-checkbox-checked:hover .ant-checkbox-inner,
+.ant-checkbox-checked:hover .ant-checkbox-outer {
+  background-color: black !important;
+  border-color: black !important;
+  box-shadow: none !important; /* Remove any box shadow */
+}
+.ant-checkbox-checked:after {
+  border: none !important;
+}
 .custom-checkbox {
   display: inline-flex;
   align-items: center;
@@ -78,8 +89,8 @@ body {
 }
 
 .custom-checkbox.checked {
-  background-color: #00a3de;
-  border-color: #00a3de;
+  background-color: black;
+  border-color: black;
   color: white;
 }
 .custom-checkbox {
@@ -98,4 +109,30 @@ body {
 }
 .custom-checkbox .ant-checkbox {
   display: none;
+}
+
+.custom-checkbox-noMarginInline-wrapper
+  + .custom-checkbox-noMarginInline-wrapper {
+  margin-inline-start: 0px;
+}
+
+.custom-dropdown-bg .ant-dropdown-menu .ant-dropdown-menu-item:hover {
+  background-color: white !important;
+  cursor: auto;
+}
+.ant-radio:hover .ant-radio-inner {
+  background-color: white !important;
+  border-color: black !important;
+}
+
+.ant-radio-checked .ant-radio-inner {
+  background-color: black !important;
+  border-color: black !important;
+}
+
+.ant-input:hover {
+  border-color: black;
+}
+.ant-input-password:hover {
+  border-color: black !important;
 }
