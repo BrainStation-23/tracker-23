@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { Role, User } from "@prisma/client";
+import { CreateUserData, GoogleLoginCreateUser, LoginDto, RegisterDto } from "src/module/auth/dto";
 import { PrismaService } from "src/module/prisma/prisma.service";
 import { UpdateSettingsReqDto } from "src/module/user/dto/create.settings.dto";
 
@@ -96,6 +97,121 @@ export class UsersDatabase {
           data: settings,
         }))
       );
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async createUser(data: CreateUserData) {
+    try {
+      return await this.prisma.user.create({
+        data,
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          picture: true,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async updateUser(user: Partial<User>, update: any) {
+    try {
+      return await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: update,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async findUserByEmail(email: string) {
+    try {
+      return (
+        email &&
+        (await this.prisma.user.findUnique({
+          where: { email: email.toLowerCase() },
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            activeWorkspaceId: true,
+            picture: true,
+          },
+        }))
+      );
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async findUserWithHash(dto: LoginDto) {
+    try {
+      return await this.prisma.user.findUnique({
+        where: { email: dto?.email?.toLowerCase() },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          hash: true,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async createGoogleLoginUser(data: GoogleLoginCreateUser) {
+    try {
+      return await this.prisma.user.create({
+        data,
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          picture: true,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async findUniqueUser(filter: Partial<User>) {
+    try {
+      return await this.prisma.user.findUnique({
+        where: filter,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async findUserByResetCredentials(hashedToken: string) {
+    try {
+      return await this.prisma.user.findFirst({
+        where: {
+          passwordResetToken: hashedToken,
+          passwordResetExpires: { gt: new Date(Date.now()) },
+        },
+      });
     } catch (error) {
       console.log(error);
       return null;
