@@ -1,8 +1,8 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { Response } from 'express';
+
 import { UpdateProjectRequest } from './dto/update.project.dto';
-import { PrismaService } from '../prisma/prisma.service';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { TasksService } from '../tasks/tasks.service';
@@ -10,25 +10,26 @@ import { SprintsService } from '../sprints/sprints.service';
 import { APIException } from '../exception/api.exception';
 import { StatusEnum } from '../tasks/dto';
 import { ProjectDatabase } from 'src/database/projects';
+import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 
 @Injectable()
 export class ProjectsService {
   constructor(
-    private prisma: PrismaService,
     private integrationsService: IntegrationsService,
     private workspacesService: WorkspacesService,
     private tasksService: TasksService,
     private sprintService: SprintsService,
     private projectDatabase: ProjectDatabase,
+    private userIntegrationDatabase: UserIntegrationDatabase,
   ) {}
 
   async importProjects(user: User, projId: number, res?: Response) {
-    const project = await this.prisma.project.findUnique({
-      where: { id: projId },
-      include: { integration: true },
-    });
+    const project = await this.projectDatabase.getProjectByIdWithIntegration(
+      projId,
+    );
     if (!project)
       throw new APIException('Invalid Project Id', HttpStatus.BAD_REQUEST);
+
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
       throw new APIException(
@@ -39,13 +40,11 @@ export class ProjectsService {
 
     const userIntegration =
       project?.integrationId &&
-      (await this.prisma.userIntegration.findUnique({
-        where: {
+      (await this.userIntegrationDatabase.getUserIntegration({
           userIntegrationIdentifier: {
             integrationId: project?.integrationId,
             userWorkspaceId: userWorkspace.id,
           },
-        },
       }));
 
     const updatedUserIntegration =
@@ -100,38 +99,22 @@ export class ProjectsService {
   }
 
   async deleteProject(user: User, id: number, res: Response) {
-    const project = await this.prisma.project.findFirst({
-      where: { id: id },
-      include: { integration: true },
-    });
+    const project = await this.projectDatabase.getProject(
+      { id },
+      { integration: true },
+    );
+
     if (!project) {
       throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
     }
-    try {
-      await this.prisma.task.deleteMany({
-        where: {
-          projectId: id,
-        },
-      });
-      try {
-        await this.prisma.project.update({
-          where: { id: id },
-          data: { integrated: false },
-        });
-        return res.status(202).json({ message: 'Project Deleted' });
-      } catch (error) {
-        console.log(
-          '🚀 ~ file: tasks.service.ts:521 ~ TasksService ~ projectTasks ~ error:',
-          error,
-        );
-      }
-    } catch (error) {
-      console.log(
-        '🚀 ~ file: tasks.service.ts:1645 ~ TasksService ~ deleteProjectTasks ~ error:',
-        error,
-      );
-      throw new APIException('Internal server Error', HttpStatus.BAD_REQUEST);
-    }
+
+    const deletedTasks = await this.projectDatabase.deleteTasksByProjectId(id);
+    if(!deletedTasks) throw new APIException('Invalid Project ID', HttpStatus.BAD_REQUEST);
+
+    const updatedProject = await this.projectDatabase.updateProjectById(id, { integrated: false });
+    if(!updatedProject) throw new APIException('Could not update project', HttpStatus.INTERNAL_SERVER_ERROR);
+
+    return res.status(202).json({ message: 'Project Deleted' });
   }
 
   async getProjectList(user: User) {
@@ -148,18 +131,15 @@ export class ProjectsService {
       (userIntegration: any) => userIntegration?.integration?.id,
     );
 
-    try {
-      return await this.prisma.project.findMany({
-        where: {
-          integrationId: {
-            in: jiraIntegrationIds?.map((id: any) => Number(id)),
-          },
-          workspaceId: user.activeWorkspaceId,
-        },
-      });
-    } catch (error) {
-      throw new APIException('Can not get Projects', HttpStatus.BAD_REQUEST);
-    }
+    const projects = await this.projectDatabase.getProjects({
+      integrationId: {
+        in: jiraIntegrationIds?.map((id: any) => Number(id)),
+      },
+      workspaceId: user.activeWorkspaceId,
+    });
+    if(!projects) throw new APIException('Could not find projects', HttpStatus.INTERNAL_SERVER_ERROR);
+
+    return projects;
   }
 
   async createProject(user: User, projectName: string) {
@@ -173,6 +153,8 @@ export class ProjectsService {
       projectName,
       source: 'T23',
       workspaceId: user?.activeWorkspaceId,
+    },{
+      integration: true,
     });
 
     if (projectExists)
@@ -181,52 +163,23 @@ export class ProjectsService {
         HttpStatus.BAD_REQUEST,
       );
 
-    try {
-      const newProject =
-        user?.activeWorkspaceId &&
-        (await this.prisma.project.create({
-          data: {
-            projectName: projectName,
-            source: 'T23',
-            integrated: true,
-            workspaceId: user?.activeWorkspaceId,
-          },
-        }));
+    const newProject =
+      user?.activeWorkspaceId &&
+      (await this.projectDatabase.createProject(
+        projectName,
+        user?.activeWorkspaceId,
+      ));
 
-      if (!newProject)
-        throw new APIException(
-          'Project could not be created',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-
-      await this.prisma.statusDetail.createMany({
-        data: [
-          {
-            name: 'To Do',
-            statusCategoryName: 'TO_DO',
-            projectId: newProject?.id,
-          },
-          {
-            name: 'In Progress',
-            statusCategoryName: 'IN_PROGRESS',
-            projectId: newProject?.id,
-          },
-          {
-            name: 'Done',
-            statusCategoryName: 'DONE',
-            projectId: newProject?.id,
-          },
-        ],
-      });
-
-      return newProject;
-    } catch (error) {
-      console.log(error);
+    if (!newProject)
       throw new APIException(
-        'Could not create new project',
+        'Project could not be created',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-    }
+
+    const statusCreated = await this.projectDatabase.createStatusDetail(newProject?.id);
+    if(!statusCreated) throw new APIException('Could not create status', HttpStatus.INTERNAL_SERVER_ERROR);
+
+    return newProject;
   }
 
   async updateProject(user: User, id: number, data: UpdateProjectRequest) {
@@ -236,31 +189,19 @@ export class ProjectsService {
         HttpStatus.BAD_REQUEST,
       );
 
-    try {
-      const existingProject =
-        user?.activeWorkspaceId &&
-        (await this.prisma.project.findFirst({
-          where: {
-            id: id,
-            workspaceId: user?.activeWorkspaceId,
-          },
-        }));
+    const existingProject =
+      user?.activeWorkspaceId &&
+      (await this.projectDatabase.getProject({
+        id: id,
+        workspaceId: user?.activeWorkspaceId,
+      }));
 
-      if (!existingProject)
-        throw new APIException('Invalid project ID', HttpStatus.BAD_REQUEST);
+    if (!existingProject)
+      throw new APIException('Invalid project ID', HttpStatus.BAD_REQUEST);
 
-      return await this.prisma.project.update({
-        where: {
-          id: id,
-        },
-        data: data,
-      });
-    } catch (error) {
-      console.log(error);
-      throw new APIException(
-        'Could not update project',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    const updatedProject = await this.projectDatabase.updateProjectById(id, data);
+    if(!updatedProject) throw new APIException('Could not update project', HttpStatus.BAD_REQUEST);
+
+    return updatedProject;
   }
 }

@@ -83,6 +83,17 @@ export class UserIntegrationDatabase {
     }
   }
 
+  async createUserIntegration(userIntegration: any) {
+    try {
+      return await this.prisma.userIntegration.create({
+        data: userIntegration,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
   async getUserIntegration(filter: any) {
     try {
       return await this.prisma.userIntegration.findUnique({
