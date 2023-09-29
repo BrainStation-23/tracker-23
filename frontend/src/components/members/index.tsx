@@ -33,7 +33,7 @@ const MembersComponent = () => {
     <div>
       <div className="flex justify-between">
         <div className="flex gap-3">
-          {tabs?.map((tab: any) => {
+          {/* {tabs?.map((tab: any) => {
             return activeTab === tab ? (
               <MyActiveTab {...{ tab, setActiveTab }}>
                 {tab === "All"
@@ -55,7 +55,7 @@ const MembersComponent = () => {
                       ?.length}
               </MyInactiveTab>
             );
-          })}
+          })} */}
         </div>
         <PrimaryButton onClick={() => setIsModalOpen(true)}>
           <PlusIconSvg />

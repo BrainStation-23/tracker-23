@@ -1,6 +1,7 @@
+import { Form, Input, message, Select } from "antd";
 import { userAPI } from "APIs";
-import { Button, Form, Input, message, Select } from "antd";
-import { useState } from "react";
+
+import PrimaryButton from "@/components/common/buttons/primaryButton";
 
 const { Option } = Select;
 type Props = {
@@ -42,9 +43,7 @@ const InviteToWorkspace = ({ setIsModalOpen }: Props) => {
         </Select>
       </Form.Item>
       <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Send Invitation
-        </Button>
+        <PrimaryButton htmlType="submit">Send Invitation</PrimaryButton>
       </Form.Item>
     </Form>
   );
