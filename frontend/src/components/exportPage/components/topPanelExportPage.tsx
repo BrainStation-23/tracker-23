@@ -13,6 +13,7 @@ import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { debounce } from "lodash";
 import ProjectSelectorComponent from "@/components/tasks/components/topPanel/components/projectSelector";
+import { LuDownload } from "react-icons/lu";
 
 type Props = {
   tasks: TaskDto[];
@@ -218,8 +219,8 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
         </div> */}
         <Button
           type="ghost"
-          className="rounded-md bg-[#016C37] text-white hover:bg-[#1d8b56] hover:text-white"
-          icon={<DownloadOutlined />}
+          className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
+          icon={<LuDownload className="text-xl" />}
           loading={downloading}
           onClick={() => excelExport()}
         >

@@ -2,7 +2,7 @@ const BSLogoSvg = ({ height, width }: any) => {
   return (
     <svg
       width={width ? width : "117"}
-      height={height ? height : "117"}
+      height={height ? height : "32"}
       viewBox="0 0 117 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

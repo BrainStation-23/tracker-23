@@ -3,14 +3,12 @@ import { debounce } from "lodash";
 import { SearchParamsModel } from "models/apiParams";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
+import { LuMoreVertical } from "react-icons/lu";
 
-import FilterIconSvg from "@/assets/svg/filterIconSvg";
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
 import MyActiveTab from "@/components/common/tabs/MyActiveTab";
 import MyInactiveTab from "@/components/common/tabs/MyInactiveTab";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
-import { useAppSelector } from "@/storage/redux";
-import { RootState } from "@/storage/redux/store";
 
 import PrioritySelectorComponent from "./components/prioritySelector";
 import ProjectSelectorComponent from "./components/projectSelector";
@@ -143,58 +141,53 @@ const TopPanelActiveSprint = ({
           );
         })}
       </div>
-      <div className="flex h-auto  w-full flex-wrap items-center justify-end gap-6">
-        {activeTab !== "ActiveSprint" && (
-          <DateRangePicker {...{ setSelectedDate }} />
-        )}
-        {checkedOptionList.includes("Search") && (
-          <div className="w-[210px]">
-            <Input
-              placeholder="Search"
-              prefix={<SearchIconSvg />}
-              onChange={(event) => {
-                event.persist();
-                debouncedHandleInputChange(event);
-              }}
-              allowClear
-            />
-          </div>
-        )}
-        {checkedOptionList.includes("Priority") && (
-          <div>
-            <PrioritySelectorComponent
-              key={Math.random()}
-              {...{ priority, setPriority }}
-              className="w-[210px]"
-            />
-          </div>
-        )}
-        {checkedOptionList.includes("Status") && (
-          <div>
-            <StatusSelectorComponent
-              key={Math.random()}
-              {...{ status, setStatus }}
-              className="w-[210px]"
-            />
-          </div>
-        )}
-        {checkedOptionList.includes("Project") && (
-          <div>
-            <ProjectSelectorComponent
-              key={Math.random()}
-              {...{ projectIds, setProjectIds }}
-              className="w-[210px]"
-            />
-          </div>
-        )}
-        <div
-          className={` flex cursor-pointer gap-2 ${
-            active === "Filter" ? "" : "grayscale"
-          }`}
-          style={{
-            color: active === "Filter" ? "#00A3DE" : "black",
-          }}
-        >
+      <div className="flex gap-2">
+        <div className="flex h-auto  w-full flex-wrap items-center justify-end gap-6">
+          {activeTab !== "ActiveSprint" && (
+            <DateRangePicker {...{ setSelectedDate }} />
+          )}
+          {checkedOptionList.includes("Search") && (
+            <div className="w-[210px]">
+              <Input
+                placeholder="Search"
+                prefix={<SearchIconSvg />}
+                onChange={(event) => {
+                  event.persist();
+                  debouncedHandleInputChange(event);
+                }}
+                allowClear
+              />
+            </div>
+          )}
+          {checkedOptionList.includes("Priority") && (
+            <div>
+              <PrioritySelectorComponent
+                key={Math.random()}
+                {...{ priority, setPriority }}
+                className="w-[210px]"
+              />
+            </div>
+          )}
+          {checkedOptionList.includes("Status") && (
+            <div>
+              <StatusSelectorComponent
+                key={Math.random()}
+                {...{ status, setStatus }}
+                className="w-[210px]"
+              />
+            </div>
+          )}
+          {checkedOptionList.includes("Project") && (
+            <div>
+              <ProjectSelectorComponent
+                key={Math.random()}
+                {...{ projectIds, setProjectIds }}
+                className="w-[210px]"
+              />
+            </div>
+          )}
+        </div>
+        <div className="mt-[7px]">
           <Dropdown
             menu={menuProps}
             placement="bottomRight"
@@ -209,10 +202,14 @@ const TopPanelActiveSprint = ({
             className="custom-dropdown-bg h-min rounded-lg border-[1px] border-secondary p-2"
             overlayClassName="w-[210px]"
           >
-            <div className="flex">
+            <div>
+              <LuMoreVertical />
+            </div>
+
+            {/* <div className="flex">
               <FilterIconSvg />
               <div className="font-normal">More</div>
-            </div>
+            </div> */}
           </Dropdown>
         </div>
       </div>

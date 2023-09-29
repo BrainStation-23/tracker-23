@@ -3,8 +3,8 @@ import { debounce } from "lodash";
 import { SearchParamsModel } from "models/apiParams";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
+import { LuMoreVertical } from "react-icons/lu";
 
-import FilterIconSvg from "@/assets/svg/filterIconSvg";
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
 import MyActiveTab from "@/components/common/tabs/MyActiveTab";
 import MyInactiveTab from "@/components/common/tabs/MyInactiveTab";
@@ -139,7 +139,7 @@ const TopPanel = ({
   };
   return (
     <div className="my-5 grid w-full grid-cols-12">
-      <div className="col-span-3 flex items-center gap-3">
+      <div className="col-span-3 flex gap-3">
         {tabs?.map((tab) => {
           return activeTab === tab ? (
             <MyActiveTab {...{ tab, setActiveTab }}>
@@ -217,14 +217,7 @@ const TopPanel = ({
             </div>
           )}
         </div>
-        <div
-          className={` flex cursor-pointer gap-2 ${
-            active === "Filter" ? "" : "grayscale"
-          }`}
-          style={{
-            color: active === "Filter" ? "#00A3DE" : "black",
-          }}
-        >
+        <div className="mt-[7px]">
           <Dropdown
             menu={menuProps}
             placement="bottomRight"
@@ -239,10 +232,14 @@ const TopPanel = ({
             className="custom-dropdown-bg h-min rounded-lg border-[1px] border-secondary p-2"
             overlayClassName="w-[210px]"
           >
-            <div className="flex">
+            <div>
+              <LuMoreVertical />
+            </div>
+
+            {/* <div className="flex">
               <FilterIconSvg />
               <div className="font-normal">More</div>
-            </div>
+            </div> */}
           </Dropdown>
         </div>
       </div>

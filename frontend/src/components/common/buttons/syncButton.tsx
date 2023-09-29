@@ -30,7 +30,7 @@ const SyncButtonComponent = ({
     <Button
       type={type}
       className={`m-0 flex h-min items-center hover:bg-secondary ${
-        className ? className : " rounded-full p-1"
+        className ? className : " rounded-full p-1 text-primary hover:bg-white"
       }  ${
         (
           syncing && project && syncingProjectId
