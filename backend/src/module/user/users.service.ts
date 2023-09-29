@@ -58,4 +58,8 @@ export class UsersService {
 
     return updatedSettings;
   }
+
+  async getSettings(user: User) {
+     return await this.tasksDatabase.getSettings(user);
+  }
 }
