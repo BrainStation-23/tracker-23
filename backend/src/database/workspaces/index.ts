@@ -255,4 +255,17 @@ export class WorkspaceDatabase {
       return null;
     }
   }
+
+  async getUser(userId: number) {
+    try {
+      return await this.prisma.user.findUnique({
+        where: {
+          id: userId,
+        }
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
 }

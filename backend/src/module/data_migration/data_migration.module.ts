@@ -5,6 +5,8 @@ import { DataMigrationController } from './data_migration.controller';
 import { PrismaService } from '../prisma/prisma.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
+import { UsersDatabase } from 'src/database/users';
+import { TasksDatabase } from 'src/database/tasks';
 
 @Global()
 @Module({
@@ -14,6 +16,8 @@ import { WorkspaceDatabase } from 'src/database/workspaces';
     PrismaService2,
     WorkspacesService,
     WorkspaceDatabase,
+    UsersDatabase,
+    TasksDatabase,
   ],
   controllers: [DataMigrationController],
   exports: [DataMigrationService],

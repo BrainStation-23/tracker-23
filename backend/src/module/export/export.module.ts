@@ -15,6 +15,7 @@ import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { ExportDatabase } from 'src/database/exports';
+import { UsersDatabase } from 'src/database/users';
 
 @Module({
   imports: [HttpModule.register({})],
@@ -34,6 +35,7 @@ import { ExportDatabase } from 'src/database/exports';
     UserIntegrationDatabase,
     UserWorkspaceDatabase,
     ExportDatabase,
+    UsersDatabase,
   ],
 })
 export class ExportModule {}
