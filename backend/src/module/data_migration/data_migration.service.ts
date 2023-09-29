@@ -135,7 +135,8 @@ export class DataMigrationService {
           take: pageSize,
         });
 
-        //console.log(`Fetching tasks: skip=${skip}, count=${tasks.length}`);
+        console.log(`Fetching tasks: tasks from db2`, tasks);
+        //const mappedTasksWithUserWorkspace = await this.getUserWorkspace(tasks);
 
         await Promise.all(
           tasks.map(async (task) => {
@@ -156,6 +157,7 @@ export class DataMigrationService {
   async createTaskAndSession(task: Task) {
     try {
       const createdTask = await this.createTask(task);
+      //console.log('Crerated task is ', createdTask);
       await this.createSession(task.id);
       return createdTask;
     } catch (err) {
@@ -168,7 +170,8 @@ export class DataMigrationService {
 
   async createTask(task: Task) {
     try {
-      return this.prisma.task.create({
+      return await this.prisma.task.create({
+        //@ts-ignore
         data: {
           title: task.title,
           description: task.description,
@@ -195,22 +198,27 @@ export class DataMigrationService {
           taskId,
         },
       });
+      console.log("Sessions are 199 line", sessions);
 
-      await Promise.all(
-        sessions.map(async (session) => {
-          await this.prisma.session.create({
-            data: {
-              startTime: session.startTime,
-              endTime: session.endTime,
-              status: session.status,
-              createdAt: session.createdAt,
-              updatedAt: session.updatedAt,
-              taskId: session.taskId,
-              userWorkspaceId: session.userWorkspaceId,
-            },
-          });
-        }),
-      );
+      try {
+        await Promise.all(
+          sessions.map(async (session) => {
+            await this.prisma.session.create({
+              data: {
+                startTime: session.startTime,
+                endTime: session.endTime,
+                status: session.status,
+                createdAt: session.createdAt,
+                updatedAt: session.updatedAt,
+                taskId,
+                userWorkspaceId: session.userWorkspaceId,
+              },
+            });
+          }),
+        );
+      } catch (err) {
+        console.log('Error of try catch', err);
+      }
     } catch (err) {
       console.log(
         '🚀 ~ file: data_migration.service.ts:129 ~ DataMigrationService ~ createSession ~ err:',
@@ -219,4 +227,21 @@ export class DataMigrationService {
       throw err; // Rethrow the error to handle it at a higher level if needed
     }
   }
+
+  // async getUserWorkspace(tasks: any) {
+  //   try {
+  //     const mappedTasksWithUserWorkspace = await Promise.all(tasks.map(async (task: Task) => {
+  //       const user = await this.prisma2.user.findUnique({
+  //         where: {
+  //           id: task.userId,
+  //         }
+  //       });
+
+
+  //     }))
+  //   } catch (error) {
+  //     console.log(error);
+
+  //   }
+  // }
 }
