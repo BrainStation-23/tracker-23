@@ -139,13 +139,50 @@ export class TasksDatabase {
     }
   }
 
-  async getSettings(user: User){
+  async getSettings(user: User) {
     try {
-      return user.activeWorkspaceId && await this.prisma.settings.findFirst({
-        where: {
-          workspaceId: user.activeWorkspaceId,
-          userId: user.id,
-        }
+      return (
+        user.activeWorkspaceId &&
+        (await this.prisma.settings.findFirst({
+          where: {
+            workspaceId: user.activeWorkspaceId,
+            userId: user.id,
+          },
+        }))
+      );
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getTasksbyId(taskId: number) {
+    try {
+      return await this.prisma.task.findFirst({
+        where: { id: taskId },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getTask(filter: any) {
+    try {
+      return await this.prisma.task.findFirst({
+        where: filter,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getTaskWithCustomResponse(filter: Record<string, any>, response?: any) {
+    try {
+      return await this.prisma.task.findUnique({
+        where: filter,
+        include: response,
       });
     } catch (error) {
       console.log(error);

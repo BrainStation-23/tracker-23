@@ -6,10 +6,7 @@ import { PrismaService } from 'src/module/prisma/prisma.service';
 export class ProjectDatabase {
   constructor(private prisma: PrismaService) {}
 
-  async getProject(
-    filter: Record<string, any>,
-    response?: any,
-  ): Promise<Project | null> {
+  async getProject(filter: Record<string, any>, response?: any) {
     try {
       return await this.prisma.project.findFirst({
         where: filter,

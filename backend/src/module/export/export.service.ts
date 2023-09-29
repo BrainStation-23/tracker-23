@@ -12,6 +12,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SprintsService } from '../sprints/sprints.service';
 import { ExportTeamTaskDataQuery, GetTaskQuery } from '../tasks/dto';
 import { APIException } from '../exception/api.exception';
+import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
+import { ExportDatabase } from 'src/database/exports';
 
 const oneDay = 3600 * 24 * 1000;
 
@@ -20,6 +22,8 @@ export class ExportService {
   constructor(
     private prisma: PrismaService,
     private sprintService: SprintsService,
+    private userWorkspaceDatabase: UserWorkspaceDatabase,
+    private exportDatabase: ExportDatabase,
   ) {}
 
   async exportToExcel(
@@ -27,6 +31,8 @@ export class ExportService {
     query: GetTaskQuery,
     res: Response,
   ): Promise<any> {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
     const data: Task[] = await this.getTasks(user, query);
     if (!(data?.length > 0)) {
       throw new NotFoundException('No data to download');
@@ -40,6 +46,8 @@ export class ExportService {
     query: ExportTeamTaskDataQuery,
     res: Response,
   ): Promise<any> {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
     const data: Task[] = await this.getTasks(user, query);
     if (!(data?.length > 0)) {
       throw new NotFoundException('No data to download');
@@ -48,245 +56,91 @@ export class ExportService {
     await this.generateExcelFiles(res, data);
   }
 
-  async getTasks(user: User, query: any): Promise<any[]> {
+  async getTasks(user: User, query: any) {
     let userWorkspace, userIds, userIdArray, userWorkspaceIds: number[];
+    const { priority, status, text } = query;
+    const sprintIds = query.sprintId as unknown as string;
+    const projectIds = query.projectIds as unknown as string;
 
-    try {
-      console.log(
-        '🚀 ~ file: export.service.ts:118 ~ ExportService ~ getTasks ~ query:',
-        query.status,
-      );
+    let { startDate, endDate } = query as unknown as GetTaskQuery;
+    const sprintIdArray =
+      sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
+    const projectIdArray =
+      projectIds && projectIds.split(',').map((item) => Number(item.trim()));
 
-      const { priority, status, text } = query;
-      const sprintIds = query.sprintId as unknown as string;
-      const projectIds = query.projectIds as unknown as string;
+    if (query?.userIds) {
+      userIds = query?.userIds as unknown as string;
+      userIdArray =
+        userIds && userIds.split(',').map((item) => Number(item.trim()));
+      userWorkspace =
+        user?.activeWorkspaceId &&
+        userIdArray &&
+        (await this.userWorkspaceDatabase.getUserWorkspaceList({
+          userId: {
+            in: userIdArray,
+          },
+          workspaceId: user?.activeWorkspaceId,
+        }));
 
-      let { startDate, endDate } = query as unknown as GetTaskQuery;
-      const sprintIdArray =
-        sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
-      const projectIdArray =
-        projectIds && projectIds.split(',').map((item) => Number(item.trim()));
-
-      if (query?.userIds) {
-        userIds = query?.userIds as unknown as string;
-        userIdArray =
-          userIds && userIds.split(',').map((item) => Number(item.trim()));
-        userWorkspace =
-          user?.activeWorkspaceId &&
-          (await this.prisma.userWorkspace.findMany({
-            where: {
-              userId: {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                //@ts-ignore
-                in: userIdArray,
-              },
-              workspaceId: user?.activeWorkspaceId,
-            },
-          }));
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        userWorkspaceIds = userWorkspace?.map(
-          (workspace: any) => workspace?.id,
-        );
-      } else {
-        userWorkspace =
-          user.activeWorkspaceId &&
-          (await this.prisma.userWorkspace.findFirst({
-            where: {
-              userId: user.id,
-              workspaceId: user.activeWorkspaceId,
-            },
-          }));
-      }
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
-      if (!userWorkspace || userWorkspace?.length === 0) {
-        return [];
-      }
-
-      const priority1: any = (priority as unknown as string)?.split(',');
-      const status1: any = (status as unknown as string)?.split(',');
-      startDate = startDate && new Date(startDate);
-      endDate = endDate && new Date(endDate);
-      if (endDate) {
-        const oneDay = 3600 * 24 * 1000;
-        endDate = new Date(endDate.getTime() + oneDay);
-      }
-      let tasks: any[] = [];
-
-      if (sprintIdArray && sprintIdArray.length) {
-        // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
-        const taskIds = await this.sprintService.getSprintTasksIds(
-          sprintIdArray,
-        );
-
-        console.log({
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
-          userWorkspaceId: userWorkspace.id,
-          source: IntegrationType.JIRA,
-          id: { in: taskIds },
-          ...(projectIdArray && {
-            projectId: { in: projectIdArray.map((id) => Number(id)) },
-          }),
-          ...(priority1 && { priority: { in: priority1 } }),
-          ...(status1 && { status: { in: status1 } }),
-          ...(text && {
-            title: {
-              contains: text,
-              mode: 'insensitive',
-            },
-          }),
-        });
-
-        return await this.prisma.task.findMany({
-          where: {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            //@ts-ignore
-            userWorkspaceId: userWorkspaceIds
-              ? { in: userWorkspaceIds }
-              : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                //@ts-ignore
-                userWorkspace.id,
-            source: IntegrationType.JIRA,
-            id: { in: taskIds },
-            ...(projectIdArray && {
-              projectId: { in: projectIdArray.map((id) => Number(id)) },
-            }),
-            ...(priority1 && { priority: { in: priority1 } }),
-            ...(status1 && { status: { in: status1 } }),
-            ...(text && {
-              title: {
-                contains: text,
-                mode: 'insensitive',
-              },
-            }),
-          },
-          select: {
-            title: true,
-            description: true,
-            assigneeId: true,
-            projectName: true,
-            estimation: true,
-            status: true,
-            due: true,
-            priority: true,
-            labels: true,
-            createdAt: true,
-            updatedAt: true,
-            userWorkspaceId: true,
-            source: true,
-            sessions: {
-              select: {
-                startTime: true,
-                endTime: true,
-                status: true,
-                createdAt: true,
-                updatedAt: true,
-                authorId: true,
-                worklogId: true,
-                userWorkspace: {
-                  include: {
-                    user: {
-                      select: {
-                        firstName: true,
-                        lastName: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            url: true,
-            userWorkspace: {
-              select: {
-                user: true,
-              },
-            },
-          },
-        });
-      } else {
-        const databaseQuery = {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
-          userWorkspaceId: userWorkspaceIds
-            ? { in: userWorkspaceIds }
-            : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              //@ts-ignore
-              userWorkspace.id,
-          ...(projectIdArray && {
-            projectId: { in: projectIdArray.map((id) => Number(id)) },
-          }),
-          ...(startDate &&
-            endDate && {
-              createdAt: { lte: endDate },
-              updatedAt: { gte: startDate },
-            }),
-          ...(priority1 && { priority: { in: priority1 } }),
-          ...(status1 && { status: { in: status1 } }),
-          ...(text && {
-            title: {
-              contains: text,
-              mode: 'insensitive',
-            },
-          }),
-        };
-        //console.log(databaseQuery);
-
-        tasks = await this.prisma.task.findMany({
-          where: databaseQuery,
-          select: {
-            title: true,
-            description: true,
-            assigneeId: true,
-            projectName: true,
-            estimation: true,
-            status: true,
-            due: true,
-            priority: true,
-            labels: true,
-            createdAt: true,
-            updatedAt: true,
-            userWorkspaceId: true,
-            source: true,
-            sessions: {
-              select: {
-                startTime: true,
-                endTime: true,
-                status: true,
-                createdAt: true,
-                updatedAt: true,
-                authorId: true,
-                worklogId: true,
-                userWorkspace: {
-                  include: {
-                    user: {
-                      select: {
-                        firstName: true,
-                        lastName: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            url: true,
-            userWorkspace: {
-              select: {
-                user: true,
-              },
-            },
-          },
-        });
-      }
-      return tasks;
-    } catch (err) {
-      console.log(err.message);
-      throw new APIException(
-        'Can not export file!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+      userWorkspaceIds = userWorkspace?.map(
+        (workspace: any) => workspace?.id,
       );
+    } else {
+      userWorkspace =
+        user.activeWorkspaceId &&
+        (await this.userWorkspaceDatabase.getSingleUserWorkspace({
+          userId: user.id,
+          workspaceId: user.activeWorkspaceId,
+        }));
     }
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
+    if (!userWorkspace || userWorkspace?.length === 0) {
+      return [];
+    }
+
+    const priority1: any = (priority as unknown as string)?.split(',');
+    const status1: any = (status as unknown as string)?.split(',');
+    startDate = startDate && new Date(startDate);
+    endDate = endDate && new Date(endDate);
+    if (endDate) {
+      const oneDay = 3600 * 24 * 1000;
+      endDate = new Date(endDate.getTime() + oneDay);
+    }
+
+    if (sprintIdArray && sprintIdArray.length) {
+      // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
+      const taskIds = await this.sprintService.getSprintTasksIds(
+        sprintIdArray,
+      );
+
+      return await this.exportDatabase.getTasks({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        userWorkspaceIds,
+        userWorkspace,
+        taskIds,
+        projectIdArray,
+        priority1,
+        status1,
+        text,
+      });
+    }
+
+    return await this.exportDatabase.getTasksWithinTimeRange({
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      userWorkspaceIds,
+      userWorkspace,
+      startDate,
+      endDate,
+      projectIdArray,
+      priority1,
+      status1,
+      text,
+    });
   }
 
   //private functions

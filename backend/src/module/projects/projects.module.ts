@@ -19,6 +19,7 @@ import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { NotificationModule } from '../notifications/notifications.module';
 import { UsersDatabase } from 'src/database/users';
+import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 
 @Module({
   imports: [HttpModule.register({}), IntegrationsModule, NotificationModule],
@@ -39,6 +40,7 @@ import { UsersDatabase } from 'src/database/users';
     IntegrationDatabase,
     UserIntegrationDatabase,
     UsersDatabase,
+    UserWorkspaceDatabase,
   ],
   controllers: [ProjectsController],
   exports: [ProjectsService],

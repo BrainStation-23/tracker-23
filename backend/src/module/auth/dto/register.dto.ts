@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @IsString()
@@ -16,4 +16,39 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   lastName: string;
+}
+
+export class CreateUserData {
+  @IsNotEmpty()
+  hash: string;
+
+  @IsString()
+  @IsEmail()
+  email: string;
+
+  @IsOptional()
+  @IsString()
+  firstName: string;
+
+  @IsOptional()
+  @IsString()
+  lastName: string;
+}
+
+export class GoogleLoginCreateUser {
+  @IsString()
+  @IsEmail()
+  email: string;
+
+  @IsOptional()
+  @IsString()
+  firstName: string;
+
+  @IsOptional()
+  @IsString()
+  lastName: string;
+
+  @IsOptional()
+  @IsString()
+  picture: string;
 }
