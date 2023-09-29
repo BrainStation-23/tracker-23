@@ -139,7 +139,17 @@ export class ProjectsService {
     });
     if(!projects) throw new APIException('Could not find projects', HttpStatus.INTERNAL_SERVER_ERROR);
 
-    return projects;
+    let localProjects =
+      user.activeWorkspaceId &&
+      (await this.projectDatabase.getLocalProjects({
+        source: 'T23',
+        workspaceId: user.activeWorkspaceId,
+        integrated: true,
+      }));
+
+    if(!localProjects) localProjects = [];
+    
+    return [...projects, ...localProjects];
   }
 
   async createProject(user: User, projectName: string) {
