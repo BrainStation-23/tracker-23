@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { UserIntegration } from '@prisma/client';
 import { GetUserIntegrationsByUserWorkspaceIdAndWorkspaceId } from 'src/module/integrations/dto/get.userIntegrations.filter.dto';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 

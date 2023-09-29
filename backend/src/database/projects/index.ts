@@ -29,7 +29,7 @@ export class ProjectDatabase {
     }
   }
 
-  async getLocalProjectsWithStatus(filter: Record<string, any>) {
+  async getProjectsWithStatus(filter: Record<string, any>) {
     try {
       return await this.prisma.project.findMany({
         where: filter,
@@ -39,7 +39,7 @@ export class ProjectDatabase {
       });
     } catch (error) {
       console.log(error);
-      return null;
+      return [];
     }
   }
 
