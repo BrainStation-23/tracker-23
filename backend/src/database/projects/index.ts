@@ -18,14 +18,14 @@ export class ProjectDatabase {
     }
   }
 
-  async getLocalProjects(filter: Record<string, any>) {
+  async getLocalProjects(filter: Record<string, any>): Promise<Project[] | []> {
     try {
       return await this.prisma.project.findMany({
         where: filter,
       });
     } catch (error) {
       console.log(error);
-      return null;
+      return [];
     }
   }
 

@@ -68,10 +68,7 @@ export class AuthService {
   }
 
   async getUser(dto: RegisterDto) {
-   const user = await this.usersDatabase.findUserByEmail(dto.email);
-   if(!user) throw new APIException('Could not find user with this email', HttpStatus.BAD_REQUEST);
-
-   return user;
+   return await this.usersDatabase.findUserByEmail(dto.email);
   }
 
   async register(dto: RegisterDto) {
