@@ -59,7 +59,7 @@ const DateRangePicker = ({ setSelectedDate }: any) => {
   };
   return (
     <>
-      <div className="w-72">
+      <div>
         <Dropdown
           menu={menuProps}
           trigger={["click"]}
@@ -143,7 +143,7 @@ const DateRangePicker = ({ setSelectedDate }: any) => {
               </div>
             </div>
           )}
-          className="flex w-[300px] items-center rounded bg-gray-50 p-2 hover:bg-gray-100"
+          className="flex w-[250px] items-center rounded bg-gray-50 p-2 hover:bg-gray-100"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

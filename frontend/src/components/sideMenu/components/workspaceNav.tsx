@@ -105,7 +105,7 @@ const WorkspaceNav = () => {
               // ?.filter((workspace) => activeWorkspace.id != workspace.id)
               ?.map((workspace) => (
                 <div
-                  className="flex items-center justify-between rounded p-1 pr-0 hover:bg-secondary"
+                  className="flex items-center justify-between rounded p-1 pr-0 hover:bg-neutral-100"
                   onClick={() => handleChangeWorkspaceClick(workspace)}
                 >
                   <div className="flex w-full cursor-pointer items-center gap-2 rounded ">
@@ -122,7 +122,7 @@ const WorkspaceNav = () => {
                       {workspace.name}
                     </Text>
                   </div>
-                  <Radio value={workspace.id}></Radio>
+                  <Radio value={workspace.id} className="text-primary"></Radio>
                 </div>
               ))}
           </div>
@@ -135,7 +135,7 @@ const WorkspaceNav = () => {
           setIsModalOpen(true);
           setDropdownOpen(false);
         }}
-        className="mx-4 flex w-auto cursor-pointer items-center justify-start gap-4 rounded bg-secondary py-2 pl-2 hover:bg-secondary"
+        className="mx-4 flex w-auto cursor-pointer items-center justify-start gap-4 rounded py-3 pl-2 hover:bg-neutral-100"
       >
         <PlusIconSvg stroke={"black"} />
         <div> Add new workspace</div>
@@ -155,7 +155,7 @@ const WorkspaceNav = () => {
       </div>
       <div style={{ padding: 2 }}></div>
       <div className="flex w-full" onClick={() => setDropdownOpen(false)}>
-        <LogOutButton className="mx-4 py-2 pl-3 hover:bg-secondary" />
+        <LogOutButton className="mx-4 py-2 pl-3 hover:bg-neutral-100" />
       </div>
     </div>
   );

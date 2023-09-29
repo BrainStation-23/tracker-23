@@ -7,7 +7,7 @@ const MyInactiveTab = ({ children, tab, setActiveTab }: Props) => {
   return (
     <div
       key={Math.random()}
-      className="flex cursor-pointer items-center gap-2 rounded-lg border-[1px] border-secondary p-[11px]"
+      className="flex h-fit cursor-pointer items-center gap-2 rounded-lg border-[1px] border-secondary p-[11px]"
       onClick={() => setActiveTab(tab)}
     >
       <div
