@@ -43,6 +43,8 @@ model User {
   picture           String?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+  passwordResetToken String?
+  passwordResetExpires DateTime?
   activeWorkspaceId Int?
   userAccounts      UserAccount[]
   accounts          Account[]
@@ -170,6 +172,9 @@ model Session {
   taskId           Int
   integratedTaskId Int?
   worklogId        Int?
+
+   //userWorkspace   UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
+  userWorkspaceId Int?
 }
 
 model callSync {

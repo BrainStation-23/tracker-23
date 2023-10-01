@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Task } from '@prisma/client';
+import { Task, UserWorkspace } from '@prisma/client';
 import { PrismaService2 } from 'src/module/prisma2/prisma.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
@@ -12,31 +12,6 @@ export class DataMigrationService {
     private prisma2: PrismaService2,
     private workspacesService: WorkspacesService,
   ) {}
-
-  // async getAndCreateUser() {
-  //   try {
-  //     const users = await this.prisma2.user.findMany();
-  //     console.log(
-  //       '🚀 ~ file: data_migration.service.ts:19 ~ DataMigrationService ~ getAndCreateUser ~ users:',
-  //       users,
-  //     );
-  //     users.map(async (user) => {
-  //       const doesExist = await this.prisma.user.findFirst({
-  //         where: {
-  //           email: user.email,
-  //         },
-  //       });
-  //       if (!doesExist) {
-  //         await this.createUser(user);
-  //       }
-  //     });
-  //   } catch (error) {
-  //     console.log(
-  //       '🚀 ~ file: data_migration.service.ts:23 ~ DataMigrationService ~ getAndCreateUser ~ error:',
-  //       error,
-  //     );
-  //   }
-  // }
 
   async getAndCreateUsers() {
     try {
@@ -134,12 +109,29 @@ export class DataMigrationService {
           skip,
           take: pageSize,
         });
-
-        //console.log(`Fetching tasks: skip=${skip}, count=${tasks.length}`);
-
         await Promise.all(
           tasks.map(async (task) => {
-            await this.createTaskAndSession(task);
+            const user2 = await this.prisma2.user.findUnique({
+              where: {
+                id: task.userId,
+              },
+            });
+
+            const user = await this.prisma.user.findUnique({
+              where: {
+                email: user2?.email,
+              },
+            });
+
+            const userWorkspace =
+              user && (await this.workspacesService.getUserWorkspace(user));
+            if (!userWorkspace) {
+              throw new APIException(
+                'userWorkspace not found',
+                HttpStatus.BAD_REQUEST,
+              );
+            }
+            await this.createTaskAndSession(task, userWorkspace);
           }),
         );
 
@@ -153,10 +145,10 @@ export class DataMigrationService {
     }
   }
 
-  async createTaskAndSession(task: Task) {
+  async createTaskAndSession(task: Task, userWorkspace: UserWorkspace) {
     try {
-      const createdTask = await this.createTask(task);
-      await this.createSession(task.id);
+      const createdTask = await this.createTask(task, userWorkspace);
+      await this.createSession(task.id, createdTask.id, userWorkspace.id);
       return createdTask;
     } catch (err) {
       console.log(
@@ -166,9 +158,9 @@ export class DataMigrationService {
     }
   }
 
-  async createTask(task: Task) {
+  async createTask(task: Task, userWorkspace: UserWorkspace) {
     try {
-      return this.prisma.task.create({
+      return await this.prisma.task.create({
         data: {
           title: task.title,
           description: task.description,
@@ -177,6 +169,8 @@ export class DataMigrationService {
           priority: task.priority,
           status: task.status,
           labels: task.labels,
+          userWorkspaceId: userWorkspace.id,
+          workspaceId: userWorkspace.workspaceId,
         },
       });
     } catch (err) {
@@ -188,7 +182,11 @@ export class DataMigrationService {
     }
   }
 
-  async createSession(taskId: number) {
+  async createSession(
+    taskId: number,
+    createdTaskId: number,
+    userWorkspaceId: number,
+  ) {
     try {
       const sessions = await this.prisma2.session.findMany({
         where: {
@@ -196,21 +194,28 @@ export class DataMigrationService {
         },
       });
 
-      await Promise.all(
-        sessions.map(async (session) => {
-          await this.prisma.session.create({
-            data: {
-              startTime: session.startTime,
-              endTime: session.endTime,
-              status: session.status,
-              createdAt: session.createdAt,
-              updatedAt: session.updatedAt,
-              taskId: session.taskId,
-              userWorkspaceId: session.userWorkspaceId,
-            },
-          });
-        }),
-      );
+      try {
+        await Promise.all(
+          sessions.map(async (session) => {
+            await this.prisma.session.create({
+              data: {
+                startTime: session.startTime,
+                endTime: session.endTime,
+                status: session.status,
+                createdAt: session.createdAt,
+                updatedAt: session.updatedAt,
+                taskId: createdTaskId,
+                userWorkspaceId,
+              },
+            });
+          }),
+        );
+      } catch (err) {
+        console.log(
+          '🚀 ~ file: data_migration.service.ts:247 ~ DataMigrationService ~ createSession ~ err:',
+          err,
+        );
+      }
     } catch (err) {
       console.log(
         '🚀 ~ file: data_migration.service.ts:129 ~ DataMigrationService ~ createSession ~ err:',

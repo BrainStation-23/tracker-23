@@ -219,6 +219,7 @@ model Task {
   pinned             Boolean?        @default(false)
 
   jiraUpdatedAt DateTime?
+  userId Int?
 
   sessions Session[]
 
