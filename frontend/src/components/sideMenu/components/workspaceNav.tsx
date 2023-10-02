@@ -97,12 +97,12 @@ const WorkspaceNav = () => {
         <Radio.Group
           // onChange={(onChange)} value={value}
           className="w-full"
-          defaultValue={activeWorkspace.id}
-          value={activeWorkspace.id}
+          defaultValue={activeWorkspace?.id}
+          value={activeWorkspace?.id}
         >
           <div className="flex w-full flex-col gap-0 ">
             {workspacesList
-              // ?.filter((workspace) => activeWorkspace.id != workspace.id)
+              // ?.filter((workspace) => activeWorkspace?.id != workspace.id)
               ?.map((workspace) => (
                 <div
                   className="flex items-center justify-between rounded p-1 pr-0 hover:bg-neutral-100"
