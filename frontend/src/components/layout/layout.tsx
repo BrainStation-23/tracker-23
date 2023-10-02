@@ -302,7 +302,14 @@ const CustomLayout = ({ children }: any) => {
               </div>
             </div>
           ) : (
-            <NoActiveWorkspace />
+            <div
+              className={classNames("flex w-full flex-col overflow-y-auto", {
+                "px-8": !isPublicRoute && !path.includes("onBoarding"),
+              })}
+            >
+              <Navbar />
+              <NoActiveWorkspace />
+            </div>
           )}
         </div>
       )}

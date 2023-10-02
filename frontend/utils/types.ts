@@ -60,6 +60,7 @@ export interface apiFunction {
   getAllProjects: () => Promise<any>;
   getWorkspaceList: () => Promise<any>;
   getWorkspaceMembers: () => Promise<any>;
+  getWorkspaceSettings: () => Promise<any>;
   createWorkspace: (data: CreateWorkspaceModel) => Promise<any>;
   updateWorkspace: (data: CreateWorkspaceModel, id: number) => Promise<any>;
   changeWorkspace: (id: number) => Promise<any>;

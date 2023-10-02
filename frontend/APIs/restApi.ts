@@ -614,3 +614,12 @@ export async function rejectWorkspaceInvitationRest(id: number) {
     return false;
   }
 }
+
+export async function getWorkspaceSettingsRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.workspaceSettings}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}

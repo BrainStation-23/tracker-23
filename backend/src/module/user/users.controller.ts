@@ -1,10 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
-import { UsersService } from "./users.service";
-import { GetUser } from "src/decorator";
-import { User } from "@prisma/client";
-import { JwtAuthGuard } from "src/guard";
+import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { UsersService } from './users.service';
+import { GetUser } from 'src/decorator';
+import { User } from '@prisma/client';
+import { JwtAuthGuard } from 'src/guard';
 import { UpdateSettingsReqDto } from './dto/create.settings.dto';
-import { UpdateRoleRequest } from "./dto/update.role.request.dto";
+import { UpdateRoleRequest } from './dto/update.role.request.dto';
 
 @Controller('users')
 export class UsersController {
@@ -31,7 +31,7 @@ export class UsersController {
   async getSettings(@GetUser() user: User) {
     return await this.usersService.getSettings(user);
   }
-  
+
   @UseGuards(JwtAuthGuard)
   @Patch('/settings')
   async updateSettings(

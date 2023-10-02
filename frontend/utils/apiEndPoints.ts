@@ -31,4 +31,5 @@ export const apiEndPoints = {
   invitation: `workspaces/invitation`,
   members: `workspaces/users`,
   changeWorkspace: `workspaces/change-workspace`,
+  workspaceSettings: `users/settings`,
 };
