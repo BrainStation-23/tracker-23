@@ -14,7 +14,12 @@ export interface ProjectStatus {
 export interface Project {
   id: number;
   projectId: string;
+  projectName: string;
+  projectKey?: string;
+  source: string;
+  integrated: Boolean;
   integrationID: number;
+  workspaceId: number;
   statuses: ProjectStatus[];
 }
 export interface StatusType {

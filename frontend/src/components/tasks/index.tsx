@@ -19,15 +19,18 @@ import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 import { setSprintListReducer } from "@/storage/redux/tasksSlice";
 
+import PrimaryButton from "../common/buttons/primaryButton";
 import { getDateRangeArray } from "../datePicker";
 import GlobalModal from "../modals/globalModal";
 import TaskDetailsModal from "../modals/taskDetails.modal";
+import WorkspaceSelection from "../sideMenu/components/workspaceSection";
 import CreateTaskComponent from "./components/createTaskComponent";
 import ManualTimeEntry from "./components/manualTimeEntry";
 import TableComponent from "./components/tableComponent";
 import TopPanel from "./components/topPanel/topPanel";
-import SessionStartWarning from "./components/warning";
 import TopPanelActiveSprint from "./components/topPanel/topPanelActiveSprint";
+import SessionStartWarning from "./components/warning";
+import Navbar from "../navbar";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -83,24 +86,26 @@ const TasksPage = () => {
     setLoading(true);
     try {
       const res = await userAPI.createTask(data);
-      message.success("Task created successfully");
-      if (data.isRecurrent) {
-        setViewModalOpen(false);
-        getTasks();
-      } else {
-        setTasks((tasks) => [res, ...tasks]);
-        if (tasks) {
-          tasks.map((task) => {
-            if (
-              task.sessions &&
-              task.sessions[task.sessions?.length - 1]?.status === "STARTED"
-            ) {
-              setRunningTask(task);
-            }
-          });
+      if (res) {
+        message.success("Task created successfully");
+        if (data.isRecurrent) {
+          setViewModalOpen(false);
+          getTasks();
+        } else {
+          setTasks((tasks) => [res, ...tasks]);
+          if (tasks) {
+            tasks.map((task) => {
+              if (
+                task.sessions &&
+                task.sessions[task.sessions?.length - 1]?.status === "STARTED"
+              ) {
+                setRunningTask(task);
+              }
+            });
+          }
         }
-        setViewModalOpen(false);
       }
+      setViewModalOpen(false);
     } catch (error) {
       message.error("Error creating task");
       setViewModalOpen(false);
@@ -356,7 +361,8 @@ const TasksPage = () => {
     setSessionActionLoading(false);
   };
   const getProjects = async () => {
-    const res = await userAPI.getProjectWiseStatus();
+    const res = await userAPI.getIntegratedProjectStatuses();
+    console.log("🚀 ~ file: index.tsx:361 ~ getProjects ~ res:", res);
     res?.length > 0 && dispatch(setProjectsSlice(res));
   };
 
@@ -578,22 +584,26 @@ const TasksPage = () => {
         setRunningTask,
       }}
     >
+      <Navbar
+        extraComponent={
+          <PrimaryButton onClick={() => setViewModalOpen(true)}>
+            <PlusIconSvg />
+            Add Task
+          </PrimaryButton>
+        }
+      />
       <div
         className="overflow-y-auto"
         // style={{ height: "calc(100vh - 100px)" }}
       >
         <div className="mb-4 flex justify-between">
           <h2 className="text-2xl font-bold">Tasks</h2>
-          <div className="flex gap-1">
-            <Button
-              type="primary"
-              className="flex items-center gap-2 py-3 text-[15px] text-white"
-              onClick={() => setViewModalOpen(true)}
-            >
+          {/* <div className="flex gap-1">
+            <PrimaryButton onClick={() => setViewModalOpen(true)}>
               <PlusIconSvg />
               Add Task
-            </Button>
-          </div>
+            </PrimaryButton>
+          </div> */}
         </div>
         {activeTab === "ActiveSprint" ? (
           <TopPanelActiveSprint

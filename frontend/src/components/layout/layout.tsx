@@ -3,25 +3,37 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import Navbar from "../navbar";
-import SideMenu from "../navbar/sideMenu";
+import SideMenu from "../sideMenu";
 import GlobalClock from "../stopWatch/globalClock";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { userAPI } from "APIs";
 import { setSyncStatus, setSyncRunning } from "@/storage/redux/syncSlice";
-import { message } from "antd";
-import { publicRoutes } from "utils/constants";
+import { Spin, message } from "antd";
+import { noNavbar, publicRoutes } from "utils/constants";
 import { setProjectsSlice } from "@/storage/redux/projectsSlice";
 import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
 import { initializeSocket } from "@/services/socket.service";
 import { setNotifications } from "@/storage/redux/notificationsSlice";
 import { GetCookie } from "@/services/cookie.service";
+import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
+import { setUserSlice } from "@/storage/redux/userSlice";
+import { GetWorkspaceListWithUserDto } from "models/workspaces";
+import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
+import { logOutFunction } from "../logout/logoutFunction";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
+  const [hasActiveWorkSpace, setHasActiveWorkSpace] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const path = router.asPath;
-  const isPublicRoute = publicRoutes.includes(router.pathname);
+  const isPublicRoute = publicRoutes.some((route) => path.includes(route));
+  console.log(
+    "🚀 ~ file: layout.tsx:33 ~ CustomLayout ~ isPublicRoute:",
+    isPublicRoute,
+    router.pathname
+  );
 
   const dispatch = useAppDispatch();
   const syncRunning = useAppSelector(
@@ -42,14 +54,23 @@ const CustomLayout = ({ children }: any) => {
   const tmp = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
+  const reloadWorkspace = useAppSelector(
+    (state: RootState) => state.workspacesSlice.reload
+  );
   const projectStatuses = useAppSelector(
     (state: RootState) => state.projectList.projects
   );
-
+  const workspacesList = useAppSelector(
+    (state: RootState) => state.workspacesSlice.workspaces
+  );
   const getProjectWiseStatues = async () => {
     if (!projectStatuses) {
       {
-        const res = await userAPI.getProjectWiseStatus();
+        const res = await userAPI.getIntegratedProjectStatuses();
+        console.log(
+          "🚀 ~ file: layout.tsx:60 ~ getProjectWiseStatues ~ res:",
+          res
+        );
         res?.length > 0 && dispatch(setProjectsSlice(res));
       }
     }
@@ -77,9 +98,13 @@ const CustomLayout = ({ children }: any) => {
   };
   useEffect(() => {
     if (!publicRoutes.some((route) => path.includes(route))) {
-      initialLoading();
+      hasActiveWorkSpace && initialLoading();
     }
-  }, [publicRoutes.some((route) => path.includes(route)), path]);
+  }, [
+    publicRoutes.some((route) => path.includes(route)),
+    path,
+    hasActiveWorkSpace,
+  ]);
   useEffect(() => {
     const connectSocket = async () => {
       GetCookie("access_token") &&
@@ -151,19 +176,93 @@ const CustomLayout = ({ children }: any) => {
   useEffect(() => {
     if (syncRunning !== syncing) setSyncing(syncRunning);
   }, [syncing, syncRunning]);
+  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
+  const getWorkspaces = async () => {
+    const res: GetWorkspaceListWithUserDto = await userAPI.getWorkspaceList();
+    console.log("🚀 ~ file: layout.tsx:159 ~ getWorkspaces ~ res:", res);
+    if (res.user) {
+      const activeWorkspace = res.workspaces.filter(
+        (workspace) => workspace.id === res.user.activeWorkspaceId
+      )[0];
+      const workspaces = res.workspaces.map((workspace) => {
+        return {
+          ...workspace,
+          active: workspace.id === res.user.activeWorkspaceId,
+        };
+      });
+      const userWorkspace = activeWorkspace?.userWorkspaces.filter(
+        (userWorkspace) => userWorkspace.userId === res.user.id
+      )[0];
+      dispatch(setUserSlice({ ...res.user, role: userWorkspace?.role }));
+      dispatch(setWorkspacesSlice(workspaces));
+    } else {
+      const errorRes: any = res;
+      errorRes?.error?.message && message.error(errorRes?.error?.message);
+      // logOutFunction();
+    }
+    if (res.user?.activeWorkspaceId) setHasActiveWorkSpace(true);
+    setLoading(false);
+  };
 
+  useEffect(() => {
+    console.log(
+      !publicRoutes.some((route) => path.includes(route)),
+      !path.includes("socialLogin")
+    );
+
+    if (
+      !publicRoutes.some((route) => path.includes(route)) &&
+      !path.includes("socialLogin")
+    ) {
+      if (!(workspacesList?.length > 0)) {
+        setLoading(true);
+        getWorkspaces();
+      } else setLoading(false);
+      if (userInfo?.activeWorkspaceId) setHasActiveWorkSpace(true);
+    }
+  }, [router, path]);
+
+  useEffect(() => {
+    console.log(
+      !publicRoutes.some((route) => path.includes(route)),
+      !path.includes("socialLogin")
+    );
+
+    if (
+      !publicRoutes.some((route) => path.includes(route)) &&
+      !path.includes("socialLogin")
+    ) {
+      setLoading(true);
+      getWorkspaces();
+    }
+  }, [reloadWorkspace]);
   return (
     <>
-      <div className="flex">
-        {!publicRoutes.some((route) => path.includes(route)) &&
-          !path.includes("onBoarding") && (
-            <div className="mr-6 w-[300px]">
-              <div className="fixed">
-                <SideMenu />
+      {loading &&
+      !path.includes("socialLogin") &&
+      !publicRoutes.some((route) => path.includes(route)) ? (
+        <div className="h-screen">
+          <Spin
+            spinning={
+              loading && !publicRoutes.some((route) => path.includes(route))
+            }
+            tip={"Loading"}
+            className="inset-0 m-auto h-full "
+          >
+            <div className="h-screen "></div>
+          </Spin>
+        </div>
+      ) : (
+        <div className="flex">
+          {!publicRoutes.some((route) => path.includes(route)) &&
+            !path.includes("onBoarding") && (
+              <div className="mr-6 w-[300px]">
+                <div className="fixed">
+                  <SideMenu />
+                </div>
               </div>
-            </div>
-          )}
-        {/* {!publicRoutes.some((route) => path.includes(route)) && (
+            )}
+          {/* {!publicRoutes.some((route) => path.includes(route)) && (
           <>
             <div
               className={`duration-500  ${showSideBar ? "pr-48" : "pr-0"} `}
@@ -184,19 +283,36 @@ const CustomLayout = ({ children }: any) => {
             </div>
           </>
         )} */}
-        <div
-          className={classNames("flex w-full flex-col overflow-y-auto", {
-            "px-8": !isPublicRoute && !path.includes("onBoarding"),
-          })}
-        >
-          {!isPublicRoute && !path.includes("onBoarding") && <Navbar />}
-
-          <div className="h-full w-full bg-white">
-            {!isPublicRoute && !path.includes("onBoarding") && <GlobalClock />}
-            {children}
-          </div>
+          {hasActiveWorkSpace ||
+          path.includes("socialLogin") ||
+          publicRoutes.some((route) => path.includes(route)) ? (
+            <div
+              className={classNames("flex w-full flex-col overflow-y-auto", {
+                "px-8": !isPublicRoute && !path.includes("onBoarding"),
+              })}
+            >
+              {!isPublicRoute &&
+                !path.includes("onBoarding") &&
+                !noNavbar.some((route) => path.includes(route)) && <Navbar />}
+              <div className="h-full w-full bg-white">
+                {!isPublicRoute && !path.includes("onBoarding") && (
+                  <GlobalClock />
+                )}
+                {children}
+              </div>
+            </div>
+          ) : (
+            <div
+              className={classNames("flex w-full flex-col overflow-y-auto", {
+                "px-8": !isPublicRoute && !path.includes("onBoarding"),
+              })}
+            >
+              <Navbar />
+              <NoActiveWorkspace />
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
       <ToastContainer
         position="top-right"
