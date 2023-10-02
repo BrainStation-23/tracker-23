@@ -19,7 +19,7 @@ type Props = {
   handleUninstallIntegration?: Function;
   handleDeleteIntegration?: Function;
   installed?: boolean;
-  adminMode: boolean;
+  adminMode?: boolean;
 };
 
 const ImportCard = ({

@@ -43,7 +43,8 @@ const WorkspaceNav = () => {
   const [selectedWorkspace, setSelectedWorkspace] =
     useState<WorkspaceDto | null>();
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceDto | null>(
-    workspacesList.findLast((workspace) => workspace.active)
+    workspacesList?.length > 0 &&
+      workspacesList?.find((workspace: WorkspaceDto) => workspace.active)
   );
   const activeUserWorkspace = getActiveUserWorSpace(workspacesList, userInfo);
 
