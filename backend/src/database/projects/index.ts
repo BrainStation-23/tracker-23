@@ -150,4 +150,17 @@ export class ProjectDatabase {
       return null;
     }
   }
+
+  async deleteLocalProject(projId: number) {
+    try {
+      return await this.prisma.project.delete({
+        where: {
+          id: projId,
+        }
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
 }

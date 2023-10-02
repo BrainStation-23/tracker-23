@@ -47,12 +47,8 @@ export class WorkspacesService {
     changeWorkspace &&
       (await this.changeActiveWorkspace(+workspace.id, +userId));
 
-    const user = await this.workspaceDatabase.getUser(+userId);
-    const settingsExists = user && await this.tasksDatabase.getSettings(user);
-    if(settingsExists) throw new APIException('Settings already exists', HttpStatus.BAD_REQUEST);
+    await this.usersDatabase.createSettings(workspace?.id);
 
-    user && await this.usersDatabase.createSettings(user);
-    
     return workspace;
   }
 

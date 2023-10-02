@@ -68,14 +68,13 @@ export class UsersDatabase {
     }
   }
 
-  async createSettings(user: User) {
+  async createSettings(workspaceId?: number) {
     try {
       return (
-        user.activeWorkspaceId &&
+        workspaceId &&
         (await this.prisma.settings.create({
           data: {
-            userId: user.id,
-            workspaceId: user.activeWorkspaceId,
+            workspaceId,
           },
         }))
       );
@@ -91,7 +90,6 @@ export class UsersDatabase {
         user.activeWorkspaceId &&
         (await this.prisma.settings.update({
           where: {
-            userId: user.id,
             workspaceId: user.activeWorkspaceId,
           },
           data: settings,
