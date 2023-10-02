@@ -1540,7 +1540,7 @@ export class TasksService {
           projectId: true,
         },
       });
-      if (task?.projectId === null) {
+      if (task?.integratedTaskId === null) {
         const updatedTask = await this.prisma.task.update({
           where: {
             id: Number(taskId),
@@ -1551,7 +1551,7 @@ export class TasksService {
           },
         });
         return updatedTask;
-      } else if (task && task.projectId) {
+      } else if (task && task.projectId && task.integratedTaskId) {
         const project = await this.prisma.project.findFirst({
           where: { id: task.projectId },
           include: { integration: true },
