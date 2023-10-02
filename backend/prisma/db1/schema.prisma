@@ -110,7 +110,7 @@ model Notification {
 
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int
 }
 
@@ -122,7 +122,7 @@ model Integration {
   Projects         Project[]
   userIntegrations UserIntegration[]
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int
 
   @@unique([siteId, workspaceId], name: "integrationIdentifier")
@@ -141,7 +141,7 @@ model UserIntegration {
   userWorkspace   UserWorkspace @relation(fields: [userWorkspaceId], references: [id])
   userWorkspaceId Int
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int
 
   integration   Integration? @relation(fields: [integrationId, siteId], references: [id, siteId], onDelete: Cascade)
@@ -180,7 +180,7 @@ model Project {
 
   integration   Integration? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
   integrationId Int?
-  workspace     Workspace   @relation(fields: [workspaceId], references: [id])
+  workspace     Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId   Int
 
   @@unique([projectName, source, workspaceId], name: "ProjectIdentifier")
@@ -263,7 +263,7 @@ model callSync {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  UserWorkspace   UserWorkspace @relation(fields: [userWorkspaceId], references: [id])
+  UserWorkspace   UserWorkspace @relation(fields: [userWorkspaceId], references: [id], onDelete: Cascade)
   userWorkspaceId Int
 }
 
@@ -303,7 +303,7 @@ model Settings {
   id       Int    @id @default(autoincrement())
   syncTime Int @default(6)
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int @unique
 
   user User @relation(fields: [userId], references: [id])
