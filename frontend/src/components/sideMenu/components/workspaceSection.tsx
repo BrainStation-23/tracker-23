@@ -37,7 +37,7 @@ const WorkspaceSelection = () => {
   const [selectedWorkspace, setSelectedWorkspace] =
     useState<WorkspaceDto | null>();
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceDto | null>(
-    workspacesList.findLast((workspace) => workspace.active)
+    workspacesList.find((workspace) => workspace.active)
   );
 
   const handleChangeWorkspaceClick = async (workspace: WorkspaceDto) => {
