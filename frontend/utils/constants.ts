@@ -101,6 +101,7 @@ export const whiteListEmails = [
   "himel.bs23@gmail.com",
   "dipubala.bs23@gmail.com",
   "dipubala466@gmail.com",
+  "dipubala46@gmail.com",
   "sudipta@timetackle.com",
   "dipankar.bala@brainstation-23.com",
   "rizwanur.rahman17@gmail.com",
