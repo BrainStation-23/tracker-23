@@ -30,9 +30,12 @@ const ProjectImport = () => {
     );
     if (res) {
       message.success(res.message);
-      const tmp = allProjects?.map((p: any) =>
-        p.id != project.id ? p : { ...p, integrated: false }
-      );
+      const tmp =
+        project.source === "T23"
+          ? allProjects?.filter((p: any) => p.id != project.id)
+          : allProjects?.map((p: any) =>
+              p.id != project.id ? p : { ...p, integrated: false }
+            );
       console.log("🚀 ~ file: index.tsx:35 ~ deleteProject ~ tmp:", tmp);
       setAllProjects(tmp);
     }

@@ -48,7 +48,7 @@ const SettingComponent = () => {
     getSettings();
   }, []);
   return (
-    <>
+    <div >
       Sync Range :{" "}
       <Select
         placeholder="Select Sprint"
@@ -64,7 +64,7 @@ const SettingComponent = () => {
           // setSprints(value);
         }}
       />
-    </>
+    </div>
   );
 };
 
