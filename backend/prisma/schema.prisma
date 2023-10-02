@@ -4,7 +4,7 @@
 // npx prisma migrate reset --force
 // npx prisma studio
 
-generator client {
+generator client2 {
   provider = "prisma-client-js"
 }
 
@@ -35,20 +35,23 @@ model UserAccount {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  email         String         @unique
-  hash          String?
-  firstName     String?
-  lastName      String?
-  picture       String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  userAccounts  UserAccount[]
-  accounts      Account[]
-  tasks         Task[]
-  projectIds    Int[]
-  integrations  Integration[]
-  notifications Notification[]
+  id                Int            @id @default(autoincrement())
+  email             String         @unique
+  hash              String?
+  firstName         String?
+  lastName          String?
+  picture           String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  passwordResetToken String?
+  passwordResetExpires DateTime?
+  activeWorkspaceId Int?
+  userAccounts      UserAccount[]
+  accounts          Account[]
+  tasks             Task[]
+  projectIds        Int[]
+  integrations      Integration[]
+  notifications     Notification[]
 }
 
 model Notification {
@@ -135,6 +138,8 @@ model Task {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
+  jiraUpdatedAt DateTime?
+
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
 
@@ -145,6 +150,13 @@ model Task {
   pinned           Boolean?        @default(false)
   projects         Projects?       @relation(fields: [projectId], references: [id])
   projectId        Int?
+
+  userWorkspaceId Int?
+  workspaceId     Int?
+
+  parentTask   Task?  @relation("childTask", fields: [parentTaskId], references: [id])
+  parentTaskId Int?
+  childTask    Task[] @relation("childTask")
 }
 
 model Session {
@@ -160,6 +172,9 @@ model Session {
   taskId           Int
   integratedTaskId Int?
   worklogId        Int?
+
+   //userWorkspace   UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
+  userWorkspaceId Int?
 }
 
 model callSync {
