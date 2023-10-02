@@ -9,7 +9,7 @@ import {
   getTotalSpentTime,
 } from "@/services/timeActions";
 import { getLocalStorage } from "@/storage/storage";
-import { Empty, message, TablePaginationConfig, Typography } from "antd";
+import { Empty, message, Spin, TablePaginationConfig, Typography } from "antd";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { userAPI } from "APIs";
 import { TableParams, TaskDto } from "models/tasks";
@@ -161,6 +161,7 @@ const Dashboard = () => {
 
   const [warningModalOpen, setWarningModalOpen] = useState<boolean>(false);
   const [morePin, setMorePin] = useState<boolean>(false);
+  const [dataFetched, setDataFetched] = useState<boolean>(false);
   const [warningData, setWarningData] = useState<any>([]);
   const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
   const getPinnedTasks = () => {
@@ -521,31 +522,42 @@ const Dashboard = () => {
     setWeekData(tmp);
   };
 
+  const getData = async () => {
+    await getTasks();
+    await getProjectWiseHour();
+    await getSpentTimePerDay();
+    setDataFetched(true);
+  };
+
   useEffect(() => {
-    getTasks();
-    getProjectWiseHour();
-    getSpentTimePerDay();
+    getData();
+    // getTasks();
+    // getProjectWiseHour();
+    // getSpentTimePerDay();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1">
-        {/* <div className="grid grid-cols-2"> */}
-        <DashboardSection
-          title="Project wise Track hour"
-          tooltipMessage="This Month"
-        >
-          {dataDonut?.length > 0 ? (
-            <DonutChart data={dataDonut} total={dataDonutTotal} />
-          ) : (
-            <Empty className="pt-20" description="No Data" />
-          )}
-        </DashboardSection>
-        {/* <DashboardSection title="Actual VS Estimate">
+    <>
+      {dataFetched ? (
+        <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-1">
+            {/* <div className="grid grid-cols-2"> */}
+            <DashboardSection
+              title="Project wise Track hour"
+              tooltipMessage="This Month"
+            >
+              {dataDonut?.length > 0 ? (
+                <DonutChart data={dataDonut} total={dataDonutTotal} />
+              ) : (
+                <Empty className="pt-20" description="No Data" />
+              )}
+            </DashboardSection>
+            {/* <DashboardSection title="Actual VS Estimate">
           <Line data={lineChartData} />
         </DashboardSection> */}
-      </div>
-      {/* <DashboardSection title="Pinned tasks">
+          </div>
+          {/* <DashboardSection title="Pinned tasks">
         <Table
           columns={columns}
           dataSource={getPinnedTasks()}
@@ -573,40 +585,44 @@ const Dashboard = () => {
           </div>
         )}
       </DashboardSection> */}
-      <DashboardSection title="Pinned tasks">
-        <DashboardTableComponent
-          tasks={getPinnedTasks()}
-          {...{
-            runningTask,
-            startSession,
-            stopSession,
-            setReload,
-            reload,
-          }}
-        />
-      </DashboardSection>
-      <DashboardSection title="Tracker By Day" tooltipMessage="This Week">
-        {weekData?.length > 0 ? (
-          <XYChart data={weekData} />
-        ) : (
-          <Empty className="py-20" description="No Data" />
-        )}
-      </DashboardSection>
+          <DashboardSection title="Pinned tasks">
+            <DashboardTableComponent
+              tasks={getPinnedTasks()}
+              {...{
+                runningTask,
+                startSession,
+                stopSession,
+                setReload,
+                reload,
+              }}
+            />
+          </DashboardSection>
+          <DashboardSection title="Tracker By Day" tooltipMessage="This Week">
+            {weekData?.length > 0 ? (
+              <XYChart data={weekData} />
+            ) : (
+              <Empty className="py-20" description="No Data" />
+            )}
+          </DashboardSection>
 
-      {/* <div>
+          {/* <div>
         <MyTasks />
       </div> */}
-      <GlobalMOdal
-        isModalOpen={warningModalOpen}
-        setIsModalOpen={setWarningModalOpen}
-      >
-        <SessionStartWarning
-          runningTask={runningTask}
-          warningData={warningData}
-          handleWarningClick={handleWarningClick}
-        />
-      </GlobalMOdal>
-    </div>
+          <GlobalMOdal
+            isModalOpen={warningModalOpen}
+            setIsModalOpen={setWarningModalOpen}
+          >
+            <SessionStartWarning
+              runningTask={runningTask}
+              warningData={warningData}
+              handleWarningClick={handleWarningClick}
+            />
+          </GlobalMOdal>
+        </div>
+      ) : (
+        <Spin className="mt-[200px] h-[500px] w-full"></Spin>
+      )}
+    </>
   );
 };
 

@@ -13,12 +13,14 @@ const ProjectImport = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [rootSpinning, setRootSpinning] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [allProjects, setAllProjects] = useState([]);
 
   const getAllProjects = async () => {
     const res = await userAPI.getAllProjects();
     console.log("🚀 ~ file: index.tsx:15 ~ getAllProjects ~ res:", res);
     if (res) setAllProjects(res);
+    setInitialLoadDone(true);
   };
 
   const deleteProject = async (project: any) => {
@@ -46,7 +48,7 @@ const ProjectImport = () => {
   useEffect(() => {
     getAllProjects();
   }, [spinning]);
-  useEffect(() => {}, [allProjects]);
+  useEffect(() => {}, [allProjects, initialLoadDone]);
 
   return (
     <Spin spinning={rootSpinning}>
@@ -57,7 +59,11 @@ const ProjectImport = () => {
             <PlusIconSvg /> Add Project
           </PrimaryButton>
         </div>
-        <ImportedProjectsSection {...{ allProjects, deleteProject }} />
+        {initialLoadDone ? (
+          <ImportedProjectsSection {...{ allProjects, deleteProject }} />
+        ) : (
+          <Spin spinning={true}></Spin>
+        )}
         <GlobalMOdal
           className="top-9"
           {...{ isModalOpen, setIsModalOpen, title: "Add a New Project" }}
