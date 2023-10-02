@@ -187,7 +187,7 @@ const TopPanelActiveSprint = ({
             </div>
           )}
         </div>
-        <div className="mt-[7px]">
+        <div className="mt-[8px]">
           <Dropdown
             menu={menuProps}
             placement="bottomRight"
