@@ -12,6 +12,7 @@ import {
   RegisterDto,
   ResetPasswordDto,
 } from "models/auth";
+import { SendWorkspaceInviteDto } from "models/invitation";
 import {
   AddWorkLogParams,
   CreateTaskDto,
@@ -21,17 +22,11 @@ import {
 import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
-import { GetCookie, RemoveCookie, SetCookie } from "@/services/cookie.service";
-import {
-  getFormattedTasks,
-  getLabels,
-  getStringFromArray,
-} from "@/services/taskActions";
+import { RemoveCookie, SetCookie } from "@/services/cookie.service";
+import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
-import { setTasksSliceHook } from "@/hooks/taskHooks";
-import { SendWorkspaceInviteDto } from "models/invitation";
 
 export async function loginRest(
   data: LoginDto
@@ -618,6 +613,16 @@ export async function rejectWorkspaceInvitationRest(id: number) {
 export async function getWorkspaceSettingsRest() {
   try {
     const res = await axios.get(`${apiEndPoints.workspaceSettings}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function updateSyncTimeRest(time: number) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.workspaceSettings}`, {
+      syncTime: time,
+    });
     return res.data;
   } catch (error: any) {
     return false;
