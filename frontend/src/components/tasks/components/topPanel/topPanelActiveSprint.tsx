@@ -142,7 +142,7 @@ const TopPanelActiveSprint = ({
         })}
       </div>
       <div className="flex gap-2">
-        <div className="flex h-auto  w-full flex-wrap items-center justify-end gap-6">
+        <div className="mt-[6px] flex h-auto w-full flex-wrap items-center justify-end gap-6">
           {activeTab !== "ActiveSprint" && (
             <DateRangePicker {...{ setSelectedDate }} />
           )}

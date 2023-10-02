@@ -162,7 +162,7 @@ const TopPanel = ({
       </div>
       <div className="col-span-1"></div>
       <div className="col-span-8 flex h-auto gap-2">
-        <div className="flex h-auto  w-full flex-wrap items-center justify-end gap-6">
+        <div className="mt-[6px] flex h-auto  w-full flex-wrap items-center justify-end gap-6">
           {!(sprints?.length > 0) && activeTab !== "ActiveSprint" && (
             <DateRangePicker {...{ setSelectedDate }} />
           )}
@@ -217,7 +217,7 @@ const TopPanel = ({
             </div>
           )}
         </div>
-        <div className="mt-[7px]">
+        <div className="mt-[8px]">
           <Dropdown
             menu={menuProps}
             placement="bottomRight"
