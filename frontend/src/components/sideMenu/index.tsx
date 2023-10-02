@@ -1,6 +1,13 @@
 import { useRouter } from "next/router";
 import {
-    LuClipboardList, LuDownload, LuFolder, LuHelpCircle, LuMail, LuPlug, LuUserCircle2,
+  LuClipboardList,
+  LuDownload,
+  LuFolder,
+  LuHelpCircle,
+  LuMail,
+  LuPlug,
+  LuSettings,
+  LuUserCircle2,
 } from "react-icons/lu";
 
 import BSLogoSvg from "@/assets/svg/BSLogoSvg";
@@ -44,9 +51,7 @@ const SideMenu = () => {
     <div className="flex h-screen w-[280px] items-center justify-center bg-[#F8F8F8] px-5">
       <div className="flex h-full w-full flex-col justify-between">
         <div className="flex w-full flex-col gap-6">
-          {" "}
           <div
-            // className="flex items-center justify-center rounded-md p-4 text-white hover:cursor-pointer"
             className="flex w-full gap-2 pt-8 text-left"
             onClick={() => {
               router.push("/");
@@ -96,19 +101,21 @@ export const sideMenuOptions = [
     link: "/exports",
     title: "Exports",
     icon: <LuDownload />,
-    // icon: <TiExport className="h-6 w-6" />,
   },
   {
     link: "/invitations",
     title: "Invitations",
     icon: <LuMail />,
-    // icon: <TiExport className="h-6 w-6" />,
   },
   {
     link: "/members",
     title: "Members",
     icon: <LuUserCircle2 />,
-    // icon: <TiExport className="h-6 w-6" />,
+  },
+  {
+    link: "/settings",
+    title: "Settings",
+    icon: <LuSettings />,
   },
   {
     link: "suggestion",
