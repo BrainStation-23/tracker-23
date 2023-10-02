@@ -6,8 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "prebuild": " ",
-    "prebuild2": " npx prisma generate --schema prisma/db1/schema.prisma && rimraf dist",
+    "prebuild": " npx prisma generate --schema prisma/db2/schema.prisma && rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
