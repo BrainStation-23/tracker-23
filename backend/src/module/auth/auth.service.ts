@@ -236,7 +236,6 @@ export class AuthService {
       });
 
       const user = await this.usersDatabase.findUniqueUser({ id: decoded.sub });
-      if(!user) throw new APIException('Could not find user with this id', HttpStatus.BAD_REQUEST);
 
       return user as userDto;
   }
