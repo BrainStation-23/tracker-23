@@ -111,8 +111,14 @@ export class ProjectsService {
     const deletedTasks = await this.projectDatabase.deleteTasksByProjectId(id);
     if(!deletedTasks) throw new APIException('Invalid Project ID', HttpStatus.BAD_REQUEST);
 
-    const updatedProject = await this.projectDatabase.updateProjectById(id, { integrated: false });
-    if(!updatedProject) throw new APIException('Could not update project', HttpStatus.INTERNAL_SERVER_ERROR);
+    const updatedProject =
+      project.source === 'T23'
+        ? await this.projectDatabase.deleteLocalProject(project?.id)
+        : await this.projectDatabase.updateProjectById(id, {
+            integrated: false,
+          });
+
+    if(!updatedProject) throw new APIException('Could not delete project', HttpStatus.INTERNAL_SERVER_ERROR);
 
     return res.status(202).json({ message: 'Project Deleted' });
   }
@@ -148,7 +154,7 @@ export class ProjectsService {
       }));
 
     if(!localProjects) localProjects = [];
-    
+
     return [...projects, ...localProjects];
   }
 

@@ -57,7 +57,7 @@ export class AuthService {
           activeWorkspaceId: workspace.id,
         }));
 
-      updateUser && await this.usersDatabase.createSettings(updateUser);
+      updateUser && await this.usersDatabase.createSettings(workspace?.id);
       return updateUser;
     } catch (err) {
       throw new APIException(
