@@ -1,11 +1,19 @@
 import { useRouter } from "next/router";
+import {
+  LuClipboardList,
+  LuDownload,
+  LuFolder,
+  LuHelpCircle,
+  LuMail,
+  LuPlug,
+  LuSettings,
+  LuUserCircle2,
+} from "react-icons/lu";
+
 import BSLogoSvg from "@/assets/svg/BSLogoSvg";
-import TasksIconSvg from "@/assets/svg/tasksIconSvg";
 import DashboardIconSvg from "@/assets/svg/dashboardIconSvg";
-import ExportsIconSvg from "@/assets/svg/ExportsIconSvg";
-import IntegrationIconSvg from "@/assets/svg/IntegrationIconSvg";
-import { BulbOutlined, MailOutlined } from "@ant-design/icons";
-import WorkspaceSelection from "./components/workspaceSection";
+
+import WorkspaceNav from "./components/workspaceNav";
 
 const SideMenu = () => {
   const router = useRouter();
@@ -13,8 +21,8 @@ const SideMenu = () => {
     const router = useRouter();
     return (
       <div
-        className={`group flex items-center gap-2 rounded-lg py-[10px] px-1 pl-[10px] hover:cursor-pointer hover:bg-[#ECECED] hover:text-black ${
-          active ? "bg-[#ECECED] text-black" : ""
+        className={`group flex items-center gap-2 rounded-lg py-[10px] px-1 pl-[10px] hover:cursor-pointer hover:bg-[#ECECED] hover:text-primary ${
+          active ? "bg-[#ECECED] text-primary" : ""
         }`}
         onClick={() => {
           option.link === "suggestion"
@@ -23,15 +31,15 @@ const SideMenu = () => {
         }}
       >
         <div
-          className={` group-hover:stroke-black group-hover:text-black ${
-            active ? "stroke-black " : "stroke-[#ADACB0] text-[#ADACB0]"
+          className={` flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
+            active ? "stroke-primary " : "stroke-[#ADACB0] text-[#ADACB0]"
           }`}
         >
           {option.icon}
         </div>
         <div
           className={`text-sm ${
-            active ? "font-semibold text-black" : "font-medium text-[#4D4E55]"
+            active ? "font-semibold text-primary" : "font-medium text-[#4D4E55]"
           }`}
         >
           {option.title}
@@ -43,9 +51,7 @@ const SideMenu = () => {
     <div className="flex h-screen w-[280px] items-center justify-center bg-[#F8F8F8] px-5">
       <div className="flex h-full w-full flex-col justify-between">
         <div className="flex w-full flex-col gap-6">
-          {" "}
           <div
-            // className="flex items-center justify-center rounded-md p-4 text-white hover:cursor-pointer"
             className="flex w-full gap-2 pt-8 text-left"
             onClick={() => {
               router.push("/");
@@ -68,7 +74,8 @@ const SideMenu = () => {
           </div>
         </div>
         <div className="mb-[45px]">
-          <WorkspaceSelection />
+          <WorkspaceNav />
+          {/* <WorkspaceSelection /> */}
         </div>
       </div>
     </div>
@@ -79,33 +86,41 @@ export default SideMenu;
 
 export const sideMenuOptions = [
   { link: "/dashboard", title: "Dashboard", icon: <DashboardIconSvg /> },
-  { link: "/taskList", title: "All Tasks", icon: <TasksIconSvg /> },
+  { link: "/taskList", title: "All Tasks", icon: <LuClipboardList /> },
   {
     link: "/integrations",
     title: "Integrations",
-    icon: <IntegrationIconSvg />,
+    icon: <LuPlug />,
   },
   {
     link: "/projects",
     title: "Projects",
-    icon: <IntegrationIconSvg />,
+    icon: <LuFolder />,
   },
   {
     link: "/exports",
     title: "Exports",
-    icon: <ExportsIconSvg />,
-    // icon: <TiExport className="h-6 w-6" />,
+    icon: <LuDownload />,
   },
   {
     link: "/invitations",
     title: "Invitations",
-    icon: <MailOutlined />,
-    // icon: <TiExport className="h-6 w-6" />,
+    icon: <LuMail />,
+  },
+  {
+    link: "/members",
+    title: "Members",
+    icon: <LuUserCircle2 />,
+  },
+  {
+    link: "/settings",
+    title: "Settings",
+    icon: <LuSettings />,
   },
   {
     link: "suggestion",
     title: "Suggestion/Support",
-    icon: <BulbOutlined style={{ fontSize: "24px" }} />,
+    icon: <LuHelpCircle />,
   },
   // { link: "/onBoarding", title: "OnBoarding Page" },
 ];

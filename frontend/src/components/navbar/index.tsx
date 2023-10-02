@@ -1,41 +1,42 @@
-import { GetCookie } from "@/services/cookie.service";
-import {
-  Avatar,
-  Button,
-  Dropdown,
-  Menu,
-  MenuProps,
-  message,
-  Space,
-  Tooltip,
-} from "antd";
-import LogOutButton from "../logout/logOutButton";
-import { useRouter } from "next/router";
-import { getLocalStorage } from "@/storage/storage";
-import { useEffect, useState } from "react";
-import { LoginResponseDto } from "models/auth";
-import BellIconSvg from "@/assets/svg/BellIconSvg";
-import { FiChevronDown, FiChevronUp } from "react-icons/fi";
-import { sideMenuOptions } from "../sideMenu";
-import { SyncOutlined } from "@ant-design/icons";
+import { Avatar, Button, Dropdown, MenuProps, Tooltip } from "antd";
 import { userAPI } from "APIs";
+import { LoginResponseDto } from "models/auth";
+import { UserDto } from "models/user";
+import { WorkspaceDto } from "models/workspaces";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+
+import BellIconSvg from "@/assets/svg/BellIconSvg";
 import ProfileIconSvg from "@/assets/svg/ProfileIconSvg";
+import { GetCookie } from "@/services/cookie.service";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
-import NotificationSection from "./components/notificationSection";
+import { getLocalStorage } from "@/storage/storage";
+import { SyncOutlined } from "@ant-design/icons";
 
-function Navbar() {
+import SyncButtonComponent from "../common/buttons/syncButton";
+import LogOutButton from "../logout/logOutButton";
+import { sideMenuOptions } from "../sideMenu";
+import NotificationSection from "./components/notificationSection";
+import { getActiveUserWorSpace } from "@/services/globalFunctions";
+
+type Props = {
+  extraComponent?: any;
+};
+
+const Navbar = ({ extraComponent }: Props) => {
   const [userDetails, setUserDetails] = useState<LoginResponseDto>();
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
-  const syncing = useAppSelector(
+  const syncing: boolean = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
 
   const router = useRouter();
   const path = router.asPath;
   const btnText = path === "/login" ? "Register" : "Login";
-  const access_token = GetCookie("access_token");
+
   const [pageInfo, setPageInfo] = useState([]);
 
   const dispatch = useAppDispatch();
@@ -45,6 +46,12 @@ function Navbar() {
     res && dispatch(setSyncStatus(res));
   };
   const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
+
+  const activeUserWorkspace = getActiveUserWorSpace(
+    useAppSelector((state: RootState) => state.workspacesSlice.workspaces),
+    userInfo
+  );
+
   useEffect(() => {
     const tmp = getLocalStorage("userDetails");
     if (!userDetails && tmp) setUserDetails(tmp);
@@ -71,7 +78,8 @@ function Navbar() {
       key: "1",
       icon: (
         <div className="w-[200px]">
-          <Button
+          <SyncButtonComponent type="ghost" className="w-full" text="Sync" />
+          {/* <Button
             type="ghost"
             className={`flex w-full items-center ${
               syncing ? "text-green-500" : ""
@@ -82,7 +90,7 @@ function Navbar() {
           >
             <SyncOutlined spin={syncing} />{" "}
             <span className="text-[15px] font-semibold">Sync</span>
-          </Button>
+          </Button> */}
         </div>
       ),
       onClick: async () => {
@@ -166,7 +174,7 @@ function Navbar() {
             overlayClassName='w-32'
             className="flex w-[300px] items-center rounded bg-gray-50 p-2 hover:bg-gray-100"
           > */}
-          <div>
+          {/* <div>
             <Dropdown
               menu={menuProps}
               dropdownRender={dropdownRender}
@@ -201,7 +209,7 @@ function Navbar() {
                       {userDetails?.firstName} {userDetails?.lastName}
                     </div>
                     <div className="font-normal">
-                      {userInfo?.role ? userInfo?.role : "Project Manager"}
+                      {activeUserWorkspace.designation}
                     </div>
                   </div>
                 </div>
@@ -215,13 +223,14 @@ function Navbar() {
                 </div>
               </div>
             </Dropdown>
-          </div>
+          </div> */}
           {/* </Dropdown> */}
           {/* <LogOutButton /> */}
+          {extraComponent}
         </div>
       )}
     </div>
   );
-}
+};
 
 export default Navbar;

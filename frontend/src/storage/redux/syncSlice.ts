@@ -10,11 +10,14 @@ interface SyncStatus {
 }
 interface SyncState {
   syncRunning: boolean;
+  syncingProject: number | null;
   syncStatus: SyncStatus;
 }
 // Define the initial state using that type
 const initialState: SyncState = {
   syncRunning: false,
+  syncingProject: null,
+
   syncStatus: {
     createdAt: "",
     id: "",
@@ -31,13 +34,19 @@ const syncSlice = createSlice({
       state.syncStatus = action.payload;
 
       state.syncRunning = action.payload.status === "IN_PROGRESS";
+      if (action.payload.status !== "IN_PROGRESS") state.syncingProject = null;
     },
     setSyncRunning: (state, action: PayloadAction<boolean>) => {
       state.syncRunning = action.payload;
+      if (!action.payload) state.syncingProject = null;
+    },
+    setSyncingProjectReducer: (state, action: PayloadAction<number>) => {
+      state.syncingProject = action.payload;
     },
   },
 });
 
-export const { setSyncStatus, setSyncRunning } = syncSlice.actions;
+export const { setSyncStatus, setSyncRunning, setSyncingProjectReducer } =
+  syncSlice.actions;
 
 export default syncSlice.reducer;

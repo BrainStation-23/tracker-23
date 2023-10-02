@@ -1,12 +1,15 @@
+import { Checkbox, Form, Input, message } from "antd";
+import { userAPI } from "APIs";
+import { CreateWorkspaceModel } from "models/apiParams";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+
+import PrimaryButton from "@/components/common/buttons/primaryButton";
 import {
   addWorkspaceSlice,
   changeWorkspaceReloadStatusSlice,
 } from "@/storage/redux/workspacesSlice";
-import { userAPI } from "APIs";
-import { Button, Checkbox, Form, Input, message } from "antd";
-import { CreateWorkspaceModel } from "models/apiParams";
-import { useState } from "react";
-import { useDispatch } from "react-redux";
+
 type Props = {
   setIsModalOpen: Function;
 };
@@ -44,9 +47,7 @@ const AddNewWorkspace = ({ setIsModalOpen }: Props) => {
         </Checkbox>
       </Form.Item>
       <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Create Workspace
-        </Button>
+        <PrimaryButton htmlType="submit"> Create Workspace</PrimaryButton>
       </Form.Item>
     </Form>
   );

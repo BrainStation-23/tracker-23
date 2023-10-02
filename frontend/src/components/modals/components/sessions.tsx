@@ -1,5 +1,6 @@
 import { DatePicker, Form, TimePicker, Tooltip } from "antd";
 import dayjs from "dayjs";
+import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
 
 import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
@@ -13,7 +14,7 @@ import {
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 
 type Props = {
-  taskDetails: any;
+  taskDetails: TaskDto;
   deleteSession: Function;
   updateSession: Function;
   SetSpinning: Function;
@@ -61,7 +62,7 @@ const Sessions = ({
       <h3 className="w-full  text-left text-base font-semibold">Sessions</h3>
       <div className="flex max-h-64 w-full flex-col gap-3 overflow-y-scroll">
         {endedSessions?.length > 0 && (
-          <div className="grid grid-cols-12 gap-4 font-semibold">
+          <div className="grid grid-cols-12 gap-4 font-semibold text-secondary">
             <div className="col-span-1">No</div>
             <div className="col-span-3">Date</div>
             <div className="col-span-4">Time Stamp</div>
@@ -136,47 +137,57 @@ const Sessions = ({
                   {getFormattedTotalTime(endTime - startTime)}
                 </div>
                 <div className="col-span-2 mr-3 flex items-center justify-end gap-2">
-                  {session.id !== sessionInEdit ? (
-                    <>
-                      <Tooltip title="Edit Session">
-                        <div onClick={() => handleInitialValues(session)}>
-                          <EditIconSvg />
-                        </div>
-                      </Tooltip>
+                  {taskDetails.userWorkspaceId === session.userWorkspaceId ? (
+                    session.id !== sessionInEdit ? (
+                      <>
+                        <Tooltip title="Edit Session">
+                          <div
+                            onClick={() => handleInitialValues(session)}
+                            className="cursor-pointer"
+                          >
+                            <EditIconSvg />
+                          </div>
+                        </Tooltip>
 
-                      <Tooltip title="Delete Session">
-                        <div onClick={() => deleteSession(session.id)}>
-                          <DeleteIconSvg />
-                        </div>
-                      </Tooltip>
-                    </>
+                        <Tooltip title="Delete Session">
+                          <div
+                            onClick={() => deleteSession(session.id)}
+                            className="cursor-pointer"
+                          >
+                            <DeleteIconSvg />
+                          </div>
+                        </Tooltip>
+                      </>
+                    ) : (
+                      <div className="col-span-2 flex items-center justify-end gap-3">
+                        <Tooltip title="Save">
+                          <button type="submit" className="m-0 h-min p-0">
+                            <CheckCircleOutlined
+                              style={{
+                                fontSize: "20px",
+                                color: "#00A3DE",
+                              }}
+                            />
+                          </button>
+                        </Tooltip>
+                        <Tooltip title="Cancel">
+                          <button
+                            type="submit"
+                            className="m-0 h-min p-0"
+                            onClick={() => setSessionInEdit(null)}
+                          >
+                            <CloseCircleOutlined
+                              style={{
+                                fontSize: "20px",
+                                color: "#F26956",
+                              }}
+                            />
+                          </button>
+                        </Tooltip>
+                      </div>
+                    )
                   ) : (
-                    <div className="col-span-2 flex items-center justify-end gap-3">
-                      <Tooltip title="Save">
-                        <button type="submit" className="m-0 h-min p-0">
-                          <CheckCircleOutlined
-                            style={{
-                              fontSize: "20px",
-                              color: "#00A3DE",
-                            }}
-                          />
-                        </button>
-                      </Tooltip>
-                      <Tooltip title="Cancel">
-                        <button
-                          type="submit"
-                          className="m-0 h-min p-0"
-                          onClick={() => setSessionInEdit(null)}
-                        >
-                          <CloseCircleOutlined
-                            style={{
-                              fontSize: "20px",
-                              color: "#F26956",
-                            }}
-                          />
-                        </button>
-                      </Tooltip>
-                    </div>
+                    "Not Yours"
                   )}
                 </div>
               </div>

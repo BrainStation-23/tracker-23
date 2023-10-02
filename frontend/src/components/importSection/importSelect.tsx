@@ -10,13 +10,17 @@ import ImportCard from "./importCard";
 type Props = {
   integratedTypes: string[];
   integrations: Integration[];
+  handleUninstallIntegration: Function;
   handleDeleteIntegration: Function;
+  adminMode: boolean;
 };
 
 const ImportSelect = ({
   integratedTypes,
   integrations,
+  handleUninstallIntegration,
   handleDeleteIntegration,
+  adminMode,
 }: Props) => {
   const [selected, setSelected] = useState("");
   return (
@@ -26,7 +30,9 @@ const ImportSelect = ({
           key={Math.random()}
           data={d}
           selected={selected}
+          adminMode={adminMode}
           setSelected={setSelected}
+          handleUninstallIntegration={handleUninstallIntegration}
           handleDeleteIntegration={handleDeleteIntegration}
           installed={integratedTypes.includes(d.type)}
         />
@@ -38,6 +44,8 @@ const ImportSelect = ({
               key={Math.random()}
               data={{ type: d as "JIRA" | "TRELLO" }}
               selected={selected}
+              adminMode={adminMode}
+              handleUninstallIntegration={handleUninstallIntegration}
               handleDeleteIntegration={handleDeleteIntegration}
               setSelected={setSelected}
               installed={integratedTypes.includes(d)}

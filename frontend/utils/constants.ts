@@ -1,16 +1,22 @@
+import SecondaryButton from "../src/components/common/buttons/secondaryButton";
 export const publicRoutes = [
   "/login",
   "/registration",
   "/socialLogin/redirect",
   "/forgotPassword",
+  "/resetPassword",
+  // "/images",
 ];
-export const ignoreRoutes = ["/_next", "/assets", "/integrations"];
+export const ignoreRoutes = ["/_next", "/assets", "/integrations", "/images"];
+export const noNavbar = ["/taskList"];
 export const menuOptions = [
   { link: "/taskList", title: "Tasks Page" },
   // { link: "/dashboard", title: "Dashboard Page" },
   // { link: "/integrations", title: "Integrations Page" },
   // { link: "/onBoarding", title: "OnBoarding Page" },
 ];
+
+export const SecondaryColor = "#E0E0E0";
 
 export enum progressColorEnum {
   IN_PROGRESS = "#85C6DB",
@@ -81,6 +87,11 @@ export enum IntegrationTitlesEnum {
 export enum IntegrationDescriptionsEnum {
   JIRA = "Connect JIRA tickets to your Project",
   TRELLO = "Connect Trello to your Project",
+}
+
+export enum Roles {
+  USER = "USER",
+  ADMIN = "ADMIN",
 }
 
 export const whiteListEmails = [

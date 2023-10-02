@@ -4,5 +4,7 @@ export interface UserDto {
   firstName: string;
   lastName: string;
   activeWorkspaceId?: number;
+  role?: string;
   picture?: string;
+  designation?: string;
 }

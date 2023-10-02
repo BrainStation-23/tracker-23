@@ -1,5 +1,14 @@
-import { CreateWorkspaceModel, SearchParamsModel } from "models/apiParams";
-import { LoginDto, LoginResponseDto } from "models/auth";
+import {
+  CreateLocalProjectModel,
+  CreateWorkspaceModel,
+  SearchParamsModel,
+} from "models/apiParams";
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  LoginResponseDto,
+  ResetPasswordDto,
+} from "models/auth";
 import {
   AddWorkLogParams,
   CreateTaskDto,
@@ -20,9 +29,11 @@ export interface apiFunction {
   deleteTask: (data: any) => Promise<any | undefined>;
   getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   exportTasks: (searchParams?: SearchParamsModel) => Promise<any>;
-  syncTasks: (token?: string) => Promise<any>;
+  syncTasks: () => Promise<any>;
+  syncProjectTasks: (projectId: number) => Promise<any>;
   syncStatus: (token?: string) => Promise<any>;
   getIntegrations: (token?: string) => Promise<any>;
+  uninstallIntegration: (id: number) => Promise<any>;
   deleteIntegration: (id: number) => Promise<any>;
   selectJiraIntegration: (id: string) => Promise<any>;
   createSession: (taskID: string) => Promise<any>;
@@ -48,6 +59,8 @@ export interface apiFunction {
   getJiraSprints: () => Promise<any>;
   getAllProjects: () => Promise<any>;
   getWorkspaceList: () => Promise<any>;
+  getWorkspaceMembers: () => Promise<any>;
+  getWorkspaceSettings: () => Promise<any>;
   createWorkspace: (data: CreateWorkspaceModel) => Promise<any>;
   updateWorkspace: (data: CreateWorkspaceModel, id: number) => Promise<any>;
   changeWorkspace: (id: number) => Promise<any>;
@@ -57,6 +70,10 @@ export interface apiFunction {
   acceptWorkspaceInvitation: (id: number) => Promise<any>;
   rejectWorkspaceInvitation: (id: number) => Promise<any>;
   importProject: (id: number) => Promise<any>;
+  createProject: (data: CreateLocalProjectModel) => Promise<any>;
   deleteProjectTasks: (id: number) => Promise<any>;
   getJiraActiveSprintTasks: (searchParams?: SearchParamsModel) => Promise<any>;
+  forgotPassword: (data?: ForgotPasswordDto) => Promise<any>;
+  resetPassword: (token: string, data: ResetPasswordDto) => Promise<any>;
+  updateSyncTime: (time: number) => Promise<any>;
 }

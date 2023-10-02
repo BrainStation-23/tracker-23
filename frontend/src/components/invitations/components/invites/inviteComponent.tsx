@@ -21,12 +21,26 @@ const InviteComponent = ({ invite }: Props) => {
   };
 
   return (
-    <div className=" flex items-center justify-between rounded-lg border border-gray-600 p-4 hover:bg-gray-100">
-      <div className="flex items-center gap-4">
-        <div>Workspace : {invite.workspace.name}</div>
-        <div>Role : {invite.role}</div>
-        <div>Inviter : {invite.inviter.firstName}</div>
-        <div>Status : {invite.status}</div>
+    <div className=" flex w-[700px] items-center justify-between rounded-lg border border-gray-600 p-4 hover:bg-gray-100">
+      <div className="flex items-center gap-6">
+        <div className="flex flex-col">
+          <div>
+            <span className="font-semibold">Workspace :</span>{" "}
+            {invite.workspace.name}
+          </div>
+          <div>
+            <span className="font-semibold">Role :</span> {invite.role}
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <div>
+            <span className="font-semibold">Inviter :</span>{" "}
+            {invite.inviter.firstName}
+          </div>
+          <div>
+            <span className="font-semibold">Status :</span> {invite.status}
+          </div>
+        </div>
       </div>
       {invite.status === "INVITED" ? (
         <div className="flex items-center gap-4">
@@ -36,7 +50,9 @@ const InviteComponent = ({ invite }: Props) => {
           </Button>
         </div>
       ) : (
-        <div>Status : {invite.status}</div>
+        <div>
+          <span className="font-semibold">Status :</span> {invite.status}
+        </div>
       )}
     </div>
   );

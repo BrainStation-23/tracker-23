@@ -17,11 +17,13 @@ export interface UserWorkspaceDto {
   valid: boolean;
   createdAt: string;
   updatedAt: string;
+  respondedAt?: string;
   userId: number;
   workspaceId: number;
   inviterId: number | null;
   invitationID: number | null;
   status: string;
+  designation: string;
 }
 
 export interface GetWorkspaceListWithUserDto {
