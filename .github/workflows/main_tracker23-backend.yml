@@ -6,7 +6,7 @@ name: Build and deploy Node.js app to Azure Web App - tracker23-backend
 on:
   push:
     branches:
-      - main-backup-2
+      - main
   workflow_dispatch:
 
 jobs:
