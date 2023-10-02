@@ -95,7 +95,6 @@ model User {
   notifications   Notification[]
   // UserIntegrations    UserIntegration[]
   invitationsSent UserWorkspace[] @relation("InviterUser")
-  settings Settings?
   // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
   // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
 }
@@ -305,11 +304,6 @@ model Settings {
 
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId Int @unique
-
-  user User @relation(fields: [userId], references: [id])
-  userId Int @unique
-
-  @@unique([id, workspaceId], name: "workspaceSettingsIdentifier")
 }
 
 enum Priority {

@@ -146,7 +146,6 @@ export class TasksDatabase {
         (await this.prisma.settings.findFirst({
           where: {
             workspaceId: user.activeWorkspaceId,
-            userId: user.id,
           },
         }))
       );
