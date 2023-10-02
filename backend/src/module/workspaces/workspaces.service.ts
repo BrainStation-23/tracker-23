@@ -1,3 +1,4 @@
+import { UsersDatabase } from 'src/database/users';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserWorkspace, UserWorkspaceStatus } from '@prisma/client';
 import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
@@ -5,11 +6,13 @@ import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { APIException } from '../exception/api.exception';
 import { WorkspaceDatabase } from 'src/database/workspaces';
+import { TasksDatabase } from 'src/database/tasks';
 @Injectable()
 export class WorkspacesService {
   constructor(
-    private prisma: PrismaService,
     private workspaceDatabase: WorkspaceDatabase,
+    private usersDatabase: UsersDatabase,
+    private tasksDatabase: TasksDatabase,
   ) {}
 
   async createWorkspace(
@@ -44,6 +47,12 @@ export class WorkspacesService {
     changeWorkspace &&
       (await this.changeActiveWorkspace(+workspace.id, +userId));
 
+    const user = await this.workspaceDatabase.getUser(+userId);
+    const settingsExists = user && await this.tasksDatabase.getSettings(user);
+    if(settingsExists) throw new APIException('Settings already exists', HttpStatus.BAD_REQUEST);
+
+    user && await this.usersDatabase.createSettings(user);
+    
     return workspace;
   }
 

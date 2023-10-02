@@ -10,6 +10,7 @@ import { EmailService } from '../email/email.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
 import { UsersDatabase } from 'src/database/users';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
+import { TasksDatabase } from 'src/database/tasks';
 
 @Module({
   imports: [HttpModule.register({})],
@@ -24,6 +25,7 @@ import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
     MyGateway,
     UsersDatabase,
     UserWorkspaceDatabase,
+    TasksDatabase,
   ],
   exports: [MyGateway],
 })

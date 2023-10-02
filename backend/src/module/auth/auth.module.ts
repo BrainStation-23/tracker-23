@@ -14,6 +14,7 @@ import { EmailService } from '../email/email.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
 import { UsersDatabase } from 'src/database/users';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
+import { TasksDatabase } from 'src/database/tasks';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
     WorkspaceDatabase,
     UsersDatabase,
     UserWorkspaceDatabase,
+    TasksDatabase,
     {
       provide: APP_FILTER,
       useClass: TokenErrorFilter,
