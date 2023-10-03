@@ -49,13 +49,16 @@ const WorkspaceNav = () => {
   const activeUserWorkspace = getActiveUserWorSpace(workspacesList, userInfo);
 
   const handleChangeWorkspaceClick = async (workspace: WorkspaceDto) => {
-    const res = await userAPI.changeWorkspace(workspace.id);
-    console.log(
-      "🚀 ~ file: workspaceSection.tsx:25 ~ handleChangeWorkspaceClick ~ res:",
-      res
-    );
-    message.success("Active Workspace Changed");
-    dispatch(changeWorkspaceReloadStatusSlice());
+    if (activeWorkspace?.id != workspace.id) {
+      const res = await userAPI.changeWorkspace(workspace.id);
+      console.log(
+        "🚀 ~ file: workspaceSection.tsx:25 ~ handleChangeWorkspaceClick ~ res:",
+        res
+      );
+      message.success("Active Workspace Changed");
+      dispatch(changeWorkspaceReloadStatusSlice());
+    }
+    setDropdownOpen(false);
   };
   const handleWorkspaceDeleteClick = async (workspace: WorkspaceDto) => {
     setMode(2);
@@ -106,7 +109,9 @@ const WorkspaceNav = () => {
               // ?.filter((workspace) => activeWorkspace?.id != workspace.id)
               ?.map((workspace) => (
                 <div
-                  className="flex items-center justify-between rounded p-1 pr-0 hover:bg-neutral-100"
+                  className={`flex items-center justify-between rounded p-1 pr-0 hover:bg-neutral-100 ${
+                    activeWorkspace?.id === workspace.id ? "bg-neutral-100" : ""
+                  }`}
                   onClick={() => handleChangeWorkspaceClick(workspace)}
                 >
                   <div className="flex w-full cursor-pointer items-center gap-2 rounded ">
