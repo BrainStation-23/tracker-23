@@ -13,7 +13,7 @@ const ForgotPasswordPanel = () => {
   return (
     <div className="flex">
       <div className="m-auto flex h-fit max-w-[60%] flex-col gap-6 lg:max-w-[70%]">
-        <BSLogoSvg height={100} width={250} />
+        <BSLogoSvg height={40} />
         <AuthHeader
           title={"Forget Password"}
           subTitle={"Sign up or log in to start tracking your time"}

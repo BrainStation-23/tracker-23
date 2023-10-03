@@ -22,12 +22,12 @@ const AuthLeftPanel = () => {
           /> */}
           <LeftPanelTopPicture />
         </div>
-        <div className=" z-10 mt-[32%] flex flex-col gap-20 lg:mt-[72%] 2xl:mt-[55%]">
+        <div className=" z-10 mt-[32%] flex flex-col gap-20 lg:mt-[72%] 2xl:mt-[60%]">
           <div className="flex flex-col gap-6">
-            <div className=" w-3/4 text-3xl font-semibold text-white xl:text-5xl 2xl:text-6xl">
+            <div className="w-3/4 text-3xl font-semibold text-white xl:text-5xl">
               Have you heard about Tracker23 Tasks?
             </div>
-            <div className="text-white  2xl:text-2xl">
+            <div className="text-white text-base">
               Sign up or log in to start tracking your time
             </div>
           </div>
