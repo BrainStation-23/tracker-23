@@ -39,6 +39,10 @@ export class DataMigrationService {
 
               await this.createUser(user);
             }
+            console.log(
+              '🚀 ~ file: data_migration.service.ts:38 ~ DataMigrationService ~ users.map ~ doesExist:',
+              doesExist,
+            );
           }),
         );
 
@@ -131,7 +135,14 @@ export class DataMigrationService {
                 HttpStatus.BAD_REQUEST,
               );
             }
-            await this.createTaskAndSession(task, userWorkspace);
+            const doesExistTask = await this.prisma.task.findFirst({
+              where: {
+                title: task.title,
+              },
+            });
+            if (!doesExistTask) {
+              await this.createTaskAndSession(task, userWorkspace);
+            }
           }),
         );
 

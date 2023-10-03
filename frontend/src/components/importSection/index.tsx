@@ -96,7 +96,7 @@ const ImportSection = () => {
           )}
         </div>
         <Spin spinning={loading} tip={loadingTip} className="h-full">
-          {integratedTypes && (
+          {integratedTypes ? (
             <ImportSelect
               adminMode={adminMode}
               {...{
@@ -108,7 +108,8 @@ const ImportSection = () => {
               handleUninstallIntegration={handleUninstallIntegration}
               handleDeleteIntegration={handleDeleteIntegration}
             />
-          )}
+          ): <div className="h-[500px]">
+            </div>}
         </Spin>
       </div>
     </div>
