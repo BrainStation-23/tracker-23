@@ -108,7 +108,7 @@ const TableComponent = ({
                     {task.projectName}
                   </div>
                 )}
-                {task.projectName && <JiraIconSvg />}
+                {task.integratedTaskId && <JiraIconSvg />}
               </div>
             </div>
           </div>

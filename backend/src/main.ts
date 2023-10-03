@@ -1,7 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AllExceptionsFilter } from './internal/exception/all-exception-filter';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './module/exception/all-exception-filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,8 +13,9 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
     credentials: true,
   };
+  // app.enableCors(options);
   app.enableCors(options);
   app.useGlobalFilters(new AllExceptionsFilter());
-  await app.listen(process.env.PORT || 3000);
+  await app.listen(process.env.PORT || 8080);
 }
 bootstrap();

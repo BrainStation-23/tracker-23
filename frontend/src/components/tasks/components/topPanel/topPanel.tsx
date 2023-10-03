@@ -1,18 +1,22 @@
 import { Dropdown, Input, MenuProps } from "antd";
 import { debounce } from "lodash";
-import { SprintDto, TaskDto } from "models/tasks";
+import { SearchParamsModel } from "models/apiParams";
+import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
+import { LuMoreVertical } from "react-icons/lu";
 
-import FilterIconSvg from "@/assets/svg/filterIconSvg";
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
+import MyActiveTab from "@/components/common/tabs/MyActiveTab";
+import MyInactiveTab from "@/components/common/tabs/MyInactiveTab";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
 import PrioritySelectorComponent from "./components/prioritySelector";
+import ProjectSelectorComponent from "./components/projectSelector";
 import SprintSelectorComponent from "./components/sprintSelector";
 import StatusSelectorComponent from "./components/statusSelector";
-import { SearchParamsModel } from "models/apiParams";
+import TopBarMoreComponent from "./components/topBarMoreComponent";
 
 type Props = {
   tasks: TaskDto[];
@@ -32,6 +36,9 @@ const TopPanel = ({
 }: Props) => {
   const [searchText, setSearchText] = useState(searchParams.searchText);
   const [status, setStatus] = useState<string[]>(searchParams.status);
+  const [projectIds, setProjectIds] = useState<number[]>(
+    searchParams.projectIds
+  );
   const [priority, setPriority] = useState(searchParams.priority);
   const [sprints, setSprints] = useState(searchParams.sprints);
   const [active, setActive] = useState("");
@@ -39,71 +46,20 @@ const TopPanel = ({
   const [selectedDate, setSelectedDate] = useState(
     getDateRangeArray("this-week")
   );
-  const statuses = useAppSelector(
-    (state: RootState) => state.projectList.statuses
-  );
-
   const sprintList = useAppSelector(
     (state: RootState) => state.tasksSlice.sprintList
   );
+  const [checkedOptionList, setCheckedOptionList] = useState(["Search"]);
+  const options = [
+    { label: "Search", value: "Search" },
+    { label: "Priority", value: "Priority" },
+    { label: "Status", value: "Status" },
+    { label: "Project", value: "Project" },
+  ];
+  if (sprintList.length > 0) options.push({ label: "Sprint", value: "Sprint" });
+
   const totalPinned = tasks?.filter((task) => task.pinned)?.length;
   const tabs = ["All", "Pin", "ActiveSprint"];
-  const activeButton = (tab: string, setActiveTab: Function) => (
-    <div
-      key={Math.random()}
-      className="flex cursor-pointer items-center gap-2 p-[11px]"
-      style={{
-        // background: "#00A3DE",
-        border: "1px solid #00A3DE",
-        borderRadius: "8px",
-      }}
-    >
-      <div
-        className="px-1 text-xs font-medium text-white"
-        style={{
-          background: "#00A3DE",
-          borderRadius: "4px",
-          color: "white",
-        }}
-      >
-        {tab === "Pin"
-          ? totalPinned
-          : tab === "ActiveSprint"
-          ? activeSprintTasks?.length
-          : tasks?.length}
-      </div>
-      <div className="text-[15px]">{tab}</div>
-    </div>
-  );
-
-  const inactiveButton = (tab: string, setActiveTab: Function) => (
-    <div
-      key={Math.random()}
-      className="flex cursor-pointer items-center gap-2 p-[11px]"
-      style={{
-        // background: "#00A3DE",
-        border: "1px solid #ECECED",
-        borderRadius: "8px",
-      }}
-      onClick={() => setActiveTab(tab)}
-    >
-      <div
-        className="px-1 text-xs font-medium text-white"
-        style={{
-          background: "#E7E7E7",
-          borderRadius: "4px",
-          color: "black",
-        }}
-      >
-        {tab === "Pin"
-          ? totalPinned
-          : tab === "ActiveSprint"
-          ? activeSprintTasks?.length
-          : tasks?.length}
-      </div>
-      <div className="text-[15px] text-[#4D4E55]">{tab}</div>
-    </div>
-  );
 
   const handleInputChange = (event: any) => {
     setSearchText(event.target.value);
@@ -119,6 +75,7 @@ const TopPanel = ({
         priority: priority,
         status: status,
         sprints: sprints,
+        projectIds: projectIds,
       })
     ) {
       setSearchParams({
@@ -127,6 +84,7 @@ const TopPanel = ({
         priority: priority,
         status: status,
         sprints: sprints,
+        projectIds: projectIds,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -136,7 +94,8 @@ const TopPanel = ({
       JSON.stringify(searchParams.priority) != JSON.stringify(priority) ||
       JSON.stringify(searchParams.selectedDate) !=
         JSON.stringify(selectedDate) ||
-      JSON.stringify(searchParams.status) != JSON.stringify(status)
+      JSON.stringify(searchParams.status) != JSON.stringify(status) ||
+      JSON.stringify(searchParams.projectIds) != JSON.stringify(projectIds)
     ) {
       setSearchParams({
         searchText: searchText,
@@ -144,6 +103,7 @@ const TopPanel = ({
         priority: priority,
         status: status,
         sprints: sprints,
+        projectIds: projectIds,
       });
     } else if (
       JSON.stringify(sprints) != JSON.stringify(searchParams.sprints)
@@ -154,34 +114,19 @@ const TopPanel = ({
         priority: priority,
         status: status,
         sprints: sprints,
+        projectIds: projectIds,
       });
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate, priority, status, sprints]);
+  }, [selectedDate, priority, status, sprints, projectIds]);
+
   const filterOptions = [
-    // {
-    //   icon: <SortNameIconSvg />,
-    //   title: "Name",
-    // },
-    <PrioritySelectorComponent
-      key={Math.random()}
-      {...{ priority, setPriority }}
+    <TopBarMoreComponent
+      {...{ checkedOptionList, setCheckedOptionList, options }}
     />,
-    <StatusSelectorComponent key={Math.random()} {...{ status, setStatus }} />,
-    // {
-    //   icon: <ClockIconSvg />,
-    //   title: "Estimation",
-    // },
-    // {
-    //   icon: <SortPriorityIconSvg />,
-    //   title: "Progress",
-    // },
   ];
-  if (sprintList.length > 0)
-    filterOptions.push(
-      <SprintSelectorComponent {...{ sprints, setSprints }} />
-    );
+
   const items: MenuProps["items"] = filterOptions.map((option, index) => {
     return {
       label: option,
@@ -193,96 +138,109 @@ const TopPanel = ({
     onClick: (item: any) => {},
   };
   return (
-    <div className="my-5 flex w-full justify-between">
-      <div className="flex gap-3">
+    <div className="my-5 grid w-full grid-cols-12">
+      <div className="col-span-3 flex gap-3">
         {tabs?.map((tab) => {
-          return activeTab === tab
-            ? activeButton(tab, setActiveTab)
-            : inactiveButton(tab, setActiveTab);
+          return activeTab === tab ? (
+            <MyActiveTab {...{ tab, setActiveTab }}>
+              {tab === "Pin"
+                ? totalPinned
+                : tab === "ActiveSprint"
+                ? activeSprintTasks?.length
+                : tasks?.length}
+            </MyActiveTab>
+          ) : (
+            <MyInactiveTab {...{ tab, setActiveTab }}>
+              {tab === "Pin"
+                ? totalPinned
+                : tab === "ActiveSprint"
+                ? activeSprintTasks?.length
+                : tasks?.length}
+            </MyInactiveTab>
+          );
         })}
       </div>
-      <div className="flex items-center gap-12">
-        {!(sprints?.length > 0) && activeTab !== "ActiveSprint" && (
-          <DateRangePicker {...{ setSelectedDate }} />
-        )}
-        <Input
-          placeholder="Search"
-          prefix={<SearchIconSvg />}
-          onChange={(event) => {
-            event.persist();
-            debouncedHandleInputChange(event);
-          }}
-          // onChange={(e) => {
-          //   setSearchText(e.target.value);
-          //   // debouncedSetSearchParams();
-          // }}
-          allowClear
-        />
-        <div
-          className="flex items-center gap-3"
-          onMouseLeave={() => {
-            setActive("");
-          }}
-        >
-          {/* <div
-            className={`flex cursor-pointer gap-2 text-[#00A3DE] ${
-              active === "Sort" ? "" : "grayscale"
-            }`}
-            style={{
-              color: active === "Sort" ? "#00A3DE" : "black",
-              // backgroundColor: "#00A3DE",
-            }}
-            onClick={() => ("Sort" ? setActive("") : setActive("Sort"))}
-          >
-            <SortIconSvg />
-            <span className="font-normal">Sort</span>
-          </div> */}
-
-          <div
-            className={`relative flex cursor-pointer gap-2 text-[#00A3DE] ${
-              active === "Filter" ? "" : "grayscale"
-            }`}
-            style={{
-              color: active === "Filter" ? "#00A3DE" : "black",
-              // backgroundColor: "#00A3DE",
-            }}
-          >
-            <Dropdown
-              menu={menuProps}
-              placement="bottomRight"
-              open={dropdownOpen}
-              onOpenChange={(open) => {
-                setDropdownOpen(open);
-              }}
-              trigger={["click"]}
-              className="transition-all delay-1000 duration-1000"
-              overlayClassName="duration-1000 delay-1000 transition-all w-[300px]"
-            >
-              <div
-                className="flex"
-                // onClick={() =>
-                //   active === "Filter" ? setActive("") : setActive("Filter")
-                // }
-              >
-                <FilterIconSvg />
-                <span className="font-normal">Filter</span>
-              </div>
-            </Dropdown>
-
-            <div
-              className={`${active === "Filter" ? "duration-500" : "hidden h-0"}
-              absolute  top-[25px] right-0 z-50 flex
-              w-[320px] flex-col gap-2 p-6`}
-              style={{
-                background: "#FFFFFF",
-                boxShadow:
-                  "0px 2px 6px rgba(24, 24, 28, 0.08), 0px 41px 32px -23px rgba(24, 24, 28, 0.06)",
-                borderRadius: "12px",
-              }}
-            >
-              {filterOptions?.map((option) => option)}
+      <div className="col-span-1"></div>
+      <div className="col-span-8 flex h-auto gap-2">
+        <div className="mt-[6px] flex h-auto  w-full flex-wrap items-center justify-end gap-6">
+          {!(sprints?.length > 0) && activeTab !== "ActiveSprint" && (
+            <DateRangePicker {...{ setSelectedDate }} />
+          )}
+          {checkedOptionList.includes("Search") && (
+            <div className="w-[210px]">
+              <Input
+                placeholder="Search"
+                prefix={<SearchIconSvg />}
+                onChange={(event) => {
+                  event.persist();
+                  debouncedHandleInputChange(event);
+                }}
+                allowClear
+              />
             </div>
-          </div>
+          )}
+          {checkedOptionList.includes("Priority") && (
+            <div>
+              <PrioritySelectorComponent
+                key={Math.random()}
+                {...{ priority, setPriority }}
+                className="w-[210px]"
+              />
+            </div>
+          )}
+          {checkedOptionList.includes("Status") && (
+            <div>
+              <StatusSelectorComponent
+                key={Math.random()}
+                {...{ status, setStatus }}
+                className="w-[210px]"
+              />
+            </div>
+          )}
+          {checkedOptionList.includes("Project") && (
+            <div>
+              <ProjectSelectorComponent
+                key={Math.random()}
+                {...{ projectIds, setProjectIds }}
+                className="w-[210px]"
+              />
+            </div>
+          )}
+          {checkedOptionList.includes("Sprint") && (
+            <div>
+              {sprintList.length > 0 && (
+                <SprintSelectorComponent
+                  {...{ sprints, setSprints }}
+                  className="w-[210px]"
+                />
+              )}
+            </div>
+          )}
+        </div>
+        <div className="mt-[8px]">
+          <Dropdown
+            menu={menuProps}
+            placement="bottomRight"
+            open={dropdownOpen}
+            onOpenChange={(open) => {
+              setDropdownOpen(open);
+            }}
+            dropdownRender={(menu: React.ReactNode) => (
+              <div className="custom-dropdown-bg float-right">{menu}</div>
+            )}
+            trigger={["click"]}
+            className="custom-dropdown-bg h-min rounded-lg border-[1px] border-secondary p-2"
+            overlayClassName="w-[210px]"
+          >
+            <div>
+              <LuMoreVertical />
+            </div>
+
+            {/* <div className="flex">
+              <FilterIconSvg />
+              <div className="font-normal">More</div>
+            </div> */}
+          </Dropdown>
         </div>
       </div>
     </div>

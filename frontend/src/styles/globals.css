@@ -5,7 +5,10 @@
 body {
   font-family: "Inter", sans-serif;
 }
-
+.ant-typography {
+  font-family: "Inter", sans-serif; /* Set your desired font family */
+  /* Add any other custom styles you want here */
+}
 .ant-table-wrapper .ant-table,
 .ant-dropdown-menu-item .ant-dropdown-menu-title-content,
 .ant-btn,
@@ -60,4 +63,76 @@ body {
   position: relative;
   top: -4.5px;
   line-height: 1;
+}
+
+.ant-checkbox-wrapper:hover .ant-checkbox-inner,
+.ant-checkbox-checked .ant-checkbox-inner,
+.ant-checkbox-checked:hover .ant-checkbox-inner,
+.ant-checkbox-checked:hover .ant-checkbox-outer {
+  background-color: black !important;
+  border-color: black !important;
+  box-shadow: none !important; /* Remove any box shadow */
+}
+.ant-checkbox-checked:after {
+  border: none !important;
+}
+.custom-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.custom-checkbox.checked {
+  background-color: black;
+  border-color: black;
+  color: white;
+}
+.custom-checkbox {
+  /* ... your existing styles ... */
+  position: relative;
+}
+.custom-checkbox input[type="checkbox"] {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  border-color: red;
+}
+.custom-checkbox .ant-checkbox {
+  display: none;
+}
+
+.custom-checkbox-noMarginInline-wrapper
+  + .custom-checkbox-noMarginInline-wrapper {
+  margin-inline-start: 0px;
+}
+
+.custom-dropdown-bg .ant-dropdown-menu .ant-dropdown-menu-item:hover {
+  background-color: white !important;
+  cursor: auto;
+}
+.ant-radio:hover .ant-radio-inner {
+  background-color: white !important;
+  border-color: black !important;
+}
+
+.ant-radio-checked .ant-radio-inner {
+  background-color: black !important;
+  border-color: black !important;
+}
+
+.ant-input:hover {
+  border-color: black;
+}
+.ant-input-password:hover {
+  border-color: black !important;
 }

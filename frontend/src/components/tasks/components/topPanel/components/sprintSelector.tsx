@@ -1,13 +1,16 @@
-import CrossIconSvg from "@/assets/svg/CrossIconSvg";
-import { useAppSelector } from "@/storage/redux";
-import { RootState } from "@/storage/redux/store";
-import { Select } from "antd";
+import { Select, Typography } from "antd";
 import { SprintDto } from "models/tasks";
 import { useEffect, useState } from "react";
 import { GiSprint } from "react-icons/gi";
+
+import { useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
+import CrossIconSvg from "@/assets/svg/CrossIconSvg";
+
 type Props = {
   sprints: any[];
   setSprints: Function;
+  className?: string;
 };
 type TagProps = {
   label: any;
@@ -15,16 +18,18 @@ type TagProps = {
   closable: any;
   onClose: any;
 };
-const SprintSelectorComponent = ({ sprints, setSprints }: Props) => {
+const SprintSelectorComponent = ({ sprints, setSprints, className }: Props) => {
+  const { Text } = Typography;
   const defaultValues: any = [];
   const sprintList = useAppSelector(
     (state: RootState) => state.tasksSlice.sprintList
   );
-  const Options: { value: number; label: string }[] = [];
+  const Options: { value: number; label: string; key: number }[] = [];
   for (const st of sprintList) {
     Options.push({
       value: st.id,
       label: st.name,
+      key: st.id,
     });
   }
 
@@ -33,39 +38,39 @@ const SprintSelectorComponent = ({ sprints, setSprints }: Props) => {
       Options.push({
         value: val.id,
         label: val.name,
+        key: val.id,
       });
     }
   }
-  // const tagRender = (props: TagProps) => {
-  //   const { label, value, closable, onClose } = props;
-  //   const SprintObj: SprintType = value && JSON.parse(value);
+  const tagRender = (props: TagProps) => {
+    const { label, value, closable, onClose } = props;
 
-  //   const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
-  //     event.preventDefault();
-  //     event.stopPropagation();
-  //   };
-  //   return (
-  //     <div
-  //       style={{
-  //         backgroundColor: SprintBGColorEnum[SprintObj?.SprintCategoryName],
-  //         border: `1px solid ${
-  //           SprintBorderColorEnum[SprintObj?.SprintCategoryName]
-  //         }`,
-  //         borderRadius: "36px",
-  //       }}
-  //       onClick={onClose}
-  //       className="m-1 flex w-max cursor-pointer items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
-  //     >
-  //       <div
-  //         className="flex h-2 w-2 items-center rounded-full"
-  //         // style={{
-  //         //   backgroundColor: SprintBorderColorEnum[value],
-  //         // }}
-  //       />
-  //       <div>{label}</div> <CrossIconSvg />
-  //     </div>
-  //   );
-  // };
+    const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    return (
+      <div
+        onClick={onClose}
+        className="m-1 flex w-max cursor-pointer items-center gap-1 rounded border-[1px] border-secondary px-2 py-0.5 text-xs font-medium text-black"
+      >
+        {sprints.length > 1 ? (
+          <div className="flex w-max max-w-[30px] items-center text-sm">
+            <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
+              {label}
+            </Text>
+          </div>
+        ) : (
+          <div className="flex w-max max-w-[100px] items-center text-sm">
+            <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
+              {label}
+            </Text>
+          </div>
+        )}
+        <CrossIconSvg />
+      </div>
+    );
+  };
   useEffect(() => {
     const tmpArray: any[] = [];
     sprints?.map((st) => {
@@ -76,26 +81,21 @@ const SprintSelectorComponent = ({ sprints, setSprints }: Props) => {
   }, [sprints]);
   return (
     <div
-      className={`flex w-full items-center gap-2 text-sm font-normal text-black `}
-      // style={{
-      //   color: active === "Sort" ? "#00A3DE" : "black",
-      //   // backgroundColor: "#00A3DE",
-      // }}
-      // onClick={() => setActive("Sort")}
+      className={`flex w-full items-center gap-2 text-sm font-normal text-black ${
+        className ? className : ""
+      }`}
     >
       <GiSprint size={24} />
-      {/* <span className="font-normal">Sprint</span> */}
       <Select
         placeholder="Select Sprint"
         mode="multiple"
-        // tagRender={(props) => tagRender(props)}
+        tagRender={(props) => tagRender(props)}
         value={sprints}
         defaultValue={[]}
         className="w-full"
         showArrow
+        maxTagCount={1}
         options={Options}
-        // options={[
-        // ]}
         onChange={(value) => {
           setSprints(value);
         }}

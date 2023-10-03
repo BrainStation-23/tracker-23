@@ -1,15 +1,35 @@
-import { Button } from "antd";
 import { ProjectDto } from "models/projects";
 
-import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
+import DeleteButton from "@/components/common/buttons/deleteButton";
+import SyncButtonComponent from "@/components/common/buttons/syncButton";
+import { useDispatch } from "react-redux";
+import {
+  setSyncRunning,
+  setSyncStatus,
+  setSyncingProjectReducer,
+} from "@/storage/redux/syncSlice";
+import { userAPI } from "APIs";
+import { message } from "antd";
 
 type Props = {
   project: ProjectDto;
   deleteProject: Function;
 };
 const ImportedProject = ({ project, deleteProject }: Props) => {
+  const dispatch = useDispatch();
   const deleteProjectTasks = async () => {
     deleteProject(project);
+  };
+  const syncProject = async () => {
+    if (!project.id) {
+      message.error("Invalid Project ID");
+      return;
+    }
+    dispatch(setSyncRunning(true));
+    dispatch(setSyncingProjectReducer(project.id));
+
+    const res = await userAPI.syncProjectTasks(project.id);
+    res && dispatch(setSyncStatus(res));
   };
   return (
     <div className="flex w-[500px] justify-between rounded-md border-2 p-3 hover:bg-gray-50">
@@ -27,16 +47,18 @@ const ImportedProject = ({ project, deleteProject }: Props) => {
           </div>
         </div>
       </div>
-      <div>
-        <Button
-          className="flex w-full gap-2 p-1"
+      <div className="flex items-center">
+        {project.source != "T23" && (
+          <SyncButtonComponent
+            project={project}
+            onClick={() => syncProject()}
+          />
+        )}
+        <DeleteButton
           onClick={() => {
             deleteProjectTasks();
           }}
-          type="ghost"
-        >
-          <DeleteIconSvg />
-        </Button>
+        />
       </div>
     </div>
   );

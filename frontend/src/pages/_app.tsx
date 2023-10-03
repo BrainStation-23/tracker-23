@@ -21,7 +21,6 @@ import { logOutFunction } from "@/components/logout/logoutFunction";
 // Axios.defaults.baseURL =
 //   "http://ec2-54-172-94-212.compute-1.amazonaws.com:3000";
 Axios.defaults.baseURL = config?.baseUrl;
-console.log("🚀 ~ file: _app.tsx:23 ~ config:", config);
 Axios.interceptors.request.use(
   (config) => {
     const token = getLocalStorage("access_token");
@@ -57,7 +56,8 @@ export default function App({ Component, pageProps }: AppProps) {
 
   useEffect(() => {
     if (!publicRoutes.some((route) => url.includes(route))) {
-      whiteListEmails.includes(userDetails?.email) ? "" : setValidUser(false);
+      const email = userDetails?.email?.toLowerCase();
+      whiteListEmails.includes(email) ? "" : setValidUser(false);
     } else if (!validUser) {
       setValidUser(true);
     }
@@ -73,7 +73,7 @@ export default function App({ Component, pageProps }: AppProps) {
             {validUser ? (
               <CustomLayout>
                 <Head>
-                  <link rel="icon" href="/bsIcon.png" />
+                  <link rel="icon" href="/images/bsIcon.png" />
                   <title>Tracker23</title>
                 </Head>{" "}
                 <Component {...pageProps} />

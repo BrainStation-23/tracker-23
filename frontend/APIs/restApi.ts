@@ -1,7 +1,18 @@
 import { message } from "antd";
 import axios from "axios";
-import { SearchParamsModel } from "models/apiParams";
-import { LoginDto, LoginResponseDto, RegisterDto } from "models/auth";
+import {
+  CreateLocalProjectModel,
+  CreateWorkspaceModel,
+  SearchParamsModel,
+} from "models/apiParams";
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  LoginResponseDto,
+  RegisterDto,
+  ResetPasswordDto,
+} from "models/auth";
+import { SendWorkspaceInviteDto } from "models/invitation";
 import {
   AddWorkLogParams,
   CreateTaskDto,
@@ -11,16 +22,11 @@ import {
 import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
-import { GetCookie, RemoveCookie, SetCookie } from "@/services/cookie.service";
-import {
-  getFormattedTasks,
-  getLabels,
-  getStringFromArray,
-} from "@/services/taskActions";
+import { RemoveCookie, SetCookie } from "@/services/cookie.service";
+import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
-import { setTasksSliceHook } from "@/hooks/taskHooks";
 
 export async function loginRest(
   data: LoginDto
@@ -34,7 +40,8 @@ export async function loginRest(
     }
     return res.data;
   } catch (error: any) {
-    return error;
+    console.log("🚀 ~ file: restApi.ts:48 ~ error:", error);
+    return null;
   }
 }
 
@@ -45,7 +52,8 @@ export async function googleLoginRest(
     const res = await axios.post(`${apiEndPoints.googleLogin}?code=${code}`);
     return res.data;
   } catch (error: any) {
-    return error;
+    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
+    return null;
   }
 }
 
@@ -56,7 +64,36 @@ export async function registerRest(
     const res = await axios.post(`${apiEndPoints.register}`, data);
     return res.data;
   } catch (error: any) {
-    return error;
+    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
+    return null;
+  }
+}
+
+export async function forgotPasswordRest(
+  data: ForgotPasswordDto
+): Promise<any> {
+  try {
+    const res = await axios.post(`${apiEndPoints.forgotPassword}`, data);
+    return res.data;
+  } catch (error: any) {
+    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
+    return null;
+  }
+}
+
+export async function resetPasswordRest(
+  token: string,
+  data: ResetPasswordDto
+): Promise<any> {
+  try {
+    const res = await axios.patch(
+      `${apiEndPoints.resetPassword}/${token}`,
+      data
+    );
+    return res.data;
+  } catch (error: any) {
+    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
+    return null;
   }
 }
 
@@ -76,7 +113,7 @@ export async function logoutRest() {
 
 export async function createTaskRest(data: CreateTaskDto) {
   try {
-    const res = await axios.post(`${apiEndPoints.tasks}`, data);
+    const res = await axios.post(`${apiEndPoints.tasks}/create`, data);
     return res.data;
   } catch (error: any) {
     return false;
@@ -97,6 +134,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
   const sprints = searchParams?.sprints;
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
+  const projectIds = searchParams?.projectIds;
   try {
     const res = await axios.get(
       apiEndPoints.tasks +
@@ -109,6 +147,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${searchParams.searchText}`
           : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (status && status.length > 0 ? `&status=${status}` : "")
     );
@@ -126,9 +165,10 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
 }
 
 export async function exportTasksRest(searchParams: SearchParamsModel) {
-  const status = getStringFromArray(searchParams?.status);
+  const status = getStringFromArray(getLabels(searchParams?.status));
   const sprints = searchParams?.sprints;
   const priority = getStringFromArray(searchParams?.priority);
+  const projectIds = searchParams?.projectIds;
   try {
     const res = await axios.get(
       apiEndPoints.export +
@@ -141,6 +181,7 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${searchParams.searchText}`
           : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (status && status.length > 0 ? `&status=${status}` : ""),
       {
@@ -162,9 +203,20 @@ export async function syncStatusRest() {
   }
 }
 
-export async function syncTasksRest() {
+export async function syncAllTasksRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.syncTasks}`);
+    const res = await axios.get(`${apiEndPoints.synAllTasks}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function syncProjectTasksRest(projectId: number) {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.syncProjectTasks}/${projectId}`
+    );
     return res.data;
   } catch (error: any) {
     return false;
@@ -211,8 +263,20 @@ export async function getJiraLinkRest() {
 
 export async function sendJiraCodeRest(code: string) {
   try {
-    const res = await axios.post(`${apiEndPoints.authJira}`, { code: code });
+    const res = await axios.post(`${apiEndPoints.authJira}`, {
+      code: code,
+    });
     return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function uninstallIntegrationRest(id: number) {
+  try {
+    const res = await axios.delete(`${apiEndPoints.integrations}/user/${id}`);
+    message.success(res?.data?.message);
+    return true;
   } catch (error: any) {
     return false;
   }
@@ -220,7 +284,7 @@ export async function sendJiraCodeRest(code: string) {
 
 export async function deleteIntegrationRest(id: number) {
   try {
-    const res = await axios.delete(`${apiEndPoints.integrations}/${id}`);
+    const res = await axios.delete(`${apiEndPoints.integrations}/admin/${id}`);
     message.success(res?.data?.message);
     return true;
   } catch (error: any) {
@@ -399,6 +463,7 @@ export async function getJiraActiveSprintTasksRest(
 ) {
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
+  const projectIds = searchParams?.projectIds;
   try {
     const res = await axios.get(
       `${apiEndPoints.activeSprintTasks}/?state=${["active"]}` +
@@ -406,6 +471,7 @@ export async function getJiraActiveSprintTasksRest(
           ? `&text=${searchParams.searchText}`
           : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (status && status.length > 0 ? `&status=${status}` : "")
       // `${apiEndPoints.activeSprintTasks}/?state=${["closed"]}`
     );
@@ -417,7 +483,7 @@ export async function getJiraActiveSprintTasksRest(
 
 export async function getAllProjectsRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.allProjects}`);
+    const res = await axios.get(`${apiEndPoints.projects}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -426,7 +492,16 @@ export async function getAllProjectsRest() {
 
 export async function importProjectRest(id: number) {
   try {
-    const res = await axios.get(`${apiEndPoints.projectTasks}/${id}`);
+    const res = await axios.get(`${apiEndPoints.projects}/${id}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function createProjectRest(data: CreateLocalProjectModel) {
+  try {
+    const res = await axios.post(`${apiEndPoints.projects}/create`, data);
     return res.data;
   } catch (error: any) {
     return false;
@@ -434,7 +509,120 @@ export async function importProjectRest(id: number) {
 }
 export async function deleteProjectTasksRest(id: number) {
   try {
-    const res = await axios.post(`${apiEndPoints.projectTasks}/${id}`);
+    const res = await axios.post(`${apiEndPoints.projects}/${id}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function getWorkspaceListRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.workspaces}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getWorkspaceMembersRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.members}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function createWorkspaceRest(data: CreateWorkspaceModel) {
+  try {
+    const res = await axios.post(`${apiEndPoints.workspaces}`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function updateWorkspaceRest(
+  data: CreateWorkspaceModel,
+  id: number
+) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.workspaces}/${id}`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function changeWorkspaceRest(id: number) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.changeWorkspace}/${id}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function deleteWorkspaceRest(id: number) {
+  try {
+    const res = await axios.delete(`${apiEndPoints.workspaces}/${id}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function sendWorkspaceInvitationRest(
+  data: SendWorkspaceInviteDto
+) {
+  try {
+    const res = await axios.post(`${apiEndPoints.invitation}/send`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getWorkspaceInvitationListRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.invitation}/list`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function acceptWorkspaceInvitationRest(id: number) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.invitation}/response/${id}`, {
+      status: "ACTIVE",
+    });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function rejectWorkspaceInvitationRest(id: number) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.invitation}/response/${id}`, {
+      status: "REJECTED",
+    });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getWorkspaceSettingsRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.workspaceSettings}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function updateSyncTimeRest(time: number) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.workspaceSettings}`, {
+      syncTime: time,
+    });
     return res.data;
   } catch (error: any) {
     return false;

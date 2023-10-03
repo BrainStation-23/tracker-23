@@ -2,7 +2,7 @@ import BSLogoWhiteSvg from "@/assets/svg/BSLogoWhiteSvg";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Modal, Spin } from "antd";
 import Link from "next/link";
-import RegistrationForm from "./components/registrationForm";
+import RegistrationForm from "../auth/forms/registrationForm";
 import { config } from "config";
 import { useState } from "react";
 
