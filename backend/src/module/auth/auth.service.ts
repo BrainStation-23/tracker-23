@@ -48,7 +48,7 @@ export class AuthService {
       const workspace = user &&
         user.firstName &&
         (await this.workspacesService.createWorkspace(
-          user.id,
+          user,
           `${user.firstName}'s Workspace`,
         ));
       const updateUser =
@@ -159,7 +159,7 @@ export class AuthService {
         const workspace =
           oldUser.firstName &&
           (await this.workspacesService.createWorkspace(
-            oldUser.id,
+            oldUser,
             `${oldUser.firstName}'s Workspace`,
           ));
         const updatedOldUser =
@@ -193,7 +193,7 @@ export class AuthService {
     const workspace =
       user && user.firstName &&
       (await this.workspacesService.createWorkspace(
-        user.id,
+        user,
         `${user.firstName}'s Workspace`,
       ));
 

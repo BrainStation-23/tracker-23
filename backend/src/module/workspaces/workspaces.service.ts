@@ -1,3 +1,4 @@
+import { ProjectsService } from './../projects/projects.service';
 import { UsersDatabase } from 'src/database/users';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserWorkspace, UserWorkspaceStatus } from '@prisma/client';
@@ -7,23 +8,23 @@ import { PrismaService } from '../prisma/prisma.service';
 import { APIException } from '../exception/api.exception';
 import { WorkspaceDatabase } from 'src/database/workspaces';
 import { TasksDatabase } from 'src/database/tasks';
+import { ProjectDatabase } from 'src/database/projects';
 @Injectable()
 export class WorkspacesService {
   constructor(
     private workspaceDatabase: WorkspaceDatabase,
     private usersDatabase: UsersDatabase,
     private tasksDatabase: TasksDatabase,
+    private projectDatabase: ProjectDatabase,
   ) {}
 
   async createWorkspace(
-    userId: number,
+    user: Partial<User>,
     name: string,
     changeWorkspace?: boolean,
   ) {
-    const workspace = await this.workspaceDatabase.createWorkspace(
-      userId,
-      name,
-    );
+    const workspace =
+      user.id && (await this.workspaceDatabase.createWorkspace(user.id, name));
     if (!workspace) {
       throw new APIException(
         'Can not create Workspace!',
@@ -31,23 +32,32 @@ export class WorkspacesService {
       );
     }
 
-    const userWorkspace = await this.workspaceDatabase.createUserWorkspace(
-      userId,
-      workspace.id,
-      Role.ADMIN,
-      UserWorkspaceStatus.ACTIVE,
-    );
+    const userWorkspace =
+      user.id &&
+      (await this.workspaceDatabase.createUserWorkspace(
+        user.id,
+        workspace.id,
+        Role.ADMIN,
+        UserWorkspaceStatus.ACTIVE,
+      ));
     if (!userWorkspace) {
       throw new APIException(
         'Can not create userWorkspace!',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+
     //no need to throw error, as it deosn't concern the creation phase
-    changeWorkspace &&
-      (await this.changeActiveWorkspace(+workspace.id, +userId));
+    const updatedUser =
+      changeWorkspace &&
+      (await this.changeActiveWorkspace(+workspace.id, Number(user.id)));
 
     await this.usersDatabase.createSettings(workspace?.id);
+    updatedUser &&
+      (await this.createLocalProject(
+        updatedUser,
+        `${updatedUser?.firstName}'s Project`,
+      ));
 
     return workspace;
   }
@@ -143,6 +153,8 @@ export class WorkspacesService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+
+    return updateUser;
   }
 
   async sendInvitation(user: User, reqBody: SendInvitationReqBody) {
@@ -237,5 +249,54 @@ export class WorkspacesService {
     });
 
     return users;
+  }
+
+  async createLocalProject(user: User, projectName: string) {
+    if (!user || (user && !user?.activeWorkspaceId))
+      throw new APIException(
+        'No userworkspace detected',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    const projectExists = await this.projectDatabase.getProject(
+      {
+        projectName,
+        source: 'T23',
+        workspaceId: user?.activeWorkspaceId,
+      },
+      {
+        integration: true,
+      },
+    );
+
+    if (projectExists)
+      throw new APIException(
+        'Project name already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    const newProject =
+      user?.activeWorkspaceId &&
+      (await this.projectDatabase.createProject(
+        projectName,
+        user?.activeWorkspaceId,
+      ));
+
+    if (!newProject)
+      throw new APIException(
+        'Project could not be created',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+
+    const statusCreated = await this.projectDatabase.createStatusDetail(
+      newProject?.id,
+    );
+    if (!statusCreated)
+      throw new APIException(
+        'Could not create status',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+
+    return newProject;
   }
 }

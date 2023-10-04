@@ -104,12 +104,6 @@ export class TasksService {
             }),
             ...(priority1 && { priority: { in: priority1 } }),
             ...(status1 && { status: { in: status1 } }),
-            ...(text && {
-              title: {
-                contains: text,
-                mode: 'insensitive',
-              },
-            }),
             ...queryFilter,
           },
           include: {

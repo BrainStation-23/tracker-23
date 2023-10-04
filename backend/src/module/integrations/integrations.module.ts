@@ -9,6 +9,7 @@ import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { UsersDatabase } from 'src/database/users';
 import { TasksDatabase } from 'src/database/tasks';
+import { ProjectDatabase } from 'src/database/projects';
 
 @Module({
   imports: [HttpModule.register({}), WorkspacesModule],
@@ -21,6 +22,7 @@ import { TasksDatabase } from 'src/database/tasks';
     UserIntegrationDatabase,
     UsersDatabase,
     TasksDatabase,
+    ProjectDatabase
   ],
   exports: [IntegrationsService],
 })
