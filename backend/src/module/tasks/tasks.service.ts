@@ -127,6 +127,20 @@ export class TasksService {
                 },
               },
             },
+            parentTask: {
+              select: {
+                title: true,
+                url: true,
+                key: true,
+              },
+            },
+            childTask: {
+              select: {
+                title: true,
+                url: true,
+                key: true,
+              },
+            },
           },
         });
       } else {
@@ -164,6 +178,20 @@ export class TasksService {
                       },
                     },
                   },
+                },
+              },
+              parentTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
+                },
+              },
+              childTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
                 },
               },
             },
@@ -256,6 +284,20 @@ export class TasksService {
                   },
                 },
               },
+              parentTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
+                },
+              },
+              childTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
+                },
+              },
             },
           });
         } else {
@@ -301,6 +343,20 @@ export class TasksService {
                       },
                     },
                   },
+                },
+              },
+              parentTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
+                },
+              },
+              childTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
                 },
               },
             },
