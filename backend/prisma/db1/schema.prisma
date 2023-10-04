@@ -215,6 +215,7 @@ model Task {
   source             IntegrationType @default(TRACKER23)
   integratedTaskId   Int?
   url                String?
+  key                String?
   pinned             Boolean?        @default(false)
 
   jiraUpdatedAt DateTime?
