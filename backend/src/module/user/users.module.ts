@@ -11,6 +11,7 @@ import { WorkspaceDatabase } from 'src/database/workspaces';
 import { NotificationModule } from '../notifications/notifications.module';
 import { TasksDatabase } from 'src/database/tasks';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
+import { ProjectDatabase } from 'src/database/projects';
 
 @Module({
   imports: [HttpModule.register({}), NotificationModule],
@@ -25,6 +26,7 @@ import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
     WorkspaceDatabase,
     TasksDatabase,
     UserWorkspaceDatabase,
+    ProjectDatabase
   ],
   exports: [],
 })

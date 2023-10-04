@@ -77,7 +77,7 @@ export class DataMigrationService {
       const workspace =
         newUser.firstName &&
         (await this.workspacesService.createWorkspace(
-          newUser.id,
+          newUser,
           `${newUser.firstName}'s Workspace`,
         ));
       const updateUser =
