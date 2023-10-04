@@ -271,7 +271,43 @@ export class ExportService {
       }
     });
 
-    if (!sessions || sessions?.length === 0) return 0;
-    else return total;
+    if (!sessions || sessions?.length === 0)
+      return this.getFormattedTotalTime(0);
+    else {
+      const time = this.getFormattedTotalTime(total);
+      console.log(
+        '🚀 ~ file: export.service.ts:278 ~ ExportService ~ getTotalSpentTime ~ time:',
+        time,
+      );
+      return time;
+    }
+  }
+
+  getFormattedTotalTime(time: number) {
+    if (!time) return null;
+    let tmp = time;
+    tmp = Math.round(tmp / 1000);
+    const seconds = tmp % 60;
+    tmp = Math.floor(tmp / 60);
+    const mins = tmp % 60;
+    tmp = Math.floor(tmp / 60);
+    if (mins + tmp === 0) {
+      console.log(
+        '🚀 ~ file: export.service.ts:292 ~ ExportService ~ getFormattedTotalTime ~ tmp:',
+        tmp,
+      );
+      return `${seconds ? seconds + ' s' : ''}
+      `;
+    }
+    console.log(
+      '🚀 ~ file: export.service.ts:299 ~ ExportService ~ getFormattedTotalTime ~ tmp:',
+      `${tmp ? tmp + 'hrs ' : ''}${mins ? mins + 'm' : ''}
+    `,
+    );
+    return `${tmp ? tmp + 'hrs ' : ''}${mins ? mins + 'm' : ''}
+    `;
+    // ${
+    //   seconds ?? seconds + "s"
+    // }
   }
 }
