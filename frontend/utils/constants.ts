@@ -96,7 +96,7 @@ export enum Roles {
 
 export const whiteListEmails = [
   "seefathimel1@gmail.com",
-  "seefathimel2@gmail.com",
+  "seefathimel8@gmail.com",
   "test@gmail.com",
   "himel.bs23@gmail.com",
   "dipubala.bs23@gmail.com",
