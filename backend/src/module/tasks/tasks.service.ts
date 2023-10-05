@@ -20,8 +20,6 @@ import {
 import {
   CreateTaskDto,
   GetTaskQuery,
-  GetTeamTaskQuery,
-  GetTeamTaskQueryType,
   StatusEnum,
   TimeSpentReqBodyDto,
   UpdatePinDto,
@@ -33,7 +31,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { MyGateway } from '../notifications/socketGateway';
 import { APIException } from '../exception/api.exception';
-import { WorkspaceDatabase } from 'src/database/workspaces';
 import { TasksDatabase } from 'src/database/tasks';
 @Injectable()
 export class TasksService {
@@ -44,7 +41,6 @@ export class TasksService {
     private myGateway: MyGateway,
     private workspacesService: WorkspacesService,
     private sprintService: SprintsService,
-    private workspaceDatabase: WorkspaceDatabase,
     private tasksDatabase: TasksDatabase,
   ) {}
 
@@ -65,6 +61,23 @@ export class TasksService {
       if (!userWorkspace) {
         return [];
       }
+      const queryFilter: any = {};
+
+      if (text) {
+        queryFilter.OR = [
+          {
+            title: {
+              contains: text,
+              mode: 'insensitive',
+            },
+          },
+          {
+            key: {
+              contains: text,
+            },
+          },
+        ];
+      }
 
       const priority1: any = (priority as unknown as string)?.split(',');
       const status1: any = (status as unknown as string)?.split(',');
@@ -81,7 +94,6 @@ export class TasksService {
         const taskIds = await this.sprintService.getSprintTasksIds(
           sprintIdArray,
         );
-
         return await this.prisma.task.findMany({
           where: {
             userWorkspaceId: userWorkspace.id,
@@ -92,12 +104,7 @@ export class TasksService {
             }),
             ...(priority1 && { priority: { in: priority1 } }),
             ...(status1 && { status: { in: status1 } }),
-            ...(text && {
-              title: {
-                contains: text,
-                mode: 'insensitive',
-              },
-            }),
+            ...queryFilter,
           },
           include: {
             sessions: {
@@ -112,6 +119,20 @@ export class TasksService {
                     },
                   },
                 },
+              },
+            },
+            parentTask: {
+              select: {
+                title: true,
+                url: true,
+                key: true,
+              },
+            },
+            childTask: {
+              select: {
+                title: true,
+                url: true,
+                key: true,
               },
             },
           },
@@ -129,12 +150,7 @@ export class TasksService {
             }),
           ...(priority1 && { priority: { in: priority1 } }),
           ...(status1 && { status: { in: status1 } }),
-          ...(text && {
-            title: {
-              contains: text,
-              mode: 'insensitive',
-            },
-          }),
+          ...queryFilter,
         };
         // console.log(
         //   '🚀 ~ file: tasks.service.ts:126 ~ TasksService ~ getTasks ~ databaseQuery:',
@@ -156,6 +172,20 @@ export class TasksService {
                       },
                     },
                   },
+                },
+              },
+              parentTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
+                },
+              },
+              childTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
                 },
               },
             },
@@ -248,6 +278,20 @@ export class TasksService {
                   },
                 },
               },
+              parentTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
+                },
+              },
+              childTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
+                },
+              },
             },
           });
         } else {
@@ -293,6 +337,20 @@ export class TasksService {
                       },
                     },
                   },
+                },
+              },
+              parentTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
+                },
+              },
+              childTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
                 },
               },
             },
@@ -857,6 +915,7 @@ export class TasksService {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           url: `${userIntegration?.integration?.site}/browse/${integratedTask?.key}`,
+          key: integratedTask?.key,
         });
       }
       const mappedTaskId = new Map<number, number>();
@@ -1179,6 +1238,7 @@ export class TasksService {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           url: `${userIntegration?.integration?.site}/browse/${integratedTask?.key}`,
+          key: integratedTask?.key,
         });
       }
 
@@ -1685,7 +1745,7 @@ export class TasksService {
           projectId: true,
         },
       });
-      if (task?.projectId === null) {
+      if (task?.integratedTaskId === null) {
         const updatedTask = await this.prisma.task.update({
           where: {
             id: Number(taskId),
@@ -1695,7 +1755,7 @@ export class TasksService {
           },
         });
         return updatedTask;
-      } else if (task && task.projectId) {
+      } else if (task && task.projectId && task.integratedTaskId) {
         const project = await this.prisma.project.findFirst({
           where: { id: task.projectId },
           include: { integration: true },
@@ -1775,7 +1835,7 @@ export class TasksService {
     } catch (err) {
       console.log(err.message);
       throw new APIException(
-        'Can not update issue status',
+        'Can not update issue estimation',
         HttpStatus.BAD_REQUEST,
       );
     }

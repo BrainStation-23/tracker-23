@@ -102,19 +102,21 @@ const TaskDetailsModal = ({
                 {taskDetails?.description ?? <em>No description provided.</em>}
               </span>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="w-[120px] text-sm font-semibold text-secondary ">
-                Link
-              </span>
-              <OpenLinkInNewTab
-                onClick={() => {
-                  window.open(taskDetails?.url);
-                  setIsModalOpen(true);
-                }}
-              >
-                {taskDetails?.url}
-              </OpenLinkInNewTab>
-            </div>
+            {taskDetails?.url && (
+              <div className="flex items-center gap-4">
+                <span className="w-[120px] text-sm font-semibold text-secondary ">
+                  Link
+                </span>
+                <OpenLinkInNewTab
+                  onClick={() => {
+                    window.open(taskDetails?.url);
+                    setIsModalOpen(true);
+                  }}
+                >
+                  {taskDetails?.url}
+                </OpenLinkInNewTab>
+              </div>
+            )}
             <div className="grid grid-cols-2">
               <div className="flex items-center gap-4">
                 <span className="w-[120px] text-sm font-semibold text-secondary ">

@@ -4,6 +4,7 @@ import {
   LuDownload,
   LuFolder,
   LuHelpCircle,
+  LuLayoutDashboard,
   LuMail,
   LuPlug,
   LuSettings,
@@ -85,7 +86,7 @@ const SideMenu = () => {
 export default SideMenu;
 
 export const sideMenuOptions = [
-  { link: "/dashboard", title: "Dashboard", icon: <DashboardIconSvg /> },
+  { link: "/dashboard", title: "Dashboard", icon: <LuLayoutDashboard /> },
   { link: "/taskList", title: "All Tasks", icon: <LuClipboardList /> },
   {
     link: "/integrations",

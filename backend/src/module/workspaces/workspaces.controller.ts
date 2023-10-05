@@ -26,7 +26,7 @@ export class WorkspacesController {
     @Body() reqBody: WorkspaceReqBody,
   ) {
     return this.workspacesService.createWorkspace(
-      user.id,
+      user,
       reqBody?.name,
       reqBody?.changeWorkspace,
     );
