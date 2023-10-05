@@ -294,12 +294,12 @@ const CustomLayout = ({ children }: any) => {
               {!isPublicRoute &&
                 !path.includes("onBoarding") &&
                 !noNavbar.some((route) => path.includes(route)) && <Navbar />}
-              {/* <div className="h-full w-full bg-white">
-                {!isPublicRoute && !path.includes("onBoarding") && (
+              <div className="h-full w-full bg-white">
+                {/* {!isPublicRoute && !path.includes("onBoarding") && (
                   <GlobalClock />
-                )}
+                )} */}
                 {children}
-              </div> */}
+              </div>
             </div>
           ) : (
             <div

@@ -512,14 +512,6 @@ const Dashboard = () => {
               <Empty className="py-20" description="No Data" />
             )}
           </DashboardSection>
-          <DashboardSection title="Work Per Day" tooltipMessage="This Week">
-            {/* {weekData?.length > 0 ? (
-              <XYChart data={weekData} />
-            ) : (
-              <Empty className="py-20" description="No Data" />
-            )} */}
-            <ReportComponent />
-          </DashboardSection>
 
           {/* <div>
         <MyTasks />
