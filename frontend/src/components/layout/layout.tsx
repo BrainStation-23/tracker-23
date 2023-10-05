@@ -71,7 +71,7 @@ const CustomLayout = ({ children }: any) => {
           "🚀 ~ file: layout.tsx:60 ~ getProjectWiseStatues ~ res:",
           res
         );
-        res?.length > 0 && dispatch(setProjectsSlice(res));
+        res && dispatch(setProjectsSlice(res));
       }
     }
   };
@@ -107,9 +107,9 @@ const CustomLayout = ({ children }: any) => {
   ]);
   useEffect(() => {
     const connectSocket = async () => {
-      GetCookie("access_token") &&
-        !connectedSocket &&
-        (await initializeSocket());
+      // GetCookie("access_token") &&
+      //   !connectedSocket &&
+      //   (await initializeSocket());
     };
     let timeout: NodeJS.Timeout;
     timeout =
@@ -295,9 +295,9 @@ const CustomLayout = ({ children }: any) => {
                 !path.includes("onBoarding") &&
                 !noNavbar.some((route) => path.includes(route)) && <Navbar />}
               <div className="h-full w-full bg-white">
-                {!isPublicRoute && !path.includes("onBoarding") && (
+                {/* {!isPublicRoute && !path.includes("onBoarding") && (
                   <GlobalClock />
-                )}
+                )} */}
                 {children}
               </div>
             </div>

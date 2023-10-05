@@ -6,6 +6,7 @@ import {
   LuHelpCircle,
   LuLayoutDashboard,
   LuMail,
+  LuNewspaper,
   LuPlug,
   LuSettings,
   LuUserCircle2,
@@ -117,6 +118,11 @@ export const sideMenuOptions = [
     link: "/settings",
     title: "Settings",
     icon: <LuSettings />,
+  },
+  {
+    link: "reports",
+    title: "Reports",
+    icon: <LuNewspaper />,
   },
   {
     link: "suggestion",

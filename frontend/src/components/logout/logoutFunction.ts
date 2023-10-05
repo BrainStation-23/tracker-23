@@ -3,6 +3,7 @@ import { resetIntegrationsSlice } from "@/storage/redux/integrationsSlice";
 import { setSocket } from "@/storage/redux/notificationsSlice";
 import { resetProjectsSlice } from "@/storage/redux/projectsSlice";
 import { store } from "@/storage/redux/store";
+import { clearLocalStorage } from "@/storage/storage";
 import { userAPI } from "APIs";
 
 export const logOutFunction = async () => {
@@ -10,6 +11,7 @@ export const logOutFunction = async () => {
   store.dispatch(resetProjectsSlice());
   store.dispatch(setSocket(null));
   RemoveAllCookies();
+  clearLocalStorage();
   console.log("logging out");
   userAPI.logout();
 };

@@ -234,6 +234,19 @@ export const dateRangeOptions = {
   "last-month": "Past month",
   "next-month": "Next month",
 };
+
+export function getArrayOfDatesInRange(startDate: any, endDate: any) {
+  const dates = [];
+  let currentDate = dayjs(startDate);
+
+  while (currentDate.isBefore(endDate) || currentDate.isSame(endDate, "day")) {
+    dates.push(currentDate.format("MMM DD, YYYY"));
+    currentDate = currentDate.add(1, "day");
+  }
+
+  return dates;
+}
+
 export const getFormattedDateRange = (
   dateRange: any,
   format = "MMM D,YYYY"
@@ -301,3 +314,21 @@ export const getFormattedDateRange = (
     </Popover>
   </Menu.Item>
 </Menu>;
+
+export function formatUserData(dataArray: any) {
+  return dataArray.map((data: any) => {
+    const result: any = {
+      user: `${data.firstName} ${data.lastName}`,
+    };
+    result.totalHours = 0;
+    result.picture = data.picture;
+    data.sessions.forEach((session: any) => {
+      const sessionDate = dayjs(session.day);
+      const formattedDate = sessionDate.format("MMM DD, YYYY");
+      result[`${formattedDate}`] = session.hour;
+      result.totalHours += session.hour; // Add session hour to total hours
+    });
+
+    return result;
+  });
+}

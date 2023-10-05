@@ -1,4 +1,3 @@
-import { config } from "config";
 import { apiFunction } from "utils/types";
 
 import {
@@ -27,6 +26,7 @@ import {
   getProjectWiseHourRest,
   getSpentTimePerDayRest,
   getTasksRest,
+  getTimeSheetReportRest,
   getWorkspaceInvitationListRest,
   getWorkspaceListRest,
   getWorkspaceMembersRest,
@@ -55,61 +55,6 @@ import {
   updateTaskSTatusRest,
   updateWorkspaceRest,
 } from "./restApi";
-
-const graphqlApi: apiFunction = {
-  login: loginRest,
-  googleLogin: googleLoginRest,
-  registerUser: registerRest,
-  logout: logoutRest,
-  createTask: createTaskRest,
-  getTasks: getTasksRest,
-  syncTasks: syncAllTasksRest,
-  syncProjectTasks: syncProjectTasksRest,
-  syncStatus: syncStatusRest,
-  deleteTask: deleteTaskRest,
-  createSession: createSessionRest,
-  stopSession: stopSessionRest,
-  authJira: authJiraRest,
-  getJiraLink: getJiraLinkRest,
-  sendJiraCode: sendJiraCodeRest,
-  exportTasks: exportTasksRest,
-  getIntegrations: getIntegrationsRest,
-  uninstallIntegration: uninstallIntegrationRest,
-  deleteIntegration: deleteIntegrationRest,
-  getProjectWiseHour: getProjectWiseHourRest,
-  getSpentTimePerDay: getSpentTimePerDayRest,
-  addManualWorkLog: addManualWorkLogRest,
-  updateTaskSTatus: updateTaskSTatusRest,
-  pinTask: pinTaskRest,
-  selectJiraIntegration: selectJiraIntegrationRest,
-  getIntegratedProjectStatuses: getIntegratedProjectStatusesRest,
-  getWorkspaceMembers: getWorkspaceMembersRest,
-  getNotifications: getNotificationsRest,
-  deleteSession: deleteSessionRest,
-  updateSession: updateSessionRest,
-  markNotificationSeen: markNotificationSeenRest,
-  markAllNotificationsSeen: markAllNotificationsSeenRest,
-  updateTaskEstimation: updateTaskEstimationRest,
-  getJiraSprints: getJiraSprintsRest,
-  getJiraActiveSprintTasks: getJiraActiveSprintTasksRest,
-  getAllProjects: getAllProjectsRest,
-  importProject: importProjectRest,
-  createProject: createProjectRest,
-  deleteProjectTasks: deleteProjectTasksRest,
-  getWorkspaceList: getWorkspaceListRest,
-  createWorkspace: createWorkspaceRest,
-  changeWorkspace: changeWorkspaceRest,
-  deleteWorkspace: deleteWorkspaceRest,
-  updateWorkspace: updateWorkspaceRest,
-  getWorkspaceInvitationList: getWorkspaceInvitationListRest,
-  sendWorkspaceInvitation: sendWorkspaceInvitationRest,
-  acceptWorkspaceInvitation: acceptWorkspaceInvitationRest,
-  rejectWorkspaceInvitation: rejectWorkspaceInvitationRest,
-  forgotPassword: forgotPasswordRest,
-  resetPassword: resetPasswordRest,
-  getWorkspaceSettings: getWorkspaceSettingsRest,
-  updateSyncTime: updateSyncTimeRest,
-};
 
 const restApi: apiFunction = {
   login: loginRest,
@@ -164,7 +109,7 @@ const restApi: apiFunction = {
   resetPassword: resetPasswordRest,
   getWorkspaceSettings: getWorkspaceSettingsRest,
   updateSyncTime: updateSyncTimeRest,
+  getTimeSheetReport: getTimeSheetReportRest,
 };
 
-export const userAPI: apiFunction =
-  config?.apiService === "GRAPHQL" ? graphqlApi : restApi;
+export const userAPI: apiFunction = restApi;
