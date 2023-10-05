@@ -261,10 +261,10 @@ export class WebhooksService {
           user,
           reqBody.userIntegrationId,
         );
-      console.log(
-        '🚀 ~ file: webhooks.service.ts:161 ~ WebhooksService ~ registerWebhook ~ updated_integration:',
-        updated_integration,
-      );
+      // console.log(
+      //   '🚀 ~ file: webhooks.service.ts:161 ~ WebhooksService ~ registerWebhook ~ updated_integration:',
+      //   updated_integration,
+      // );
       if (!updated_integration) {
         return null;
       }
@@ -295,10 +295,10 @@ export class WebhooksService {
           },
         ],
       };
-      console.log(
-        '🚀 ~ file: webhooks.service.ts:195 ~ WebhooksService ~ registerWebhook ~ formateReqBody:',
-        formateReqBody,
-      );
+      // console.log(
+      //   '🚀 ~ file: webhooks.service.ts:195 ~ WebhooksService ~ registerWebhook ~ formateReqBody:',
+      //   formateReqBody,
+      // );
       // //console.log(formateReqBody);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook`;
       const config = {
@@ -313,10 +313,10 @@ export class WebhooksService {
       let webhook;
       try {
         webhook = await (await axios(config)).data;
-        console.log(
-          '🚀 ~ file: webhooks.service.ts:217 ~ WebhooksService ~ registerWebhook ~ webhook:',
-          webhook.webhookRegistrationResult[0],
-        );
+        // console.log(
+        //   '🚀 ~ file: webhooks.service.ts:217 ~ WebhooksService ~ registerWebhook ~ webhook:',
+        //   webhook.webhookRegistrationResult[0],
+        // );
       } catch (err) {
         console.log(
           '🚀 ~ file: webhooks.service.ts:223 ~ WebhooksService ~ registerWebhook ~ err:',
@@ -376,7 +376,7 @@ export class WebhooksService {
       };
 
       const webhook = (await axios(config)).status;
-      console.log('deleted', webhook);
+      // console.log('deleted', webhook);
       webhook == 202 &&
         updated_integration.siteId &&
         (await this.prisma.webhook.delete({
@@ -442,7 +442,7 @@ export class WebhooksService {
       const body = {
         webhookIds: [reqBody.webhookId],
       };
-      console.log(body);
+      // console.log(body);
       const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook/refresh`;
       const config = {
         method: 'put',
