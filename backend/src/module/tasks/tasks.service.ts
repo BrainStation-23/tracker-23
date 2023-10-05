@@ -1745,7 +1745,7 @@ export class TasksService {
           projectId: true,
         },
       });
-      if (task?.projectId === null) {
+      if (task?.integratedTaskId === null) {
         const updatedTask = await this.prisma.task.update({
           where: {
             id: Number(taskId),
@@ -1755,7 +1755,7 @@ export class TasksService {
           },
         });
         return updatedTask;
-      } else if (task && task.projectId) {
+      } else if (task && task.projectId && task.integratedTaskId) {
         const project = await this.prisma.project.findFirst({
           where: { id: task.projectId },
           include: { integration: true },
@@ -1835,7 +1835,7 @@ export class TasksService {
     } catch (err) {
       console.log(err.message);
       throw new APIException(
-        'Can not update issue status',
+        'Can not update issue estimation',
         HttpStatus.BAD_REQUEST,
       );
     }
