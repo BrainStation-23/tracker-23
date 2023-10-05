@@ -127,3 +127,28 @@ export const getElapsedTime = (date: Date) => {
 
   return elapsedTime;
 };
+
+export function formatDecimalHours(decimalHours: number, hoursPerDay = 8) {
+  const totalMinutes = decimalHours * 60;
+  const days = Math.floor(totalMinutes / (60 * hoursPerDay));
+  const remainingMinutes = totalMinutes % (60 * hoursPerDay);
+
+  const formattedParts = [];
+
+  if (days > 0) {
+    formattedParts.push(`${days}d`);
+  }
+
+  if (remainingMinutes > 0) {
+    const hours = Math.floor(remainingMinutes / 60);
+    const minutes = Math.floor(remainingMinutes % 60);
+    if (hours > 0) {
+      formattedParts.push(`${hours}h`);
+    }
+    if (minutes > 0) {
+      formattedParts.push(`${minutes}m`);
+    }
+  }
+
+  return formattedParts.join(" ");
+}

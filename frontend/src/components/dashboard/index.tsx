@@ -1,3 +1,18 @@
+import { Empty, message, Spin, TablePaginationConfig, Typography } from "antd";
+import { FilterValue, SorterResult } from "antd/es/table/interface";
+import { userAPI } from "APIs";
+import { TableParams, TaskDto } from "models/tasks";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import {
+  PriorityBGColorEnum,
+  PriorityBorderColorEnum,
+  statusBGColorEnum,
+  statusBorderColorEnum,
+  taskPriorityEnum,
+  taskStatusEnum,
+} from "utils/constants";
+
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
 import XYChart from "@/components/dashboard/charts/xyChart";
@@ -9,20 +24,10 @@ import {
   getTotalSpentTime,
 } from "@/services/timeActions";
 import { getLocalStorage } from "@/storage/storage";
-import { Empty, message, Spin, TablePaginationConfig, Typography } from "antd";
-import { FilterValue, SorterResult } from "antd/es/table/interface";
-import { userAPI } from "APIs";
-import { TableParams, TaskDto } from "models/tasks";
-import { useEffect, useState } from "react";
-import {
-  PriorityBGColorEnum,
-  PriorityBorderColorEnum,
-  statusBGColorEnum,
-  statusBorderColorEnum,
-  taskPriorityEnum,
-  taskStatusEnum,
-} from "utils/constants";
+
+import { getDateRangeArray } from "../datePicker";
 import GlobalMOdal from "../modals/globalModal";
+import ReportComponent from "../report";
 import Stopwatch from "../stopWatch/tabular/timerComponent";
 import ProgressComponent from "../tasks/components/progressComponent";
 import StaticProgressComponent from "../tasks/components/progressComponentStatic";
@@ -30,10 +35,9 @@ import TimeDisplayComponent from "../tasks/components/timeDisplayComponent";
 import SessionStartWarning from "../tasks/components/warning";
 import DonutChart from "./charts/donutChart";
 import Line from "./charts/lineChart";
-import { useRouter } from "next/router";
 import DashboardSection from "./components/sections";
 import DashboardTableComponent from "./components/tableComponentDashboard";
-import { getDateRangeArray } from "../datePicker";
+
 const { Text } = Typography;
 
 const Dashboard = () => {
@@ -43,104 +47,8 @@ const Dashboard = () => {
   const [dataDonutTotal, setDataDonutTotal] = useState(0);
   const [dataDonut, setDataDonut] = useState(null);
 
-  const lineChartData = [
-    {
-      date: "2023-03-25T18:00:00.000Z",
-      Actual: 10,
-      Estimate: 8,
-    },
-    {
-      date: "2023-03-26T18:00:00.000Z",
-      Actual: 7,
-      Estimate: 8,
-    },
-    {
-      date: "2023-03-27T18:00:00.000Z",
-      Actual: 9,
-      Estimate: 9,
-    },
-    {
-      date: "2023-03-28T18:00:00.000Z",
-      Actual: 12,
-      Estimate: 9,
-    },
-    {
-      date: "2023-03-29T18:00:00.000Z",
-      Actual: 12,
-      Estimate: 8,
-    },
-    {
-      date: "2023-03-30T18:00:00.000Z",
-      Actual: 11,
-      Estimate: 8,
-    },
-    {
-      date: "2023-03-31T18:00:00.000Z",
-      Actual: 10,
-      Estimate: 7,
-    },
-  ];
-  const data2 = [
-    { day: 1, hours: 3 },
-    { day: 2, hours: 8 },
-    { day: 3, hours: 1 },
-    { day: 4, hours: 7 },
-    { day: 5, hours: 4 },
-    { day: 6, hours: 0 },
-    { day: 7, hours: 5 },
-    { day: 8, hours: 7 },
-    { day: 9, hours: 2 },
-    { day: 10, hours: 8 },
-    { day: 11, hours: 2 },
-    { day: 12, hours: 5 },
-    { day: 13, hours: 1 },
-    { day: 14, hours: 8 },
-    { day: 15, hours: 0 },
-    { day: 16, hours: 3 },
-    { day: 17, hours: 5 },
-    { day: 18, hours: 8 },
-    { day: 19, hours: 1 },
-    { day: 20, hours: 6 },
-    { day: 21, hours: 2 },
-    { day: 22, hours: 3 },
-    { day: 23, hours: 4 },
-    { day: 24, hours: 8 },
-    { day: 25, hours: 3 },
-    { day: 26, hours: 0 },
-    { day: 27, hours: 4 },
-    { day: 28, hours: 7 },
-    { day: 29, hours: 1 },
-    { day: 30, hours: 5 },
-  ];
   const [weekData, setWeekData] = useState(null);
 
-  const data3 = [
-    {
-      category: "Category 1",
-      value1: 10,
-      value2: 20,
-    },
-    {
-      category: "Category 2",
-      value1: 20,
-      value2: 25,
-    },
-    {
-      category: "Category 3",
-      value1: 15,
-      value2: 30,
-    },
-    {
-      category: "Category 4",
-      value1: 5,
-      value2: 15,
-    },
-    {
-      category: "Category 5",
-      value1: 25,
-      value2: 10,
-    },
-  ];
   const handleTableChange = (
     pagination: TablePaginationConfig,
     filters: Record<string, FilterValue>,

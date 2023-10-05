@@ -27,6 +27,7 @@ import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
+import { getTimeSheetReportDto } from "models/reports";
 
 export async function loginRest(
   data: LoginDto
@@ -623,6 +624,18 @@ export async function updateSyncTimeRest(time: number) {
     const res = await axios.patch(`${apiEndPoints.workspaceSettings}`, {
       syncTime: time,
     });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getTimeSheetReportRest(data: getTimeSheetReportDto) {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.timeSheetReport}/` +
+        `?startDate=${data?.startDate}&endDate=${data?.endDate}`
+    );
     return res.data;
   } catch (error: any) {
     return false;

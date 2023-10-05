@@ -116,7 +116,7 @@ export class SessionsController {
     );
   }
 
-  @Get('/timesheet/per-day')
+  @Get('/timeSheet/per-day')
   @UseGuards(JwtAuthGuard)
   async getTimsheetPerDay(
     @GetUser() user: User,

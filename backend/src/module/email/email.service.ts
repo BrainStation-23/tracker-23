@@ -8,7 +8,7 @@ export class EmailService {
   constructor(private config: ConfigService) {}
 
   async sendEmail(subject: string, body: string, to: string) {
-    console.log(subject, body, to);
+    // console.log(subject, body, to);
     try {
       const OAuth2 = google.auth.OAuth2;
       interface OAuth2TransportConfig extends nodemailer.TransportOptions {
@@ -42,10 +42,6 @@ export class EmailService {
           resolve(token);
         });
       });
-      console.log(
-        '🚀 ~ file: email.service.ts:44 ~ EmailService ~ sendEmail ~ accessToken:',
-        accessToken,
-      );
 
       const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -58,10 +54,6 @@ export class EmailService {
           accessToken: accessToken as string,
         },
       } as OAuth2TransportConfig);
-      console.log(
-        '🚀 ~ file: email.service.ts:76 ~ EmailService ~ sendEmail ~ transporter:',
-        transporter,
-      );
 
       const mailOptions = {
         transporterName: 'gmail',
