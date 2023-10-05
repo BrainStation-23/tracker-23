@@ -109,7 +109,7 @@ const RecurrentTaskCreationComponent = ({ startDate }: Props) => {
             <Input type="number" className="pr-0.5" />
           </Form.Item>
           <Form.Item
-            name="frequency"
+            name="repeatType"
             rules={[{ required: true }]}
             className="m-0 w-[150px]"
             initialValue={"DAY"}

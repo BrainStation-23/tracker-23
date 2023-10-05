@@ -19,6 +19,7 @@ export type CreateTaskValues = {
   title: string;
   estimation: number;
   projectId: number;
+  occurrences?: number;
   priority: PriorityDto;
   label: string[];
   isRecurrent: boolean;
