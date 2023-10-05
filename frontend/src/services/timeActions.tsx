@@ -5,6 +5,7 @@ import { monthsList } from "utils/constants";
 // Extend Day.js with the relativeTime plugin
 dayjs.extend(relativeTime);
 export const getFormattedTotalTime = (time: number) => {
+  if (time === 0) return "0 m";
   if (!time) return null;
   let tmp = time;
   tmp = Math.round(tmp / 1000);

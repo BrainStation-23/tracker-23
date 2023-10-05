@@ -197,11 +197,6 @@ export class TasksService {
           );
         }
       }
-
-      console.log(
-        '🚀 ~ file: tasks.service.ts:172 ~ TasksService ~ getTasks ~ tasks:',
-        tasks,
-      );
       return tasks;
     } catch (err) {
       return [];
@@ -476,10 +471,10 @@ export class TasksService {
       const currentDate = dayjs(dto.startDate);
       const daysInMonth = currentDate.daysInMonth();
       repeatTime *= daysInMonth;
-      console.log(
-        '🚀 ~ file: tasks.service.ts:426 ~ TasksService ~ daysInMonth:',
-        daysInMonth,
-      );
+      // console.log(
+      //   '🚀 ~ file: tasks.service.ts:426 ~ TasksService ~ daysInMonth:',
+      //   daysInMonth,
+      // );
       if (dto.endDate) {
         return await this.createDayTaskWithEndDate(
           user,
@@ -598,10 +593,10 @@ export class TasksService {
       startTime += repeatTime
     ) {
       const weekday = dayjs(new Date(startTime)).format('dddd');
-      console.log(
-        '🚀 ~ file: index.ts:248 ~ TasksDatabase ~ weekday:',
-        weekday,
-      );
+      // console.log(
+      //   '🚀 ~ file: index.ts:248 ~ TasksDatabase ~ weekday:',
+      //   weekday,
+      // );
       const firstPos = myMap?.get(weekday);
       for (let index = 0; index < dto.weekDays.length; index++) {
         let target = myMap?.get(dto.weekDays[index]);
@@ -671,15 +666,15 @@ export class TasksService {
           SessionStartTime + target * 24 * 3600 * 1000;
         const SessionEndFinalTime = SessionEndTime + target * 24 * 3600 * 1000;
         const startFinalTime = startTime + target * 24 * 3600 * 1000;
-        console.log(
-          '🚀 ~ file: tasks.service.ts:537 ~ TasksService ~ startFinalTime:',
-          new Date(startFinalTime),
-        );
+        // console.log(
+        //   '🚀 ~ file: tasks.service.ts:537 ~ TasksService ~ startFinalTime:',
+        //   new Date(startFinalTime),
+        // );
         if (count >= dto.occurrences) {
-          console.log(
-            '🚀 ~ file: tasks.service.ts:542 ~ TasksService ~ count:',
-            count,
-          );
+          // console.log(
+          //   '🚀 ~ file: tasks.service.ts:542 ~ TasksService ~ count:',
+          //   count,
+          // );
 
           break;
         } // Have to think into deep.
@@ -1293,8 +1288,10 @@ export class TasksService {
           worklogsList.push(...resolvedPromise);
         }
       } catch (error) {
-        //console.log(total, mappedIssues.size);
-        console.log('🚀 ~ file: tasks.service.ts:366 ~ syncTasks ~ error:');
+        console.log(
+          '🚀 ~ file: tasks.service.ts:1291 ~ TasksService ~ error:',
+          error,
+        );
       }
 
       for (let index = 0; index < worklogsList.length; index++) {
@@ -1745,7 +1742,7 @@ export class TasksService {
           projectId: true,
         },
       });
-      if (task?.projectId === null) {
+      if (task?.integratedTaskId === null) {
         const updatedTask = await this.prisma.task.update({
           where: {
             id: Number(taskId),
@@ -1755,7 +1752,7 @@ export class TasksService {
           },
         });
         return updatedTask;
-      } else if (task && task.projectId) {
+      } else if (task && task.projectId && task.integratedTaskId) {
         const project = await this.prisma.project.findFirst({
           where: { id: task.projectId },
           include: { integration: true },
@@ -1835,7 +1832,7 @@ export class TasksService {
     } catch (err) {
       console.log(err.message);
       throw new APIException(
-        'Can not update issue status',
+        'Can not update issue estimation',
         HttpStatus.BAD_REQUEST,
       );
     }
