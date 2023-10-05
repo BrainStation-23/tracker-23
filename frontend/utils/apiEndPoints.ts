@@ -32,4 +32,5 @@ export const apiEndPoints = {
   members: `workspaces/users`,
   changeWorkspace: `workspaces/change-workspace`,
   workspaceSettings: `users/settings`,
+  timeSheetReport: "sessions/timeSheet/per-day",
 };

@@ -41,6 +41,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
   const allProjects = useAppSelector(
     (state: RootState) => state.projectList.projects
   );
+
   const localProjects = allProjects
     ? allProjects.filter((project) => project.source === "T23")
     : [];

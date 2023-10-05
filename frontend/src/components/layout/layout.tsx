@@ -71,7 +71,7 @@ const CustomLayout = ({ children }: any) => {
           "🚀 ~ file: layout.tsx:60 ~ getProjectWiseStatues ~ res:",
           res
         );
-        res?.length > 0 && dispatch(setProjectsSlice(res));
+        res && dispatch(setProjectsSlice(res));
       }
     }
   };

@@ -9,6 +9,8 @@ import {
   LoginResponseDto,
   ResetPasswordDto,
 } from "models/auth";
+import { SendWorkspaceInviteDto } from "models/invitation";
+import { getTimeSheetReportDto } from "models/reports";
 import {
   AddWorkLogParams,
   CreateTaskDto,
@@ -18,7 +20,6 @@ import {
 
 import { RegisterDto } from "../models/auth/index";
 import { TaskDto } from "../models/tasks/index";
-import { SendWorkspaceInviteDto } from "models/invitation";
 
 export interface apiFunction {
   login: (data: LoginDto) => Promise<LoginResponseDto | undefined>;
@@ -76,4 +77,5 @@ export interface apiFunction {
   forgotPassword: (data?: ForgotPasswordDto) => Promise<any>;
   resetPassword: (token: string, data: ResetPasswordDto) => Promise<any>;
   updateSyncTime: (time: number) => Promise<any>;
+  getTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
 }
