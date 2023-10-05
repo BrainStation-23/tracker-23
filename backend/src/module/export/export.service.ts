@@ -84,9 +84,7 @@ export class ExportService {
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
-      userWorkspaceIds = userWorkspace?.map(
-        (workspace: any) => workspace?.id,
-      );
+      userWorkspaceIds = userWorkspace?.map((workspace: any) => workspace?.id);
     } else {
       userWorkspace =
         user.activeWorkspaceId &&
@@ -112,9 +110,7 @@ export class ExportService {
 
     if (sprintIdArray && sprintIdArray.length) {
       // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
-      const taskIds = await this.sprintService.getSprintTasksIds(
-        sprintIdArray,
-      );
+      const taskIds = await this.sprintService.getSprintTasksIds(sprintIdArray);
 
       return await this.exportDatabase.getTasks({
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -151,6 +147,7 @@ export class ExportService {
     const modifiedData = data?.map((doc: any) => {
       const modifiedDoc = {
         ...doc,
+        totalSpent: this.getTotalSpentTime(doc.sessions),
         userName:
           doc?.userWorkspace?.user?.firstName +
           doc?.userWorkspace?.user?.lastName,
@@ -174,6 +171,7 @@ export class ExportService {
       rows.push(Object.values(modifiedDoc));
       return {
         ...doc,
+        totalSpent: this.getTotalSpentTime(doc.sessions),
         userName:
           doc?.userWorkspace?.user?.firstName +
           doc?.userWorkspace?.user?.lastName,
@@ -221,6 +219,10 @@ export class ExportService {
         return 'User Name';
       } else if (name === 'email') {
         return 'Email';
+      } else if (name === 'totalSpent') {
+        return 'Total Spent';
+      } else if (name === 'key') {
+        return 'Key';
       }
       return name;
     });
@@ -253,5 +255,59 @@ export class ExportService {
       );
     });
     res.download(file);
+  }
+
+  getTotalSpentTime(sessions: any) {
+    let total = 0;
+    sessions?.forEach((session: any) => {
+      if (session.endTime) {
+        const startTime: any = new Date(session.startTime);
+        const endTime: any = new Date(session.endTime);
+        total += endTime - startTime;
+      } else {
+        const startTime: any = new Date(session.startTime);
+        const endTime: any = new Date();
+        total += endTime - startTime;
+      }
+    });
+
+    if (!sessions || sessions?.length === 0)
+      return this.getFormattedTotalTime(0);
+    else {
+      const time = this.getFormattedTotalTime(total);
+      console.log(
+        '🚀 ~ file: export.service.ts:278 ~ ExportService ~ getTotalSpentTime ~ time:',
+        time,
+      );
+      return time;
+    }
+  }
+
+  getFormattedTotalTime(time: number) {
+    if (!time) return null;
+    let tmp = time;
+    tmp = Math.round(tmp / 1000);
+    const seconds = tmp % 60;
+    tmp = Math.floor(tmp / 60);
+    const mins = tmp % 60;
+    tmp = Math.floor(tmp / 60);
+    if (mins + tmp === 0) {
+      console.log(
+        '🚀 ~ file: export.service.ts:292 ~ ExportService ~ getFormattedTotalTime ~ tmp:',
+        tmp,
+      );
+      return `${seconds ? seconds + ' s' : ''}
+      `;
+    }
+    console.log(
+      '🚀 ~ file: export.service.ts:299 ~ ExportService ~ getFormattedTotalTime ~ tmp:',
+      `${tmp ? tmp + 'hrs ' : ''}${mins ? mins + 'm' : ''}
+    `,
+    );
+    return `${tmp ? tmp + 'hrs ' : ''}${mins ? mins + 'm' : ''}
+    `;
+    // ${
+    //   seconds ?? seconds + "s"
+    // }
   }
 }

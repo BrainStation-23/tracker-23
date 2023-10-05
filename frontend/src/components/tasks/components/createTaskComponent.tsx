@@ -230,6 +230,7 @@ const getFormattedValues = (values: CreateTaskValues) => {
   );
   return {
     ...values,
+    occurrences: values.occurrences ? +values.occurrences : null,
     estimation:
       typeof values.estimation !== "number"
         ? +values.estimation
@@ -239,5 +240,7 @@ const getFormattedValues = (values: CreateTaskValues) => {
         ? +values.projectId
         : values.projectId,
     label: values.label ? values.label : [],
+    startTime: values.timeRange ? values.timeRange[0] : null,
+    endTime: values.timeRange ? values.timeRange[1] : null,
   };
 };

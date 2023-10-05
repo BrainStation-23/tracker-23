@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
-import { IntegrationType } from "@prisma/client";
-import { PrismaService } from "src/module/prisma/prisma.service";
+import { Injectable } from '@nestjs/common';
+import { IntegrationType } from '@prisma/client';
+import { PrismaService } from 'src/module/prisma/prisma.service';
 
 @Injectable()
 export class ExportDatabase {
@@ -8,6 +8,23 @@ export class ExportDatabase {
 
   async getTasks(filter: any) {
     try {
+      const queryFilter: any = {};
+
+      if (filter.text) {
+        queryFilter.OR = [
+          {
+            title: {
+              contains: filter.text,
+              mode: 'insensitive',
+            },
+          },
+          {
+            key: {
+              contains: filter.text,
+            },
+          },
+        ];
+      }
       return await this.prisma.task.findMany({
         where: {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -28,12 +45,7 @@ export class ExportDatabase {
             priority: { in: filter?.priority1 },
           }),
           ...(filter?.status1 && { status: { in: filter?.status1 } }),
-          ...(filter?.text && {
-            title: {
-              contains: filter?.text,
-              mode: 'insensitive',
-            },
-          }),
+          ...queryFilter,
         },
         select: {
           title: true,
@@ -49,6 +61,7 @@ export class ExportDatabase {
           updatedAt: true,
           userWorkspaceId: true,
           source: true,
+          key: true,
           sessions: {
             select: {
               startTime: true,
@@ -86,6 +99,24 @@ export class ExportDatabase {
 
   async getTasksWithinTimeRange(filter: any) {
     try {
+      const queryFilter: any = {};
+
+      if (filter.text) {
+        queryFilter.OR = [
+          {
+            title: {
+              contains: filter.text,
+              mode: 'insensitive',
+            },
+          },
+          {
+            key: {
+              contains: filter.text,
+            },
+          },
+        ];
+      }
+
       return await this.prisma.task.findMany({
         where: {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -96,7 +127,9 @@ export class ExportDatabase {
               //@ts-ignore
               filter?.userWorkspace.id,
           ...(filter?.projectIdArray && {
-            projectId: { in: filter?.projectIdArray.map((id: any) => Number(id)) },
+            projectId: {
+              in: filter?.projectIdArray.map((id: any) => Number(id)),
+            },
           }),
           ...(filter?.startDate &&
             filter?.endDate && {
@@ -105,12 +138,7 @@ export class ExportDatabase {
             }),
           ...(filter?.priority1 && { priority: { in: filter?.priority1 } }),
           ...(filter?.status1 && { status: { in: filter?.status1 } }),
-          ...(filter?.text && {
-            title: {
-              contains: filter?.text,
-              mode: 'insensitive',
-            },
-          }),
+          ...queryFilter,
         },
         select: {
           title: true,
@@ -126,6 +154,7 @@ export class ExportDatabase {
           updatedAt: true,
           userWorkspaceId: true,
           source: true,
+          key: true,
           sessions: {
             select: {
               startTime: true,
