@@ -1040,7 +1040,7 @@ export class SessionsService {
   private organizeDateRangeIntoWeeks(
     startDateStr: any,
     endDateStr: any,
-  ): { weekArray: string[]; weekRange: string[] } {
+  ): { weekArray: string[]; weekRange: Record<string, string> } {
     startDateStr = startDateStr ? new Date(startDateStr) : new Date();
     endDateStr = endDateStr ? new Date(endDateStr) : new Date();
 
@@ -1052,7 +1052,7 @@ export class SessionsService {
 
     // Initialize arrays to store week labels and week date ranges
     const weekArray: string[] = [];
-    const weekRange: string[] = [];
+    const weekRange: Record<string, string> = {};
 
     // Generate week labels and week date ranges
     for (let i = 0; i < numberOfWeeks; i++) {
@@ -1064,17 +1064,17 @@ export class SessionsService {
       )} - ${weekEndDate.format('MM/DD/YYYY')}`;
 
       weekArray.push(weekLabel);
-      weekRange.push(weekRangeLabel);
+      weekRange[weekLabel] = weekRangeLabel;
     }
 
     return { weekArray, weekRange };
   }
 
   private organizeDateRangeIntoMonths(start: any, end: any) {
-    start = start ? new Date(start) : new Date()
-    end = end ? new Date(end) : new Date()
+    start = start ? new Date(start) : new Date();
+    end = end ? new Date(end) : new Date();
     const startDate = dayjs(start);
-    const endDate = dayjs(end)
+    const endDate = dayjs(end);
     const months = [];
     let currentDate = startDate.clone();
 
@@ -1196,10 +1196,10 @@ export class SessionsService {
     }
 
     return {
-      weekRange,
       rows,
       totalTime,
       columns: weekArray,
+      dateRange: weekRange,
     };
   }
 
@@ -1211,11 +1211,12 @@ export class SessionsService {
       query.startDate,
       query.endDate,
     );
-    //return months;
+
     const columns = months?.map((month) => month.month + ' ' + month.year);
-    //return columns;
+
     for (let i = 0; i < response.length; i++) {
-      let counter = 0, totalIndividual = 0;
+      let counter = -1,
+        totalIndividual = 0;
       const timeLogsOfMonths: any = {};
       const row = {
         userId: response[i].id,
@@ -1224,30 +1225,35 @@ export class SessionsService {
         email: response[i].email,
         totalTime: 0,
       };
-      for(let j = 0; j< response[i].sessions;){
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
+
+      for (
+        let j = 0;
+        j < response[i].sessions.length;
+        j = j + months[counter].days
+      ) {
+        counter++;
         const group = response[i].sessions.slice(j, j + months[counter].days);
-        const sum = group.reduce((acc: any, day: { hour: any }) => acc + day.hour, 0,);
-        console.log("the sum is: ", sum)
+        const sum = group.reduce(
+          (acc: any, day: { hour: any }) => acc + day.hour,
+          0,
+        );
+
         totalIndividual += sum;
         totalTime += sum;
-        timeLogsOfMonths[`${months[counter].month}`] = sum;
+        timeLogsOfMonths[`${columns[counter]}`] = sum;
         timeLogsOfMonths[`totalTime`] = totalIndividual;
-        counter++;
-        j = j + months[counter].days;
       }
-      console.log("Time logs of months are: ",timeLogsOfMonths)
+
       rows.push({
         ...row,
         ...timeLogsOfMonths,
       });
     }
-    //console.log(rows)
+
     return {
       columns,
       rows,
       totalTime,
-    }
+    };
   }
 }
