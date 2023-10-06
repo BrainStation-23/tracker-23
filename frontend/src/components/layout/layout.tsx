@@ -107,9 +107,9 @@ const CustomLayout = ({ children }: any) => {
   ]);
   useEffect(() => {
     const connectSocket = async () => {
-      // GetCookie("access_token") &&
-      //   !connectedSocket &&
-      //   (await initializeSocket());
+      GetCookie("access_token") &&
+        !connectedSocket &&
+        (await initializeSocket());
     };
     let timeout: NodeJS.Timeout;
     timeout =
