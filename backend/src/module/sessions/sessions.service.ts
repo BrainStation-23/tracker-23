@@ -868,9 +868,9 @@ export class SessionsService {
     );
     //console.log(response);
     //return response;
-    return daysDifference === 7 || daysDifference <= 7
+    return daysDifference === 31 || daysDifference <= 31
       ? this.formattedDailyTimesheet(query, response)
-      : daysDifference > 7 && daysDifference <= 31
+      : daysDifference > 31 && daysDifference <= 94
       ? this.formattedWeeklyTimesheet(query, response)
       : this.formattedMonthlyTimesheet(query, response);
   }
