@@ -23,6 +23,7 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
             title: "User",
             dataIndex: "name",
             key: "name",
+            fixed: "left",
             render: (_: any, v: any) => (
                 <div className="flex items-center gap-2">
                     <div className=" ">
@@ -55,7 +56,7 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
     column.forEach((date) => {
         columns.push({
             title: (
-                <div className="flex items-center gap-2">
+                <div className="mx-auto flex w-max items-center justify-center gap-2 ">
                     {date}
                     {dateRangeArray && (
                         <Tooltip
@@ -70,6 +71,7 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
             dataIndex: date,
             key: date,
             align: "center",
+            // width: 100,
             render: (_: any, v: any) => {
                 return (
                     <div className="w-full cursor-pointer rounded px-2 text-center  text-black">
@@ -84,6 +86,7 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
         dataIndex: "totalTime",
         key: "totalTime",
         align: "center",
+        fixed: "right",
         render: (_: any, { totalTime }: any) => {
             return (
                 <div className="w-full rounded px-2 text-center text-black">

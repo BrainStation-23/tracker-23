@@ -29,7 +29,7 @@ const ReportComponent = () => {
     }, [dateRange]);
     data.length > 0 && console.log(">>>>>", data[0], data[0]["Oct 01 , 2023"]);
     return (
-        <div className="overflow-auto">
+        <div className="">
             <div className="mb-4 flex justify-between">
                 <h2 className="text-2xl font-bold">Reports</h2>
             </div>
