@@ -9,6 +9,7 @@ import {
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { TableParams } from "models/tasks";
 import { useState } from "react";
+import { LuHelpCircle } from "react-icons/lu";
 
 const { Text } = Typography;
 type Props = {
@@ -54,12 +55,17 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
     column.forEach((date) => {
         columns.push({
             title: (
-                <Tooltip
-                    className={dateRangeArray ? "cursor-help" : ""}
-                    title={dateRangeArray ? dateRangeArray[date] : null}
-                >
+                <div className="flex items-center gap-2">
                     {date}
-                </Tooltip>
+                    {dateRangeArray && (
+                        <Tooltip
+                            className={dateRangeArray ? "cursor-auto" : ""}
+                            title={dateRangeArray ? dateRangeArray[date] : null}
+                        >
+                            <LuHelpCircle />
+                        </Tooltip>
+                    )}
+                </div>
             ),
             dataIndex: date,
             key: date,
