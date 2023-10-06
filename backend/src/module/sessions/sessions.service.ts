@@ -25,6 +25,7 @@ import { SessionDatabase } from '../../database/sessions';
 import { ProjectDatabase } from 'src/database/projects';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { TasksDatabase } from 'src/database/tasks';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class SessionsService {
@@ -162,7 +163,10 @@ export class SessionsService {
   }
 
   async stopSessionUtil(sessionId: number) {
-    return await this.sessionDatabase.updateSessionById(sessionId, { endTime: new Date(), status: SessionStatus.STOPPED });
+    return await this.sessionDatabase.updateSessionById(sessionId, {
+      endTime: new Date(),
+      status: SessionStatus.STOPPED,
+    });
   }
 
   async logToIntegrations(
@@ -288,10 +292,7 @@ export class SessionsService {
       (endTime.getTime() - startTime.getTime()) / 1000,
     );
     if (timeSpent < 60) {
-      throw new APIException(
-        'Insufficient TimeSpent',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new APIException('Insufficient TimeSpent', HttpStatus.BAD_REQUEST);
     }
 
     let jiraSession: any;
@@ -352,7 +353,11 @@ export class SessionsService {
         userWorkspaceId: userWorkspace.id,
       });
 
-      if(!createdSession) throw new APIException('Could not create session', HttpStatus.INTERNAL_SERVER_ERROR);
+      if (!createdSession)
+        throw new APIException(
+          'Could not create session',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
 
       return createdSession;
     } else {
@@ -416,9 +421,7 @@ export class SessionsService {
 
       const userIntegration: number[] = [];
       getUserIntegrationList.map((userInt: any) => {
-        if (
-          userInt.integrationId === project.integrationId
-        ) {
+        if (userInt.integrationId === project.integrationId) {
           userIntegration.push(userInt.id);
         }
       });
@@ -467,7 +470,7 @@ export class SessionsService {
         };
 
         const response = (await axios(config)).data;
-        let session =
+        const session =
           response &&
           (await this.updateSessionFromLocal(Number(sessionId), reqBody));
         task && (await this.updateTaskUpdatedAt(task.id));
@@ -489,7 +492,10 @@ export class SessionsService {
   }
 
   async updateSessionFromLocal(sessionId: number, reqBody: SessionReqBodyDto) {
-    const updateFromLocal = await this.sessionDatabase.updateSessionById(+sessionId, reqBody);
+    const updateFromLocal = await this.sessionDatabase.updateSessionById(
+      +sessionId,
+      reqBody,
+    );
     if (!updateFromLocal) {
       throw new APIException(
         'Can not update this session!',
@@ -510,7 +516,9 @@ export class SessionsService {
         );
       }
 
-      const doesExistWorklog = await this.sessionDatabase.getSessionById(+sessionId);
+      const doesExistWorklog = await this.sessionDatabase.getSessionById(
+        +sessionId,
+      );
       if (!doesExistWorklog) {
         throw new APIException('No session found', HttpStatus.BAD_REQUEST);
       }
@@ -574,18 +582,18 @@ export class SessionsService {
         };
 
         const status = (await axios(config)).status;
-        let session =
+        const session =
           status === 204 &&
           (await this.deleteSessionFromLocal(Number(sessionId)));
 
-          task && this.updateTaskUpdatedAt(task.id);
+        task && this.updateTaskUpdatedAt(task.id);
 
-         if (!session) {
-           throw new APIException(
-             'You are not allowed to delete this session!',
-             HttpStatus.BAD_REQUEST,
-           );
-         }
+        if (!session) {
+          throw new APIException(
+            'You are not allowed to delete this session!',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
       }
 
       return { message: 'Session deleted successfully!' };
@@ -598,7 +606,9 @@ export class SessionsService {
   }
 
   async deleteSessionFromLocal(sessionId: number) {
-    const deleteFromLocal = await this.sessionDatabase.deleteSession(+sessionId);
+    const deleteFromLocal = await this.sessionDatabase.deleteSession(
+      +sessionId,
+    );
     if (!deleteFromLocal) {
       throw new APIException(
         'Can not delete this session!',
@@ -808,8 +818,9 @@ export class SessionsService {
   }
 
   async getTimesheetPerDay(loggedInUser: User, query: GetTimesheetQuery) {
+    //return this.formattedMonthlyTimesheet(query);
     let userIds, userIdArray, users;
-
+    //console.log('hello')
     if (!loggedInUser?.activeWorkspaceId)
       throw new APIException(
         'No user workspace detected',
@@ -820,7 +831,7 @@ export class SessionsService {
       userIds = query?.userIds as unknown as string;
 
       userIdArray =
-        userIds && userIds.split(',').map((item) => Number(item.trim()));
+        userIds && userIds.split(',').map((item: any) => Number(item.trim()));
 
       users = userIdArray && (await this.sessionDatabase.getUsers(userIdArray));
     } else {
@@ -837,8 +848,13 @@ export class SessionsService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
 
-    return await Promise.all(
-      users?.map(async (user) => {
+    const daysDifference = this.calculateDaysBetweenDates(
+      query?.startDate,
+      query?.endDate,
+    );
+
+    const response = await Promise.all(
+      users?.map(async (user: any) => {
         const sessions = await this.getSpentTimeByDay(
           loggedInUser,
           query,
@@ -850,6 +866,13 @@ export class SessionsService {
         };
       }),
     );
+    //console.log(response);
+    //return response;
+    return daysDifference === 7 || daysDifference <= 7
+      ? this.formattedDailyTimesheet(query, response)
+      : daysDifference > 7 && daysDifference <= 31
+      ? this.formattedWeeklyTimesheet(query, response)
+      : this.formattedMonthlyTimesheet(query, response);
   }
 
   //private functions
@@ -985,5 +1008,246 @@ export class SessionsService {
       TotalSpentTime: this.tasksService.getHourFromMinutes(totalTimeSpent),
       value: ar,
     };
+  }
+
+  private getArrayOfDatesInRange(startDate: any, endDate: any) {
+    const dates = [];
+    const start = startDate ? new Date(startDate) : new Date();
+    const end = endDate ? new Date(endDate) : new Date();
+
+    let currentDate = dayjs(start);
+
+    while (currentDate.isBefore(end) || currentDate.isSame(end, 'day')) {
+      dates.push(currentDate.format('MMM DD, YYYY'));
+      currentDate = currentDate.add(1, 'day');
+    }
+
+    return dates;
+  }
+
+  private calculateDaysBetweenDates(startDate: any, endDate: any): number {
+    startDate = startDate ? new Date(startDate) : new Date();
+    endDate = endDate ? new Date(endDate) : new Date();
+    // Calculate the time difference in milliseconds
+    const timeDifferenceMs = endDate.getTime() - startDate.getTime();
+
+    // Convert milliseconds to days
+    const daysDifference = Math.ceil(timeDifferenceMs / (1000 * 60 * 60 * 24));
+
+    return daysDifference;
+  }
+
+  private organizeDateRangeIntoWeeks(
+    startDateStr: any,
+    endDateStr: any,
+  ): { weekArray: string[]; weekRange: string[] } {
+    startDateStr = startDateStr ? new Date(startDateStr) : new Date();
+    endDateStr = endDateStr ? new Date(endDateStr) : new Date();
+
+    const startDate = dayjs(startDateStr);
+    const endDate = dayjs(endDateStr);
+
+    // Calculate the number of weeks
+    const numberOfWeeks = Math.ceil(endDate.diff(startDate, 'week', true));
+
+    // Initialize arrays to store week labels and week date ranges
+    const weekArray: string[] = [];
+    const weekRange: string[] = [];
+
+    // Generate week labels and week date ranges
+    for (let i = 0; i < numberOfWeeks; i++) {
+      const weekStartDate = startDate.add(i, 'week');
+      const weekEndDate = startDate.add(i + 1, 'week').subtract(1, 'day');
+      const weekLabel = `Week ${i + 1}`;
+      const weekRangeLabel = `${weekStartDate.format(
+        'MM/DD/YYYY',
+      )} - ${weekEndDate.format('MM/DD/YYYY')}`;
+
+      weekArray.push(weekLabel);
+      weekRange.push(weekRangeLabel);
+    }
+
+    return { weekArray, weekRange };
+  }
+
+  private organizeDateRangeIntoMonths(start: any, end: any) {
+    start = start ? new Date(start) : new Date()
+    end = end ? new Date(end) : new Date()
+    const startDate = dayjs(start);
+    const endDate = dayjs(end)
+    const months = [];
+    let currentDate = startDate.clone();
+
+    while (currentDate.isBefore(endDate)) {
+      const year = currentDate.year();
+      const monthName = currentDate.format('MMMM');
+      const monthStartDate = currentDate.startOf('month').toDate();
+      const monthEndDate = currentDate.endOf('month');
+
+      let daysInMonth = monthEndDate.date();
+
+      if (currentDate.isSame(startDate, 'month')) {
+        // Calculate days remaining in the first month
+        const daysRemaining = daysInMonth - startDate.date() + 1;
+        months.push({
+          year,
+          month: monthName,
+          startDate: startDate.toDate(),
+          days: daysRemaining,
+        });
+      } else {
+        if (monthEndDate.isAfter(endDate)) {
+          // Adjust days if the month ends after the endDate
+          daysInMonth = endDate.date() - monthStartDate.getDate() + 1;
+        }
+        months.push({
+          year,
+          month: monthName,
+          startDate: monthStartDate,
+          days: daysInMonth,
+        });
+      }
+
+      // Move to the next month
+      currentDate = currentDate.add(1, 'month').startOf('month');
+    }
+
+    return months;
+  }
+
+  private formattedDailyTimesheet(query: GetTimesheetQuery, response: any) {
+    const columns = this.getArrayOfDatesInRange(
+      query?.startDate,
+      query?.endDate,
+    );
+
+    const rows = [];
+    let totalTime = 0;
+
+    for (let i = 0; i < response.length; i++) {
+      let totalIndividualTime = 0;
+      const row = {
+        userId: response[i].id,
+        name: response[i].firstName + ' ' + response[i].lastName,
+        picture: response[i].picture,
+        email: response[i].email,
+        totalTime: 0,
+      };
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      for (let j = 0; j < response[i]?.sessions.length; j++) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        row[`${columns[j]}`] = response[i]?.sessions[j].hour;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        totalIndividualTime += response[i]?.sessions[j].hour;
+      }
+      row.totalTime = totalIndividualTime;
+      totalTime += totalIndividualTime;
+      rows.push(row);
+    }
+
+    return {
+      columns,
+      rows,
+      totalTime,
+    };
+  }
+
+  private formattedWeeklyTimesheet(query: GetTimesheetQuery, response: any) {
+    const { weekArray, weekRange } = this.organizeDateRangeIntoWeeks(
+      query.startDate,
+      query.endDate,
+    );
+
+    const rows: any[] = [];
+    let totalTime = 0;
+
+    for (let i = 0; i < response.length; i++) {
+      let totalIndividual = 0;
+      const timeLogsOfWeeks: any = {};
+      let a = 0;
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      for (let j = 0; j < response[i].sessions.length; j = j + 7) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        const group = response[i].sessions.slice(j, j + 7);
+        const sum = group.reduce(
+          (acc: any, day: { hour: any }) => acc + day.hour,
+          0,
+        );
+        totalTime += sum;
+        totalIndividual += sum;
+        //sessions.push();
+        timeLogsOfWeeks[`${weekArray[a]}`] = sum;
+        timeLogsOfWeeks[`totalTime`] = totalIndividual;
+        a++;
+      }
+      rows.push({
+        userId: response[i].id,
+        name: response[i].firstName + ' ' + response[i].lastName,
+        picture: response[i].picture,
+        email: response[i].email,
+        ...timeLogsOfWeeks,
+      });
+    }
+
+    return {
+      weekRange,
+      rows,
+      totalTime,
+      columns: weekArray,
+    };
+  }
+
+  private formattedMonthlyTimesheet(query: GetTimesheetQuery, response: any) {
+    let totalTime = 0;
+    const rows: any[] = [];
+
+    const months = this.organizeDateRangeIntoMonths(
+      query.startDate,
+      query.endDate,
+    );
+    //return months;
+    const columns = months?.map((month) => month.month + ' ' + month.year);
+    //return columns;
+    for (let i = 0; i < response.length; i++) {
+      let counter = 0, totalIndividual = 0;
+      const timeLogsOfMonths: any = {};
+      const row = {
+        userId: response[i].id,
+        name: `${response[i].firstName} ${response[i].lastName}`,
+        pic: response[i].picture,
+        email: response[i].email,
+        totalTime: 0,
+      };
+      for(let j = 0; j< response[i].sessions;){
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        const group = response[i].sessions.slice(j, j + months[counter].days);
+        const sum = group.reduce((acc: any, day: { hour: any }) => acc + day.hour, 0,);
+        console.log("the sum is: ", sum)
+        totalIndividual += sum;
+        totalTime += sum;
+        timeLogsOfMonths[`${months[counter].month}`] = sum;
+        timeLogsOfMonths[`totalTime`] = totalIndividual;
+        counter++;
+        j = j + months[counter].days;
+      }
+      console.log("Time logs of months are: ",timeLogsOfMonths)
+      rows.push({
+        ...row,
+        ...timeLogsOfMonths,
+      });
+    }
+    //console.log(rows)
+    return {
+      columns,
+      rows,
+      totalTime,
+    }
   }
 }
