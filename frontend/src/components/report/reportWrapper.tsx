@@ -17,26 +17,18 @@ const ReportWrapper = ({
   isLoading = false,
 }: Props) => {
   return (
-    <>
-      <div className="relative flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-3 text-2xl font-semibold">
-            <div>{title}</div>
-            {tooltipMessage && (
-              <div className="text-sm">
-                <Tooltip title={tooltipMessage}>
-                  <QuestionCircleOutlined />
-                </Tooltip>
-              </div>
-            )}
-          </div>
+    <div className="mt-5">
+      
+      <div className="relative flex flex-col gap-5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-2xl font-semibold">{title}</div>
           <DateRangePicker setSelectedDate={setDateRange} />
         </div>
         <Spin className="custom-spin" spinning={isLoading}>
           {<div className="flex w-full justify-center">{children}</div>}
         </Spin>
       </div>
-    </>
+    </div>
   );
 };
 
