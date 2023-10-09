@@ -10,6 +10,7 @@ import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { UsersDatabase } from 'src/database/users';
 import { TasksDatabase } from 'src/database/tasks';
 import { ProjectDatabase } from 'src/database/projects';
+import { EmailService } from '../email/email.service';
 
 @Module({
   imports: [HttpModule.register({}), WorkspacesModule],
@@ -22,7 +23,8 @@ import { ProjectDatabase } from 'src/database/projects';
     UserIntegrationDatabase,
     UsersDatabase,
     TasksDatabase,
-    ProjectDatabase
+    ProjectDatabase,
+    EmailService,
   ],
   exports: [IntegrationsService],
 })

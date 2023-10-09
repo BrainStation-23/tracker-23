@@ -14,6 +14,7 @@ import { WorkspaceDatabase } from 'src/database/workspaces';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { UsersDatabase } from 'src/database/users';
+import { EmailService } from '../email/email.service';
 
 @Module({
   imports: [HttpModule.register({}), IntegrationsModule],
@@ -29,6 +30,7 @@ import { UsersDatabase } from 'src/database/users';
     IntegrationDatabase,
     UserIntegrationDatabase,
     UsersDatabase,
+    EmailService,
   ],
   controllers: [SprintsController],
   exports: [SprintsService],
