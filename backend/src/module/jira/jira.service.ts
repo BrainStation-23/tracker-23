@@ -6,12 +6,13 @@ import { ConfigService } from '@nestjs/config';
 import { IntegrationType, User } from '@prisma/client';
 import { AuthorizeJiraDto } from './dto';
 import { IntegrationsService } from '../integrations/integrations.service';
-import { PrismaService } from 'src/module/prisma/prisma.service';
 import { TasksService } from 'src/module/tasks/tasks.service';
 import { WorkspacesService } from 'src/module/workspaces/workspaces.service';
 import { APIException } from 'src/module/exception/api.exception';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import { WebhooksService } from '../webhooks/webhooks.service';
+import { RegisterWebhookDto } from '../webhooks/dto';
 
 @Injectable()
 export class JiraService {
@@ -24,6 +25,7 @@ export class JiraService {
     private projectDatabase: ProjectDatabase,
     private integrationDatabase: IntegrationDatabase,
     private userIntegrationDatabase: UserIntegrationDatabase,
+    private webhooksService: WebhooksService,
   ) {}
   async getIntegrationLink(state: string | undefined) {
     let stateParam = '';
@@ -145,12 +147,13 @@ export class JiraService {
       throw new APIException('Something went wrong !!', HttpStatus.BAD_REQUEST);
     }
 
-    const doesExistIntegration = await this.integrationDatabase.findUniqueIntegration({
+    const doesExistIntegration =
+      await this.integrationDatabase.findUniqueIntegration({
         integrationIdentifier: {
           siteId: siteId,
           workspaceId: getTempIntegration.workspaceId,
         },
-    });
+      });
 
     if (doesExistIntegration) {
       const projects = await this.integrationDatabase.findProjects({
@@ -158,19 +161,19 @@ export class JiraService {
       });
 
       await this.userIntegrationDatabase.createUserIntegration({
-          accessToken: getTempIntegration.accessToken,
-          refreshToken: getTempIntegration.refreshToken,
-          jiraAccountId: getTempIntegration.jiraAccountId,
-          userWorkspaceId: getTempIntegration.userWorkspaceId,
-          workspaceId: getTempIntegration.workspaceId,
-          integrationId: doesExistIntegration.id,
-          siteId,
+        accessToken: getTempIntegration.accessToken,
+        refreshToken: getTempIntegration.refreshToken,
+        jiraAccountId: getTempIntegration.jiraAccountId,
+        userWorkspaceId: getTempIntegration.userWorkspaceId,
+        workspaceId: getTempIntegration.workspaceId,
+        integrationId: doesExistIntegration.id,
+        siteId,
       });
 
       const importedProject = await this.integrationDatabase.findProjects({
-          workspaceId: user.activeWorkspaceId,
-          integrationId: doesExistIntegration.id,
-          integrated: true,
+        workspaceId: user.activeWorkspaceId,
+        integrationId: doesExistIntegration.id,
+        integrated: true,
       });
 
       importedProject &&
@@ -223,7 +226,8 @@ export class JiraService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
 
-    await this.userIntegrationDatabase.createUserIntegration({
+    const userIntegration =
+      await this.userIntegrationDatabase.createUserIntegration({
         accessToken: getTempIntegration.accessToken,
         refreshToken: getTempIntegration.refreshToken,
         jiraAccountId: getTempIntegration.jiraAccountId,
@@ -231,9 +235,13 @@ export class JiraService {
         workspaceId: getTempIntegration.workspaceId,
         integrationId: integration.id,
         siteId,
-    });
+      });
 
-    const deleteTempIntegration = integration && await this.integrationDatabase.deleteTempIntegrationById(getTempIntegration.id);
+    const deleteTempIntegration =
+      integration &&
+      (await this.integrationDatabase.deleteTempIntegrationById(
+        getTempIntegration.id,
+      ));
 
     if (!deleteTempIntegration) {
       throw new APIException(
@@ -246,6 +254,40 @@ export class JiraService {
       user,
       integration,
     );
+
+    // Check if projects is null or empty before mapping to projectKeys
+    if (!projects || projects.length === 0) {
+      console.error('No projects found.');
+      // Handle this case as needed
+    } else {
+      const projectKeys = projects
+        .map((project) => project.projectKey)
+        .filter(Boolean); // Filter out null values
+      console.log(
+        '🚀 ~ file: jira.service.ts:249 ~ JiraService ~ createIntegrationAndGetProjects ~ projects:',
+        projectKeys,
+      );
+
+      const reqBody = {
+        url: 'https://timetracker23.com/webhook/receiver',
+        webhookEvents: [
+          'jira:issue_created',
+          'jira:issue_updated',
+          'jira:issue_deleted',
+        ],
+        projectName: projectKeys,
+        userIntegrationId: userIntegration?.id || 0, // Use a default value if userIntegration is null
+      };
+
+      const registerWebhook = await this.webhooksService.registerWebhook(
+        user,
+        reqBody as RegisterWebhookDto, // Cast to the correct type
+      );
+      console.log(
+        '🚀 ~ file: jira.service.ts:286 ~ JiraService ~ createIntegrationAndGetProjects ~ registerWebhook:',
+        registerWebhook,
+      );
+    }
 
     return {
       message: `Integration successful in ${integration.site}`,

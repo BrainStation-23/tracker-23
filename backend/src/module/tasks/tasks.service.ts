@@ -1419,7 +1419,7 @@ export class TasksService {
     res && (await this.syncCall(StatusEnum.IN_PROGRESS, user));
     try {
       await this.sendImportingNotification(user);
-      this.syncTasksFetchAndProcessTasksAndWorklog(
+      await this.syncTasksFetchAndProcessTasksAndWorklog(
         user,
         project,
         updatedUserIntegration,
@@ -1435,6 +1435,7 @@ export class TasksService {
       // }
       await this.updateProjectIntegrationStatus(projId);
       await this.sendImportedNotification(user, 'Project Synced', res);
+      return { message: 'Project synced!' };
     } catch (err) {
       await this.handleImportFailure(user, 'Sync Tasks Failed');
       console.log(
