@@ -2,13 +2,15 @@ import { ProjectsService } from './../projects/projects.service';
 import { UsersDatabase } from 'src/database/users';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserWorkspace, UserWorkspaceStatus } from '@prisma/client';
-import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
+import { Response } from 'express';
 import * as crypto from 'crypto';
-import { PrismaService } from '../prisma/prisma.service';
+
+import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
 import { APIException } from '../exception/api.exception';
 import { WorkspaceDatabase } from 'src/database/workspaces';
 import { TasksDatabase } from 'src/database/tasks';
 import { ProjectDatabase } from 'src/database/projects';
+import { EmailService } from '../email/email.service';
 @Injectable()
 export class WorkspacesService {
   constructor(
@@ -16,6 +18,7 @@ export class WorkspacesService {
     private usersDatabase: UsersDatabase,
     private tasksDatabase: TasksDatabase,
     private projectDatabase: ProjectDatabase,
+    private emailService: EmailService,
   ) {}
 
   async createWorkspace(
@@ -103,7 +106,7 @@ export class WorkspacesService {
     }
   }
 
-  async deleteWorkspace(workspaceId: number) {
+  async deleteWorkspace(workspaceId: number, res: Response) {
     const deletedWorkspace = await this.workspaceDatabase.deleteWorkspace(
       workspaceId,
     );
@@ -113,6 +116,8 @@ export class WorkspacesService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    return res.status(202).json({ message: 'Workspace Deleted' });
   }
 
   async getUserWorkspace(user: User) {
@@ -201,6 +206,16 @@ export class WorkspacesService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+    const emailBody = `I hope this message finds you well. I am pleased to extend an invitation for you to join our workspace. We believe that your
+      expertise and contributions would be valuable to our team, and we look forward to working together. To accept the invitation, please go to
+      your Invitations tab on the site and accept our invitation`;
+
+    await this.emailService.sendEmail(
+      'Invitation to new workspace',
+      emailBody,
+      reqBody.email,
+    );
+
     return newUserWorkspace;
   }
 
