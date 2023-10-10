@@ -719,6 +719,7 @@ const TasksPage = () => {
           isModalOpen={viewModalOpen}
           setIsModalOpen={setViewModalOpen}
           title="Add Task"
+          width={540}
           className="top-0 my-auto flex h-full items-center"
         >
           <CreateTaskComponent taskList={tasks} createTask={createTask} />
