@@ -288,23 +288,20 @@ export class WebhooksService {
 
   async registerWebhook(user: User, reqBody: RegisterWebhookDto) {
     try {
-      const updated_integration =
-        await this.integrationsService.getUpdatedUserIntegration(
-          user,
-          reqBody.userIntegrationId,
-        );
-      // console.log(
-      //   '🚀 ~ file: webhooks.service.ts:161 ~ WebhooksService ~ registerWebhook ~ updated_integration:',
-      //   updated_integration,
-      // );
-      if (!updated_integration) {
+      const userIntegration = await this.prisma.userIntegration.findUnique({
+        where: {
+          id: reqBody.userIntegrationId,
+        },
+      });
+      if (!userIntegration) {
         return null;
       }
+
       const doesExist =
-        updated_integration.siteId &&
+        userIntegration.siteId &&
         (await this.prisma.webhook.findMany({
           where: {
-            siteId: updated_integration.siteId,
+            siteId: userIntegration.siteId,
             projectKey: {
               hasSome: [...reqBody.projectName.map((key) => key)],
             },
@@ -312,10 +309,7 @@ export class WebhooksService {
         }));
       // console.log([...reqBody.projectName.map((key) => key)]);
       if (doesExist && doesExist.length) {
-        throw new APIException(
-          'Already one of the project has webhook registered!',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        return null;
       }
       const projectList = reqBody.projectName.map((el) => el);
       const formateReqBody = {
@@ -332,12 +326,12 @@ export class WebhooksService {
       //   formateReqBody,
       // );
       // //console.log(formateReqBody);
-      const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook`;
+      const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/webhook`;
       const config = {
         method: 'post',
         url,
         headers: {
-          Authorization: `Bearer ${updated_integration?.accessToken}`,
+          Authorization: `Bearer ${userIntegration?.accessToken}`,
           'Content-Type': 'application/json',
         },
         data: formateReqBody,
@@ -354,6 +348,7 @@ export class WebhooksService {
           '🚀 ~ file: webhooks.service.ts:223 ~ WebhooksService ~ registerWebhook ~ err:',
           err,
         );
+        return null;
       }
 
       const currentDate = new Date(Date.now());
@@ -361,24 +356,21 @@ export class WebhooksService {
 
       const localWebhook =
         webhook &&
-        updated_integration.siteId &&
+        userIntegration.siteId &&
         (await this.prisma.webhook.create({
           data: {
             projectKey: reqBody.projectName,
             webhookId: Number(
               webhook.webhookRegistrationResult[0].createdWebhookId,
             ),
-            siteId: updated_integration.siteId,
+            siteId: userIntegration.siteId,
             expirationDate: currentDate,
           },
         }));
       return localWebhook;
     } catch (err) {
       console.log(err);
-      throw new APIException(
-        err.message || 'Fetching problem to register webhook!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      return null;
     }
   }
 
