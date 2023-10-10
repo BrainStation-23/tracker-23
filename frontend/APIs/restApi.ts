@@ -150,7 +150,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
         (searchParams?.searchText && searchParams?.searchText.length > 0
-          ? `&text=${encodeURIComponent((searchParams.searchText))}`
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
@@ -627,6 +627,16 @@ export async function updateSyncTimeRest(time: number) {
   try {
     const res = await axios.patch(`${apiEndPoints.workspaceSettings}`, {
       syncTime: time,
+    });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function updateTimeFormatRest(value: string) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.workspaceSettings}`, {
+      timeFormat: value,
     });
     return res.data;
   } catch (error: any) {
