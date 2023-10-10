@@ -2,9 +2,10 @@ import { ProjectsService } from './../projects/projects.service';
 import { UsersDatabase } from 'src/database/users';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserWorkspace, UserWorkspaceStatus } from '@prisma/client';
-import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
+import { Response } from 'express';
 import * as crypto from 'crypto';
-import { PrismaService } from '../prisma/prisma.service';
+
+import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
 import { APIException } from '../exception/api.exception';
 import { WorkspaceDatabase } from 'src/database/workspaces';
 import { TasksDatabase } from 'src/database/tasks';
@@ -103,7 +104,7 @@ export class WorkspacesService {
     }
   }
 
-  async deleteWorkspace(workspaceId: number) {
+  async deleteWorkspace(workspaceId: number, res: Response) {
     const deletedWorkspace = await this.workspaceDatabase.deleteWorkspace(
       workspaceId,
     );
@@ -113,6 +114,8 @@ export class WorkspacesService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    return res.status(202).json({ message: 'Workspace Deleted' });
   }
 
   async getUserWorkspace(user: User) {
