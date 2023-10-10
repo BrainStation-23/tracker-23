@@ -132,6 +132,10 @@ export async function deleteTaskRest(taskId: any) {
 }
 
 export async function getTasksRest(searchParams: SearchParamsModel) {
+  console.log(
+    "🚀 ~ file: restApi.ts:135 ~ getTasksRest ~ searchParams:",
+    searchParams
+  );
   const sprints = searchParams?.sprints;
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
@@ -146,7 +150,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
         (searchParams?.searchText && searchParams?.searchText.length > 0
-          ? `&text=${searchParams.searchText}`
+          ? `&text=${encodeURIComponent((searchParams.searchText))}`
           : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
@@ -180,7 +184,7 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
         (searchParams?.searchText && searchParams?.searchText.length > 0
-          ? `&text=${searchParams.searchText}`
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
@@ -469,7 +473,7 @@ export async function getJiraActiveSprintTasksRest(
     const res = await axios.get(
       `${apiEndPoints.activeSprintTasks}/?state=${["active"]}` +
         (searchParams?.searchText && searchParams?.searchText.length > 0
-          ? `&text=${searchParams.searchText}`
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
