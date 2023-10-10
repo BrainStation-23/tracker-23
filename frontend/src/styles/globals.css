@@ -107,16 +107,16 @@ body {
   justify-content: center;
   width: 30px;
   height: 30px;
-  border: 2px solid #ccc;
-  border-radius: 50%;
+  border: 1px solid #ccc;
+  border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
 .custom-checkbox.checked {
-  background-color: black;
+  /* background-color: black; */
   border-color: black;
-  color: white;
+  color: black;
 }
 .custom-checkbox {
   /* ... your existing styles ... */
