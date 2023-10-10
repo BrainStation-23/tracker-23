@@ -263,10 +263,6 @@ export class JiraService {
       const projectKeys = projects
         .map((project) => project.projectKey)
         .filter(Boolean); // Filter out null values
-      console.log(
-        '🚀 ~ file: jira.service.ts:249 ~ JiraService ~ createIntegrationAndGetProjects ~ projects:',
-        projectKeys,
-      );
 
       const reqBody = {
         url: 'https://timetracker23.com/webhook/receiver',
@@ -279,13 +275,9 @@ export class JiraService {
         userIntegrationId: userIntegration?.id || 0, // Use a default value if userIntegration is null
       };
 
-      const registerWebhook = await this.webhooksService.registerWebhook(
+      await this.webhooksService.registerWebhook(
         user,
         reqBody as RegisterWebhookDto, // Cast to the correct type
-      );
-      console.log(
-        '🚀 ~ file: jira.service.ts:286 ~ JiraService ~ createIntegrationAndGetProjects ~ registerWebhook:',
-        registerWebhook,
       );
     }
 

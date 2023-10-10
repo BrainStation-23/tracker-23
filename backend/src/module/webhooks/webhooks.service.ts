@@ -53,7 +53,15 @@ export class WebhooksService {
   }
 
   async handleWebhook(payload: any) {
+    // console.log(
+    //   '🚀 ~ file: webhooks.service.ts:56 ~ WebhooksService ~ handleWebhook ~ payload:',
+    //   payload.changelog.items,
+    // );
     const jiraEvent = payload.webhookEvent;
+    // console.log(
+    //   '🚀 ~ file: webhooks.service.ts:61 ~ WebhooksService ~ handleWebhook ~ jiraEvent:',
+    //   jiraEvent,
+    // );
     const projectKey = payload.issue.key;
     const siteUrl = payload.user.self.split('/rest/');
     const integration = await this.prisma.integration.findFirst({
@@ -83,56 +91,80 @@ export class WebhooksService {
     });
     if (doesExistWebhook && payload.webhookEvent === 'jira:issue_created') {
       for (const project of projects) {
-        const mappedUserWorkspaceAndJiraId =
-          await this.mappingUserWorkspaceAndJiraAccountId(project.workspaceId);
-        const mappedProjectIds = await this.mappingProjectIdAndJiraProjectId(
-          project.workspaceId,
-        );
-        await this.prisma.task.create({
-          data: {
-            userWorkspaceId:
-              mappedUserWorkspaceAndJiraId.get(
-                payload.issue.fields.assignee?.accountId,
-              ) || null,
-            workspaceId: project.workspaceId,
-            title: payload.issue.fields.summary,
-            assigneeId: payload.issue.fields.assignee?.accountId || null,
-            estimation: payload.issue.fields.timeoriginalestimate
-              ? payload.issue.timeoriginalestimate / 3600
-              : null,
-            projectName: payload.issue.fields.project.name,
-            projectId: mappedProjectIds.get(
-              Number(payload.issue.fields.project.id),
-            ),
-            status: payload.issue.fields.status.name,
-            statusCategoryName: payload.issue.fields.status.statusCategory.name
-              .replace(' ', '_')
-              .toUpperCase(),
-            priority: payload.issue.fields.priority.name,
+        const doesExist = await this.prisma.task.findFirst({
+          where: {
             integratedTaskId: Number(payload.issue.id),
-            createdAt: new Date(payload.issue.fields.created),
-            updatedAt: new Date(payload.issue.fields.updated),
-            jiraUpdatedAt: new Date(payload.issue.fields.updated),
-            source: IntegrationType.JIRA,
-            url,
+            projectId: project.id,
           },
         });
+        if (!doesExist) {
+          const mappedUserWorkspaceAndJiraId =
+            await this.mappingUserWorkspaceAndJiraAccountId(
+              project.workspaceId,
+            );
+          const mappedProjectIds = await this.mappingProjectIdAndJiraProjectId(
+            project.workspaceId,
+          );
+          await this.prisma.task.create({
+            data: {
+              userWorkspaceId:
+                mappedUserWorkspaceAndJiraId.get(
+                  payload.issue.fields.assignee?.accountId,
+                ) || null,
+              workspaceId: project.workspaceId,
+              title: payload.issue.fields.summary,
+              assigneeId: payload.issue.fields.assignee?.accountId || null,
+              estimation: payload.issue.fields.timeoriginalestimate
+                ? payload.issue.timeoriginalestimate / 3600
+                : null,
+              projectName: payload.issue.fields.project.name,
+              projectId: mappedProjectIds.get(
+                Number(payload.issue.fields.project.id),
+              ),
+              status: payload.issue.fields.status.name,
+              statusCategoryName:
+                payload.issue.fields.status.statusCategory.name
+                  .replace(' ', '_')
+                  .toUpperCase(),
+              priority: payload.issue.fields.priority.name,
+              integratedTaskId: Number(payload.issue.id),
+              createdAt: new Date(payload.issue.fields.created),
+              updatedAt: new Date(payload.issue.fields.updated),
+              jiraUpdatedAt: new Date(payload.issue.fields.updated),
+              source: IntegrationType.JIRA,
+              url,
+            },
+          });
+        }
       }
     } else if (doesExistWebhook && jiraEvent === 'jira:issue_updated') {
       let sendToModify;
+      let toBeUpdateField: any;
       if (
-        payload.changelog.items[0].field === 'summary' ||
-        payload.changelog.items[0].field === 'priority' ||
-        payload.changelog.items[0].field === 'status'
+        payload.changelog?.items[0]?.field === 'resolution' ||
+        payload.changelog?.items[0]?.field === 'status'
       ) {
-        sendToModify = payload.changelog.items[0].toString;
+        sendToModify =
+          payload.changelog?.items[0]?.field === 'resolution'
+            ? payload.changelog?.items[1]?.toString
+            : payload.changelog?.items[0]?.toString;
+        toBeUpdateField = this.toBeUpdateField('status', sendToModify);
+      } else if (
+        payload.changelog?.items[0]?.field === 'summary' ||
+        payload.changelog?.items[0]?.field === 'priority'
+      ) {
+        sendToModify = payload.changelog?.items[0]?.toString;
+        toBeUpdateField = this.toBeUpdateField(
+          payload.changelog?.items[0]?.field,
+          sendToModify,
+        );
       } else {
         sendToModify = payload.changelog.items[0].to;
+        toBeUpdateField = this.toBeUpdateField(
+          payload.changelog.items[0].field,
+          sendToModify,
+        );
       }
-      let toBeUpdateField = this.toBeUpdateField(
-        payload.changelog.items[0].field,
-        sendToModify,
-      );
       for (const project of projects) {
         if (toBeUpdateField.assigneeId) {
           const mappedUserWorkspaceAndJiraId =
@@ -141,9 +173,9 @@ export class WebhooksService {
             );
           const updatedField = {
             ...toBeUpdateField,
-            userWorkspaceId: mappedUserWorkspaceAndJiraId.get(
-              toBeUpdateField.assigneeId,
-            ),
+            userWorkspaceId:
+              mappedUserWorkspaceAndJiraId.get(toBeUpdateField.assigneeId) ??
+              null,
           };
           toBeUpdateField = updatedField;
         }
