@@ -1,19 +1,20 @@
-import FilterIconSvg from "@/assets/svg/filterIconSvg";
-import SearchIconSvg from "@/assets/svg/searchIconSvg";
 import { Button, Dropdown, Input, MenuProps, message } from "antd";
+import { userAPI } from "APIs";
+import dayjs from "dayjs";
+import { debounce } from "lodash";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
+import { LuDownload } from "react-icons/lu";
+
+import FilterIconSvg from "@/assets/svg/filterIconSvg";
+import SearchIconSvg from "@/assets/svg/searchIconSvg";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
-import { DownloadOutlined } from "@ant-design/icons";
-import StatusSelectorComponent from "@/components/tasks/components/topPanel/components/statusSelector";
 import PrioritySelectorComponent from "@/components/tasks/components/topPanel/components/prioritySelector";
-import { userAPI } from "APIs";
+import ProjectSelectorComponent from "@/components/tasks/components/topPanel/components/projectSelector";
 import SprintSelectorComponent from "@/components/tasks/components/topPanel/components/sprintSelector";
+import StatusSelectorComponent from "@/components/tasks/components/topPanel/components/statusSelector";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
-import { debounce } from "lodash";
-import ProjectSelectorComponent from "@/components/tasks/components/topPanel/components/projectSelector";
-import { LuDownload } from "react-icons/lu";
 
 type Props = {
   tasks: TaskDto[];
@@ -67,7 +68,7 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        const fileName = "exportedData.xlsx";
+        const fileName = `Tracker 23 Report - ${dayjs()}.xlsx`;
         link.setAttribute("download", fileName); // Specify the desired file name
         document.body.appendChild(link);
         link.click();
