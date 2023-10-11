@@ -7,10 +7,11 @@ import { store } from "@/storage/redux/store";
 import { addNotification, setSocket } from "@/storage/redux/notificationsSlice";
 let socket = io(config?.baseUrl, {
   withCredentials: true,
-  extraHeaders: {
-    "my-custom-header": "abcd",
-  },
-  query: { token: GetCookie("access_token") },
+  // extraHeaders: {
+  //   "my-custom-header": "abcd",
+  //   // "auth-token": GetCookie("access_token"),
+  // },
+  // query: { token:  },
 }); // Replace with your backend server URL
 
 export async function initializeSocket() {
@@ -18,10 +19,10 @@ export async function initializeSocket() {
 
   socket = io(config?.baseUrl, {
     withCredentials: true,
-    extraHeaders: {
-      "my-custom-header": "abcd",
-    },
-    query: { token: GetCookie("access_token") },
+    // extraHeaders: {
+    //   "my-custom-header": "abcd",
+    // },
+    // query: { token: GetCookie("access_token") },
   }); // Replace with your backend server URL
 
   socket.on("connect", () => {
@@ -45,6 +46,12 @@ export async function initializeSocket() {
     store.dispatch(addNotification(payload));
     // Handle the received notification payload in your frontend application
   });
+}
+
+export async function disconnectSocket() {
+  console.log("off");
+
+ socket.disconnect()
 }
 
 export function sendNotification(payload: any) {

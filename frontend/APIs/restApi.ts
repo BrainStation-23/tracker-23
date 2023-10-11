@@ -28,6 +28,7 @@ import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
 import { getTimeSheetReportDto } from "models/reports";
+import { disconnectSocket } from "@/services/socket.service";
 
 export async function loginRest(
   data: LoginDto
@@ -104,6 +105,7 @@ export async function logoutRest() {
     clearLocalStorage();
     // deleteFromLocalStorage("userDetails");
     message.success("Logged Out");
+    await disconnectSocket();
     Router.push("/login");
     return true;
   } catch (error: any) {
