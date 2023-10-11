@@ -28,6 +28,7 @@ import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
 import { getTimeSheetReportDto } from "models/reports";
+import { disconnectSocket } from "@/services/socket.service";
 
 export async function loginRest(
   data: LoginDto
@@ -104,6 +105,7 @@ export async function logoutRest() {
     clearLocalStorage();
     // deleteFromLocalStorage("userDetails");
     message.success("Logged Out");
+    await disconnectSocket();
     Router.push("/login");
     return true;
   } catch (error: any) {
@@ -132,6 +134,10 @@ export async function deleteTaskRest(taskId: any) {
 }
 
 export async function getTasksRest(searchParams: SearchParamsModel) {
+  console.log(
+    "🚀 ~ file: restApi.ts:135 ~ getTasksRest ~ searchParams:",
+    searchParams
+  );
   const sprints = searchParams?.sprints;
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
@@ -146,7 +152,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
         (searchParams?.searchText && searchParams?.searchText.length > 0
-          ? `&text=${searchParams.searchText}`
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
@@ -180,7 +186,7 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
         (searchParams?.searchText && searchParams?.searchText.length > 0
-          ? `&text=${searchParams.searchText}`
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
@@ -469,7 +475,7 @@ export async function getJiraActiveSprintTasksRest(
     const res = await axios.get(
       `${apiEndPoints.activeSprintTasks}/?state=${["active"]}` +
         (searchParams?.searchText && searchParams?.searchText.length > 0
-          ? `&text=${searchParams.searchText}`
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
@@ -623,6 +629,16 @@ export async function updateSyncTimeRest(time: number) {
   try {
     const res = await axios.patch(`${apiEndPoints.workspaceSettings}`, {
       syncTime: time,
+    });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function updateTimeFormatRest(value: string) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.workspaceSettings}`, {
+      timeFormat: value,
     });
     return res.data;
   } catch (error: any) {

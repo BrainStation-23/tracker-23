@@ -67,13 +67,13 @@ export class TasksService {
         queryFilter.OR = [
           {
             title: {
-              contains: text,
+              contains: text.replace(/[+\-]/g, (match) => `\\${match}`),
               mode: 'insensitive',
             },
           },
           {
             key: {
-              contains: text,
+              contains: text.replace(/[+\-]/g, (match) => `\\${match}`),
             },
           },
         ];
@@ -253,7 +253,7 @@ export class TasksService {
               ...(status1 && { status: { in: status1 } }),
               ...(text && {
                 title: {
-                  contains: text,
+                  contains: text.replace(/[+\-]/g, (match) => `\\${match}`),
                   mode: 'insensitive',
                 },
               }),
@@ -311,7 +311,7 @@ export class TasksService {
             ...(status1 && { status: { in: status1 } }),
             ...(text && {
               title: {
-                contains: text,
+                contains: text.replace(/[+\-]/g, (match) => `\\${match}`),
                 mode: 'insensitive',
               },
             }),
