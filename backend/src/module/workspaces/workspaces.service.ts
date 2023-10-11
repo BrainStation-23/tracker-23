@@ -1,4 +1,3 @@
-import { ProjectsService } from './../projects/projects.service';
 import { UsersDatabase } from 'src/database/users';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserWorkspace, UserWorkspaceStatus } from '@prisma/client';
@@ -11,6 +10,7 @@ import { WorkspaceDatabase } from 'src/database/workspaces';
 import { TasksDatabase } from 'src/database/tasks';
 import { ProjectDatabase } from 'src/database/projects';
 import { EmailService } from '../email/email.service';
+import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class WorkspacesService {
   constructor(
@@ -19,6 +19,7 @@ export class WorkspacesService {
     private tasksDatabase: TasksDatabase,
     private projectDatabase: ProjectDatabase,
     private emailService: EmailService,
+    private prisma: PrismaService,
   ) {}
 
   async createWorkspace(
@@ -26,43 +27,48 @@ export class WorkspacesService {
     name: string,
     changeWorkspace?: boolean,
   ) {
-    const workspace =
-      user.id && (await this.workspaceDatabase.createWorkspace(user.id, name));
-    if (!workspace) {
-      throw new APIException(
-        'Can not create Workspace!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    const transaction = await this.prisma.$transaction(async (prisma: any) => {
+      const workspace =
+        user.id &&
+        (await this.workspaceDatabase.createWorkspace(user.id, name, prisma));
+      if (!workspace) {
+        throw new APIException(
+          'Can not create Workspace!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
 
-    const userWorkspace =
-      user.id &&
-      (await this.workspaceDatabase.createUserWorkspace(
-        user.id,
-        workspace.id,
-        Role.ADMIN,
-        UserWorkspaceStatus.ACTIVE,
-      ));
-    if (!userWorkspace) {
-      throw new APIException(
-        'Can not create userWorkspace!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+      const userWorkspace =
+        user.id &&
+        (await this.workspaceDatabase.createUserWorkspace(
+          user.id,
+          workspace.id,
+          Role.ADMIN,
+          UserWorkspaceStatus.ACTIVE,
+          prisma,
+        ));
+      if (!userWorkspace) {
+        throw new APIException(
+          'Can not create userWorkspace!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
 
-    //no need to throw error, as it deosn't concern the creation phase
-    const updatedUser =
-      changeWorkspace &&
-      (await this.changeActiveWorkspace(+workspace.id, Number(user.id)));
+      //no need to throw error, as it deosn't concern the creation phase
+      const updatedUser =
+        changeWorkspace &&
+        (await this.changeActiveWorkspace(+workspace.id, Number(user.id)));
 
-    await this.usersDatabase.createSettings(workspace?.id);
-    updatedUser &&
-      (await this.createLocalProject(
-        updatedUser,
-        `${updatedUser?.firstName}'s Project`,
-      ));
+      await this.usersDatabase.createSettings(workspace?.id);
+      updatedUser &&
+        (await this.createLocalProject(
+          updatedUser,
+          `${updatedUser?.firstName}'s Project`,
+        ));
 
-    return workspace;
+      return workspace;
+    });
+    return transaction;
   }
 
   async getWorkspace(workspaceId: number) {

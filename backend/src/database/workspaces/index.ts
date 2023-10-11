@@ -21,9 +21,9 @@ export class WorkspaceDatabase {
     }
   }
 
-  async createWorkspace(userId: number, name: string) {
+  async createWorkspace(userId: number, name: string, prisma: any) {
     try {
-      return await this.prisma.workspace.create({
+      return await prisma.workspace.create({
         data: {
           creatorUserId: userId,
           name: name,
@@ -80,6 +80,7 @@ export class WorkspaceDatabase {
     inviterUserId?: number,
     invitationId?: string,
     invitedAt?: Date,
+    prisma?: any,
   ) {
     const userWorkspaceData: any = {
       role,
@@ -114,7 +115,7 @@ export class WorkspaceDatabase {
       }),
     };
     try {
-      return await this.prisma.userWorkspace.create({
+      return await prisma.userWorkspace.create({
         data: userWorkspaceData,
         include: includeData,
       });
@@ -261,7 +262,7 @@ export class WorkspaceDatabase {
       return await this.prisma.user.findUnique({
         where: {
           id: userId,
-        }
+        },
       });
     } catch (error) {
       console.log(error);
