@@ -76,6 +76,7 @@ export interface apiFunction {
   getJiraActiveSprintTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   forgotPassword: (data?: ForgotPasswordDto) => Promise<any>;
   resetPassword: (token: string, data: ResetPasswordDto) => Promise<any>;
-  updateSyncTime: (time: number) => Promise<any>;
+  updateSyncTime: (time: number ) => Promise<any>;
+  updateTimeFormat: (value: string ) => Promise<any>;
   getTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
 }

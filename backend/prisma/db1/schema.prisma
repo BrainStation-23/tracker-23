@@ -36,28 +36,28 @@ model Workspace {
 }
 
 model UserWorkspace {
-  id        Int      @id @default(autoincrement())
-  role      Role     @default(USER) // Admin, User, etc.
-  valid     Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  status        UserWorkspaceStatus // active , invited , inactive, deleted
-  invitationId  String?
-  invitedAt     DateTime?
-  respondedAt   DateTime?
+  id           Int                 @id @default(autoincrement())
+  role         Role                @default(USER) // Admin, User, etc.
+  valid        Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  status       UserWorkspaceStatus // active , invited , inactive, deleted
+  invitationId String?
+  invitedAt    DateTime?
+  respondedAt  DateTime?
 
   callSync        callSync[]
   task            Task[]
   userIntegration UserIntegration[]
   sessions        Session[]
 
-  user        User      @relation("User", fields: [userId], references: [id])
-  userId      Int
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId Int
+  user          User        @relation("User", fields: [userId], references: [id])
+  userId        Int
+  workspace     Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId   Int
   inviter       User?       @relation("InviterUser", fields: [inviterUserId], references: [id])
   inviterUserId Int?
-  designation Designation @default(DEVELOPER)
+  designation   Designation @default(DEVELOPER)
   // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
   // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
 }
@@ -78,23 +78,23 @@ model UserWorkspace {
 // }
 
 model User {
-  id                Int      @id @default(autoincrement())
-  email             String   @unique
-  hash              String?
-  firstName         String?
-  lastName          String?
-  activeWorkspaceId Int?
-  picture           String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  passwordResetToken String?
+  id                   Int             @id @default(autoincrement())
+  email                String          @unique
+  hash                 String?
+  firstName            String?
+  lastName             String?
+  activeWorkspaceId    Int?
+  picture              String?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  passwordResetToken   String?
   passwordResetExpires DateTime?
-  userWorkspaces  UserWorkspace[] @relation("User")
+  userWorkspaces       UserWorkspace[] @relation("User")
   // ownedWorkspaces     Workspace[]
   // tasks               Task[]
-  notifications   Notification[]
+  notifications        Notification[]
   // UserIntegrations    UserIntegration[]
-  invitationsSent UserWorkspace[] @relation("InviterUser")
+  invitationsSent      UserWorkspace[] @relation("InviterUser")
   // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
   // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
 }
@@ -179,7 +179,7 @@ model Project {
 
   integration   Integration? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
   integrationId Int?
-  workspace     Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace     Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId   Int
 
   @@unique([projectName, source, workspaceId], name: "ProjectIdentifier")
@@ -202,7 +202,7 @@ model StatusDetail {
 
 model Task {
   id                 Int             @id @default(autoincrement())
-  title              String 
+  title              String
   description        String?
   assigneeId         String?
   projectName        String?
@@ -219,7 +219,7 @@ model Task {
   pinned             Boolean?        @default(false)
 
   jiraUpdatedAt DateTime?
-  userId Int?
+  userId        Int?
 
   sessions Session[]
 
@@ -241,17 +241,17 @@ model Task {
 }
 
 model Session {
-  id               Int           @id @default(autoincrement())
-  startTime        DateTime      @default(now())
+  id               Int            @id @default(autoincrement())
+  startTime        DateTime       @default(now())
   endTime          DateTime?
-  status           SessionStatus @default(STARTED)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  status           SessionStatus  @default(STARTED)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
   authorId         String?
   integratedTaskId Int?
   worklogId        Int?
-  userWorkspace   UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
-  userWorkspaceId Int?
+  userWorkspace    UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
+  userWorkspaceId  Int?
 
   task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId Int
@@ -300,11 +300,12 @@ model SprintTask {
 }
 
 model Settings {
-  id       Int    @id @default(autoincrement())
-  syncTime Int @default(6)
+  id         Int    @id @default(autoincrement())
+  syncTime   Int    @default(6)
+  timeFormat String @default("Day")
 
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId Int @unique
+  workspaceId Int       @unique
 }
 
 enum Priority {

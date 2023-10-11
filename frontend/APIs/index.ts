@@ -53,6 +53,7 @@ import {
   updateSyncTimeRest,
   updateTaskEstimationRest,
   updateTaskSTatusRest,
+  updateTimeFormatRest,
   updateWorkspaceRest,
 } from "./restApi";
 
@@ -109,6 +110,7 @@ const restApi: apiFunction = {
   resetPassword: resetPasswordRest,
   getWorkspaceSettings: getWorkspaceSettingsRest,
   updateSyncTime: updateSyncTimeRest,
+  updateTimeFormat: updateTimeFormatRest,
   getTimeSheetReport: getTimeSheetReportRest,
 };
 
