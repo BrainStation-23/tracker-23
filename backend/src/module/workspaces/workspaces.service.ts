@@ -59,7 +59,7 @@ export class WorkspacesService {
     updatedUser &&
       (await this.createLocalProject(
         updatedUser,
-        `${updatedUser?.firstName}'s Project`,
+        `${name}'s Project`,
       ));
 
     return workspace;
