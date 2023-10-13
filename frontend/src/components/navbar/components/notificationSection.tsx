@@ -8,7 +8,6 @@ import {
   theme,
 } from "antd";
 import { userAPI } from "APIs";
-import dayjs from "dayjs";
 import React from "react";
 import { useDispatch } from "react-redux";
 
@@ -16,6 +15,7 @@ import BellIconSvg from "@/assets/svg/BellIconSvg";
 import { getElapsedTime, getPassedTime } from "@/services/timeActions";
 import { useAppSelector } from "@/storage/redux";
 import {
+  markAllNotificationsAsSeen,
   markNotificationAsSeen,
   Notification,
   removeAllNotifications,
@@ -47,6 +47,10 @@ const NotificationSection = () => {
 
   const handleMarkAllSeen = async () => {
     const res = await userAPI.markAllNotificationsSeen();
+    res && dispatch(markAllNotificationsAsSeen());
+  };
+  const handleMarkAllCleared = async () => {
+    const res = await userAPI.markAllNotificationsCleared();
     res && dispatch(removeAllNotifications());
   };
 
@@ -54,9 +58,9 @@ const NotificationSection = () => {
     const elapsedTime = getElapsedTime(notification.createdAt);
     return {
       label: (
-        <div className="relative py-1">
+        <div className=" py-1">
           <div className="max-w-[150px]">{notification.description}</div>
-          <div className="absolute right-0 top-0 text-xs">{elapsedTime}</div>
+          <div className=" right-0 top-0 text-xs">{elapsedTime}</div>
         </div>
       ),
       key: notification.id,
@@ -97,13 +101,18 @@ const NotificationSection = () => {
         }}
         dropdownRender={(menu) => (
           <div style={contentStyle}>
-            {React.cloneElement(menu as React.ReactElement, {
-              style: menuStyle,
-            })}
+            <div className="max-h-[500px] overflow-y-auto">
+              {React.cloneElement(menu as React.ReactElement, {
+                style: menuStyle,
+              })}
+            </div>
             {notifications.length > 0 ? (
               <>
                 <Divider style={{ margin: 0 }} />
-                <Button className="w-full" onClick={() => handleMarkAllSeen()}>
+                <Button
+                  className="w-full"
+                  onClick={() => handleMarkAllCleared()}
+                >
                   Clear All
                 </Button>
               </>
