@@ -431,6 +431,16 @@ export async function markAllNotificationsSeenRest() {
     return false;
   }
 }
+export async function markAllNotificationsClearedRest() {
+  try {
+    const res = await axios.patch(
+      `${apiEndPoints.markAllNotificationsCleared}`
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
 
 export async function deleteSessionRest(sessionId: number) {
   try {

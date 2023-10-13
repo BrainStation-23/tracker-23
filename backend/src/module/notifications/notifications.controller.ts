@@ -28,4 +28,9 @@ export class NotificationController {
   async seenAllNotifications(@GetUser() user: User): Promise<any> {
     return this.notificationService.seenAllNotifications(user);
   }
+  @Patch('clear-all')
+  @UseGuards(JwtAuthGuard)
+  async clearAllNotifications(@GetUser() user: User): Promise<any> {
+    return this.notificationService.clearAllNotifications(user);
+  }
 }

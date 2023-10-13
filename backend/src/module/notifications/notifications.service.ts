@@ -10,7 +10,7 @@ export class NotificationsService {
       take: 50,
       where: {
         userId: user.id,
-        seen: false,
+        cleared: false,
       },
     });
   }
@@ -30,6 +30,14 @@ export class NotificationsService {
         userId: user.id,
       },
       data: { seen: true },
+    });
+  }
+  async clearAllNotifications(user: User) {
+    return await this.prisma.notification.updateMany({
+      where: {
+        userId: user.id,
+      },
+      data: { cleared: true },
     });
   }
 }
