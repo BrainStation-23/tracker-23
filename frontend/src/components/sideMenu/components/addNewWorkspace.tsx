@@ -23,8 +23,8 @@ const AddNewWorkspace = ({ setIsModalOpen, setIsModalLoading }: Props) => {
     setIsModalLoading(true);
     console.log("Form values:", values);
     const res = await userAPI.createWorkspace(values);
-    message.success("Workspace created Successfully");
-    dispatch(addWorkspaceSlice(res));
+    res && message.success("Workspace created Successfully");
+    res && dispatch(addWorkspaceSlice(res));
     if (values.changeWorkspace) {
       message.success("Active Workspace Changed");
       dispatch(changeWorkspaceReloadStatusSlice());

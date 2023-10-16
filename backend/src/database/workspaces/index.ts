@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Role, UserWorkspaceStatus } from '@prisma/client';
+import { Settings, UserWorkspaceStatus } from '@prisma/client';
 import {
   SendInvitationReqBody,
   WorkspaceReqBody,
+  userWorkspaceType,
 } from 'src/module/workspaces/dto';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 
@@ -17,13 +18,17 @@ export class WorkspaceDatabase {
         },
       });
     } catch (err) {
+      console.log(
+        '🚀 ~ file: index.ts:21 ~ WorkspaceDatabase ~ getWorkspace ~ err:',
+        err,
+      );
       return null;
     }
   }
 
-  async createWorkspace(userId: number, name: string) {
+  async createWorkspace(userId: number, name: string, prisma: any) {
     try {
-      return await this.prisma.workspace.create({
+      return await prisma.workspace.create({
         data: {
           creatorUserId: userId,
           name: name,
@@ -72,15 +77,16 @@ export class WorkspaceDatabase {
     }
   }
 
-  async createUserWorkspace(
-    userId: number,
-    workspaceId: number,
-    role: Role,
-    status: UserWorkspaceStatus,
-    inviterUserId?: number,
-    invitationId?: string,
-    invitedAt?: Date,
-  ) {
+  async createUserWorkspace({
+    userId,
+    workspaceId,
+    role,
+    status,
+    inviterUserId,
+    invitationId,
+    invitedAt,
+    prisma,
+  }: userWorkspaceType) {
     const userWorkspaceData: any = {
       role,
       userId,
@@ -114,7 +120,7 @@ export class WorkspaceDatabase {
       }),
     };
     try {
-      return await this.prisma.userWorkspace.create({
+      return await prisma.userWorkspace.create({
         data: userWorkspaceData,
         include: includeData,
       });
@@ -262,6 +268,22 @@ export class WorkspaceDatabase {
       return await this.prisma.user.findUnique({
         where: {
           id: userId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async createSettings(
+    workspaceId: number,
+    prisma: any,
+  ): Promise<Settings | null> {
+    try {
+      return await prisma.settings.create({
+        data: {
+          workspaceId,
         },
       });
     } catch (error) {

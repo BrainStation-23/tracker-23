@@ -21,6 +21,9 @@ import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { NotificationModule } from '../notifications/notifications.module';
 import { UsersDatabase } from 'src/database/users';
+import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
+import { JiraClient } from 'src/utils/jira';
+import { JiraClientService } from '../helper/client';
 
 @Module({
   imports: [HttpModule.register({}), NotificationModule],
@@ -45,6 +48,8 @@ import { UsersDatabase } from 'src/database/users';
     UserIntegrationDatabase,
     IntegrationDatabase,
     UsersDatabase,
+    JiraApiCalls,
+    JiraClientService,
   ],
   controllers: [WebhooksController],
 })

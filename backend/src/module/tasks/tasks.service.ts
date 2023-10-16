@@ -32,16 +32,22 @@ import { IntegrationsService } from '../integrations/integrations.service';
 import { MyGateway } from '../notifications/socketGateway';
 import { APIException } from '../exception/api.exception';
 import { TasksDatabase } from 'src/database/tasks';
+import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
+import { ConfigService } from '@nestjs/config';
+import { JiraClientService } from '../helper/client';
 @Injectable()
 export class TasksService {
   constructor(
     private prisma: PrismaService,
     private httpService: HttpService,
+    private readonly config: ConfigService,
     private integrationsService: IntegrationsService,
     private myGateway: MyGateway,
     private workspacesService: WorkspacesService,
     private sprintService: SprintsService,
     private tasksDatabase: TasksDatabase,
+    private jiraApiCalls: JiraApiCalls,
+    private jiraClient: JiraClientService,
   ) {}
 
   async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
@@ -1419,7 +1425,9 @@ export class TasksService {
     res && (await this.syncCall(StatusEnum.IN_PROGRESS, user));
     try {
       await this.sendImportingNotification(user);
-      this.syncTasksFetchAndProcessTasksAndWorklog(
+      // const transaction = await this.prisma.$transaction(
+      //   async (prisma: any) => {
+      await this.syncTasksFetchAndProcessTasksAndWorklog(
         user,
         project,
         updatedUserIntegration,
@@ -1429,11 +1437,13 @@ export class TasksService {
         projId,
         updatedUserIntegration.id,
       );
+      await this.updateProjectIntegrationStatus(projId);
+      //   },
+      // );
       res && (await this.syncCall(StatusEnum.DONE, user));
       // if (done) {
       //   await this.createSprintAndTask(user, updated_userIntegration.id);
       // }
-      await this.updateProjectIntegrationStatus(projId);
       await this.sendImportedNotification(user, 'Project Synced', res);
     } catch (err) {
       await this.handleImportFailure(user, 'Sync Tasks Failed');
@@ -1626,13 +1636,17 @@ export class TasksService {
               },
             },
           }));
+        // console.log(
+        //   '🚀 ~ file: tasks.service.ts:1632 ~ updateIssueStatus ~ userIntegration:',
+        //   userIntegration,
+        // );
 
-        const updated_userIntegration =
-          userIntegration &&
-          (await this.integrationsService.getUpdatedUserIntegration(
-            user,
-            userIntegration.id,
-          ));
+        // const updated_userIntegration =
+        //   userIntegration &&
+        //   (await this.integrationsService.getUpdatedUserIntegration(
+        //     user,
+        //     userIntegration.id,
+        //   ));
         const statuses: StatusDetail[] = task?.projectId
           ? await this.prisma.statusDetail.findMany({
               where: {
@@ -1640,23 +1654,19 @@ export class TasksService {
               },
             })
           : [];
-        if (!updated_userIntegration)
+        if (!userIntegration)
           throw new APIException(
-            'Updating Integration Failed',
+            'User integration not found!',
             HttpStatus.BAD_REQUEST,
           );
         const statusNames = statuses?.map((status) => status.name);
-        const url = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}/transitions`;
+        const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}/transitions`;
         if (statuses[0].transitionId === null) {
-          const config = {
-            method: 'get',
+          const transitions: any = await this.jiraClient.CallJira(
+            userIntegration,
+            this.jiraApiCalls.getTransitions,
             url,
-            headers: {
-              Authorization: `Bearer ${updated_userIntegration.accessToken}`,
-              'Content-Type': 'application/json',
-            },
-          };
-          const { transitions } = (await axios(config)).data;
+          );
           for (const transition of transitions) {
             if (task.projectId && statusNames.includes(transition.name)) {
               await this.prisma.statusDetail.update({
@@ -1684,16 +1694,12 @@ export class TasksService {
             id: statusDetails?.transitionId,
           },
         });
-        const config = {
-          method: 'post',
+        const updatedIssue: any = await this.jiraClient.CallJira(
+          userIntegration,
+          this.jiraApiCalls.updatedIssues,
           url,
-          headers: {
-            Authorization: `Bearer ${updated_userIntegration?.accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          data: statusBody,
-        };
-        const updatedIssue = await axios(config);
+          statusBody,
+        );
         const updatedTask =
           updatedIssue &&
           (await this.prisma.task.update({
@@ -1713,9 +1719,9 @@ export class TasksService {
         }
         return updatedTask;
       } else
-        throw new APIException('No Integrations Found', HttpStatus.BAD_REQUEST);
+        throw new APIException('Something went wrong!', HttpStatus.BAD_REQUEST);
     } catch (err) {
-      console.log(err.message);
+      console.log(err);
       throw new APIException(
         'Can not update issue status',
         HttpStatus.BAD_REQUEST,
@@ -1761,29 +1767,22 @@ export class TasksService {
           throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
 
         const userIntegration =
-          project?.integrationId &&
+          project.integrationId &&
           (await this.prisma.userIntegration.findUnique({
             where: {
               userIntegrationIdentifier: {
-                integrationId: project?.integrationId,
+                integrationId: project.integrationId,
                 userWorkspaceId: userWorkspace.id,
               },
             },
           }));
-
-        const updated_userIntegration =
-          userIntegration &&
-          (await this.integrationsService.getUpdatedUserIntegration(
-            user,
-            userIntegration.id,
-          ));
-        if (!updated_userIntegration) {
+        if (!userIntegration) {
           throw new APIException(
-            'Updating Integration Failed',
+            'You have no UserIntegration! ',
             HttpStatus.BAD_REQUEST,
           );
         }
-        const url = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}`;
+        const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}`;
 
         const estimationBody = JSON.stringify({
           update: {
@@ -1796,22 +1795,14 @@ export class TasksService {
             ],
           },
         });
-        // console.log(
-        //   '🚀 ~ file: tasks.service.ts:661 ~ TasksService ~ updateIssueEstimation ~ esmationBody:',
-        //   estimationBody,
-        // );
-        const config = {
-          method: 'put',
+        const updatedIssueEstimation = await this.jiraClient.CallJira(
+          userIntegration,
+          this.jiraApiCalls.UpdateIssueEstimation,
           url,
-          headers: {
-            Authorization: `Bearer ${updated_userIntegration?.accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          data: estimationBody,
-        };
-        const updatedIssue = await axios(config);
+          estimationBody,
+        );
         const updatedTask =
-          updatedIssue &&
+          updatedIssueEstimation &&
           (await this.prisma.task.update({
             where: {
               id: Number(taskId),
@@ -1828,9 +1819,9 @@ export class TasksService {
         }
         return updatedTask;
       } else
-        throw new APIException('No Integrations Found', HttpStatus.BAD_REQUEST);
+        throw new APIException('Something went wrong!', HttpStatus.BAD_REQUEST);
     } catch (err) {
-      console.log(err.message);
+      console.log(err);
       throw new APIException(
         'Can not update issue estimation',
         HttpStatus.BAD_REQUEST,
