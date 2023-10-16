@@ -1,23 +1,25 @@
-import { changeWorkspaceReloadStatusSlice } from "@/storage/redux/workspacesSlice";
-import { userAPI } from "APIs";
 import { Button, message } from "antd";
+import { userAPI } from "APIs";
 import { InviteUserWorkspaceDto } from "models/invitations";
 import { useDispatch } from "react-redux";
 
+import { addWorkspaceSlice } from "@/storage/redux/workspacesSlice";
+
 type Props = {
   invite: InviteUserWorkspaceDto;
+  updateInviteList: Function;
 };
-const InviteComponent = ({ invite }: Props) => {
+const InviteComponent = ({ invite, updateInviteList }: Props) => {
   const dispatch = useDispatch();
   const acceptInvite = async () => {
     const res = await userAPI.acceptWorkspaceInvitation(invite.id);
     res && message.success("Invitation Accepted");
-    dispatch(changeWorkspaceReloadStatusSlice());
+    res && updateInviteList(res);
+    res.workspace && dispatch(addWorkspaceSlice(res.workspace));
   };
   const rejectInvite = async () => {
     const res = await userAPI.rejectWorkspaceInvitation(invite.id);
     res && message.success("Invitation Rejected");
-    dispatch(changeWorkspaceReloadStatusSlice());
   };
 
   return (

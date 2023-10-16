@@ -198,6 +198,7 @@ export class WorkspaceDatabase {
         where: {
           id: userWorkspaceId,
         },
+        include: { workspace: true, inviter: true },
         data: {
           status: reqStatus,
         },
