@@ -169,15 +169,16 @@ model TempIntegration {
 }
 
 model Project {
-  id          Int            @id @default(autoincrement())
+  id          Int              @id @default(autoincrement())
   projectId   Int?
   projectName String?
   projectKey  String?
   source      String
-  integrated  Boolean        @default(false)
+  integrated  Boolean          @default(false)
   statuses    StatusDetail[]
   tasks       Task[]
   sprints     Sprint[]
+  priorities  PriorityScheme[]
 
   integration   Integration? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
   integrationId Int?
@@ -308,6 +309,18 @@ model Settings {
 
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int       @unique
+}
+
+model PriorityScheme {
+  id                   Int    @id @default(autoincrement())
+  priorityId           Int?
+  name                 String
+  priorityCategoryName String
+
+  projects  Project @relation(fields: [projectId], references: [id])
+  projectId Int
+
+  @@unique([name, projectId], name: "tempPrioritySchemeIdentifier")
 }
 
 enum Priority {

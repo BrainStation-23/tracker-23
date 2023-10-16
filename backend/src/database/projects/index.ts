@@ -29,12 +29,13 @@ export class ProjectDatabase {
     }
   }
 
-  async getProjectsWithStatus(filter: Record<string, any>) {
+  async getProjectsWithStatusAndPriorities(filter: Record<string, any>) {
     try {
       return await this.prisma.project.findMany({
         where: filter,
         include: {
           statuses: true,
+          priorities: true,
         },
       });
     } catch (error) {
@@ -157,6 +158,33 @@ export class ProjectDatabase {
         where: {
           id: projId,
         }
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async createLocalPriorities(projectId: number) {
+    try {
+      return await this.prisma.priorityScheme.createMany({
+        data: [
+          {
+            projectId,
+            name: 'High',
+            statusCategoryName: 'High',
+          },
+          {
+            projectId,
+            name: 'Low',
+            statusCategoryName: 'Low',
+          },
+          {
+            projectId,
+            name: 'Medium',
+            statusCategoryName: 'Medium',
+          },
+        ],
       });
     } catch (error) {
       console.log(error);

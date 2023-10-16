@@ -62,6 +62,7 @@ export class ProjectsService {
     res && (await this.tasksService.syncCall(StatusEnum.IN_PROGRESS, user));
 
     this.tasksService.setProjectStatuses(project, updatedUserIntegration);
+    this.tasksService.importPriorities(project, updatedUserIntegration);
 
     try {
       await this.tasksService.sendImportingNotification(user);
@@ -195,6 +196,7 @@ export class ProjectsService {
     const statusCreated = await this.projectDatabase.createStatusDetail(newProject?.id);
     if(!statusCreated) throw new APIException('Could not create status', HttpStatus.INTERNAL_SERVER_ERROR);
 
+    await this.projectDatabase.createLocalPriorities(newProject?.id);
     return newProject;
   }
 

@@ -254,7 +254,7 @@ export class JiraService {
     };
   }
 
-  async getIntegratedProjectStatuses(user: User) {
+  async getIntegratedProjectStatusesAndPriorities(user: User) {
     const getUserIntegrationList =
       await this.integrationsService.getUserIntegrations(user);
 
@@ -262,7 +262,7 @@ export class JiraService {
       (userIntegration: any) => userIntegration?.integration?.id,
     );
     try {
-      const projects = await this.projectDatabase.getProjectsWithStatus({
+      const projects = await this.projectDatabase.getProjectsWithStatusAndPriorities({
         integrated: true,
         integrationId: {
           in: jiraIntegrationIds?.map((id: any) => Number(id)),
@@ -271,7 +271,7 @@ export class JiraService {
 
       const localProjects =
         user.activeWorkspaceId &&
-        (await this.projectDatabase.getProjectsWithStatus({
+        (await this.projectDatabase.getProjectsWithStatusAndPriorities({
           source: 'T23',
           workspaceId: user.activeWorkspaceId,
           integrated: true,
