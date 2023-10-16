@@ -45,7 +45,8 @@ export class AuthService {
         hash: await argon.hash(dto?.password),
       });
 
-      const workspace = user &&
+      const workspace =
+        user &&
         user.firstName &&
         (await this.workspacesService.createWorkspace(
           user,
@@ -57,7 +58,7 @@ export class AuthService {
           activeWorkspaceId: workspace.id,
         }));
 
-      updateUser && await this.usersDatabase.createSettings(workspace?.id);
+      updateUser && (await this.usersDatabase.createSettings(workspace?.id));
       return updateUser;
     } catch (err) {
       throw new APIException(
@@ -68,7 +69,7 @@ export class AuthService {
   }
 
   async getUser(dto: RegisterDto) {
-   return await this.usersDatabase.findUserByEmail(dto.email);
+    return await this.usersDatabase.findUserByEmail(dto.email);
   }
 
   async register(dto: RegisterDto) {
@@ -102,7 +103,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const token = await this.createToken(user);
+    const token = await this.createToken(user, dto.remember);
     return {
       email: user.email,
       firstName: user.firstName,
@@ -111,11 +112,14 @@ export class AuthService {
     };
   }
 
-  async createToken(user: any): Promise<{ access_token: string }> {
+  async createToken(
+    user: any,
+    remember?: boolean,
+  ): Promise<{ access_token: string }> {
     const payload = { email: user.email, sub: user.id };
     const access_token = await this.jwt.signAsync(payload, {
       secret: this.config.get('JWT_SECRET'),
-      expiresIn: '1d',
+      expiresIn: remember ? '30d' : '1d',
     });
 
     return {
@@ -151,7 +155,11 @@ export class AuthService {
             (await this.usersDatabase.updateUser(oldUser, {
               activeWorkspaceId: doesExist.workspaceId,
             }));
-          if(!updatedOldUser) throw new APIException('Could not create user', HttpStatus.INTERNAL_SERVER_ERROR);
+          if (!updatedOldUser)
+            throw new APIException(
+              'Could not create user',
+              HttpStatus.INTERNAL_SERVER_ERROR,
+            );
 
           return await this.getFormattedUserData(updatedOldUser);
         }
@@ -185,22 +193,25 @@ export class AuthService {
     //   '🚀 ~ file: auth.service.ts:154 ~ AuthService ~ googleLogin ~ user:',
     //   user,
     // );
-    if(!user) throw new APIException(
-      'Could not create user',
-      HttpStatus.INTERNAL_SERVER_ERROR,
-    );
+    if (!user)
+      throw new APIException(
+        'Could not create user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
 
     const workspace =
-      user && user.firstName &&
+      user &&
+      user.firstName &&
       (await this.workspacesService.createWorkspace(
         user,
         `${user.firstName}'s Workspace`,
       ));
 
-    if(!workspace) throw new APIException(
-      'Could not create workspace',
-      HttpStatus.INTERNAL_SERVER_ERROR,
-    );
+    if (!workspace)
+      throw new APIException(
+        'Could not create workspace',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
 
     const updateUser =
       workspace &&
@@ -208,10 +219,11 @@ export class AuthService {
         activeWorkspaceId: workspace.id,
       }));
 
-    if(!updateUser) throw new APIException(
-      'Could not update user',
-      HttpStatus.INTERNAL_SERVER_ERROR,
-    );
+    if (!updateUser)
+      throw new APIException(
+        'Could not update user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
 
     return await this.getFormattedUserData(updateUser);
   }
@@ -231,13 +243,13 @@ export class AuthService {
   }
 
   async getUserFromAccessToken(accessToken: string): Promise<userDto | null> {
-      const decoded = this.jwt.verify(accessToken, {
-        secret: this.config.get('JWT_SECRET'),
-      });
+    const decoded = this.jwt.verify(accessToken, {
+      secret: this.config.get('JWT_SECRET'),
+    });
 
-      const user = await this.usersDatabase.findUniqueUser({ id: decoded.sub });
+    const user = await this.usersDatabase.findUniqueUser({ id: decoded.sub });
 
-      return user as userDto;
+    return user as userDto;
   }
 
   async forgotPassword(reqBody: ForgotPasswordDto, req: Request) {
@@ -317,7 +329,9 @@ export class AuthService {
       .update(uniqueToken)
       .digest('hex');
 
-    const user = await this.usersDatabase.findUserByResetCredentials(hashedToken);
+    const user = await this.usersDatabase.findUserByResetCredentials(
+      hashedToken,
+    );
     if (!user) {
       throw new APIException(
         'Token is invalid or has expired',

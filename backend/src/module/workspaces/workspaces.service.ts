@@ -1,4 +1,3 @@
-import { ProjectsService } from './../projects/projects.service';
 import { UsersDatabase } from 'src/database/users';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserWorkspace, UserWorkspaceStatus } from '@prisma/client';
