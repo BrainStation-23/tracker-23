@@ -21,6 +21,8 @@ import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { NotificationModule } from '../notifications/notifications.module';
 import { UsersDatabase } from 'src/database/users';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
+import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
+import { JiraClientService } from '../helper/client';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
     UserIntegrationDatabase,
     UsersDatabase,
     UserWorkspaceDatabase,
+    JiraApiCalls,
+    JiraClientService,
   ],
   controllers: [TasksController],
   exports: [TasksService],
