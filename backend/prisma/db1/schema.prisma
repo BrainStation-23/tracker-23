@@ -165,7 +165,7 @@ model TempIntegration {
 
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId Int
-  expiration_time DateTime 
+  expiration_time DateTime
 
   @@unique([siteId, userWorkspaceId], name: "tempIntegrationIdentifier")
 }
@@ -315,7 +315,7 @@ model Settings {
 
 model PriorityScheme {
   id                   Int    @id @default(autoincrement())
-  priorityId           Int?
+  priorityId           String?
   name                 String
   priorityCategoryName String
 

@@ -172,17 +172,17 @@ export class ProjectDatabase {
           {
             projectId,
             name: 'High',
-            statusCategoryName: 'High',
+            priorityCategoryName: 'High',
           },
           {
             projectId,
             name: 'Low',
-            statusCategoryName: 'Low',
+            priorityCategoryName: 'Low',
           },
           {
             projectId,
             name: 'Medium',
-            statusCategoryName: 'Medium',
+            priorityCategoryName: 'Medium',
           },
         ],
       });
