@@ -192,6 +192,7 @@ export class WorkspaceDatabase {
         where: {
           id: userWorkspaceId,
         },
+        include: { workspace: true, inviter: true },
         data: {
           status: reqStatus,
         },
@@ -261,7 +262,7 @@ export class WorkspaceDatabase {
       return await this.prisma.user.findUnique({
         where: {
           id: userId,
-        }
+        },
       });
     } catch (error) {
       console.log(error);
