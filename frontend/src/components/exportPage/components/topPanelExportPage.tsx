@@ -134,7 +134,9 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
   return (
     <div className="my-5 flex w-full justify-between">
       <div>
-        {!(sprints?.length > 0) && <DateRangePicker {...{ setSelectedDate }} />}
+        {!(sprints?.length > 0) && (
+          <DateRangePicker {...{ selectedDate, setSelectedDate }} />
+        )}
       </div>
       <div className="flex gap-8">
         <Input

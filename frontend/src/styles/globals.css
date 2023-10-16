@@ -78,7 +78,8 @@ body {
 .ant-input-password:hover,
 .ant-picker:hover,
 .ant-input-affix-wrapper:focus,
-.ant-radio-inner {
+.ant-radio-inner,
+.ant-pagination-item-active {
   border-color: black !important; /* Change to the desired border color */
 }
 .ant-picker-active-bar,
@@ -86,7 +87,8 @@ body {
 .ant-radio-checked .ant-radio-inner {
   background: black !important;
 }
-.ant-picker-today-btn {
+.ant-picker-today-btn,
+.ant-pagination-item-active a {
   color: black !important;
 }
 

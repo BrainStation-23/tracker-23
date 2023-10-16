@@ -144,7 +144,7 @@ const TopPanelActiveSprint = ({
       <div className="flex gap-2">
         <div className="mt-[6px] flex h-auto w-full flex-wrap items-center justify-end gap-6">
           {activeTab !== "ActiveSprint" && (
-            <DateRangePicker {...{ setSelectedDate }} />
+            <DateRangePicker {...{ selectedDate, setSelectedDate }} />
           )}
           {checkedOptionList.includes("Search") && (
             <div className="w-[210px]">

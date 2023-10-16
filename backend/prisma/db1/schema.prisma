@@ -5,7 +5,8 @@
 // npx prisma studio
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x"]
 }
 
 datasource db {
@@ -103,6 +104,7 @@ model Notification {
   id          Int      @id @default(autoincrement())
   createdAt   DateTime @default(now())
   seen        Boolean  @default(false)
+  cleared     Boolean  @default(false)
   author      String
   title       String
   description String
