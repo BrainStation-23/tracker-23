@@ -58,7 +58,7 @@ export class UserIntegrationDatabase {
     }
   }
 
-  async updateUserIntegrationById(userIntegrationId: number, update: any){
+  async updateUserIntegrationById(userIntegrationId: number, update: any) {
     try {
       return await this.prisma.userIntegration.update({
         where: { id: userIntegrationId },
@@ -96,7 +96,7 @@ export class UserIntegrationDatabase {
   async getUserIntegration(filter: any) {
     try {
       return await this.prisma.userIntegration.findUnique({
-          where: filter,
+        where: filter,
       });
     } catch (error) {
       console.log(error);

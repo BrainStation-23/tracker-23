@@ -12,18 +12,18 @@ import { NotificationModule } from './module/notifications/notifications.module'
 import { SprintsModule } from './module/sprints/sprints.module';
 import { JiraModule } from './module/jira/jira.module';
 import { EmailModule } from './module/email/email.module';
-import { PrismaModule2 } from './module/prisma2/prisma.module';
-import { DataMigrationModule } from './module/data_migration/data_migration.module';
 import { ProjectsModule } from './module/projects/projects.module';
 import { WebhooksModule } from './module/webhooks/webhooks.module';
 import { UsersModule } from './module/user/users.module';
 import { CronService } from './module/cron/cron.service';
+import { HelperModule } from './module/helper/helper.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    HelperModule,
     TestModule,
     AuthModule,
     PrismaModule,

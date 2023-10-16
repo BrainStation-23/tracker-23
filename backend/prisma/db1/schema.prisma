@@ -148,6 +148,7 @@ model UserIntegration {
   integration   Integration? @relation(fields: [integrationId, siteId], references: [id, siteId], onDelete: Cascade)
   integrationId Int?
   siteId        String?
+  expiration_time DateTime @default("2023-10-16T00:00:00Z")
 
   @@unique([integrationId, userWorkspaceId], name: "userIntegrationIdentifier")
 }
@@ -164,6 +165,7 @@ model TempIntegration {
 
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId Int
+  expiration_time DateTime 
 
   @@unique([siteId, userWorkspaceId], name: "tempIntegrationIdentifier")
 }
