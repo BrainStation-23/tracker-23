@@ -2156,12 +2156,50 @@ export class TasksService {
         const doesExist = mappedStatuses.get(name);
         if (!doesExist) statusArray.push(statusDetail);
       }
-      await this.prisma.statusDetail.createMany({
+
+      const createdStatus = await this.prisma.statusDetail.createMany({
         data: statusArray,
       });
     } catch (error) {
       console.log(
         '🚀 ~ file: jira.service.ts:261 ~ setProjectStatuses ~ error:',
+        error.message,
+      );
+    }
+  }
+
+  async importPriorities(project: any, updatedUserIntegration: UserIntegration) {
+    try {
+      const getPriorityByProjectIdUrl = `https://api.atlassian.com/ex/jira/${updatedUserIntegration.siteId}/rest/api/3/priority`;
+      const { data: priorityList } = await axios.get(
+        getPriorityByProjectIdUrl,
+        {
+          headers: {
+            Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
+          },
+        },
+      );
+
+      const priorityListByProjectId =
+        priorityList.length > 0
+          ? priorityList.map((priority: any) => {
+              return {
+                name: priority.name,
+                priorityId: priority.id,
+                priorityCategoryName: priority.name,
+                projectId: project.id,
+              };
+            })
+          : [];
+
+      await this.prisma.priorityScheme.createMany({
+        data: priorityListByProjectId,
+      });
+
+      return true;
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: task.service.ts:2223 ~ importPriorities ~ error:',
         error.message,
       );
     }
@@ -2233,6 +2271,10 @@ export class TasksService {
       );
       throw new APIException('Internal server Error', HttpStatus.BAD_REQUEST);
     }
+  }
+
+  async updateTaskPriority(user: User) {
+    
   }
 }
 

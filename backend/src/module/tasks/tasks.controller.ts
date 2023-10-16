@@ -138,4 +138,10 @@ export class TasksController {
   async getAllStatus(@GetUser() user: User) {
     return this.tasksService.getAllStatus(user);
   }
+
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  async updateTaskPriority(@GetUser() user: User) {
+    return await this.tasksService.updateTaskPriority(user);
+  }
 }
