@@ -11,15 +11,16 @@ export class EmailService {
     // console.log(subject, body, to);
     try {
       const OAuth2 = google.auth.OAuth2;
-      interface OAuth2TransportConfig extends nodemailer.TransportOptions {
-        auth: {
-          type: 'OAuth2';
-          user: string; // Your Gmail address
-          clientId: string; // Your Google OAuth2 client ID
-          clientSecret: string; // Your Google OAuth2 client secret
-          accessToken: string; // Obtained access token
-        };
-      }
+      // interface OAuth2TransportConfig extends nodemailer.TransportOptions {
+      //   auth: {
+      //     type: 'OAuth2';
+      //     user: string; // Your Gmail address
+      //     clientId: string; // Your Google OAuth2 client ID
+      //     clientSecret: string; // Your Google OAuth2 client secret
+      //     accessToken: string; // Obtained access token
+      //   };
+      // }
+
       const oauth2Client = new OAuth2(
         this.config.get('GOOGLE_EMAIL_CLIENT_ID'),
         this.config.get('GOOGLE_EMAIL_CLIENT_SECRET'),
@@ -48,15 +49,15 @@ export class EmailService {
         auth: {
           type: 'OAuth2',
           user: this.config.get('GOOGLE_EMAIL_USER'),
+          accessToken: accessToken as string,
           clientId: this.config.get('GOOGLE_EMAIL_CLIENT_ID'),
           clientSecret: this.config.get('GOOGLE_CLIENT_SECRET'),
           refreshToken: this.config.get('GOOGLE_EMAIL_CLIENT_REFRESH_TOKEN'),
-          accessToken: accessToken as string,
         },
-      } as OAuth2TransportConfig);
+      });
 
       const mailOptions = {
-        transporterName: 'gmail',
+        //transporterName: 'gmail',
         from: this.config.get('GOOGLE_EMAIL_USER'),
         to: to,
         subject: subject,
