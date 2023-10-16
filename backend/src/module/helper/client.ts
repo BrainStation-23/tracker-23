@@ -1,51 +1,40 @@
 import { UserIntegration } from '@prisma/client';
-import axios from 'axios';
-import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { lastValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
+import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 
-export class JiraClient {
+@Injectable()
+export class JiraClientService {
   constructor(
-    private access_token: string,
     private readonly config: ConfigService,
     private httpService: HttpService,
     private userIntegrationDatabase: UserIntegrationDatabase,
   ) {}
-
-  async getMyProfile() {
-    return this.sendRequest('get', 'me');
-  }
 
   async CallJira(
     userIntegration: UserIntegration,
     apiCaller: (userIntegration: UserIntegration, ...rest: any) => Promise<any>,
     ...rest: any
   ) {
-    try {
-      const config = {
-        method: 'Get',
-        url: `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/myself`,
-        headers: {
-          Authorization: `Bearer ${userIntegration.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      };
-      const response = (await axios(config)).data;
-      console.log('🚀 ~ file: client.ts:37 ~ JiraClient ~ response:', response);
+    if (userIntegration.expiration_time.getTime() > Date.now()) {
+      // console.log(
+      //   '🚀 ~ file: client.ts:22 ~ JiraClientService ~ userIntegration.expiration_time.getTime():',
+      //   userIntegration.expiration_time.getTime(),
+      //   Date.now(),
+      // );
       return await apiCaller(userIntegration, ...rest);
-    } catch (err) {
-      console.log('🚀 ~ file: client.ts:40 ~ JiraClient ~ err:', err.message);
+    } else {
       const url = 'https://auth.atlassian.com/oauth/token';
       const headers: any = { 'Content-Type': 'application/json' };
-      console.log('🚀 ~ file: client.ts:44 ~ JiraClient ~ headers:', headers);
       const data = {
         grant_type: 'refresh_token',
         client_id: this.config.get('JIRA_CLIENT_ID'),
         client_secret: this.config.get('JIRA_SECRET_KEY'),
         refresh_token: userIntegration?.refreshToken,
       };
-      console.log('🚀 ~ file: client.ts:48 ~ JiraClient ~ data:', data);
+      // console.log('🚀 ~ file: client.ts:37 ~ JiraClientService ~ data:', data);
       let tokenResp;
       try {
         tokenResp = (
@@ -54,6 +43,9 @@ export class JiraClient {
       } catch (err) {
         console.log('🚀 ~ file: client.ts:55 ~ JiraClient ~ err:', err);
       }
+      const expires_in = 3500000;
+      const issued_time = Date.now();
+      const token_expire = issued_time + expires_in;
 
       const newUserIntegration: any =
         userIntegration &&
@@ -62,31 +54,14 @@ export class JiraClient {
           {
             accessToken: tokenResp.access_token,
             refreshToken: tokenResp.refresh_token,
+            expiration_time: new Date(token_expire),
           },
         ));
-      console.log(
-        '🚀 ~ file: client.ts:62 ~ JiraClient ~ newUserIntegration:',
-        newUserIntegration,
-      );
+      // console.log(
+      //   '🚀 ~ file: client.ts:62 ~ JiraClient ~ newUserIntegration:',
+      //   newUserIntegration,
+      // );
       return await apiCaller(newUserIntegration, ...rest);
     }
-  }
-
-  async sendRequest(
-    method: string,
-    endpoint: string,
-    headers?: any,
-    body?: any,
-  ) {
-    const resp = await axios.get(`https://api.atlassian.com/${endpoint}`, {
-      method,
-      headers: {
-        'content-type': 'application/json',
-        Authorization: `Bearer ${this.access_token}`,
-        ...headers,
-      },
-      data: { ...body },
-    });
-    return resp.data;
   }
 }
