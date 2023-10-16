@@ -11,6 +11,7 @@ import { APIException } from '../exception/api.exception';
 import { StatusEnum } from '../tasks/dto';
 import { ProjectDatabase } from 'src/database/projects';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ProjectsService {
@@ -21,6 +22,7 @@ export class ProjectsService {
     private sprintService: SprintsService,
     private projectDatabase: ProjectDatabase,
     private userIntegrationDatabase: UserIntegrationDatabase,
+    private prisma: PrismaService,
   ) {}
 
   async importProjects(user: User, projId: number, res?: Response) {
@@ -41,10 +43,10 @@ export class ProjectsService {
     const userIntegration =
       project?.integrationId &&
       (await this.userIntegrationDatabase.getUserIntegration({
-          userIntegrationIdentifier: {
-            integrationId: project?.integrationId,
-            userWorkspaceId: userWorkspace.id,
-          },
+        userIntegrationIdentifier: {
+          integrationId: project?.integrationId,
+          userWorkspaceId: userWorkspace.id,
+        },
       }));
 
     const updatedUserIntegration =
@@ -62,9 +64,12 @@ export class ProjectsService {
     res && (await this.tasksService.syncCall(StatusEnum.IN_PROGRESS, user));
 
     this.tasksService.setProjectStatuses(project, updatedUserIntegration);
+    this.tasksService.importPriorities(project, updatedUserIntegration);
 
     try {
       await this.tasksService.sendImportingNotification(user);
+      // const transaction = await this.prisma.$transaction(
+      //   async (prisma: any) => {
       await this.tasksService.fetchAndProcessTasksAndWorklog(
         user,
         project,
@@ -76,6 +81,8 @@ export class ProjectsService {
         updatedUserIntegration.id,
       );
       await this.tasksService.updateProjectIntegrationStatus(projId);
+      //   },
+      // );
       res && (await this.tasksService.syncCall(StatusEnum.DONE, user));
       await this.tasksService.sendImportedNotification(
         user,
@@ -109,7 +116,8 @@ export class ProjectsService {
     }
 
     const deletedTasks = await this.projectDatabase.deleteTasksByProjectId(id);
-    if(!deletedTasks) throw new APIException('Invalid Project ID', HttpStatus.BAD_REQUEST);
+    if (!deletedTasks)
+      throw new APIException('Invalid Project ID', HttpStatus.BAD_REQUEST);
 
     const updatedProject =
       project.source === 'T23'
@@ -118,7 +126,11 @@ export class ProjectsService {
             integrated: false,
           });
 
-    if(!updatedProject) throw new APIException('Could not delete project', HttpStatus.INTERNAL_SERVER_ERROR);
+    if (!updatedProject)
+      throw new APIException(
+        'Could not delete project',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
 
     return res.status(202).json({ message: 'Project Deleted' });
   }
@@ -143,7 +155,11 @@ export class ProjectsService {
       },
       workspaceId: user.activeWorkspaceId,
     });
-    if(!projects) throw new APIException('Could not find projects', HttpStatus.INTERNAL_SERVER_ERROR);
+    if (!projects)
+      throw new APIException(
+        'Could not find projects',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
 
     let localProjects =
       user.activeWorkspaceId &&
@@ -153,7 +169,7 @@ export class ProjectsService {
         integrated: true,
       }));
 
-    if(!localProjects) localProjects = [];
+    if (!localProjects) localProjects = [];
 
     return [...projects, ...localProjects];
   }
@@ -165,13 +181,16 @@ export class ProjectsService {
         HttpStatus.BAD_REQUEST,
       );
 
-    const projectExists = await this.projectDatabase.getProject({
-      projectName,
-      source: 'T23',
-      workspaceId: user?.activeWorkspaceId,
-    },{
-      integration: true,
-    });
+    const projectExists = await this.projectDatabase.getProject(
+      {
+        projectName,
+        source: 'T23',
+        workspaceId: user?.activeWorkspaceId,
+      },
+      {
+        integration: true,
+      },
+    );
 
     if (projectExists)
       throw new APIException(
@@ -192,9 +211,16 @@ export class ProjectsService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
 
-    const statusCreated = await this.projectDatabase.createStatusDetail(newProject?.id);
-    if(!statusCreated) throw new APIException('Could not create status', HttpStatus.INTERNAL_SERVER_ERROR);
+    const statusCreated = await this.projectDatabase.createStatusDetail(
+      newProject?.id,
+    );
+    if (!statusCreated)
+      throw new APIException(
+        'Could not create status',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
 
+    await this.projectDatabase.createLocalPriorities(newProject?.id);
     return newProject;
   }
 
@@ -215,8 +241,15 @@ export class ProjectsService {
     if (!existingProject)
       throw new APIException('Invalid project ID', HttpStatus.BAD_REQUEST);
 
-    const updatedProject = await this.projectDatabase.updateProjectById(id, data);
-    if(!updatedProject) throw new APIException('Could not update project', HttpStatus.BAD_REQUEST);
+    const updatedProject = await this.projectDatabase.updateProjectById(
+      id,
+      data,
+    );
+    if (!updatedProject)
+      throw new APIException(
+        'Could not update project',
+        HttpStatus.BAD_REQUEST,
+      );
 
     return updatedProject;
   }

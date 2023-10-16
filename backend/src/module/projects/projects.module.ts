@@ -20,6 +20,9 @@ import { IntegrationDatabase } from 'src/database/integrations';
 import { NotificationModule } from '../notifications/notifications.module';
 import { UsersDatabase } from 'src/database/users';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
+import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
+import { JiraClient } from 'src/utils/jira';
+import { JiraClientService } from '../helper/client';
 
 @Module({
   imports: [HttpModule.register({}), IntegrationsModule, NotificationModule],
@@ -41,6 +44,9 @@ import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
     UserIntegrationDatabase,
     UsersDatabase,
     UserWorkspaceDatabase,
+    JiraApiCalls,
+    JiraClient,
+    JiraClientService,
   ],
   controllers: [ProjectsController],
   exports: [ProjectsService],

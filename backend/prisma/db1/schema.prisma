@@ -148,6 +148,7 @@ model UserIntegration {
   integration   Integration? @relation(fields: [integrationId, siteId], references: [id, siteId], onDelete: Cascade)
   integrationId Int?
   siteId        String?
+  expiration_time DateTime @default("2023-10-16T00:00:00Z")
 
   @@unique([integrationId, userWorkspaceId], name: "userIntegrationIdentifier")
 }
@@ -164,20 +165,22 @@ model TempIntegration {
 
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId Int
+  expiration_time DateTime
 
   @@unique([siteId, userWorkspaceId], name: "tempIntegrationIdentifier")
 }
 
 model Project {
-  id          Int            @id @default(autoincrement())
+  id          Int              @id @default(autoincrement())
   projectId   Int?
   projectName String?
   projectKey  String?
   source      String
-  integrated  Boolean        @default(false)
+  integrated  Boolean          @default(false)
   statuses    StatusDetail[]
   tasks       Task[]
   sprints     Sprint[]
+  priorities  PriorityScheme[]
 
   integration   Integration? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
   integrationId Int?
@@ -308,6 +311,18 @@ model Settings {
 
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int       @unique
+}
+
+model PriorityScheme {
+  id                   Int    @id @default(autoincrement())
+  priorityId           String?
+  name                 String
+  priorityCategoryName String
+
+  projects  Project @relation(fields: [projectId], references: [id])
+  projectId Int
+
+  @@unique([name, projectId], name: "tempPrioritySchemeIdentifier")
 }
 
 enum Priority {

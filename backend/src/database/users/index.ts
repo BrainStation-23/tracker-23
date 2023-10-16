@@ -1,8 +1,12 @@
-import { Injectable } from "@nestjs/common";
-import { Role, User } from "@prisma/client";
-import { CreateUserData, GoogleLoginCreateUser, LoginDto, RegisterDto } from "src/module/auth/dto";
-import { PrismaService } from "src/module/prisma/prisma.service";
-import { UpdateSettingsReqDto } from "src/module/user/dto/create.settings.dto";
+import { Injectable } from '@nestjs/common';
+import { Role, User } from '@prisma/client';
+import {
+  CreateUserData,
+  GoogleLoginCreateUser,
+  LoginDto,
+} from 'src/module/auth/dto';
+import { PrismaService } from 'src/module/prisma/prisma.service';
+import { UpdateSettingsReqDto } from 'src/module/user/dto/create.settings.dto';
 
 @Injectable()
 export class UsersDatabase {
@@ -64,22 +68,6 @@ export class UsersDatabase {
       });
     } catch (error) {
       //console.log(error);
-      return null;
-    }
-  }
-
-  async createSettings(workspaceId?: number) {
-    try {
-      return (
-        workspaceId &&
-        (await this.prisma.settings.create({
-          data: {
-            workspaceId,
-          },
-        }))
-      );
-    } catch (error) {
-      console.log('🚀 ~ file: index.ts:80 ~ UsersDatabase ~ error:', error);
       return null;
     }
   }

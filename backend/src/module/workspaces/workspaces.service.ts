@@ -1,4 +1,3 @@
-import { UsersDatabase } from 'src/database/users';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserWorkspace, UserWorkspaceStatus } from '@prisma/client';
 import { Response } from 'express';
@@ -7,17 +6,16 @@ import * as crypto from 'crypto';
 import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
 import { APIException } from '../exception/api.exception';
 import { WorkspaceDatabase } from 'src/database/workspaces';
-import { TasksDatabase } from 'src/database/tasks';
 import { ProjectDatabase } from 'src/database/projects';
 import { EmailService } from '../email/email.service';
+import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class WorkspacesService {
   constructor(
     private workspaceDatabase: WorkspaceDatabase,
-    private usersDatabase: UsersDatabase,
-    private tasksDatabase: TasksDatabase,
     private projectDatabase: ProjectDatabase,
     private emailService: EmailService,
+    private prisma: PrismaService,
   ) {}
 
   async createWorkspace(
@@ -25,43 +23,48 @@ export class WorkspacesService {
     name: string,
     changeWorkspace?: boolean,
   ) {
-    const workspace =
-      user.id && (await this.workspaceDatabase.createWorkspace(user.id, name));
-    if (!workspace) {
-      throw new APIException(
-        'Can not create Workspace!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    const transaction = await this.prisma.$transaction(async (prisma: any) => {
+      const workspace =
+        user.id &&
+        (await this.workspaceDatabase.createWorkspace(user.id, name, prisma));
+      if (!workspace) {
+        throw new APIException(
+          'Can not create Workspace!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
 
-    const userWorkspace =
-      user.id &&
-      (await this.workspaceDatabase.createUserWorkspace(
-        user.id,
-        workspace.id,
-        Role.ADMIN,
-        UserWorkspaceStatus.ACTIVE,
-      ));
-    if (!userWorkspace) {
-      throw new APIException(
-        'Can not create userWorkspace!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+      const userWorkspace =
+        user.id &&
+        (await this.workspaceDatabase.createUserWorkspace({
+          userId: user.id,
+          workspaceId: workspace.id,
+          role: Role.ADMIN,
+          status: UserWorkspaceStatus.ACTIVE,
+          prisma,
+        }));
+      if (!userWorkspace) {
+        throw new APIException(
+          'Can not create userWorkspace!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
 
-    //no need to throw error, as it deosn't concern the creation phase
-    const updatedUser =
-      changeWorkspace &&
-      (await this.changeActiveWorkspace(+workspace.id, Number(user.id)));
+      //no need to throw error, as it deosn't concern the creation phase
+      const updatedUser =
+        changeWorkspace &&
+        (await this.changeActiveWorkspace(+workspace.id, Number(user.id)));
 
-    await this.usersDatabase.createSettings(workspace?.id);
-    updatedUser &&
-      (await this.createLocalProject(
-        updatedUser,
-        `${updatedUser?.firstName}'s Project`,
-      ));
+      await this.workspaceDatabase.createSettings(workspace.id, prisma);
+      updatedUser &&
+        (await this.createLocalProject(
+          updatedUser,
+          `${updatedUser?.firstName}'s Project`,
+        ));
 
-    return workspace;
+      return [workspace, userWorkspace];
+    });
+    return transaction.length == 2 ? transaction[0] : null;
   }
 
   async getWorkspace(workspaceId: number) {
@@ -166,7 +169,6 @@ export class WorkspacesService {
     if (!invitedUser) {
       throw new APIException('User Not found', HttpStatus.BAD_REQUEST);
     }
-
     const userWorkspace =
       user.activeWorkspaceId &&
       (await this.workspaceDatabase.getUserWorkspace(
@@ -187,18 +189,19 @@ export class WorkspacesService {
       .createHash('sha256')
       .update(invitationToken)
       .digest('hex');
+    // invitationToken can be used for sending invitation with mail
 
     const newUserWorkspace =
       user.activeWorkspaceId &&
-      (await this.workspaceDatabase.createUserWorkspace(
-        invitedUser.id,
-        user.activeWorkspaceId,
-        reqBody.role,
-        UserWorkspaceStatus.INVITED,
-        user.id,
-        invitationHashedToken,
-        new Date(Date.now()),
-      ));
+      (await this.workspaceDatabase.createUserWorkspace({
+        userId: invitedUser.id,
+        workspaceId: user.activeWorkspaceId,
+        role: reqBody.role,
+        status: UserWorkspaceStatus.INVITED,
+        inviterUserId: user.id,
+        invitationId: invitationHashedToken,
+        invitedAt: new Date(Date.now()),
+      }));
     if (!newUserWorkspace) {
       throw new APIException(
         'Can not send invitation',

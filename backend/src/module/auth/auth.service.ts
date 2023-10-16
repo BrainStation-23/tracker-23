@@ -52,13 +52,15 @@ export class AuthService {
           user,
           `${user.firstName}'s Workspace`,
         ));
-      const updateUser =
-        workspace &&
-        (await this.usersDatabase.updateUser(user, {
-          activeWorkspaceId: workspace.id,
-        }));
-
-      updateUser && (await this.usersDatabase.createSettings(workspace?.id));
+      if (!workspace) {
+        throw new APIException(
+          'Can not create user!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      const updateUser = await this.usersDatabase.updateUser(user, {
+        activeWorkspaceId: workspace.id,
+      });
       return updateUser;
     } catch (err) {
       throw new APIException(
@@ -96,7 +98,7 @@ export class AuthService {
       );
     }
 
-    let isPasswordMatched =
+    const isPasswordMatched =
       user.hash && (await argon.verify(user.hash, dto.password));
 
     if (!isPasswordMatched) {

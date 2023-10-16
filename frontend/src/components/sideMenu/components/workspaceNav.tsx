@@ -109,32 +109,43 @@ const WorkspaceNav = () => {
           <div className="flex w-full flex-col gap-0 ">
             {workspacesList
               // ?.filter((workspace) => activeWorkspace?.id != workspace.id)
-              ?.map((workspace) => (
-                <div
-                  className={`flex items-center justify-between rounded p-1 pr-0 hover:bg-neutral-100 ${
-                    activeWorkspace?.id === workspace.id ? "bg-neutral-100" : ""
-                  }`}
-                  onClick={() => handleChangeWorkspaceClick(workspace)}
-                >
-                  <div className="flex w-full cursor-pointer items-center gap-2 rounded ">
-                    <Avatar
-                      className="col-span-3 flex h-[40px] w-[40px] flex-col justify-center rounded font-medium text-primary"
-                      size={"large"}
-                    >
-                      {workspace?.name[0]}
-                    </Avatar>
-                    <Text
-                      className="w-[150px] "
-                      ellipsis={{
-                        tooltip: workspace.name,
-                      }}
-                    >
-                      {workspace.name}
-                    </Text>
+              ?.map((workspace) => {
+                console.log(
+                  "🚀 ~ file: workspaceNav.tsx:113 ~ ?.map ~ workspace:",
+                  workspace
+                );
+                return (
+                  <div
+                    className={`flex items-center justify-between rounded p-1 pr-0 hover:bg-neutral-100 ${
+                      activeWorkspace?.id === workspace.id
+                        ? "bg-neutral-100"
+                        : ""
+                    }`}
+                    onClick={() => handleChangeWorkspaceClick(workspace)}
+                  >
+                    <div className="flex w-full cursor-pointer items-center gap-2 rounded ">
+                      <Avatar
+                        className="col-span-3 flex h-[40px] w-[40px] flex-col justify-center rounded font-medium text-primary"
+                        size={"large"}
+                      >
+                        {workspace?.name[0]}
+                      </Avatar>
+                      <Text
+                        className="w-[150px] "
+                        ellipsis={{
+                          tooltip: workspace.name,
+                        }}
+                      >
+                        {workspace.name}
+                      </Text>
+                    </div>
+                    <Radio
+                      value={workspace.id}
+                      className="text-primary"
+                    ></Radio>
                   </div>
-                  <Radio value={workspace.id} className="text-primary"></Radio>
-                </div>
-              ))}
+                );
+              })}
           </div>
         </Radio.Group>
       </div>
