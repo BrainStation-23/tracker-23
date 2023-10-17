@@ -3,10 +3,10 @@
 // npx prisma migrate dev
 // npx prisma migrate reset --force
 // npx prisma studio
+//  binaryTargets = ["native", "debian-openssl-1.1.x"]
 
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-1.1.x"]
 }
 
 datasource db {
