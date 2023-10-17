@@ -1664,7 +1664,7 @@ export class TasksService {
         const statusNames = statuses?.map((status) => status.name);
         const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}/transitions`;
         if (statuses[0].transitionId === null) {
-          const transitions: any = await this.jiraClient.CallJira(
+          const {transitions} = await this.jiraClient.CallJira(
             userIntegration,
             this.jiraApiCalls.getTransitions,
             url,
@@ -2189,9 +2189,9 @@ export class TasksService {
         priorityList.length > 0
           ? priorityList.map((priority: any) => {
               return {
-                name: priority.name,
+                name: priority.name.toUpperCase(),
                 priorityId: priority.id,
-                priorityCategoryName: priority.name,
+                priorityCategoryName: priority.name.toUpperCase(),
                 projectId: project.id,
               };
             })
