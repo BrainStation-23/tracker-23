@@ -193,7 +193,7 @@ export class WorkspacesService {
 
     const newUserWorkspace =
       user.activeWorkspaceId &&
-      (await this.workspaceDatabase.createUserWorkspace({
+      (await this.workspaceDatabase.createUserWorkspaceWithPrisma({
         userId: invitedUser.id,
         workspaceId: user.activeWorkspaceId,
         role: reqBody.role,
