@@ -24,6 +24,7 @@ export const apiEndPoints = {
   spentTimePerDay: `/sessions/spent-time/per-day`,
   addWorkLog: `/sessions/manual-timeEntry`,
   updateTaskStatus: `/tasks/update/status`,
+  updateTaskPriority: `/tasks/update/priority`,
   updateTaskEstimation: `/tasks/update/estimation`,
   projectWiseStatus: `/integrations/jira/projects`,
   jiraSprints: `/sprints/sprint-list`,
