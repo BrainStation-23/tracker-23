@@ -215,8 +215,8 @@ model Task {
   status               String?         @default("To Do")
   statusCategoryName   String?         @default("TO_DO")
   due                  DateTime?
-  priority             String?         @default("Medium")
-  priorityCategoryName String?         @default("Medium")
+  priority             String?         @default("MEDIUM")
+  priorityCategoryName String?         @default("MEDIUM")
   labels               Labels[]        @default([])
   source               IntegrationType @default(TRACKER23)
   integratedTaskId     Int?
@@ -320,7 +320,7 @@ model PriorityScheme {
   name                 String
   priorityCategoryName String
 
-  projects  Project @relation(fields: [projectId], references: [id])
+  projects  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId Int
 
   @@unique([name, projectId], name: "tempPrioritySchemeIdentifier")
