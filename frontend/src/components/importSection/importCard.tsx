@@ -35,7 +35,7 @@ const ImportCard = ({
             className={`relative flex w-60 flex-col justify-between rounded-xl border-2 border-[#ECECED] p-4 hover:cursor-pointer`}
         >
             <div>
-                {adminMode && (
+                {data.site && adminMode && (
                     <DeleteButton
                         className="absolute right-2"
                         onClick={async () => {

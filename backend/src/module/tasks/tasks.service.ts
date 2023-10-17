@@ -1519,6 +1519,7 @@ export class TasksService {
   }
 
   formatPriority(priority: string) {
+    return priority.toUpperCase();
     switch (priority) {
       case 'Highest':
         return 'HIGHEST';
@@ -1664,7 +1665,7 @@ export class TasksService {
         const statusNames = statuses?.map((status) => status.name);
         const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}/transitions`;
         if (statuses[0].transitionId === null) {
-          const {transitions} = await this.jiraClient.CallJira(
+          const { transitions } = await this.jiraClient.CallJira(
             userIntegration,
             this.jiraApiCalls.getTransitions,
             url,
