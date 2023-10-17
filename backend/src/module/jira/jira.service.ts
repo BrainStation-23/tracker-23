@@ -6,7 +6,6 @@ import { ConfigService } from '@nestjs/config';
 import { IntegrationType, User } from '@prisma/client';
 import { AuthorizeJiraDto } from './dto';
 import { IntegrationsService } from '../integrations/integrations.service';
-import { PrismaService } from 'src/module/prisma/prisma.service';
 import { TasksService } from 'src/module/tasks/tasks.service';
 import { WorkspacesService } from 'src/module/workspaces/workspaces.service';
 import { APIException } from 'src/module/exception/api.exception';
@@ -73,6 +72,9 @@ export class JiraService {
 
     const updatedIntegration = await Promise.allSettled(
       respResources.map(async (element: any) => {
+        const expires_in = 3500000;
+        const issued_time = Date.now();
+        const token_expire = issued_time + expires_in;
         user.activeWorkspaceId &&
           (await this.integrationDatabase.updateTempIntegration(
             {
@@ -95,6 +97,7 @@ export class JiraService {
               site: element.url,
               jiraAccountId: accountId,
               workspaceId: user.activeWorkspaceId,
+              expiration_time: new Date(token_expire),
             },
           ));
       }),
@@ -145,12 +148,13 @@ export class JiraService {
       throw new APIException('Something went wrong !!', HttpStatus.BAD_REQUEST);
     }
 
-    const doesExistIntegration = await this.integrationDatabase.findUniqueIntegration({
+    const doesExistIntegration =
+      await this.integrationDatabase.findUniqueIntegration({
         integrationIdentifier: {
           siteId: siteId,
           workspaceId: getTempIntegration.workspaceId,
         },
-    });
+      });
 
     if (doesExistIntegration) {
       const projects = await this.integrationDatabase.findProjects({
@@ -158,19 +162,20 @@ export class JiraService {
       });
 
       await this.userIntegrationDatabase.createUserIntegration({
-          accessToken: getTempIntegration.accessToken,
-          refreshToken: getTempIntegration.refreshToken,
-          jiraAccountId: getTempIntegration.jiraAccountId,
-          userWorkspaceId: getTempIntegration.userWorkspaceId,
-          workspaceId: getTempIntegration.workspaceId,
-          integrationId: doesExistIntegration.id,
-          siteId,
+        accessToken: getTempIntegration.accessToken,
+        refreshToken: getTempIntegration.refreshToken,
+        jiraAccountId: getTempIntegration.jiraAccountId,
+        userWorkspaceId: getTempIntegration.userWorkspaceId,
+        workspaceId: getTempIntegration.workspaceId,
+        integrationId: doesExistIntegration.id,
+        siteId,
+        expiration_time: getTempIntegration.expiration_time,
       });
 
       const importedProject = await this.integrationDatabase.findProjects({
-          workspaceId: user.activeWorkspaceId,
-          integrationId: doesExistIntegration.id,
-          integrated: true,
+        workspaceId: user.activeWorkspaceId,
+        integrationId: doesExistIntegration.id,
+        integrated: true,
       });
 
       importedProject &&
@@ -224,16 +229,21 @@ export class JiraService {
       );
 
     await this.userIntegrationDatabase.createUserIntegration({
-        accessToken: getTempIntegration.accessToken,
-        refreshToken: getTempIntegration.refreshToken,
-        jiraAccountId: getTempIntegration.jiraAccountId,
-        userWorkspaceId: getTempIntegration.userWorkspaceId,
-        workspaceId: getTempIntegration.workspaceId,
-        integrationId: integration.id,
-        siteId,
+      accessToken: getTempIntegration.accessToken,
+      refreshToken: getTempIntegration.refreshToken,
+      jiraAccountId: getTempIntegration.jiraAccountId,
+      userWorkspaceId: getTempIntegration.userWorkspaceId,
+      workspaceId: getTempIntegration.workspaceId,
+      integrationId: integration.id,
+      siteId,
+      expiration_time: getTempIntegration.expiration_time,
     });
 
-    const deleteTempIntegration = integration && await this.integrationDatabase.deleteTempIntegrationById(getTempIntegration.id);
+    const deleteTempIntegration =
+      integration &&
+      (await this.integrationDatabase.deleteTempIntegrationById(
+        getTempIntegration.id,
+      ));
 
     if (!deleteTempIntegration) {
       throw new APIException(
@@ -254,7 +264,7 @@ export class JiraService {
     };
   }
 
-  async getIntegratedProjectStatuses(user: User) {
+  async getIntegratedProjectStatusesAndPriorities(user: User) {
     const getUserIntegrationList =
       await this.integrationsService.getUserIntegrations(user);
 
@@ -262,7 +272,7 @@ export class JiraService {
       (userIntegration: any) => userIntegration?.integration?.id,
     );
     try {
-      const projects = await this.projectDatabase.getProjectsWithStatus({
+      const projects = await this.projectDatabase.getProjectsWithStatusAndPriorities({
         integrated: true,
         integrationId: {
           in: jiraIntegrationIds?.map((id: any) => Number(id)),
@@ -271,7 +281,7 @@ export class JiraService {
 
       const localProjects =
         user.activeWorkspaceId &&
-        (await this.projectDatabase.getProjectsWithStatus({
+        (await this.projectDatabase.getProjectsWithStatusAndPriorities({
           source: 'T23',
           workspaceId: user.activeWorkspaceId,
           integrated: true,

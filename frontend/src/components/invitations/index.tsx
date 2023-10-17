@@ -24,6 +24,13 @@ const InvitationsComponent = () => {
     const res = await userAPI.getWorkspaceInvitationList();
     if (res) setInviteList(res);
   };
+  const updateInviteList = (invite: any) => {
+    const newInviteList = inviteList.map((inv) => {
+      if (invite.id === inv.id) return invite;
+      return inv;
+    });
+    setInviteList(newInviteList);
+  };
 
   useEffect(() => {
     getInviteList();
@@ -62,7 +69,11 @@ const InvitationsComponent = () => {
         </PrimaryButton>
       </div>
       <div className="my-5">
-        <InvitesList data={inviteList} activeTab={activeTab} />
+        <InvitesList
+          data={inviteList}
+          activeTab={activeTab}
+          updateInviteList={updateInviteList}
+        />
       </div>
       <GlobalMOdal {...{ isModalOpen, setIsModalOpen, title: "Invite" }}>
         <InviteToWorkspace setIsModalOpen={setIsModalOpen} />

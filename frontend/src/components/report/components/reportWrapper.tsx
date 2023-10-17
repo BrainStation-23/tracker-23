@@ -3,36 +3,41 @@ import { Spin, Tooltip } from "antd";
 import DateRangePicker from "../../datePicker";
 
 type Props = {
-    children: any;
-    title: string;
-    tooltipMessage?: string;
-    setDateRange: Function;
-    isLoading: boolean;
+  children: any;
+  title: string;
+  tooltipMessage?: string;
+  setDateRange: Function;
+  isLoading: boolean;
+  selectedDateRange?: any;
 };
 const ReportWrapper = ({
-    children,
-    title,
-    tooltipMessage,
-    setDateRange,
-    isLoading = false,
+  children,
+  title,
+  tooltipMessage,
+  setDateRange,
+  isLoading = false,
+  selectedDateRange,
 }: Props) => {
-    return (
-        <div className="mt-5">
-            <div className="relative flex flex-col gap-5">
-                <div className="flex items-center justify-between gap-3">
-                    <div className="text-2xl font-semibold">{title}</div>
-                    <DateRangePicker setSelectedDate={setDateRange} />
-                </div>
-                <Spin className="custom-spin" spinning={isLoading}>
-                    {
-                        <div className="flex w-full justify-center  overflow-auto">
-                            {children}
-                        </div>
-                    }
-                </Spin>
-            </div>
+  return (
+    <div className="mt-5">
+      <div className="relative flex flex-col gap-5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-2xl font-semibold">{title}</div>
+          <DateRangePicker
+            selectedDate={selectedDateRange}
+            setSelectedDate={setDateRange}
+          />
         </div>
-    );
+        <Spin className="custom-spin" spinning={isLoading}>
+          {
+            <div className="flex w-full justify-center  overflow-auto">
+              {children}
+            </div>
+          }
+        </Spin>
+      </div>
+    </div>
+  );
 };
 
 export default ReportWrapper;
