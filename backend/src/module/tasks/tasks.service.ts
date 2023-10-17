@@ -672,10 +672,6 @@ export class TasksService {
           SessionStartTime + target * 24 * 3600 * 1000;
         const SessionEndFinalTime = SessionEndTime + target * 24 * 3600 * 1000;
         const startFinalTime = startTime + target * 24 * 3600 * 1000;
-        // console.log(
-        //   '🚀 ~ file: tasks.service.ts:537 ~ TasksService ~ startFinalTime:',
-        //   new Date(startFinalTime),
-        // );
         if (count >= dto.occurrences) {
           // console.log(
           //   '🚀 ~ file: tasks.service.ts:542 ~ TasksService ~ count:',
