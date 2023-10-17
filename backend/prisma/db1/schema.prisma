@@ -145,10 +145,10 @@ model UserIntegration {
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int
 
-  integration   Integration? @relation(fields: [integrationId, siteId], references: [id, siteId], onDelete: Cascade)
-  integrationId Int?
-  siteId        String?
-  expiration_time DateTime @default("2023-10-16T00:00:00Z")
+  integration     Integration? @relation(fields: [integrationId, siteId], references: [id, siteId], onDelete: Cascade)
+  integrationId   Int?
+  siteId          String?
+  expiration_time DateTime     @default("2023-10-16T00:00:00Z")
 
   @@unique([integrationId, userWorkspaceId], name: "userIntegrationIdentifier")
 }
@@ -163,8 +163,8 @@ model TempIntegration {
   jiraAccountId   String?
   userWorkspaceId Int
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  workspaceId Int
+  workspace       Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId     Int
   expiration_time DateTime
 
   @@unique([siteId, userWorkspaceId], name: "tempIntegrationIdentifier")
@@ -206,22 +206,23 @@ model StatusDetail {
 }
 
 model Task {
-  id                 Int             @id @default(autoincrement())
-  title              String
-  description        String?
-  assigneeId         String?
-  projectName        String?
-  estimation         Float?
-  status             String?         @default("To Do")
-  statusCategoryName String?         @default("TO_DO")
-  due                DateTime?
-  priority           String?         @default("Medium")
-  labels             Labels[]        @default([])
-  source             IntegrationType @default(TRACKER23)
-  integratedTaskId   Int?
-  url                String?
-  key                String?
-  pinned             Boolean?        @default(false)
+  id                   Int             @id @default(autoincrement())
+  title                String
+  description          String?
+  assigneeId           String?
+  projectName          String?
+  estimation           Float?
+  status               String?         @default("To Do")
+  statusCategoryName   String?         @default("TO_DO")
+  due                  DateTime?
+  priority             String?         @default("Medium")
+  priorityCategoryName String?         @default("Medium")
+  labels               Labels[]        @default([])
+  source               IntegrationType @default(TRACKER23)
+  integratedTaskId     Int?
+  url                  String?
+  key                  String?
+  pinned               Boolean?        @default(false)
 
   jiraUpdatedAt DateTime?
   userId        Int?
@@ -314,7 +315,7 @@ model Settings {
 }
 
 model PriorityScheme {
-  id                   Int    @id @default(autoincrement())
+  id                   Int     @id @default(autoincrement())
   priorityId           String?
   name                 String
   priorityCategoryName String
