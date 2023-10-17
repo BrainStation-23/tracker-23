@@ -171,18 +171,23 @@ export class ProjectDatabase {
         data: [
           {
             projectId,
-            name: 'High',
-            priorityCategoryName: 'High',
+            name: 'HIGH',
+            priorityCategoryName: 'HIGH',
           },
           {
             projectId,
-            name: 'Low',
-            priorityCategoryName: 'Low',
+            name: 'LOW',
+            priorityCategoryName: 'LOW',
           },
           {
             projectId,
-            name: 'Medium',
-            priorityCategoryName: 'Medium',
+            name: 'MEDIUM',
+            priorityCategoryName: 'MEDIUM',
+          },
+          {
+            projectId,
+            name: 'HIGHEST',
+            priorityCategoryName: 'HIGHEST',
           },
         ],
       });
