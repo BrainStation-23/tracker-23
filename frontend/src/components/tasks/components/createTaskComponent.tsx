@@ -163,6 +163,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
                   { value: "LOW", label: "LOW" },
                   { value: "MEDIUM", label: "MEDIUM" },
                   { value: "HIGH", label: "HIGH" },
+                  { value: "HIGHEST", label: "HIGHEST" },
                 ]}
               />
             </MyInputCreateTask>

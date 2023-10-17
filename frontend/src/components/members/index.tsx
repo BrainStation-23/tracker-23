@@ -13,27 +13,25 @@ import MyInactiveTab from "../common/tabs/MyInactiveTab";
 import PrimaryButton from "../common/buttons/primaryButton";
 
 const MembersComponent = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [inviteList, setInviteList] = useState([]);
-  const [memberList, setMemberList] = useState([]);
-  const tabs = ["All", "Pending", "Responded"];
-  const [activeTab, setActiveTab] = useState<"All" | "Pending" | "Responded">(
-    "All"
-  );
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [inviteList, setInviteList] = useState([]);
+    const [memberList, setMemberList] = useState([]);
+    const tabs = ["All", "Pending", "Responded"];
+    const [activeTab, setActiveTab] = useState<"All" | "Pending" | "Responded">("All");
 
-  const getMemberList = async () => {
-    const res = await userAPI.getWorkspaceMembers();
-    if (res) setMemberList(res);
-  };
+    const getMemberList = async () => {
+        const res = await userAPI.getWorkspaceMembers();
+        if (res) setMemberList(res);
+    };
 
-  useEffect(() => {
-    getMemberList();
-  }, []);
-  return (
-    <div>
-      <div className="flex justify-between">
-        <div className="flex gap-3">
-          {/* {tabs?.map((tab: any) => {
+    useEffect(() => {
+        getMemberList();
+    }, []);
+    return (
+        <div>
+            <div className="flex justify-between">
+                <div className="flex gap-3">
+                    {/* {tabs?.map((tab: any) => {
             return activeTab === tab ? (
               <MyActiveTab {...{ tab, setActiveTab }}>
                 {tab === "All"
@@ -56,19 +54,19 @@ const MembersComponent = () => {
               </MyInactiveTab>
             );
           })} */}
-        </div>
-        <PrimaryButton onClick={() => setIsModalOpen(true)}>
-          <PlusIconSvg />
-          Invite
-        </PrimaryButton>
-      </div>
-      <MemberList memberList={memberList} />
+                </div>
+                <PrimaryButton onClick={() => setIsModalOpen(true)}>
+                    <PlusIconSvg />
+                    Invite
+                </PrimaryButton>
+            </div>
+            <MemberList memberList={memberList} />
 
-      <GlobalMOdal {...{ isModalOpen, setIsModalOpen, title: "Invite" }}>
-        <InviteToWorkspace setIsModalOpen={setIsModalOpen} />
-      </GlobalMOdal>
-    </div>
-  );
+            <GlobalMOdal width={300} {...{ isModalOpen, setIsModalOpen, title: "Invite" }}>
+                <InviteToWorkspace setIsModalOpen={setIsModalOpen} />
+            </GlobalMOdal>
+        </div>
+    );
 };
 
 export default MembersComponent;

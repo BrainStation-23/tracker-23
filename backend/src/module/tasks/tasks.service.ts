@@ -1520,6 +1520,8 @@ export class TasksService {
 
   formatPriority(priority: string) {
     switch (priority) {
+      case 'Highest':
+        return 'HIGHEST';
       case 'High':
         return 'HIGH';
       case 'Medium':
@@ -2168,7 +2170,10 @@ export class TasksService {
     }
   }
 
-  async importPriorities(project: any, updatedUserIntegration: UserIntegration) {
+  async importPriorities(
+    project: any,
+    updatedUserIntegration: UserIntegration,
+  ) {
     try {
       const getPriorityByProjectIdUrl = `https://api.atlassian.com/ex/jira/${updatedUserIntegration.siteId}/rest/api/3/priority`;
       const { data: priorityList } = await axios.get(
@@ -2273,9 +2278,7 @@ export class TasksService {
     }
   }
 
-  async updateTaskPriority(user: User) {
-    
-  }
+  async updateTaskPriority(user: User) {}
 }
 
 const getStatusCategoryName = (status: string) => {

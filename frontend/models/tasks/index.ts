@@ -108,5 +108,5 @@ export interface SprintDto {
 }
 
 export type StatusDto = "TO_DO" | "IN_PROGRESS" | "DONE";
-export type PriorityDto = "HIGH" | "MEDIUM" | "LOW";
+export type PriorityDto = "HIGHEST" | "HIGH" | "MEDIUM" | "LOW";
 export type FrequencyDto = "DAILY" | "WEEKLY" | "BI-WEEKLY";
