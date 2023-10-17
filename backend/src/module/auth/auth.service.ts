@@ -105,7 +105,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const token = await this.createToken(user);
+    const token = await this.createToken(user, dto.remember);
     return {
       email: user.email,
       firstName: user.firstName,
@@ -114,11 +114,14 @@ export class AuthService {
     };
   }
 
-  async createToken(user: any): Promise<{ access_token: string }> {
+  async createToken(
+    user: any,
+    remember?: boolean,
+  ): Promise<{ access_token: string }> {
     const payload = { email: user.email, sub: user.id };
     const access_token = await this.jwt.signAsync(payload, {
       secret: this.config.get('JWT_SECRET'),
-      expiresIn: '1d',
+      expiresIn: remember ? '30d' : '1d',
     });
 
     return {
