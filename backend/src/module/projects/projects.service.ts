@@ -43,7 +43,7 @@ export class ProjectsService {
     const userIntegration =
       project?.integrationId &&
       (await this.userIntegrationDatabase.getUserIntegration({
-        userIntegrationIdentifier: {
+        UserIntegrationIdentifier: {
           integrationId: project?.integrationId,
           userWorkspaceId: userWorkspace.id,
         },

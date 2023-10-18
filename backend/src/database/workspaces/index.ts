@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Settings, UserWorkspaceStatus } from '@prisma/client';
+import { Role, Settings, UserWorkspaceStatus } from '@prisma/client';
 import {
   SendInvitationReqBody,
   WorkspaceReqBody,
@@ -261,6 +261,50 @@ export class WorkspaceDatabase {
     }
   }
 
+  async updateRejectedUserWorkspace(
+    rejectedUserWorkspaceId: number,
+    role: Role,
+    status: UserWorkspaceStatus,
+    inviterUserId: number,
+    invitationId: string,
+  ) {
+    try {
+      return await this.prisma.userWorkspace.update({
+        where: { id: rejectedUserWorkspaceId },
+        data: {
+          role,
+          status,
+          inviterUserId,
+          invitationId,
+          invitedAt: new Date(Date.now()),
+        },
+        include: {
+          workspace: {
+            select: {
+              id: true,
+              name: true,
+              picture: true,
+              creatorUserId: true,
+            },
+          },
+          inviter: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              picture: true,
+              activeWorkspaceId: true,
+            },
+          },
+        },
+      });
+    } catch (err) {
+      console.log('🚀 ~ file: index.ts:303 ~ WorkspaceDatabase ~ err:', err);
+      return null;
+    }
+  }
+
   async updateUser(userId: number, workspaceId: number) {
     try {
       return await this.prisma.user.update({
@@ -278,7 +322,7 @@ export class WorkspaceDatabase {
 
   async findUser(reqBody: SendInvitationReqBody) {
     try {
-      return await this.prisma.user.findFirst({
+      return await this.prisma.user.findUnique({
         where: {
           email: reqBody.email,
         },
