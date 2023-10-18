@@ -27,7 +27,7 @@ import {
   UpdatePinDto,
 } from './dto';
 import { TasksService } from './tasks.service';
-import {UpdateIssuePriorityReqBodyDto} from "./dto/update.issue.req.dto";
+import { UpdateIssuePriorityReqBodyDto } from './dto/update.issue.req.dto';
 @Controller('tasks')
 export class TasksController {
   constructor(private tasksService: TasksService) {}
