@@ -78,7 +78,7 @@ export class JiraService {
         user.activeWorkspaceId &&
           (await this.integrationDatabase.updateTempIntegration(
             {
-              tempIntegrationIdentifier: {
+              TempIntegrationIdentifier: {
                 siteId: element.id,
                 userWorkspaceId: userWorkspace.id,
               },
@@ -138,7 +138,7 @@ export class JiraService {
 
     const getTempIntegration =
       await this.integrationDatabase.findSingleTempIntegration({
-        tempIntegrationIdentifier: {
+        TempIntegrationIdentifier: {
           siteId,
           userWorkspaceId: userWorkspace.id,
         },
@@ -150,7 +150,7 @@ export class JiraService {
 
     const doesExistIntegration =
       await this.integrationDatabase.findUniqueIntegration({
-        integrationIdentifier: {
+        IntegrationIdentifier: {
           siteId: siteId,
           workspaceId: getTempIntegration.workspaceId,
         },
@@ -272,12 +272,13 @@ export class JiraService {
       (userIntegration: any) => userIntegration?.integration?.id,
     );
     try {
-      const projects = await this.projectDatabase.getProjectsWithStatusAndPriorities({
-        integrated: true,
-        integrationId: {
-          in: jiraIntegrationIds?.map((id: any) => Number(id)),
-        },
-      });
+      const projects =
+        await this.projectDatabase.getProjectsWithStatusAndPriorities({
+          integrated: true,
+          integrationId: {
+            in: jiraIntegrationIds?.map((id: any) => Number(id)),
+          },
+        });
 
       const localProjects =
         user.activeWorkspaceId &&
