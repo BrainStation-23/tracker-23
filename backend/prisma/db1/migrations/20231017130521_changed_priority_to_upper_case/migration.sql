@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Task" ALTER COLUMN "priority" SET DEFAULT 'MEDIUM',
+ALTER COLUMN "priorityCategoryName" SET DEFAULT 'MEDIUM';
