@@ -3,12 +3,11 @@ import { configureStore } from "@reduxjs/toolkit";
 import integrationsReducer from "./integrationsSlice";
 import notificationsReducer from "./notificationsSlice";
 import projectsReducer from "./projectsSlice";
+import settingsReducer from "./settingsSlice";
 import syncReducer from "./syncSlice";
 import tasksReducer from "./tasksSlice";
 import userReducer from "./userSlice";
 import workspacesReducer from "./workspacesSlice";
-
-// ...
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +18,7 @@ export const store = configureStore({
     tasksSlice: tasksReducer,
     userSlice: userReducer,
     workspacesSlice: workspacesReducer,
+    settingsSlice: settingsReducer,
   },
 });
 
