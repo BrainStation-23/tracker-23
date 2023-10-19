@@ -49,7 +49,7 @@ export class WorkspacesService {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
-      
+
       const updatedUser =
         changeWorkspace &&
         (await this.changeActiveWorkspaceWithTransactionPrismaInstance(
@@ -300,57 +300,13 @@ export class WorkspacesService {
 
     return users;
   }
+  
 
-  async createLocalProject(user: User, projectName: string) {
-    if (!user || (user && !user?.activeWorkspaceId))
-      throw new APIException(
-        'No userworkspace detected',
-        HttpStatus.BAD_REQUEST,
-      );
-
-    const projectExists = await this.projectDatabase.getProject(
-      {
-        projectName,
-        source: 'T23',
-        workspaceId: user?.activeWorkspaceId,
-      },
-      {
-        integration: true,
-      },
-    );
-
-    if (projectExists)
-      throw new APIException(
-        'Project name already exists',
-        HttpStatus.BAD_REQUEST,
-      );
-
-    const newProject =
-      user?.activeWorkspaceId &&
-      (await this.projectDatabase.createProject(
-        projectName,
-        user?.activeWorkspaceId,
-      ));
-
-    if (!newProject)
-      throw new APIException(
-        'Project could not be created',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-
-    const statusCreated = await this.projectDatabase.createStatusDetail(
-      newProject?.id,
-    );
-    if (!statusCreated)
-      throw new APIException(
-        'Could not create status',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-
-    return newProject;
-  }
-
-  async createLocalProjectWithTransactionPrismaInstance(user: User, projectName: string, prisma: any) {
+  async createLocalProjectWithTransactionPrismaInstance(
+    user: User,
+    projectName: string,
+    prisma: any,
+  ) {
     const projectExists = await prisma.project.findFirst({
       where: {
         projectName,

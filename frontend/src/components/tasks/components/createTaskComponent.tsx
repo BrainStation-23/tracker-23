@@ -188,7 +188,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
             <MyInputCreateTask
               name="projectId"
               label="Project"
-              rules={[{ required: true }]}
+              rules={[{ required: false }]}
             >
               <Select onChange={handleProjectIdChange} options={projectData} />
             </MyInputCreateTask>
