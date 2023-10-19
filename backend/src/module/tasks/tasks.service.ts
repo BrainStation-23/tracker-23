@@ -35,6 +35,7 @@ import { TasksDatabase } from 'src/database/tasks';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
 import { ConfigService } from '@nestjs/config';
 import { JiraClientService } from '../helper/client';
+import { UpdateIssuePriorityReqBodyDto } from './dto/update.issue.req.dto';
 @Injectable()
 export class TasksService {
   constructor(
@@ -763,7 +764,7 @@ export class TasksService {
   async getUserIntegration(userWorkspaceId: number, integrationId: number) {
     return this.prisma.userIntegration.findUnique({
       where: {
-        userIntegrationIdentifier: {
+        UserIntegrationIdentifier: {
           integrationId,
           userWorkspaceId,
         },
@@ -1114,6 +1115,7 @@ export class TasksService {
         const localTask = await this.prisma.task.findFirst({
           where: {
             integratedTaskId: key,
+            workspaceId: user.activeWorkspaceId,
           },
         });
         const jiraTask = mappedIssues.get(Number(key));
@@ -1142,7 +1144,7 @@ export class TasksService {
                 estimation: jiraTask.timeoriginalestimate
                   ? jiraTask.timeoriginalestimate / 3600
                   : null,
-                projectName: jiraTask.project.name,
+                // projectName: jiraTask.project.name,
                 status: jiraTask.status.name,
                 statusCategoryName: jiraTask.status.statusCategory.name
                   .replace(' ', '_')
@@ -1629,23 +1631,13 @@ export class TasksService {
           project?.integrationId &&
           (await this.prisma.userIntegration.findUnique({
             where: {
-              userIntegrationIdentifier: {
+              UserIntegrationIdentifier: {
                 integrationId: project?.integrationId,
                 userWorkspaceId: userWorkspace.id,
               },
             },
           }));
-        // console.log(
-        //   '🚀 ~ file: tasks.service.ts:1632 ~ updateIssueStatus ~ userIntegration:',
-        //   userIntegration,
-        // );
 
-        // const updated_userIntegration =
-        //   userIntegration &&
-        //   (await this.integrationsService.getUpdatedUserIntegration(
-        //     user,
-        //     userIntegration.id,
-        //   ));
         const statuses: StatusDetail[] = task?.projectId
           ? await this.prisma.statusDetail.findMany({
               where: {
@@ -1670,7 +1662,7 @@ export class TasksService {
             if (task.projectId && statusNames.includes(transition.name)) {
               await this.prisma.statusDetail.update({
                 where: {
-                  tempStatusDetailIdentifier: {
+                  StatusDetailIdentifier: {
                     name: transition.name,
                     projectId: task.projectId,
                   },
@@ -1769,7 +1761,7 @@ export class TasksService {
           project.integrationId &&
           (await this.prisma.userIntegration.findUnique({
             where: {
-              userIntegrationIdentifier: {
+              UserIntegrationIdentifier: {
                 integrationId: project.integrationId,
                 userWorkspaceId: userWorkspace.id,
               },
@@ -2054,7 +2046,7 @@ export class TasksService {
       user.activeWorkspaceId &&
       (await this.prisma.userIntegration.findUnique({
         where: {
-          userIntegrationIdentifier: {
+          UserIntegrationIdentifier: {
             integrationId: integration.id,
             userWorkspaceId: userWorkspace.id,
           },
@@ -2275,7 +2267,104 @@ export class TasksService {
     }
   }
 
-  async updateTaskPriority(user: User) {}
+  async updateTaskPriority(
+    user: User,
+    taskId: number,
+    { priority }: UpdateIssuePriorityReqBodyDto,
+  ) {
+    try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new APIException(
+          'User workspace not found',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const task = await this.prisma.task.findFirst({
+        where: {
+          userWorkspaceId: userWorkspace.id,
+          id: taskId,
+        },
+        select: {
+          integratedTaskId: true,
+          projectId: true,
+        },
+      });
+
+      if (task?.integratedTaskId === null) {
+        return await this.prisma.task.update({
+          where: {
+            id: taskId,
+          },
+          data: {
+            priority,
+            priorityCategoryName: priority,
+          },
+        });
+      } else if (task && task.projectId && task.integratedTaskId) {
+        const project = await this.prisma.project.findFirst({
+          where: { id: task.projectId },
+          include: { integration: true },
+        });
+        if (!project)
+          throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+
+        const userIntegration =
+          project?.integrationId &&
+          (await this.prisma.userIntegration.findUnique({
+            where: {
+              UserIntegrationIdentifier: {
+                integrationId: project?.integrationId,
+                userWorkspaceId: userWorkspace.id,
+              },
+            },
+          }));
+        if (!userIntegration)
+          throw new APIException(
+            'User integration not found!',
+            HttpStatus.BAD_REQUEST,
+          );
+
+        const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}`;
+        // const priorityBody = JSON.stringify({
+        //   transition: {
+        //     id: statusDetails?.transitionId,
+        //   },
+        // });
+        const updatedIssue: any = await this.jiraClient.CallJira(
+          userIntegration,
+          this.jiraApiCalls.updateIssuePriority,
+          url,
+          priority,
+        );
+        const updatedTask =
+          updatedIssue &&
+          (await this.prisma.task.update({
+            where: {
+              id: taskId,
+            },
+            data: {
+              priority,
+              priorityCategoryName: priority,
+            },
+          }));
+        if (!updatedTask) {
+          throw new APIException(
+            'Can not update issue status 1',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        return updatedTask;
+      } else
+        throw new APIException('Something went wrong!', HttpStatus.BAD_REQUEST);
+    } catch (err) {
+      console.log(err);
+      throw new APIException(
+        'Can not update issue status',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
 }
 
 const getStatusCategoryName = (status: string) => {

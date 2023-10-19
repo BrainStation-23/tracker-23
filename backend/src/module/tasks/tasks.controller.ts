@@ -27,6 +27,7 @@ import {
   UpdatePinDto,
 } from './dto';
 import { TasksService } from './tasks.service';
+import { UpdateIssuePriorityReqBodyDto } from './dto/update.issue.req.dto';
 @Controller('tasks')
 export class TasksController {
   constructor(private tasksService: TasksService) {}
@@ -139,9 +140,17 @@ export class TasksController {
     return this.tasksService.getAllStatus(user);
   }
 
-  @Post()
+  @Post('/update/priority/:taskId')
   @UseGuards(JwtAuthGuard)
-  async updateTaskPriority(@GetUser() user: User) {
-    return await this.tasksService.updateTaskPriority(user);
+  async updateTaskPriority(
+    @GetUser() user: User,
+    @Param('taskId') taskId: string,
+    @Body() updateIssuePriorityReqBody: UpdateIssuePriorityReqBodyDto,
+  ) {
+    return await this.tasksService.updateTaskPriority(
+      user,
+      +taskId,
+      updateIssuePriorityReqBody,
+    );
   }
 }

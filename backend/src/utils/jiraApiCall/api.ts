@@ -45,6 +45,34 @@ export class JiraApiCalls {
     }
   }
 
+  async updateIssuePriority(
+      userIntegration: UserIntegration,
+      url: string,
+      priority: any,
+  ) {
+    try {
+      const config = {
+        url,
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${userIntegration.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        data: {
+          fields: {
+            priority: {
+              name: priority // Use the variable directly without string interpolation
+            }
+          }
+        }
+      };
+      const res = await axios(config);
+      return res.status;
+    } catch (err) {
+      console.log('🚀 ~ file: api.ts:39 ~ JiraApiCalls ~ err:', err);
+    }
+  }
+
   async UpdateIssueEstimation(
     userIntegration: UserIntegration,
     url: string,

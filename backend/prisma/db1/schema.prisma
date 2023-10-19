@@ -62,6 +62,7 @@ model UserWorkspace {
   designation   Designation @default(DEVELOPER)
   // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
   // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
+  @@unique([userId, workspaceId], name: "userWorkspaceIdentifier")
 }
 
 // model WorkspaceInvitation {
@@ -127,8 +128,8 @@ model Integration {
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int
 
-  @@unique([siteId, workspaceId], name: "integrationIdentifier")
-  @@unique([siteId, id], name: "integrationIdentifier2")
+  @@unique([siteId, workspaceId], name: "IntegrationIdentifier")
+  @@unique([siteId, id], name: "IntegrationIdentifier2")
 }
 
 model UserIntegration {
@@ -146,12 +147,12 @@ model UserIntegration {
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int
 
-  integration   Integration? @relation(fields: [integrationId, siteId], references: [id, siteId], onDelete: Cascade)
-  integrationId Int?
-  siteId        String?
-  expiration_time DateTime @default("2023-10-16T00:00:00Z")
+  integration     Integration? @relation(fields: [integrationId, siteId], references: [id, siteId], onDelete: Cascade)
+  integrationId   Int?
+  siteId          String?
+  expiration_time DateTime     @default("2023-10-16T00:00:00Z")
 
-  @@unique([integrationId, userWorkspaceId], name: "userIntegrationIdentifier")
+  @@unique([integrationId, userWorkspaceId], name: "UserIntegrationIdentifier")
 }
 
 model TempIntegration {
@@ -164,11 +165,11 @@ model TempIntegration {
   jiraAccountId   String?
   userWorkspaceId Int
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  workspaceId Int
+  workspace       Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId     Int
   expiration_time DateTime
 
-  @@unique([siteId, userWorkspaceId], name: "tempIntegrationIdentifier")
+  @@unique([siteId, userWorkspaceId], name: "TempIntegrationIdentifier")
 }
 
 model Project {
@@ -203,32 +204,29 @@ model StatusDetail {
   projects  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId Int
 
-  @@unique([name, projectId], name: "tempStatusDetailIdentifier")
+  @@unique([name, projectId], name: "StatusDetailIdentifier")
 }
 
 model Task {
-  id                 Int             @id @default(autoincrement())
-  title              String
-  description        String?
-  assigneeId         String?
-  projectName        String?
-  estimation         Float?
-  status             String?         @default("To Do")
-  statusCategoryName String?         @default("TO_DO")
-  due                DateTime?
-  priority           String?         @default("Medium")
-  labels             Labels[]        @default([])
-  source             IntegrationType @default(TRACKER23)
-  integratedTaskId   Int?
-  url                String?
-  key                String?
-  pinned             Boolean?        @default(false)
-
+  id                   Int             @id @default(autoincrement())
+  title                String
+  description          String?
+  assigneeId           String?
+  projectName          String?
+  estimation           Float?
+  status               String?         @default("To Do")
+  statusCategoryName   String?         @default("TO_DO")
+  due                  DateTime?
+  priority             String?         @default("MEDIUM")
+  priorityCategoryName String?         @default("MEDIUM")
+  labels               Labels[]        @default([])
+  source               IntegrationType @default(TRACKER23)
+  integratedTaskId     Int?
+  url                  String?
+  key                  String?
+  pinned               Boolean?        @default(false)
   jiraUpdatedAt DateTime?
-  userId        Int?
-
   sessions Session[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
@@ -244,6 +242,7 @@ model Task {
   parentTask   Task?  @relation("childTask", fields: [parentTaskId], references: [id])
   parentTaskId Int?
   childTask    Task[] @relation("childTask")
+   @@unique([workspaceId, projectId, integratedTaskId], name: "TaskIdentifier")
 }
 
 model Session {
@@ -315,15 +314,15 @@ model Settings {
 }
 
 model PriorityScheme {
-  id                   Int    @id @default(autoincrement())
+  id                   Int     @id @default(autoincrement())
   priorityId           String?
   name                 String
   priorityCategoryName String
 
-  projects  Project @relation(fields: [projectId], references: [id])
+  projects  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId Int
 
-  @@unique([name, projectId], name: "tempPrioritySchemeIdentifier")
+  @@unique([name, projectId], name: "PrioritySchemeIdentifier")
 }
 
 enum Priority {

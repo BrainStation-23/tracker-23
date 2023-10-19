@@ -183,6 +183,14 @@ export class WorkspacesService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    const rejectedUserWorkspace =
+      user.activeWorkspaceId &&
+      (await this.workspaceDatabase.getUserWorkspace(
+        invitedUser?.id,
+        user.activeWorkspaceId,
+        [UserWorkspaceStatus.REJECTED, UserWorkspaceStatus.DELETED],
+      ));
     // invitationToken can be used for sending invitation with mail
     const invitationToken = crypto.randomBytes(32).toString('hex');
     const invitationHashedToken = crypto
@@ -190,18 +198,30 @@ export class WorkspacesService {
       .update(invitationToken)
       .digest('hex');
     // invitationToken can be used for sending invitation with mail
-
-    const newUserWorkspace =
-      user.activeWorkspaceId &&
-      (await this.workspaceDatabase.createUserWorkspaceWithPrisma({
-        userId: invitedUser.id,
-        workspaceId: user.activeWorkspaceId,
-        role: reqBody.role,
-        status: UserWorkspaceStatus.INVITED,
-        inviterUserId: user.id,
-        invitationId: invitationHashedToken,
-        invitedAt: new Date(Date.now()),
-      }));
+    let newUserWorkspace;
+    if (rejectedUserWorkspace) {
+      newUserWorkspace =
+        user.activeWorkspaceId &&
+        (await this.workspaceDatabase.updateRejectedUserWorkspace(
+          rejectedUserWorkspace.id,
+          reqBody.role,
+          UserWorkspaceStatus.INVITED,
+          user.id,
+          invitationHashedToken,
+        ));
+    } else {
+      newUserWorkspace =
+        user.activeWorkspaceId &&
+        (await this.workspaceDatabase.createUserWorkspaceWithPrisma({
+          userId: invitedUser.id,
+          workspaceId: user.activeWorkspaceId,
+          role: reqBody.role,
+          status: UserWorkspaceStatus.INVITED,
+          inviterUserId: user.id,
+          invitationId: invitationHashedToken,
+          invitedAt: new Date(Date.now()),
+        }));
+    }
     if (!newUserWorkspace) {
       throw new APIException(
         'Can not send invitation',
