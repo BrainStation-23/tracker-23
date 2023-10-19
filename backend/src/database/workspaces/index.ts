@@ -320,6 +320,25 @@ export class WorkspaceDatabase {
     }
   }
 
+  async updateUserWithTransactionPrismaInstance(
+    userId: number,
+    workspaceId: number,
+    prisma: any,
+  ) {
+    try {
+      return await prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          activeWorkspaceId: workspaceId,
+        },
+      });
+    } catch (err) {
+      return null;
+    }
+  }
+
   async findUser(reqBody: SendInvitationReqBody) {
     try {
       return await this.prisma.user.findUnique({

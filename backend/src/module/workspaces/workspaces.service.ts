@@ -49,17 +49,21 @@ export class WorkspacesService {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
-
-      //no need to throw error, as it deosn't concern the creation phase
+      
       const updatedUser =
         changeWorkspace &&
-        (await this.changeActiveWorkspace(+workspace.id, Number(user.id)));
+        (await this.changeActiveWorkspaceWithTransactionPrismaInstance(
+          +workspace.id,
+          Number(user.id),
+          prisma,
+        ));
 
       await this.workspaceDatabase.createSettings(workspace.id, prisma);
       updatedUser &&
-        (await this.createLocalProject(
+        (await this.createLocalProjectWithTransactionPrismaInstance(
           updatedUser,
-          `${updatedUser?.firstName}'s Project`,
+          `${name}'s Project`,
+          prisma,
         ));
 
       return [workspace, userWorkspace];
@@ -139,21 +143,30 @@ export class WorkspacesService {
   }
 
   async changeActiveWorkspace(workspaceId: number, userId: number) {
-    const userWorkspaceExists = await this.workspaceDatabase.getUserWorkspace(
-      userId,
-      workspaceId,
-    );
-    if (!userWorkspaceExists) {
-      throw new APIException(
-        'Invalid UserWorkspace id',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
     const updateUser = await this.workspaceDatabase.updateUser(
       userId,
       workspaceId,
     );
+    if (!updateUser) {
+      throw new APIException(
+        'Can not change workspace',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return updateUser;
+  }
+
+  async changeActiveWorkspaceWithTransactionPrismaInstance(
+    workspaceId: number,
+    userId: number,
+    prisma: any,
+  ) {
+    const updateUser = await this.workspaceDatabase.updateUserWithTransactionPrismaInstance(
+        userId,
+        workspaceId,
+        prisma,
+      );
     if (!updateUser) {
       throw new APIException(
         'Can not change workspace',
@@ -331,6 +344,79 @@ export class WorkspacesService {
     if (!statusCreated)
       throw new APIException(
         'Could not create status',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+
+    return newProject;
+  }
+
+  async createLocalProjectWithTransactionPrismaInstance(user: User, projectName: string, prisma: any) {
+    const projectExists = await prisma.project.findFirst({
+      where: {
+        projectName,
+        source: 'T23',
+        workspaceId: user?.activeWorkspaceId,
+      },
+      include: {
+        integration: true,
+      },
+    });
+
+    if (projectExists)
+      throw new APIException(
+        'Project name already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    const newProject =
+      user?.activeWorkspaceId && await prisma.project.create({
+        data: {
+          projectName,
+          workspaceId: user?.activeWorkspaceId,
+          source: 'T23',
+          integrated: true,
+        },
+      });
+
+    if (!newProject)
+      throw new APIException(
+        'Project could not be created',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+
+    const statusCreated = await prisma.statusDetail.createMany({
+      data: [
+        {
+          projectId: newProject?.id,
+          name: 'To Do',
+          statusCategoryName: 'TO_DO',
+        },
+        {
+          projectId: newProject?.id,
+          name: 'In Progress',
+          statusCategoryName: 'IN_PROGRESS',
+        },
+        {
+          projectId: newProject?.id,
+          name: 'Done',
+          statusCategoryName: 'DONE',
+        },
+      ],
+    });
+    if (!statusCreated)
+      throw new APIException(
+        'Could not create status',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+
+    const localPrioritiesCreated =
+      await this.projectDatabase.createLocalPrioritiesWithTransactionPrismaInstance(
+        newProject?.id,
+        prisma,
+      );
+    if (!localPrioritiesCreated)
+      throw new APIException(
+        'Could not create local priorities',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
 

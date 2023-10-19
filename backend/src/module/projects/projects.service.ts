@@ -63,8 +63,8 @@ export class ProjectsService {
 
     res && (await this.tasksService.syncCall(StatusEnum.IN_PROGRESS, user));
 
-    this.tasksService.setProjectStatuses(project, updatedUserIntegration);
-    this.tasksService.importPriorities(project, updatedUserIntegration);
+    await this.tasksService.setProjectStatuses(project, updatedUserIntegration);
+    await this.tasksService.importPriorities(project, updatedUserIntegration);
 
     try {
       await this.tasksService.sendImportingNotification(user);
