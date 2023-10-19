@@ -324,7 +324,7 @@ export class WorkspaceDatabase {
     try {
       return await this.prisma.user.findUnique({
         where: {
-          email: reqBody.email,
+          email: reqBody.email.toLowerCase(),
         },
       });
     } catch (err) {
