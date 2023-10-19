@@ -79,7 +79,9 @@ body {
 .ant-picker:hover,
 .ant-input-affix-wrapper:focus,
 .ant-radio-inner,
-.ant-pagination-item-active {
+.ant-pagination-item-active,
+.ant-input-affix-wrapper-disabled:hover,
+.ant-input-affix-wrapper:hover {
   border-color: black !important; /* Change to the desired border color */
 }
 .ant-picker-active-bar,
