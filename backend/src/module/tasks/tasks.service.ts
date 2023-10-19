@@ -2169,14 +2169,12 @@ export class TasksService {
   ) {
     try {
       const getPriorityByProjectIdUrl = `https://api.atlassian.com/ex/jira/${updatedUserIntegration.siteId}/rest/api/3/priority`;
-      const { data: priorityList } = await axios.get(
-        getPriorityByProjectIdUrl,
-        {
-          headers: {
-            Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
-          },
+      const { data: priorityList } = await axios.get(getPriorityByProjectIdUrl, {
+        headers: {
+          Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
         },
-      );
+      });
+
 
       const priorityListByProjectId =
         priorityList.length > 0
@@ -2186,6 +2184,8 @@ export class TasksService {
                 priorityId: priority.id,
                 priorityCategoryName: priority.name.toUpperCase(),
                 projectId: project.id,
+                iconUrl: priority.iconUrl,
+                color: priority.statusColor,
               };
             })
           : [];

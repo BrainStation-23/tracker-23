@@ -173,21 +173,33 @@ export class ProjectDatabase {
             projectId,
             name: 'HIGH',
             priorityCategoryName: 'HIGH',
+            iconUrl:
+              'https://pm23.atlassian.net/images/icons/priorities/high.svg',
+            color: '#f15C75',
           },
           {
             projectId,
             name: 'LOW',
             priorityCategoryName: 'LOW',
+            iconUrl:
+              'https://pm23.atlassian.net/images/icons/priorities/low.svg',
+            color: '#707070',
           },
           {
             projectId,
             name: 'MEDIUM',
             priorityCategoryName: 'MEDIUM',
+            iconUrl:
+              'https://pm23.atlassian.net/images/icons/priorities/medium.svg',
+            color: '#f79232',
           },
           {
             projectId,
             name: 'HIGHEST',
             priorityCategoryName: 'HIGHEST',
+            color: '#d04437',
+            iconUrl:
+              'https://pm23.atlassian.net/images/icons/priorities/highest.svg',
           },
         ],
       });
