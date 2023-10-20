@@ -47,6 +47,23 @@ export async function loginRest(
   }
 }
 
+export async function loginFromInviteRest(
+  data: LoginDto
+): Promise<LoginResponseDto | undefined> {
+  try {
+    const res = await axios.post(`${apiEndPoints.login}`, data);
+    if (res?.data?.access_token) {
+      SetCookie("access_token", res?.data?.access_token);
+      setLocalStorage("access_token", res?.data?.access_token);
+      setLocalStorage("userDetails", res.data);
+    }
+    return res.data;
+  } catch (error: any) {
+    console.log("🚀 ~ file: restApi.ts:48 ~ error:", error);
+    return null;
+  }
+}
+
 export async function googleLoginRest(
   code: string
 ): Promise<LoginResponseDto | undefined> {
@@ -60,6 +77,18 @@ export async function googleLoginRest(
 }
 
 export async function registerRest(
+  data: RegisterDto
+): Promise<RegisterDto | undefined> {
+  try {
+    const res = await axios.post(`${apiEndPoints.register}`, data);
+    return res.data;
+  } catch (error: any) {
+    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
+    return null;
+  }
+}
+
+export async function registerFromInviteRest(
   data: RegisterDto
 ): Promise<RegisterDto | undefined> {
   try {
