@@ -435,6 +435,7 @@ export class WorkspacesService {
 
     return {
       ...isRegisteredUser?.user,
+      isValidUser: true,
     };
 
   }
