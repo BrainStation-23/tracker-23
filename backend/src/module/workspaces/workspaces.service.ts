@@ -3,12 +3,19 @@ import { Role, User, UserWorkspace, UserWorkspaceStatus } from '@prisma/client';
 import { Response } from 'express';
 import * as crypto from 'crypto';
 
-import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
+import {
+  CreateUserWorkspaceData,
+  SendInvitationReqBody,
+  WorkspaceReqBody,
+} from './dto';
 import { APIException } from '../exception/api.exception';
 import { WorkspaceDatabase } from 'src/database/workspaces';
 import { ProjectDatabase } from 'src/database/projects';
 import { EmailService } from '../email/email.service';
 import { PrismaService } from '../prisma/prisma.service';
+import * as fs from 'fs';
+import * as ejs from 'ejs';
+import { coreConfig } from 'config/core';
 @Injectable()
 export class WorkspacesService {
   constructor(
@@ -162,7 +169,8 @@ export class WorkspacesService {
     userId: number,
     prisma: any,
   ) {
-    const updateUser = await this.workspaceDatabase.updateUserWithTransactionPrismaInstance(
+    const updateUser =
+      await this.workspaceDatabase.updateUserWithTransactionPrismaInstance(
         userId,
         workspaceId,
         prisma,
@@ -178,76 +186,110 @@ export class WorkspacesService {
   }
 
   async sendInvitation(user: User, reqBody: SendInvitationReqBody) {
+    let newUserWorkspace;
     const invitedUser = await this.workspaceDatabase.findUser(reqBody);
-    if (!invitedUser) {
-      throw new APIException('User Not found', HttpStatus.BAD_REQUEST);
-    }
-    const userWorkspace =
-      user.activeWorkspaceId &&
-      (await this.workspaceDatabase.getUserWorkspace(
-        invitedUser?.id,
-        user.activeWorkspaceId,
-        [UserWorkspaceStatus.ACTIVE, UserWorkspaceStatus.INVITED],
-      ));
 
-    if (userWorkspace) {
-      throw new APIException(
-        'This user already active or invited in this workspace',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const rejectedUserWorkspace =
-      user.activeWorkspaceId &&
-      (await this.workspaceDatabase.getUserWorkspace(
-        invitedUser?.id,
-        user.activeWorkspaceId,
-        [UserWorkspaceStatus.REJECTED, UserWorkspaceStatus.DELETED],
-      ));
-    // invitationToken can be used for sending invitation with mail
     const invitationToken = crypto.randomBytes(32).toString('hex');
     const invitationHashedToken = crypto
       .createHash('sha256')
       .update(invitationToken)
       .digest('hex');
-    // invitationToken can be used for sending invitation with mail
-    let newUserWorkspace;
-    if (rejectedUserWorkspace) {
-      newUserWorkspace =
-        user.activeWorkspaceId &&
-        (await this.workspaceDatabase.updateRejectedUserWorkspace(
-          rejectedUserWorkspace.id,
-          reqBody.role,
-          UserWorkspaceStatus.INVITED,
-          user.id,
-          invitationHashedToken,
-        ));
-    } else {
-      newUserWorkspace =
-        user.activeWorkspaceId &&
-        (await this.workspaceDatabase.createUserWorkspaceWithPrisma({
-          userId: invitedUser.id,
-          workspaceId: user.activeWorkspaceId,
-          role: reqBody.role,
-          status: UserWorkspaceStatus.INVITED,
-          inviterUserId: user.id,
-          invitationId: invitationHashedToken,
-          invitedAt: new Date(Date.now()),
-        }));
-    }
-    if (!newUserWorkspace) {
-      throw new APIException(
-        'Can not send invitation',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+
+    if (!invitedUser) {
+      const newUser = await this.workspaceDatabase.createInvitedUser(
+        reqBody?.email,
+        Number(user?.activeWorkspaceId),
       );
+      if (!newUser)
+        throw new APIException(
+          'Cannot create user. Failed to send invitation',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+
+      newUserWorkspace = user?.activeWorkspaceId && await this.workspaceDatabase.createUserWorkspaceWithPrisma({
+          role: reqBody?.role,
+          status: UserWorkspaceStatus.INVITED,
+          invitationId: invitationHashedToken,
+          userId: newUser?.id,
+          workspaceId: user?.activeWorkspaceId,
+          inviterUserId: user?.id,
+          invitedAt: new Date(Date.now()),
+        });
+      if (!newUserWorkspace)
+        throw new APIException(
+          'Cannot create userWorkspace. Failed to send invitation',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
     }
-    const emailBody = `I hope this message finds you well. I am pleased to extend an invitation for you to join our workspace. We believe that your
-      expertise and contributions would be valuable to our team, and we look forward to working together. To accept the invitation, please go to
-      your Invitations tab on the site and accept our invitation`;
+    else {
+      //check if already invited
+      const userWorkspace =
+        user.activeWorkspaceId &&
+        invitedUser?.id &&
+        (await this.workspaceDatabase.getUserWorkspace(
+          invitedUser?.id,
+          user.activeWorkspaceId,
+          [UserWorkspaceStatus.ACTIVE, UserWorkspaceStatus.INVITED],
+        ));
+
+      if (userWorkspace) {
+        throw new APIException(
+          'This user already active or invited in this workspace',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      //check for invitations which were rejected
+      const rejectedUserWorkspace =
+        user.activeWorkspaceId && invitedUser?.id &&
+        (await this.workspaceDatabase.getUserWorkspace(
+          invitedUser?.id,
+          user.activeWorkspaceId,
+          [UserWorkspaceStatus.REJECTED, UserWorkspaceStatus.DELETED],
+        ));
+
+
+      if (rejectedUserWorkspace) {
+        newUserWorkspace =
+          user.activeWorkspaceId &&
+          (await this.workspaceDatabase.updateRejectedUserWorkspace(
+            rejectedUserWorkspace.id,
+            reqBody.role,
+            UserWorkspaceStatus.INVITED,
+            user.id,
+            invitationHashedToken,
+          ));
+      } else {
+        newUserWorkspace =
+          user.activeWorkspaceId && invitedUser?.id &&
+          (await this.workspaceDatabase.createUserWorkspaceWithPrisma({
+            userId: invitedUser.id,
+            workspaceId: user.activeWorkspaceId,
+            role: reqBody.role,
+            status: UserWorkspaceStatus.INVITED,
+            inviterUserId: user.id,
+            invitationId: invitationHashedToken,
+            invitedAt: new Date(Date.now()),
+          }));
+      }
+      if (!newUserWorkspace) {
+        throw new APIException(
+            'Can not send invitation',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+    const inviteUrl: string = `${coreConfig?.ADMIN_URL}/${invitationHashedToken}`;
+    const template = fs.readFileSync(
+      'src/utils/htmlTemplates/invitation.html',
+      'utf8',
+    );
+
+    const html = ejs.render(template, { url: inviteUrl });
 
     await this.emailService.sendEmail(
       'Invitation to new workspace',
-      emailBody,
+      html,
       reqBody.email,
     );
 
@@ -300,7 +342,6 @@ export class WorkspacesService {
 
     return users;
   }
-  
 
   async createLocalProjectWithTransactionPrismaInstance(
     user: User,
@@ -325,14 +366,15 @@ export class WorkspacesService {
       );
 
     const newProject =
-      user?.activeWorkspaceId && await prisma.project.create({
+      user?.activeWorkspaceId &&
+      (await prisma.project.create({
         data: {
           projectName,
           workspaceId: user?.activeWorkspaceId,
           source: 'T23',
           integrated: true,
         },
-      });
+      }));
 
     if (!newProject)
       throw new APIException(
@@ -377,5 +419,23 @@ export class WorkspacesService {
       );
 
     return newProject;
+  }
+
+  async verifyInvitedUser(token: string) {
+    const isRegisteredUser = await this.workspaceDatabase.getUserWorkspaceByToken(token);
+    if(!isRegisteredUser){
+
+    }
+    if(!isRegisteredUser?.user?.firstName) {
+      return {
+        ...isRegisteredUser?.user,
+        isValidUser: false,
+      }
+    }
+
+    return {
+      ...isRegisteredUser?.user,
+    };
+
   }
 }
