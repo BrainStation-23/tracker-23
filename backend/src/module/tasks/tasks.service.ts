@@ -381,15 +381,21 @@ export class TasksService {
       );
     }
     // console.log(dto);
+    let project;
+    if (dto && !dto.projectId) {
+      const transaction = await this.prisma.$transaction(async (prisma: any) => {
+        const newProject = dto.projectName && await this.workspacesService.createLocalProjectWithTransactionPrismaInstance(user,dto.projectName,prisma);
 
-    const project = await this.tasksDatabase.getProject(Number(dto.projectId));
-
-    if (!project)
-      throw new APIException('Invalid ProjectId', HttpStatus.BAD_REQUEST);
+        return [newProject];
+      });
+      project = transaction && transaction[0];
+    } else{
+      project = await this.tasksDatabase.getProject(Number(dto.projectId));
+    }
 
     if (dto.isRecurrent) {
       return (
-        project.projectName &&
+        project && project.projectName &&
         (await this.recurrentTask(
           user,
           userWorkspace.id,
@@ -2165,14 +2171,12 @@ export class TasksService {
   ) {
     try {
       const getPriorityByProjectIdUrl = `https://api.atlassian.com/ex/jira/${updatedUserIntegration.siteId}/rest/api/3/priority`;
-      const { data: priorityList } = await axios.get(
-        getPriorityByProjectIdUrl,
-        {
-          headers: {
-            Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
-          },
+      const { data: priorityList } = await axios.get(getPriorityByProjectIdUrl, {
+        headers: {
+          Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
         },
-      );
+      });
+
 
       const priorityListByProjectId =
         priorityList.length > 0
@@ -2182,6 +2186,8 @@ export class TasksService {
                 priorityId: priority.id,
                 priorityCategoryName: priority.name.toUpperCase(),
                 projectId: project.id,
+                iconUrl: priority.iconUrl,
+                color: priority.statusColor,
               };
             })
           : [];

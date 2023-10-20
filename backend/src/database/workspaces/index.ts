@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Role, Settings, UserWorkspaceStatus } from '@prisma/client';
+import {Role, Settings, User, UserWorkspaceStatus} from '@prisma/client';
 import {
   SendInvitationReqBody,
   WorkspaceReqBody,
   userWorkspaceType,
 } from 'src/module/workspaces/dto';
 import { PrismaService } from 'src/module/prisma/prisma.service';
+import {CreateUserData} from "../../module/auth/dto";
 
 @Injectable()
 export class WorkspaceDatabase {
@@ -320,11 +321,30 @@ export class WorkspaceDatabase {
     }
   }
 
-  async findUser(reqBody: SendInvitationReqBody) {
+  async updateUserWithTransactionPrismaInstance(
+    userId: number,
+    workspaceId: number,
+    prisma: any,
+  ) {
+    try {
+      return await prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          activeWorkspaceId: workspaceId,
+        },
+      });
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async findUser(reqBody: SendInvitationReqBody): Promise<User | null> {
     try {
       return await this.prisma.user.findUnique({
         where: {
-          email: reqBody.email,
+          email: reqBody.email.toLowerCase(),
         },
       });
     } catch (err) {
@@ -381,6 +401,43 @@ export class WorkspaceDatabase {
       return await prisma.settings.create({
         data: {
           workspaceId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async createInvitedUser(email: string, activeWorkspaceId: number) {
+    try {
+      return await this.prisma.user.create({
+        data: {
+          email,
+          activeWorkspaceId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getUserWorkspaceByToken(invitationId: string) {
+    try {
+      return await this.prisma.userWorkspace.findFirst({
+        where: {
+          invitationId,
+        },
+        select: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
         },
       });
     } catch (error) {

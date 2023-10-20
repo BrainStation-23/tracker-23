@@ -318,6 +318,8 @@ model PriorityScheme {
   priorityId           String?
   name                 String
   priorityCategoryName String
+  iconUrl              String?
+  color                String?
 
   projects  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId Int
