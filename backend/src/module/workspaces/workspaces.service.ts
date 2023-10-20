@@ -430,12 +430,14 @@ export class WorkspacesService {
       return {
         ...isRegisteredUser?.user,
         isValidUser: false,
+        userWorkspaceId: isRegisteredUser?.id,
       }
     }
 
     return {
       ...isRegisteredUser?.user,
       isValidUser: true,
+      userWorkspaceId: isRegisteredUser?.id,
     };
 
   }

@@ -430,6 +430,7 @@ export class WorkspaceDatabase {
           invitationId,
         },
         select: {
+          id: true,
           user: {
             select: {
               id: true,

@@ -10,6 +10,7 @@ import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import {
   ForgotPasswordDto,
+  InvitedUserRegisterDto,
   LoginDto,
   PasswordResetDto,
   RegisterDto,
@@ -354,5 +355,43 @@ export class AuthService {
       lastName: user.lastName,
       ...token,
     };
+  }
+
+  async createInvitedUser(data: InvitedUserRegisterDto) {
+    //check if email is valid
+    const isValidUser = await this.usersDatabase.findUserByEmail(data?.email);
+    if(!isValidUser)
+      throw new APIException('Email is not valid', HttpStatus.BAD_REQUEST);
+
+    const updatedUser = await this.usersDatabase.updateUser(
+      { id: isValidUser?.id },
+      {
+        password: await argon.hash(data?.password),
+        firstName: data?.firstName,
+        ...(data?.lastName && { lastName: data?.lastName }),
+      });
+
+    if(!updatedUser) throw new APIException('Could not create user', HttpStatus.INTERNAL_SERVER_ERROR);
+    const workspace =
+      updatedUser &&
+      updatedUser.firstName &&
+      (await this.workspacesService.createWorkspace( updatedUser, `${updatedUser.firstName}'s Workspace`, false));
+
+    if (!workspace) {
+      throw new APIException(
+        'Can not create user!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    //update invited userworkspace
+    const updatedUserWorkspace = await this.userWorkspaceDatabase.updateUserWorkspace(Number(data?.userWorkspaceId), {
+      status: UserWorkspaceStatus.ACTIVE,
+      respondedAt: new Date(Date.now())
+    })
+
+    if(!updatedUserWorkspace) throw  new APIException('Could not update userWorkspace. Invalid ID', HttpStatus.BAD_REQUEST);
+
+    return updatedUser;
   }
 }
