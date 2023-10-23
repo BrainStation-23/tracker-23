@@ -30,3 +30,19 @@ export class InvitedUserRegisterDto {
   @IsString()
   lastName?: string;
 }
+
+export class InvitedUserLoginDto {
+  @IsString()
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @MinLength(6)
+  @IsNotEmpty()
+  password: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  userWorkspaceId: number;
+}
