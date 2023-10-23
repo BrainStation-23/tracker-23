@@ -364,8 +364,9 @@ export class AuthService {
       throw new APIException('Email is not registered', HttpStatus.BAD_REQUEST);
 
     //check if requested email matches the email stored earlier in db
-    const isEmailStored = await this.userWorkspaceDatabase.getSingleUserWorkspace({
-        id: data?.userWorkspaceId,
+    const isEmailStored =
+      await this.userWorkspaceDatabase.getSingleUserWorkspace({
+        invitationId: data?.code,
         status: UserWorkspaceStatus.INVITED,
         userId: isValidUser.id,
       });
@@ -394,7 +395,7 @@ export class AuthService {
     }
 
     //update invited userworkspace
-    const updatedUserWorkspace = await this.userWorkspaceDatabase.updateUserWorkspace(Number(data?.userWorkspaceId), {
+    const updatedUserWorkspace = await this.userWorkspaceDatabase.updateUserWorkspace(Number(isEmailStored.id), {
       status: UserWorkspaceStatus.ACTIVE,
       respondedAt: new Date(Date.now())
     })
@@ -407,7 +408,7 @@ export class AuthService {
       firstName: data.firstName,
       ...(data?.lastName && { lastName: data?.lastName }),
     });
-    
+
     return {
       email: data.email,
       firstName: data.firstName,
@@ -415,7 +416,7 @@ export class AuthService {
       ...token,
     };
   }
-  
+
   async loginInvitedUser(data: InvitedUserLoginDto) {
     const user = await this.usersDatabase.findUserWithHash(data);
 
@@ -431,10 +432,10 @@ export class AuthService {
     if (!isPasswordMatched) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    
+
     //check if requested email matches the email stored earlier in db
     const isEmailStored = await this.userWorkspaceDatabase.getSingleUserWorkspace({
-        id: data?.userWorkspaceId,
+        invitationId: data?.code,
         status: UserWorkspaceStatus.INVITED,
         userId: user.id,
       });
@@ -442,10 +443,14 @@ export class AuthService {
     if(!isEmailStored) throw new APIException('Current email does not match with the invited email', HttpStatus.BAD_REQUEST);
 
     //update invited userworkspace
-    const updatedUserWorkspace = await this.userWorkspaceDatabase.updateUserWorkspace(Number(data?.userWorkspaceId), {
-      status: UserWorkspaceStatus.ACTIVE,
-      respondedAt: new Date(Date.now())
-    });
+    const updatedUserWorkspace =
+      await this.userWorkspaceDatabase.updateUserWorkspace(
+        Number(isEmailStored.id),
+        {
+          status: UserWorkspaceStatus.ACTIVE,
+          respondedAt: new Date(Date.now()),
+        },
+      );
 
     if(!updatedUserWorkspace) throw  new APIException('Could not update userWorkspace. Invalid ID', HttpStatus.BAD_REQUEST);
 
