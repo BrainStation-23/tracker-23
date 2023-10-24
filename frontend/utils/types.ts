@@ -84,4 +84,5 @@ export interface apiFunction {
   updateSyncTime: (time: number) => Promise<any>;
   updateTimeFormat: (value: string) => Promise<any>;
   getTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
+  getInvitedUserInfo: (token: string) => Promise<any>;
 }
