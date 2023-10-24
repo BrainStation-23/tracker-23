@@ -61,7 +61,7 @@ export class EmailService {
         from: this.config.get('GOOGLE_EMAIL_USER'),
         to: to,
         subject: subject,
-        text: body,
+        html: body,
       };
 
       await transporter.sendMail(mailOptions);

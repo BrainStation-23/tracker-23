@@ -279,7 +279,8 @@ export class WorkspacesService {
         );
       }
     }
-    const inviteUrl: string = `${coreConfig?.ADMIN_URL}/${invitationHashedToken}`;
+    const inviteUrl: string = `${coreConfig?.ADMIN_URL}?code=${invitationHashedToken}`;
+    //console.log(inviteUrl)
     const template = fs.readFileSync(
       'src/utils/htmlTemplates/invitation.html',
       'utf8',
@@ -424,21 +425,19 @@ export class WorkspacesService {
   async verifyInvitedUser(token: string) {
     const isRegisteredUser = await this.workspaceDatabase.getUserWorkspaceByToken(token);
     if(!isRegisteredUser){
-
-    }
-    if(!isRegisteredUser?.user?.firstName) {
+      throw new APIException('Invalid credentials', HttpStatus.BAD_REQUEST);
+    } else if (!isRegisteredUser?.user?.firstName) {
       return {
         ...isRegisteredUser?.user,
         isValidUser: false,
-        userWorkspaceId: isRegisteredUser?.id,
+        code: token,
       }
+    } else {
+      return {
+        ...isRegisteredUser?.user,
+        isValidUser: true,
+        code: token,
+      };
     }
-
-    return {
-      ...isRegisteredUser?.user,
-      isValidUser: true,
-      userWorkspaceId: isRegisteredUser?.id,
-    };
-
   }
 }

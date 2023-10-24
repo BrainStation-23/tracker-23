@@ -19,8 +19,8 @@ export class InvitedUserRegisterDto {
   password: string;
 
   @IsNotEmpty()
-  @IsNumber()
-  userWorkspaceId: number;
+  @IsString()
+  code: string;
 
   @IsNotEmpty()
   @IsString()
@@ -29,4 +29,20 @@ export class InvitedUserRegisterDto {
   @IsOptional()
   @IsString()
   lastName?: string;
+}
+
+export class InvitedUserLoginDto {
+  @IsString()
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @MinLength(6)
+  @IsNotEmpty()
+  password: string;
+
+  @IsNotEmpty()
+  @IsString()
+  code: string;
 }
