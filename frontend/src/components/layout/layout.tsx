@@ -1,26 +1,27 @@
+import { message, Spin } from "antd";
+import { userAPI } from "APIs";
 import classNames from "classnames";
+import { GetWorkspaceListWithUserDto } from "models/workspaces";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
+import { noNavbar, publicRoutes } from "utils/constants";
+
+import { GetCookie } from "@/services/cookie.service";
+import { initializeSocket } from "@/services/socket.service";
+import { useAppDispatch, useAppSelector } from "@/storage/redux";
+import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
+import { setNotifications } from "@/storage/redux/notificationsSlice";
+import { setProjectsSlice } from "@/storage/redux/projectsSlice";
+import { setSettingsReducer } from "@/storage/redux/settingsSlice";
+import { RootState } from "@/storage/redux/store";
+import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
+import { setUserSlice } from "@/storage/redux/userSlice";
+import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
+
 import Navbar from "../navbar";
 import SideMenu from "../sideMenu";
-import GlobalClock from "../stopWatch/globalClock";
-import { useAppDispatch, useAppSelector } from "@/storage/redux";
-import { RootState } from "@/storage/redux/store";
-import { userAPI } from "APIs";
-import { setSyncStatus, setSyncRunning } from "@/storage/redux/syncSlice";
-import { Spin, message } from "antd";
-import { noNavbar, publicRoutes } from "utils/constants";
-import { setProjectsSlice } from "@/storage/redux/projectsSlice";
-import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
-import { initializeSocket } from "@/services/socket.service";
-import { setNotifications } from "@/storage/redux/notificationsSlice";
-import { GetCookie } from "@/services/cookie.service";
 import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
-import { setUserSlice } from "@/storage/redux/userSlice";
-import { GetWorkspaceListWithUserDto } from "models/workspaces";
-import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
-import { logOutFunction } from "../logout/logoutFunction";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -92,9 +93,14 @@ const CustomLayout = ({ children }: any) => {
       dispatch(setNotifications(notifications));
     }
   };
+  const getSettings = async () => {
+    const res = await userAPI.getWorkspaceSettings();
+    res && dispatch(setSettingsReducer(res));
+  };
   const initialLoading = async () => {
     await getIntegrations();
     await getNotifications();
+    await getSettings();
   };
   useEffect(() => {
     if (!publicRoutes.some((route) => path.includes(route))) {

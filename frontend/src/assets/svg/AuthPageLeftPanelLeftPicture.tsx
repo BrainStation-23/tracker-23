@@ -23,7 +23,7 @@ const AuthPageLeftPanelLeftPicture = () => {
             cy="75.4201"
             r="16.6701"
             fill="white"
-            fill-opacity="0.94"
+            fillOpacity="0.94"
           />
           <rect
             x="21.9995"
@@ -44,7 +44,7 @@ const AuthPageLeftPanelLeftPicture = () => {
           height="4.76289"
           rx="2.38144"
           fill="white"
-          fill-opacity="0.2"
+          fillOpacity="0.2"
         />
         <rect
           x="66.2568"
