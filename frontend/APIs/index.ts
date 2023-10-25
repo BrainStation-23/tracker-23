@@ -19,6 +19,7 @@ import {
   getAllProjectsRest,
   getIntegratedProjectStatusesRest,
   getIntegrationsRest,
+  getInvitedUserInfoRest,
   getJiraActiveSprintTasksRest,
   getJiraLinkRest,
   getJiraSprintsRest,
@@ -118,6 +119,7 @@ const restApi: apiFunction = {
   updateSyncTime: updateSyncTimeRest,
   updateTimeFormat: updateTimeFormatRest,
   getTimeSheetReport: getTimeSheetReportRest,
+  getInvitedUserInfo: getInvitedUserInfoRest,
 };
 
 export const userAPI: apiFunction = restApi;

@@ -1,12 +1,12 @@
 import { Modal, Spin } from "antd";
 import { useState } from "react";
 
+import AuthHeader from "@/components/auth/components/authHeader";
+import GoogleLogin from "@/components/auth/components/googleLogin";
+import RegistrationFormInvitedUser from "@/components/auth/forms/registrationFormInvitedUser";
+import MyDivider from "@/components/common/MyDivider";
 import { LoadingOutlined } from "@ant-design/icons";
 
-import AuthHeader from "../../auth/components/authHeader";
-import GoogleLogin from "../../auth/components/googleLogin";
-import RegistrationForm from "../../auth/forms/registrationForm";
-import MyDivider from "../../common/MyDivider";
 type Props = {
   email?: string;
 };
@@ -21,7 +21,10 @@ const RegistrationPanelInviteLink = ({ email }: Props) => {
         />
         <GoogleLogin setIsModalOpen={setIsModalOpen} />
         <MyDivider>or</MyDivider>
-        <RegistrationForm setIsModalOpen={setIsModalOpen} email={email} />
+        <RegistrationFormInvitedUser
+          setIsModalOpen={setIsModalOpen}
+          email={email}
+        />
       </div>
       <Modal
         open={isModalOpen}

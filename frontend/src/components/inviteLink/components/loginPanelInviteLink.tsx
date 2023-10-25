@@ -1,19 +1,24 @@
 import { Modal, Spin } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import BSLogoSvg from "@/assets/svg/BSLogoSvg";
+import LoginFormInvitedUser from "@/components/auth/forms/loginFormInvitedUser";
 import { LoadingOutlined } from "@ant-design/icons";
 
 import AuthHeader from "../../auth/components/authHeader";
 import GoogleLogin from "../../auth/components/googleLogin";
-import LoginForm from "../../auth/forms/loginForm";
 import MyDivider from "../../common/MyDivider";
 
 type Props = {
   email?: string;
 };
 const LoginPanelInviteLink = ({ email }: Props) => {
+  console.log(
+    "🚀 ~ file: loginPanelInviteLink.tsx:16 ~ LoginPanelInviteLink ~ email:",
+    email
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
+  useEffect(() => {}, [email]);
   return (
     <div className="flex">
       <div className="m-auto flex h-fit max-w-[60%] flex-col gap-6 lg:max-w-[70%]">
@@ -24,7 +29,7 @@ const LoginPanelInviteLink = ({ email }: Props) => {
         />
         <GoogleLogin setIsModalOpen={setIsModalOpen} />
         <MyDivider>or</MyDivider>
-        <LoginForm setIsModalOpen={setIsModalOpen} email={email} />
+        <LoginFormInvitedUser setIsModalOpen={setIsModalOpen} email={email} />
       </div>
       <Modal
         open={isModalOpen}

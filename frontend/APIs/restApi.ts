@@ -51,7 +51,7 @@ export async function loginFromInviteRest(
   data: LoginDto
 ): Promise<LoginResponseDto | undefined> {
   try {
-    const res = await axios.post(`${apiEndPoints.login}`, data);
+    const res = await axios.post(`${apiEndPoints.invitedUserLogin}`, data);
     if (res?.data?.access_token) {
       SetCookie("access_token", res?.data?.access_token);
       setLocalStorage("access_token", res?.data?.access_token);
@@ -92,7 +92,7 @@ export async function registerFromInviteRest(
   data: RegisterDto
 ): Promise<RegisterDto | undefined> {
   try {
-    const res = await axios.post(`${apiEndPoints.register}`, data);
+    const res = await axios.post(`${apiEndPoints.invitedUserRegister}`, data);
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
@@ -691,6 +691,14 @@ export async function getTimeSheetReportRest(data: getTimeSheetReportDto) {
       `${apiEndPoints.timeSheetReport}/` +
         `?startDate=${data?.startDate}&endDate=${data?.endDate}`
     );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function getInvitedUserInfoRest(token: string) {
+  try {
+    const res = await axios.get(`${apiEndPoints.invitedUserInfo}` + token);
     return res.data;
   } catch (error: any) {
     return false;
