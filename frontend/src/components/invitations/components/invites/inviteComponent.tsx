@@ -19,6 +19,7 @@ const InviteComponent = ({ invite, updateInviteList }: Props) => {
   };
   const rejectInvite = async () => {
     const res = await userAPI.rejectWorkspaceInvitation(invite.id);
+    res && updateInviteList(res);
     res && message.success("Invitation Rejected");
   };
 
