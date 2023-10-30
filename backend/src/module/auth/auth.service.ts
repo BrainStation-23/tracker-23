@@ -376,10 +376,11 @@ export class AuthService {
     const updatedUser = await this.usersDatabase.updateUser(
       { id: isValidUser?.id },
       {
-        password: await argon.hash(data?.password),
+        hash: await argon.hash(data?.password),
         firstName: data?.firstName,
         ...(data?.lastName && { lastName: data?.lastName }),
-      });
+      },
+    );
 
     if(!updatedUser) throw new APIException('Could not create user', HttpStatus.INTERNAL_SERVER_ERROR);
     const workspace =
