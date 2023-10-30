@@ -93,6 +93,11 @@ export async function registerFromInviteRest(
 ): Promise<RegisterDto | undefined> {
   try {
     const res = await axios.post(`${apiEndPoints.invitedUserRegister}`, data);
+    if (res?.data?.access_token) {
+      SetCookie("access_token", res?.data?.access_token);
+      setLocalStorage("access_token", res?.data?.access_token);
+      setLocalStorage("userDetails", res.data);
+    }
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);

@@ -35,14 +35,10 @@ const RegistrationFormInvitedUser = ({ setIsModalOpen, email }: Props) => {
       code,
     });
     setIsModalOpen(false);
-
     if (userRegistered) {
       message.success("Singed up Successfully");
-      router.push("/login");
+      router.push("/taskList");
     }
-    //  else {
-    //   message.error("email already Used");
-    // }
   };
 
   const onFinishFailed = (errorInfo: any) => {
