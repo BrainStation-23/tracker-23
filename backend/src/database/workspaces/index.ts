@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import {Role, Settings, User, UserWorkspaceStatus} from '@prisma/client';
+import { Role, Settings, User, UserWorkspaceStatus } from '@prisma/client';
 import {
   SendInvitationReqBody,
   WorkspaceReqBody,
   userWorkspaceType,
 } from 'src/module/workspaces/dto';
 import { PrismaService } from 'src/module/prisma/prisma.service';
-import {CreateUserData} from "../../module/auth/dto";
 
 @Injectable()
 export class WorkspaceDatabase {
@@ -363,6 +362,7 @@ export class WorkspaceDatabase {
             select: {
               role: true,
               designation: true,
+              status: true,
               user: {
                 select: {
                   id: true,

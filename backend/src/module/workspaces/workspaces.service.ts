@@ -206,7 +206,9 @@ export class WorkspacesService {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
 
-      newUserWorkspace = user?.activeWorkspaceId && await this.workspaceDatabase.createUserWorkspaceWithPrisma({
+      newUserWorkspace =
+        user?.activeWorkspaceId &&
+        (await this.workspaceDatabase.createUserWorkspaceWithPrisma({
           role: reqBody?.role,
           status: UserWorkspaceStatus.INVITED,
           invitationId: invitationHashedToken,
@@ -214,14 +216,13 @@ export class WorkspacesService {
           workspaceId: user?.activeWorkspaceId,
           inviterUserId: user?.id,
           invitedAt: new Date(Date.now()),
-        });
+        }));
       if (!newUserWorkspace)
         throw new APIException(
           'Cannot create userWorkspace. Failed to send invitation',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
-    }
-    else {
+    } else {
       //check if already invited
       const userWorkspace =
         user.activeWorkspaceId &&
@@ -241,13 +242,13 @@ export class WorkspacesService {
 
       //check for invitations which were rejected
       const rejectedUserWorkspace =
-        user.activeWorkspaceId && invitedUser?.id &&
+        user.activeWorkspaceId &&
+        invitedUser?.id &&
         (await this.workspaceDatabase.getUserWorkspace(
           invitedUser?.id,
           user.activeWorkspaceId,
           [UserWorkspaceStatus.REJECTED, UserWorkspaceStatus.DELETED],
         ));
-
 
       if (rejectedUserWorkspace) {
         newUserWorkspace =
@@ -261,7 +262,8 @@ export class WorkspacesService {
           ));
       } else {
         newUserWorkspace =
-          user.activeWorkspaceId && invitedUser?.id &&
+          user.activeWorkspaceId &&
+          invitedUser?.id &&
           (await this.workspaceDatabase.createUserWorkspaceWithPrisma({
             userId: invitedUser.id,
             workspaceId: user.activeWorkspaceId,
@@ -274,8 +276,8 @@ export class WorkspacesService {
       }
       if (!newUserWorkspace) {
         throw new APIException(
-            'Can not send invitation',
-            HttpStatus.INTERNAL_SERVER_ERROR,
+          'Can not send invitation',
+          HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
     }
@@ -329,8 +331,11 @@ export class WorkspacesService {
     if (!workspace) {
       throw new APIException('Workspace Not found', HttpStatus.BAD_REQUEST);
     }
+    const filteredWorkspaces = workspace.userWorkspaces.filter(
+      (userWorkspace) => userWorkspace.status === UserWorkspaceStatus.ACTIVE,
+    );
 
-    const users = workspace.userWorkspaces.map((userWorkspace) => {
+    const users = filteredWorkspaces.map((userWorkspace) => {
       return {
         role: userWorkspace.role,
         designation: userWorkspace.designation,
@@ -423,15 +428,16 @@ export class WorkspacesService {
   }
 
   async verifyInvitedUser(token: string) {
-    const isRegisteredUser = await this.workspaceDatabase.getUserWorkspaceByToken(token);
-    if(!isRegisteredUser){
+    const isRegisteredUser =
+      await this.workspaceDatabase.getUserWorkspaceByToken(token);
+    if (!isRegisteredUser) {
       throw new APIException('Invalid credentials', HttpStatus.BAD_REQUEST);
     } else if (!isRegisteredUser?.user?.firstName) {
       return {
         ...isRegisteredUser?.user,
         isValidUser: false,
         code: token,
-      }
+      };
     } else {
       return {
         ...isRegisteredUser?.user,
