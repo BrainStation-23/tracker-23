@@ -21,7 +21,7 @@ import {
   GetTaskQuery,
   GetTeamTaskQuery,
   GetTeamTaskQueryType,
-  GetTimesheetQuery,
+  GetTimeSheetQuery,
 } from '../tasks/dto';
 
 @Controller('sessions')
@@ -118,10 +118,10 @@ export class SessionsController {
 
   @Get('/timeSheet/per-day')
   @UseGuards(JwtAuthGuard)
-  async getTimsheetPerDay(
+  async getTimeSheetPerDay(
     @GetUser() user: User,
-    @Query() query: GetTimesheetQuery,
+    @Query() query: GetTimeSheetQuery,
   ) {
-    return await this.sessionsService.getTimesheetPerDay(user, query);
+    return await this.sessionsService.getTimeSheetPerDay(user, query);
   }
 }
