@@ -17,10 +17,12 @@ const DeleteWorkspaceWarning = ({
   const dispatch = useDispatch();
   const handleDelete = async () => {
     const res = await userAPI.deleteWorkspace(workspace.id);
-    message.success("Workspace deleted Successfully");
-    dispatch(deleteWorkspaceSlice(workspace));
-    setSelectedWorkspace(null);
-    setIsModalOpen(false);
+    if (res) {
+      message.success("Workspace deleted Successfully");
+      dispatch(deleteWorkspaceSlice(workspace));
+      setSelectedWorkspace(null);
+      setIsModalOpen(false);
+    }
   };
   return (
     <>

@@ -1,7 +1,7 @@
 import { UserDto } from "models/user";
 import { WorkspaceDto } from "models/workspaces";
 
-export const getActiveUserWorSpace = (
+export const getActiveUserWorkspace = (
   allWorkspaces: WorkspaceDto[],
   userInfo: UserDto
 ) => {

@@ -12,7 +12,7 @@ import { WorkspaceDto } from "models/workspaces";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
-import GlobalMOdal from "@/components/modals/globalModal";
+import GlobalModal from "@/components/modals/globalModal";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { changeWorkspaceReloadStatusSlice } from "@/storage/redux/workspacesSlice";
@@ -149,7 +149,7 @@ const WorkspaceSelection = () => {
           </div>
         </Button>
       </Dropdown>
-      <GlobalMOdal
+      <GlobalModal
         {...{ isModalOpen, setIsModalOpen, title: "Create Workspace" }}
       >
         <Spin spinning={isModalLoadingWorkspace}>
@@ -172,7 +172,7 @@ const WorkspaceSelection = () => {
             />
           )}
         </Spin>
-      </GlobalMOdal>
+      </GlobalModal>
     </>
     // <>
     //   {items?.length > 1 ? (

@@ -117,7 +117,8 @@ body {
   transition: background-color 0.3s ease;
 }
 
-.custom-checkbox.checked {
+.custom-checkbox.checked,
+.ant-btn-default:not(:disabled):hover {
   /* background-color: black; */
   border-color: black;
   color: black;

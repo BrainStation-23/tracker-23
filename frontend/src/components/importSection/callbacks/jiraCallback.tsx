@@ -4,7 +4,7 @@ import { ProjectDto } from "models/projects";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import GlobalMOdal from "@/components/modals/globalModal";
+import GlobalModal from "@/components/modals/globalModal";
 
 import NewIntegrationProjectImportComponent from "./components/newIntegrationProjectImport";
 
@@ -58,7 +58,7 @@ const JiraCallBack = () => {
         ></Spin>
       </div>
 
-      <GlobalMOdal
+      <GlobalModal
         {...{ isModalOpen, setIsModalOpen, handleCancel }}
         title="Select Project"
       >
@@ -70,7 +70,7 @@ const JiraCallBack = () => {
             }}
           />
         </Spin>
-      </GlobalMOdal>
+      </GlobalModal>
     </>
   );
 };

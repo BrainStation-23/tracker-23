@@ -20,7 +20,7 @@ import SyncButtonComponent from "../common/buttons/syncButton";
 import LogOutButton from "../logout/logOutButton";
 import { sideMenuOptions } from "../sideMenu";
 import NotificationSection from "./components/notificationSection";
-import { getActiveUserWorSpace } from "@/services/globalFunctions";
+import { getActiveUserWorkspace } from "@/services/globalFunctions";
 
 type Props = {
   extraComponent?: any;
@@ -47,7 +47,7 @@ const Navbar = ({ extraComponent }: Props) => {
   };
   const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
 
-  const activeUserWorkspace = getActiveUserWorSpace(
+  const activeUserWorkspace = getActiveUserWorkspace(
     useAppSelector((state: RootState) => state.workspacesSlice.workspaces),
     userInfo
   );

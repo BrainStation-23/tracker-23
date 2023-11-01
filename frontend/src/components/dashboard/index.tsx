@@ -26,7 +26,7 @@ import {
 import { getLocalStorage } from "@/storage/storage";
 
 import { getDateRangeArray } from "../datePicker";
-import GlobalMOdal from "../modals/globalModal";
+import GlobalModal from "../modals/globalModal";
 import ReportComponent from "../report";
 import Stopwatch from "../stopWatch/tabular/timerComponent";
 import ProgressComponent from "../tasks/components/progressComponent";
@@ -516,7 +516,7 @@ const Dashboard = () => {
           {/* <div>
         <MyTasks />
       </div> */}
-          <GlobalMOdal
+          <GlobalModal
             isModalOpen={warningModalOpen}
             setIsModalOpen={setWarningModalOpen}
           >
@@ -525,7 +525,7 @@ const Dashboard = () => {
               warningData={warningData}
               handleWarningClick={handleWarningClick}
             />
-          </GlobalMOdal>
+          </GlobalModal>
         </div>
       ) : (
         <Spin className="mt-[200px] h-[500px] w-full"></Spin>
