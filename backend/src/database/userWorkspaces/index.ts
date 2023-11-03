@@ -28,4 +28,16 @@ export class UserWorkspaceDatabase {
             return [];
         }
     }
+
+    async updateUserWorkspace(id: number, update: any): Promise<UserWorkspace | null> {
+        try {
+            return await this.prisma.userWorkspace.update({
+                where: { id },
+                data: update,
+            });
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
 }

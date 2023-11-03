@@ -40,7 +40,7 @@ export class CreateTaskDto {
   @IsArray()
   labels: Labels[];
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   projectId: number;
 
@@ -82,6 +82,10 @@ export class CreateTaskDto {
   @IsOptional()
   @IsNumber()
   occurrences: number;
+
+  @IsOptional()
+  @IsString()
+  projectName?: string;
 }
 
 export enum WeekDaysType {

@@ -11,15 +11,16 @@ type Props = {
   setIsModalOpen: Function;
   email?: string;
 };
-const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
+const RegistrationFormInvitedUser = ({ setIsModalOpen, email }: Props) => {
   const router = useRouter();
+  const code: any = router?.query?.code;
 
   const [emailStatus, setEmailStatus] = useState<
     "" | "success" | "warning" | "error" | "validating" | undefined
   >("");
   const onFinish = async (values: any) => {
     console.log(
-      "🚀 ~ file: registrationForm.tsx:11 ~ onFinish ~ values",
+      "🚀 ~ file: registrationFormInvitedUser.tsx:11 ~ onFinish ~ values",
       values
     );
     const temp = {
@@ -29,16 +30,15 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
       password: values.password,
     };
     setIsModalOpen(true);
-    const userRegistered = await userAPI.registerUser(temp);
+    const userRegistered = await userAPI.registerUserFromInvite({
+      ...temp,
+      code,
+    });
     setIsModalOpen(false);
-
     if (userRegistered) {
       message.success("Singed up Successfully");
-      router.push("/login");
+      router.push("/taskList");
     }
-    //  else {
-    //   message.error("email already Used");
-    // }
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -152,4 +152,4 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
   );
 };
 
-export default RegistrationForm;
+export default RegistrationFormInvitedUser;

@@ -9,19 +9,23 @@ import MyFormItem from "../../common/form/MyFormItem";
 import MyInput from "../../common/form/MyInput";
 import MyPasswordInput from "../../common/form/MyPasswordInput";
 import MyLink from "../../common/link/MyLink";
-import Line from "../../dashboard/charts/lineChart";
 
 type Props = {
   setIsModalOpen: Function;
   email?: string;
 };
 
-const LoginForm = ({ setIsModalOpen, email }: Props) => {
+const LoginFormInvitedUser = ({ setIsModalOpen, email }: Props) => {
   const router = useRouter();
+  const code = router?.query?.code;
+
   const signIn = async (values: any) => {
     console.log(values);
-    const data = await userAPI.login(values);
-    console.log("🚀 ~ file: loginForm.tsx:23 ~ signIn ~ data:", data);
+    const data = await userAPI.loginFromInvite({ ...values, code });
+    console.log(
+      "🚀 ~ file: loginFormInvitedUser.tsx:23 ~ signIn ~ data:",
+      data
+    );
     if (GetCookie("access_token")) router.push("/taskList");
     !data && setIsModalOpen(false);
   };
@@ -30,7 +34,10 @@ const LoginForm = ({ setIsModalOpen, email }: Props) => {
     console.log("Success:", values);
     setIsModalOpen(true);
     const res = await signIn(values);
-    console.log("🚀 ~ file: loginForm.tsx:32 ~ onFinish ~ res:", res);
+    console.log(
+      "🚀 ~ file: loginFormInvitedUser.tsx:32 ~ onFinish ~ res:",
+      res
+    );
     // router.push("/taskList");
   };
 
@@ -111,4 +118,4 @@ const LoginForm = ({ setIsModalOpen, email }: Props) => {
   );
 };
 
-export default LoginForm;
+export default LoginFormInvitedUser;

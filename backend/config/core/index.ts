@@ -6,6 +6,7 @@ const {
   BASE_URL,
   PROMISE_RESOLVE_QUANTITY,
   SYNC_TASK_QUANTITY,
+  INVITE_URL,
 } = process.env;
 
 export const coreConfig = {
@@ -16,4 +17,5 @@ export const coreConfig = {
   baseUrl: BASE_URL || 'http://localhost:8080',
   promiseQuantity: Number(PROMISE_RESOLVE_QUANTITY) || 10,
   syncTaskQuantity: Number(SYNC_TASK_QUANTITY) || 10,
+  ADMIN_URL: INVITE_URL || 'http://localhost:3001/inviteLink',
 };

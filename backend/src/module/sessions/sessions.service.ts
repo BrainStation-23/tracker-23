@@ -6,7 +6,13 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { IntegrationType, Session, SessionStatus, User } from '@prisma/client';
+import {
+  IntegrationType,
+  Session,
+  SessionStatus,
+  User,
+  UserWorkspaceStatus,
+} from '@prisma/client';
 
 import { ManualTimeEntryReqBody, SessionDto, SessionReqBodyDto } from './dto';
 import { IntegrationsService } from '../integrations/integrations.service';
@@ -18,7 +24,7 @@ import {
   GetTaskQuery,
   GetTeamTaskQuery,
   GetTeamTaskQueryType,
-  GetTimesheetQuery,
+  GetTimeSheetQuery,
 } from '../tasks/dto';
 import { UserWorkspaceDatabase } from '../../database/userWorkspaces';
 import { SessionDatabase } from '../../database/sessions';
@@ -719,7 +725,7 @@ export class SessionsService {
 
   async getSpentTimeByDay(
     loggedInUser: Partial<User>,
-    query: GetTaskQuery | GetTimesheetQuery,
+    query: GetTaskQuery | GetTimeSheetQuery,
     user?: Partial<User>,
   ) {
     const sessions =
@@ -788,6 +794,7 @@ export class SessionsService {
           userId: {
             in: userIdArray,
           },
+          status: UserWorkspaceStatus.ACTIVE,
           workspaceId: user?.activeWorkspaceId,
         }));
 
@@ -817,8 +824,8 @@ export class SessionsService {
       : this.getSpentTimePerDay(sessions, startDate, endDate);
   }
 
-  async getTimesheetPerDay(loggedInUser: User, query: GetTimesheetQuery) {
-    //return this.formattedMonthlyTimesheet(query);
+  async getTimeSheetPerDay(loggedInUser: User, query: GetTimeSheetQuery) {
+    //return this.formattedMonthlyTimeSheet(query);
     let userIds, userIdArray, users;
     //console.log('hello')
     if (!loggedInUser?.activeWorkspaceId)
@@ -837,6 +844,7 @@ export class SessionsService {
     } else {
       const userWorkspaces = await this.sessionDatabase.getUserWorkspaceList({
         workspaceId: loggedInUser?.activeWorkspaceId,
+        status: UserWorkspaceStatus.ACTIVE,
       });
 
       users = userWorkspaces?.map((userWorkspace) => userWorkspace?.user);
@@ -869,10 +877,10 @@ export class SessionsService {
     //console.log(response);
     //return response;
     return daysDifference === 31 || daysDifference <= 31
-      ? this.formattedDailyTimesheet(query, response)
+      ? this.formattedDailyTimeSheet(query, response)
       : daysDifference > 31 && daysDifference <= 94
-      ? this.formattedWeeklyTimesheet(query, response)
-      : this.formattedMonthlyTimesheet(query, response);
+      ? this.formattedWeeklyTimeSheet(query, response)
+      : this.formattedMonthlyTimeSheet(query, response);
   }
 
   //private functions
@@ -1115,7 +1123,7 @@ export class SessionsService {
     return months;
   }
 
-  private formattedDailyTimesheet(query: GetTimesheetQuery, response: any) {
+  private formattedDailyTimeSheet(query: GetTimeSheetQuery, response: any) {
     const columns = this.getArrayOfDatesInRange(
       query?.startDate,
       query?.endDate,
@@ -1155,7 +1163,7 @@ export class SessionsService {
     };
   }
 
-  private formattedWeeklyTimesheet(query: GetTimesheetQuery, response: any) {
+  private formattedWeeklyTimeSheet(query: GetTimeSheetQuery, response: any) {
     const { weekArray, weekRange } = this.organizeDateRangeIntoWeeks(
       query.startDate,
       query.endDate,
@@ -1203,7 +1211,7 @@ export class SessionsService {
     };
   }
 
-  private formattedMonthlyTimesheet(query: GetTimesheetQuery, response: any) {
+  private formattedMonthlyTimeSheet(query: GetTimeSheetQuery, response: any) {
     let totalTime = 0;
     const rows: any[] = [];
 

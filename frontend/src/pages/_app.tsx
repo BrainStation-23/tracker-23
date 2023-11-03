@@ -2,7 +2,6 @@ import "@/styles/globals.css";
 import "react-toastify/dist/ReactToastify.css";
 
 import { message, Spin } from "antd";
-import { userAPI } from "APIs";
 import Axios from "axios";
 import { config } from "config";
 import Head from "next/head";
@@ -12,11 +11,11 @@ import { publicRoutes, whiteListEmails } from "utils/constants";
 
 import InvalidUserPage from "@/components/invalidUser";
 import CustomLayout from "@/components/layout/layout";
+import { logOutFunction } from "@/components/logout/logoutFunction";
 import { Providers } from "@/storage/redux/provider";
 import { getLocalStorage } from "@/storage/storage";
 
 import type { AppProps } from "next/app";
-import { logOutFunction } from "@/components/logout/logoutFunction";
 // Axios.defaults.baseURL = process?.env?.NEXT_PUBLIC_API_PREFIX_REST;
 // Axios.defaults.baseURL =
 //   "http://ec2-54-172-94-212.compute-1.amazonaws.com:3000";
