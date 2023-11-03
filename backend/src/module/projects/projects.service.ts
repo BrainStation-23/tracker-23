@@ -177,7 +177,7 @@ export class ProjectsService {
   async createProject(user: User, projectName: string) {
     if (!user || (user && !user?.activeWorkspaceId))
       throw new APIException(
-        'No userworkspace detected',
+        'No UserWorkspace detected',
         HttpStatus.BAD_REQUEST,
       );
 
@@ -221,13 +221,22 @@ export class ProjectsService {
       );
 
     await this.projectDatabase.createLocalPriorities(newProject?.id);
-    return newProject;
+    return await this.projectDatabase.getProject(
+      {
+        id: newProject.id,
+        workspaceId: user?.activeWorkspaceId,
+      },
+      {
+        integration: true,
+        statuses: true,
+      },
+    );
   }
 
   async updateProject(user: User, id: number, data: UpdateProjectRequest) {
     if (!user || (user && !user?.activeWorkspaceId))
       throw new APIException(
-        'No userworkspace detected',
+        'No UserWorkspace detected',
         HttpStatus.BAD_REQUEST,
       );
 
