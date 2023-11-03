@@ -117,6 +117,7 @@ export class WorkspacesService {
         HttpStatus.NOT_MODIFIED,
       );
     }
+    return updatedWorkspace;
   }
 
   async deleteWorkspace(workspaceId: number, res: Response) {

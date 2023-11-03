@@ -157,7 +157,7 @@ export class ProjectDatabase {
       return await this.prisma.project.delete({
         where: {
           id: projId,
-        }
+        },
       });
     } catch (error) {
       console.log(error);

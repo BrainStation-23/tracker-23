@@ -569,6 +569,12 @@ export async function deleteProjectTasksRest(id: number) {
 export async function getWorkspaceListRest() {
   try {
     const res = await axios.get(`${apiEndPoints.workspaces}`);
+    res.data.workspaces = res.data.workspaces.map((workspace: any) => {
+      return {
+        ...workspace,
+        active: workspace.id === res.data.user.activeWorkspaceId,
+      };
+    });
     return res.data;
   } catch (error: any) {
     return false;

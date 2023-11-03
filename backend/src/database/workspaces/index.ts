@@ -59,6 +59,7 @@ export class WorkspaceDatabase {
         data: {
           name: reqBody.name,
         },
+        include: { userWorkspaces: true },
       });
     } catch (err) {
       return null;

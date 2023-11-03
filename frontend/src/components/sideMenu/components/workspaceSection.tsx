@@ -12,7 +12,7 @@ import { WorkspaceDto } from "models/workspaces";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
-import GlobalMOdal from "@/components/modals/globalModal";
+import GlobalModal from "@/components/modals/globalModal";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { changeWorkspaceReloadStatusSlice } from "@/storage/redux/workspacesSlice";
@@ -38,8 +38,8 @@ const WorkspaceSelection = () => {
 
   const [selectedWorkspace, setSelectedWorkspace] =
     useState<WorkspaceDto | null>();
-  const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceDto | null>(
-    workspacesList.find((workspace) => workspace.active)
+  const activeWorkspace = useAppSelector(
+    (state: RootState) => state.workspacesSlice.activeWorkspace
   );
 
   const handleChangeWorkspaceClick = async (workspace: WorkspaceDto) => {
@@ -101,10 +101,6 @@ const WorkspaceSelection = () => {
             </div>
           </div>
         ),
-        // onClick: () => {
-        //   handleChangeWorkspaceClick(workspace);
-        // },
-        // disabled: workspace.active,
       };
     });
 
@@ -116,7 +112,6 @@ const WorkspaceSelection = () => {
       setMode(0);
       setIsModalOpen(true);
     },
-    // disabled: workspace.active,
   });
   console.log("🚀 ~ file: workspaceSection.tsx:30 ~  ~ items:", items);
 
@@ -149,7 +144,7 @@ const WorkspaceSelection = () => {
           </div>
         </Button>
       </Dropdown>
-      <GlobalMOdal
+      <GlobalModal
         {...{ isModalOpen, setIsModalOpen, title: "Create Workspace" }}
       >
         <Spin spinning={isModalLoadingWorkspace}>
@@ -172,7 +167,7 @@ const WorkspaceSelection = () => {
             />
           )}
         </Spin>
-      </GlobalMOdal>
+      </GlobalModal>
     </>
     // <>
     //   {items?.length > 1 ? (

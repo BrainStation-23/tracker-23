@@ -717,6 +717,7 @@ const TasksPage = () => {
 
         <GlobalModal
           isModalOpen={viewModalOpen}
+          // isModalOpen={true}
           setIsModalOpen={setViewModalOpen}
           title="Add Task"
           width={540}

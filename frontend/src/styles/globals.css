@@ -84,6 +84,13 @@ body {
 .ant-input-affix-wrapper:hover {
   border-color: black !important; /* Change to the desired border color */
 }
+
+.ant-btn:not(:disabled):focus-visible {
+  outline: 2px solid black;
+  outline-offset: 1px;
+  transition: outline-offset 0s, outline 0s;
+}
+
 .ant-picker-active-bar,
 .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner,
 .ant-radio-checked .ant-radio-inner {
@@ -117,7 +124,8 @@ body {
   transition: background-color 0.3s ease;
 }
 
-.custom-checkbox.checked {
+.custom-checkbox.checked,
+.ant-btn-default:not(:disabled):hover {
   /* background-color: black; */
   border-color: black;
   color: black;
