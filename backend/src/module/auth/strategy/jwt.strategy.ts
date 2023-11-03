@@ -24,6 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         firstName: true,
         lastName: true,
         activeWorkspaceId: true,
+        activeWorkspace: true,
       },
     });
 
@@ -34,18 +35,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       );
     }
 
-    const userWorkspace =
+    const activeUserWorkspace =
       user.activeWorkspaceId &&
       (await this.prisma.userWorkspace.findFirst({
         where: {
           userId: user.id,
           workspaceId: user.activeWorkspaceId,
         },
-        select: {
-          role: true,
-        },
       }));
 
-    return { ...user, userWorkspace };
+    return { ...user, activeUserWorkspace };
   }
 }
