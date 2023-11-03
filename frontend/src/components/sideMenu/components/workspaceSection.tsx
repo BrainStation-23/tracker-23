@@ -38,8 +38,8 @@ const WorkspaceSelection = () => {
 
   const [selectedWorkspace, setSelectedWorkspace] =
     useState<WorkspaceDto | null>();
-  const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceDto | null>(
-    workspacesList.find((workspace) => workspace.active)
+  const activeWorkspace = useAppSelector(
+    (state: RootState) => state.workspacesSlice.activeWorkspace
   );
 
   const handleChangeWorkspaceClick = async (workspace: WorkspaceDto) => {
@@ -101,10 +101,6 @@ const WorkspaceSelection = () => {
             </div>
           </div>
         ),
-        // onClick: () => {
-        //   handleChangeWorkspaceClick(workspace);
-        // },
-        // disabled: workspace.active,
       };
     });
 
@@ -116,7 +112,6 @@ const WorkspaceSelection = () => {
       setMode(0);
       setIsModalOpen(true);
     },
-    // disabled: workspace.active,
   });
   console.log("🚀 ~ file: workspaceSection.tsx:30 ~  ~ items:", items);
 

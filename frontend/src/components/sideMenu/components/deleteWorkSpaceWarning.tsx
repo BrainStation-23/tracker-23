@@ -1,4 +1,7 @@
-import { deleteWorkspaceSlice } from "@/storage/redux/workspacesSlice";
+import {
+  changeWorkspaceReloadStatusSlice,
+  deleteWorkspaceSlice,
+} from "@/storage/redux/workspacesSlice";
 import { userAPI } from "APIs";
 import { Button, message } from "antd";
 import { WorkspaceDto } from "models/workspaces";
@@ -21,6 +24,7 @@ const DeleteWorkspaceWarning = ({
       message.success("Workspace deleted Successfully");
       dispatch(deleteWorkspaceSlice(workspace));
       setSelectedWorkspace(null);
+      dispatch(changeWorkspaceReloadStatusSlice());
       setIsModalOpen(false);
     }
   };

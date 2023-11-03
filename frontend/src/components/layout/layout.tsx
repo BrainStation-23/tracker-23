@@ -142,6 +142,7 @@ const CustomLayout = ({ children }: any) => {
     let timeout: NodeJS.Timeout;
     timeout =
       !publicRoutes.some((route) => path.includes(route)) &&
+      hasActiveWorkSpace &&
       setTimeout(getSyncStatus, 2000);
     const cleanup = () => {
       clearTimeout(timeout);
@@ -167,7 +168,7 @@ const CustomLayout = ({ children }: any) => {
 
     if (!publicRoutes.includes(router.pathname)) {
       console.log(router.pathname);
-      if (tmp) {
+      if (tmp && hasActiveWorkSpace) {
         myTimeout = setTimeout(getSyncStatus, 5000);
       }
     }
@@ -187,20 +188,20 @@ const CustomLayout = ({ children }: any) => {
     const res: GetWorkspaceListWithUserDto = await userAPI.getWorkspaceList();
     console.log("🚀 ~ file: layout.tsx:159 ~ getWorkspaces ~ res:", res);
     if (res.user) {
-      const activeWorkspace = res.workspaces.filter(
-        (workspace) => workspace.id === res.user.activeWorkspaceId
-      )[0];
-      const workspaces = res.workspaces.map((workspace) => {
-        return {
-          ...workspace,
-          active: workspace.id === res.user.activeWorkspaceId,
-        };
-      });
-      const userWorkspace = activeWorkspace?.userWorkspaces.filter(
-        (userWorkspace) => userWorkspace.userId === res.user.id
-      )[0];
-      dispatch(setUserSlice({ ...res.user, role: userWorkspace?.role }));
-      dispatch(setWorkspacesSlice(workspaces));
+      // const activeWorkspace = res.user.activeWorkspace;
+      // const workspaces = res.workspaces.map((workspace) => {
+      //   return {
+      //     ...workspace,
+      //     active: workspace.id === res.user.activeWorkspaceId,
+      //   };
+      // });
+      // const activeUserWorkspace = activeWorkspace?.userWorkspaces.find(
+      //   (userWorkspace) => userWorkspace.userId === res.user.id
+      // );
+      dispatch(
+        setUserSlice({ ...res.user, role: res.user.activeUserWorkspace?.role })
+      );
+      res.workspaces && dispatch(setWorkspacesSlice(res.workspaces));
     } else {
       const errorRes: any = res;
       errorRes?.error?.message && message.error(errorRes?.error?.message);

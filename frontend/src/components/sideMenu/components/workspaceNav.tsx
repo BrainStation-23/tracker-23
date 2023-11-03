@@ -37,9 +37,14 @@ const WorkspaceNav = () => {
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalLoading, setIsModalLoading] = useState(false);
-  const [isDropdownOpen, setDropdownOpen] = useState(true);
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [workspaceInMoreMode, setWorkspaceInMoreMode] = useState(null);
   const [mode, setMode] = useState(0);
+  const modalTitles = [
+    "Create Workspace",
+    "Update Workspace",
+    "Delete Workspace",
+  ];
 
   const workspaces = useAppSelector(
     (state: RootState) => state.workspacesSlice.workspaces
@@ -48,11 +53,10 @@ const WorkspaceNav = () => {
 
   const [selectedWorkspace, setSelectedWorkspace] =
     useState<WorkspaceDto | null>();
-  const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceDto | null>(
-    workspaces?.length > 0 &&
-      workspaces.find((workspace: WorkspaceDto) => workspace.active)
+  const activeWorkspace = useAppSelector(
+    (state: RootState) => state.workspacesSlice.activeWorkspace
   );
-  const activeUserWorkspace = getActiveUserWorkspace(workspaces, user);
+  const activeUserWorkspace = getActiveUserWorkspace();
 
   const handleChangeWorkspaceClick = async (workspace: WorkspaceDto) => {
     if (activeWorkspace?.id !== workspace.id) {
@@ -67,8 +71,8 @@ const WorkspaceNav = () => {
 
   const handleWorkspaceDeleteClick = async (workspace: WorkspaceDto) => {
     setMode(2);
-    const response = await userAPI.deleteWorkspace(workspace.id);
-    console.log("Deleted workspace response:", response);
+    // const response = await userAPI.deleteWorkspace(workspace.id);
+    // console.log("Deleted workspace response:", response);
     setSelectedWorkspace(workspace);
     setIsModalOpen(true);
   };
@@ -207,9 +211,6 @@ const WorkspaceNav = () => {
       onClick={() => {
         if (tmpWorkspace.active) {
           setWorkspaceInMoreMode(null);
-          setMode(1);
-          setSelectedWorkspace(tmpWorkspace);
-          setIsModalOpen(true);
           setDropdownOpen(false);
         }
       }}
@@ -220,6 +221,11 @@ const WorkspaceNav = () => {
             ? " cursor-pointer"
             : "cursor-not-allowed  text-gray-300"
         }`}
+        onClick={() => {
+          setMode(1);
+          setSelectedWorkspace(tmpWorkspace);
+          setIsModalOpen(true);
+        }}
       >
         <LuPenLine /> Edit
       </div>
@@ -253,36 +259,40 @@ const WorkspaceNav = () => {
           setDropdownOpen(v);
         }}
       >
-        <div className="h-max w-[240px] cursor-pointer rounded-lg border-2 p-1">
-          <div className="grid grid-cols-12 gap-2">
+        <div className="h-max w-[240px] cursor-pointer rounded-lg border-2 p-1 flex items-center">
+          <div className="grid grid-cols-12 gap-2 ice">
             <Avatar
               className="col-span-3 flex h-[48px] w-[48px] flex-col justify-center rounded font-medium text-primary"
               size={"large"}
             >
               {activeWorkspace?.name?.length > 0
                 ? activeWorkspace?.name[0]
-                : ""}
+                : "?"}
             </Avatar>
-            <div className="col-span-7">
-              <div className="flex flex-col text-left">
-                <Text
-                  className="text-left font-medium"
-                  ellipsis={{
-                    tooltip: activeWorkspace?.name,
-                  }}
-                >
-                  {activeWorkspace?.name}
-                </Text>
-                <Text
-                  className="text-left text-[13px]"
-                  ellipsis={{
-                    tooltip: activeUserWorkspace?.designation,
-                  }}
-                >
-                  {activeUserWorkspace?.designation}
-                </Text>
+            {activeWorkspace ? (
+              <div className="col-span-7">
+                <div className="flex flex-col text-left">
+                  <Text
+                    className="text-left font-medium"
+                    ellipsis={{
+                      tooltip: activeWorkspace?.name,
+                    }}
+                  >
+                    {activeWorkspace?.name}
+                  </Text>
+                  <Text
+                    className="text-left text-[13px]"
+                    ellipsis={{
+                      tooltip: activeUserWorkspace?.designation,
+                    }}
+                  >
+                    {activeUserWorkspace?.designation}
+                  </Text>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className=" col-span-7">Select Or Create Workspace</div>
+            )}
             <div className="col-span-1 flex flex-col justify-center">
               {isDropdownOpen ? <UpOutlined /> : <DownOutlined />}
             </div>
@@ -290,22 +300,25 @@ const WorkspaceNav = () => {
         </div>
       </Dropdown>
       <GlobalModal
-        {...{ isModalOpen, setIsModalOpen, title: "Create Workspace" }}
+        {...{ isModalOpen, setIsModalOpen }}
+        title={modalTitles[mode]}
       >
         <Spin spinning={isModalLoading}>
-          {mode === 1 ? (
+          {mode === 1 && (
             <EditWorkspace
               workspace={selectedWorkspace}
               setSelectedWorkspace={setSelectedWorkspace}
               setIsModalOpen={setIsModalOpen}
             />
-          ) : mode === 2 ? (
+          )}
+          {mode === 2 && (
             <DeleteWorkspaceWarning
               workspace={selectedWorkspace}
               setSelectedWorkspace={setSelectedWorkspace}
               setIsModalOpen={setIsModalOpen}
             />
-          ) : (
+          )}
+          {mode === 0 && (
             <AddNewWorkspace
               setIsModalOpen={setIsModalOpen}
               setIsModalLoading={setIsModalLoading}
