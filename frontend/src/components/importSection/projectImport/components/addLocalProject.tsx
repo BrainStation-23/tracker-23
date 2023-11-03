@@ -1,53 +1,69 @@
-import { Button, Form, Input } from "antd";
+import { Form, Input } from "antd";
 import { userAPI } from "APIs";
 import { CreateLocalProjectModel } from "models/apiParams";
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
+
+import PlusIconSvg from "@/assets/svg/PlusIconSvg";
+import PrimaryButton from "@/components/common/buttons/primaryButton";
+import { addNewProjectSlice } from "@/storage/redux/projectsSlice";
 
 type Props = {
   setSpinning: Function;
   setIsModalOpen: Function;
   closeDropdowns: Function;
+  type?: number;
 };
 const AddLocalProject = ({
   setSpinning,
   setIsModalOpen,
   closeDropdowns,
+  type,
 }: Props) => {
+  const formRef: any = useRef();
+  const dispatch = useDispatch();
   const [projectName, setProjectName] = useState("");
   const handleSubmit = async (values: CreateLocalProjectModel) => {
     setSpinning(true);
     const res = await userAPI.createProject(values);
     console.log("Submitted values:", values);
-    res && setIsModalOpen(false);
+    if (res) {
+      setIsModalOpen(false);
+      dispatch(addNewProjectSlice(res));
+      closeDropdowns();
+      formRef.current && formRef.current.resetFields();
+    }
     setSpinning(false);
-    res && closeDropdowns();
   };
   useEffect(() => {}, [projectName]);
   return (
-    <Form onFinish={handleSubmit} className="flex items-center justify-between">
+    <Form
+      ref={formRef}
+      onFinish={handleSubmit}
+      className="flex items-center justify-between gap-2"
+    >
       <Form.Item
-        label="Project Name"
+        label={type === 2 ? null : "Project Name"}
         name="projectName"
-        className="w-[60%]"
+        className={type === 2 ? "" : "w-[60%]"}
         rules={[
           {
             required: true,
-            message: "Please enter a project name",
+            message: type === 2 ? "Required" : "Please enter a project name",
           },
         ]}
       >
         <Input
-          placeholder="Enter project name"
+          placeholder={type === 2 ? "Project Name" : "Enter project name"}
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
         />
       </Form.Item>
 
       <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Submit
-        </Button>
+        <PrimaryButton className="px-1" htmlType="submit">
+          {type === 2 ? <PlusIconSvg /> : "Submit"}
+        </PrimaryButton>
       </Form.Item>
     </Form>
   );

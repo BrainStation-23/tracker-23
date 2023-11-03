@@ -69,10 +69,41 @@ const projectsSlice = createSlice({
     resetProjectsSlice: (state) => {
       state.projects = null;
     },
+    addNewProjectSlice: (state, action: PayloadAction<Project>) => {
+      // Create a new StatusType based on the added project's statuses
+      const newStatuses: StatusType[] = action.payload.statuses.map(
+        (status) => ({
+          name: status.name,
+          statusCategoryName: status.statusCategoryName
+            .replace(" ", "_")
+            .toUpperCase() as StatusDto,
+        })
+      );
+
+      // Add the new project to the state's projects array
+      state.projects = state.projects
+        ? [...state.projects, action.payload]
+        : [action.payload];
+
+      // Update the statuses array with the new statuses, if they don't already exist
+      newStatuses.forEach((newStatus) => {
+        if (
+          !state.statuses?.find((existingStatus) =>
+            isSame(newStatus, existingStatus)
+          )
+        ) {
+          state.statuses?.push(newStatus);
+        }
+      });
+    },
   },
 });
 
-export const { setProjectsSlice, deleteProjectsSlice, resetProjectsSlice } =
-  projectsSlice.actions;
+export const {
+  setProjectsSlice,
+  deleteProjectsSlice,
+  resetProjectsSlice,
+  addNewProjectSlice,
+} = projectsSlice.actions;
 
 export default projectsSlice.reducer;
