@@ -282,7 +282,7 @@ export class WorkspacesService {
         );
       }
     }
-    const inviteUrl: string = `${coreConfig?.ADMIN_URL}?code=${invitationHashedToken}`;
+    const inviteUrl = `${coreConfig?.ADMIN_URL}?code=${invitationHashedToken}`;
     //console.log(inviteUrl)
     const template = fs.readFileSync(
       'src/utils/htmlTemplates/invitation.html',
