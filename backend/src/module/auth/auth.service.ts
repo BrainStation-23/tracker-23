@@ -9,7 +9,8 @@ import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import {
-  ForgotPasswordDto, InvitedUserLoginDto,
+  ForgotPasswordDto,
+  InvitedUserLoginDto,
   InvitedUserRegisterDto,
   LoginDto,
   PasswordResetDto,
@@ -134,6 +135,9 @@ export class AuthService {
     if (!req.user) {
       return 'No user from google';
     }
+
+    req?.invitationCode &&
+      (await this.checkEmail(req.invitationCode, req.user.email));
 
     const queryData = {
       email: req.user.email,
@@ -360,7 +364,7 @@ export class AuthService {
   async createInvitedUser(data: InvitedUserRegisterDto) {
     //check if email is valid
     const isValidUser = await this.usersDatabase.findUserByEmail(data?.email);
-    if(!isValidUser)
+    if (!isValidUser)
       throw new APIException('Email is not registered', HttpStatus.BAD_REQUEST);
 
     //check if requested email matches the email stored earlier in db
@@ -371,7 +375,11 @@ export class AuthService {
         userId: isValidUser.id,
       });
 
-    if(!isEmailStored) throw new APIException('Current email does not match with the invited email', HttpStatus.BAD_REQUEST);
+    if (!isEmailStored)
+      throw new APIException(
+        'Current email does not match with the invited email',
+        HttpStatus.BAD_REQUEST,
+      );
 
     const updatedUser = await this.usersDatabase.updateUser(
       { id: isValidUser?.id },
@@ -382,11 +390,19 @@ export class AuthService {
       },
     );
 
-    if(!updatedUser) throw new APIException('Could not create user', HttpStatus.INTERNAL_SERVER_ERROR);
+    if (!updatedUser)
+      throw new APIException(
+        'Could not create user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     const workspace =
       updatedUser &&
       updatedUser.firstName &&
-      (await this.workspacesService.createWorkspace( updatedUser, `${updatedUser.firstName}'s Workspace`, false));
+      (await this.workspacesService.createWorkspace(
+        updatedUser,
+        `${updatedUser.firstName}'s Workspace`,
+        false,
+      ));
 
     if (!workspace) {
       throw new APIException(
@@ -396,12 +412,20 @@ export class AuthService {
     }
 
     //update invited userworkspace
-    const updatedUserWorkspace = await this.userWorkspaceDatabase.updateUserWorkspace(Number(isEmailStored.id), {
-      status: UserWorkspaceStatus.ACTIVE,
-      respondedAt: new Date(Date.now())
-    })
+    const updatedUserWorkspace =
+      await this.userWorkspaceDatabase.updateUserWorkspace(
+        Number(isEmailStored.id),
+        {
+          status: UserWorkspaceStatus.ACTIVE,
+          respondedAt: new Date(Date.now()),
+        },
+      );
 
-    if(!updatedUserWorkspace) throw  new APIException('Could not update userWorkspace. Invalid ID', HttpStatus.BAD_REQUEST);
+    if (!updatedUserWorkspace)
+      throw new APIException(
+        'Could not update userWorkspace. Invalid ID',
+        HttpStatus.BAD_REQUEST,
+      );
 
     const token = await this.createToken({
       id: isValidUser.id,
@@ -428,20 +452,25 @@ export class AuthService {
     }
 
     const isPasswordMatched =
-        user.hash && (await argon.verify(user.hash, data.password));
+      user.hash && (await argon.verify(user.hash, data.password));
 
     if (!isPasswordMatched) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
     //check if requested email matches the email stored earlier in db
-    const isEmailStored = await this.userWorkspaceDatabase.getSingleUserWorkspace({
+    const isEmailStored =
+      await this.userWorkspaceDatabase.getSingleUserWorkspace({
         invitationId: data?.code,
         status: UserWorkspaceStatus.INVITED,
         userId: user.id,
       });
 
-    if(!isEmailStored) throw new APIException('Current email does not match with the invited email', HttpStatus.BAD_REQUEST);
+    if (!isEmailStored)
+      throw new APIException(
+        'Current email does not match with the invited email',
+        HttpStatus.BAD_REQUEST,
+      );
 
     //update invited userworkspace
     const updatedUserWorkspace =
@@ -453,15 +482,24 @@ export class AuthService {
         },
       );
 
-    if(!updatedUserWorkspace) throw  new APIException('Could not update userWorkspace. Invalid ID', HttpStatus.BAD_REQUEST);
+    if (!updatedUserWorkspace)
+      throw new APIException(
+        'Could not update userWorkspace. Invalid ID',
+        HttpStatus.BAD_REQUEST,
+      );
 
     const updatedUser = await this.usersDatabase.updateUser(
-        { id: user?.id },
-        {
-          activeWorkspaceId: updatedUserWorkspace?.workspaceId,
-        });
+      { id: user?.id },
+      {
+        activeWorkspaceId: updatedUserWorkspace?.workspaceId,
+      },
+    );
 
-    if(!updatedUser) throw new APIException('Could not create user', HttpStatus.INTERNAL_SERVER_ERROR);
+    if (!updatedUser)
+      throw new APIException(
+        'Could not create user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
 
     const token = await this.createToken({
       id: user.id,
@@ -476,7 +514,18 @@ export class AuthService {
       ...(user?.lastName && { lastName: user?.lastName }),
       ...token,
     };
+  }
 
+  async checkEmail(code: string, reqEmail: string) {
+    const user = await this.userWorkspaceDatabase.checkEmail(code);
+    if (!user) {
+      new APIException('Invalid code!', HttpStatus.BAD_REQUEST);
+    }
 
+    if (user?.email === reqEmail) return user;
+    throw new APIException(
+      'Try to login with the same email!',
+      HttpStatus.BAD_REQUEST,
+    );
   }
 }
