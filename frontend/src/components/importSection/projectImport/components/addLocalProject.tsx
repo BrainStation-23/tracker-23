@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 import PrimaryButton from "@/components/common/buttons/primaryButton";
+import { addPrioritiesSlice } from "@/storage/redux/prioritySlice";
 import { addNewProjectSlice } from "@/storage/redux/projectsSlice";
 
 type Props = {
@@ -30,6 +31,8 @@ const AddLocalProject = ({
     if (res) {
       setIsModalOpen(false);
       dispatch(addNewProjectSlice(res));
+      dispatch(addPrioritiesSlice(res));
+
       closeDropdowns();
       formRef.current && formRef.current.resetFields();
     }

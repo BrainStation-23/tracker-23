@@ -53,6 +53,10 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
     (state: RootState) => state.projectList.projects
   );
 
+  const priorities = useAppSelector(
+    (state: RootState) => state.prioritySlice.priorities
+  );
+
   const localProjects = allProjects
     ? allProjects.filter((project) => project.source === "T23")
     : [];
@@ -71,7 +75,33 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
   const [size, setSize] = useState<SizeType>("middle");
   const [recurrentTask, setRecurrentTask] = useState<boolean>(false);
   const [CreatingTask, setCreatingTask] = useState<boolean>(false);
+  const [selectedProject, setSelectedProject] = useState<number>(
+    projectData[0]?.value
+  );
+  const [priorityNames, setPriorityNames] = useState(
+    priorities
+      .filter((p) => p.projectId === selectedProject)
+      .map((pp) => pp.name)
+  );
+  useEffect(() => {
+    console.log(
+      "XXXXXX",
+      priorityNames,
+      selectedProject,
+      priorities,
+      priorities.filter((p) => {
+        console.log("XXXXX", p.projectId, selectedProject);
 
+        return p.projectId == selectedProject;
+      })
+    );
+
+    setPriorityNames(
+      priorities
+        .filter((p) => p.projectId == selectedProject)
+        .map((pp) => pp.name)
+    );
+  }, [selectedProject]);
   const [name, setName] = useState("");
   const [projectItems, setProjectItems] = useState(["jack", "lucy"]);
 
@@ -154,12 +184,9 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
             >
               <Select
                 onChange={handleFrequencyChange}
-                options={[
-                  { value: "LOW", label: "LOW" },
-                  { value: "MEDIUM", label: "MEDIUM" },
-                  { value: "HIGH", label: "HIGH" },
-                  { value: "HIGHEST", label: "HIGHEST" },
-                ]}
+                options={priorityNames?.map((priorityName) => {
+                  return { value: priorityName, label: priorityName };
+                })}
               />
             </MyInputCreateTask>
           </div>
@@ -172,6 +199,9 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
               {/* <Select onChange={handleProjectIdChange} options={projectData} /> */}
               <Select
                 placeholder="Select Project"
+                onChange={(e) => {
+                  setSelectedProject(e);
+                }}
                 dropdownRender={(menu) => (
                   <>
                     <div className="max-h-24 overflow-auto">{menu}</div>
