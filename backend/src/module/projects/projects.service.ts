@@ -229,6 +229,7 @@ export class ProjectsService {
       {
         integration: true,
         statuses: true,
+        priorities: true,
       },
     );
   }
