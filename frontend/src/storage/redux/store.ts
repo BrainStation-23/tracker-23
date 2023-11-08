@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 
 import integrationsReducer from "./integrationsSlice";
 import notificationsReducer from "./notificationsSlice";
+import priorityReducer from "./prioritySlice";
 import projectsReducer from "./projectsSlice";
 import settingsReducer from "./settingsSlice";
 import syncReducer from "./syncSlice";
@@ -19,6 +20,7 @@ export const store = configureStore({
     userSlice: userReducer,
     workspacesSlice: workspacesReducer,
     settingsSlice: settingsReducer,
+    prioritySlice: priorityReducer,
   },
 });
 

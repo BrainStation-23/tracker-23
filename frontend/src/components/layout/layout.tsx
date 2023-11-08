@@ -12,6 +12,7 @@ import { initializeSocket } from "@/services/socket.service";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
 import { setNotifications } from "@/storage/redux/notificationsSlice";
+import { setPriorities } from "@/storage/redux/prioritySlice";
 import { setProjectsSlice } from "@/storage/redux/projectsSlice";
 import { setSettingsReducer } from "@/storage/redux/settingsSlice";
 import { RootState } from "@/storage/redux/store";
@@ -97,10 +98,17 @@ const CustomLayout = ({ children }: any) => {
     const res = await userAPI.getWorkspaceSettings();
     res && dispatch(setSettingsReducer(res));
   };
+  const getProjects = async () => {
+    const res = await userAPI.getIntegratedProjectStatuses();
+    console.log("🚀 ~ file: index.tsx:361 ~ getProjects ~ res:", res);
+    res && dispatch(setProjectsSlice(res));
+    res && dispatch(setPriorities(res));
+  };
   const initialLoading = async () => {
     await getIntegrations();
     await getNotifications();
     await getSettings();
+    await getProjects();
   };
   useEffect(() => {
     if (!publicRoutes.some((route) => path.includes(route))) {

@@ -1,4 +1,4 @@
-import { Button, Empty, message, Spin } from "antd";
+import { Empty, message, Spin } from "antd";
 import { userAPI } from "APIs";
 import { CreateTaskDto, TaskDto } from "models/tasks";
 import { useRouter } from "next/router";
@@ -14,6 +14,7 @@ import {
   getTotalSpentTime,
 } from "@/services/timeActions";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
+import { setPriorities } from "@/storage/redux/prioritySlice";
 import { setProjectsSlice, StatusType } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
@@ -23,14 +24,13 @@ import PrimaryButton from "../common/buttons/primaryButton";
 import { getDateRangeArray } from "../datePicker";
 import GlobalModal from "../modals/globalModal";
 import TaskDetailsModal from "../modals/taskDetails.modal";
-import WorkspaceSelection from "../sideMenu/components/workspaceSection";
+import Navbar from "../navbar";
 import CreateTaskComponent from "./components/createTaskComponent";
 import ManualTimeEntry from "./components/manualTimeEntry";
 import TableComponent from "./components/tableComponent";
 import TopPanel from "./components/topPanel/topPanel";
 import TopPanelActiveSprint from "./components/topPanel/topPanelActiveSprint";
 import SessionStartWarning from "./components/warning";
-import Navbar from "../navbar";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -364,6 +364,7 @@ const TasksPage = () => {
     const res = await userAPI.getIntegratedProjectStatuses();
     console.log("🚀 ~ file: index.tsx:361 ~ getProjects ~ res:", res);
     res && dispatch(setProjectsSlice(res));
+    res && dispatch(setPriorities(res));
   };
 
   const handleStatusChange = async (task: TaskDto, value: StatusType) => {
