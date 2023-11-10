@@ -25,7 +25,7 @@ export class ProjectsService {
     private prisma: PrismaService,
   ) {}
 
-  async importProjects(user: User, projId: number, res?: Response) {
+  async importProject(user: User, projId: number, res?: Response) {
     const project = await this.projectDatabase.getProjectByIdWithIntegration(
       projId,
     );
@@ -220,7 +220,10 @@ export class ProjectsService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
 
-    await this.projectDatabase.createLocalPriorities(newProject?.id);
+    await this.projectDatabase.createLocalPrioritiesWithTransactionPrismaInstance(
+      newProject?.id,
+      this.prisma,
+    );
     return await this.projectDatabase.getProject(
       {
         id: newProject.id,

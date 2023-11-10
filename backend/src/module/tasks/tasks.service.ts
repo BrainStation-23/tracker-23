@@ -383,19 +383,28 @@ export class TasksService {
     // console.log(dto);
     let project;
     if (dto && !dto.projectId) {
-      const transaction = await this.prisma.$transaction(async (prisma: any) => {
-        const newProject = dto.projectName && await this.workspacesService.createLocalProjectWithTransactionPrismaInstance(user,dto.projectName,prisma);
+      const transaction = await this.prisma.$transaction(
+        async (prisma: any) => {
+          const newProject =
+            dto.projectName &&
+            (await this.workspacesService.createLocalProjectWithTransactionPrismaInstance(
+              user,
+              dto.projectName,
+              prisma,
+            ));
 
-        return [newProject];
-      });
+          return [newProject];
+        },
+      );
       project = transaction && transaction[0];
-    } else{
+    } else {
       project = await this.tasksDatabase.getProject(Number(dto.projectId));
     }
 
     if (dto.isRecurrent) {
       return (
-        project && project.projectName &&
+        project &&
+        project.projectName &&
         (await this.recurrentTask(
           user,
           userWorkspace.id,
@@ -885,7 +894,7 @@ export class TasksService {
       const parentChildMapped = new Map<number, number>();
       for (const [integratedTaskId, integratedTask] of mappedIssues) {
         const taskStatus = integratedTask.status.name;
-        const taskPriority = this.formatPriority(integratedTask.priority.name);
+        const taskPriority = integratedTask.priority.name;
         integratedTask.parent &&
           integratedTask.parent.id &&
           parentChildMapped.set(
@@ -2171,18 +2180,24 @@ export class TasksService {
   ) {
     try {
       const getPriorityByProjectIdUrl = `https://api.atlassian.com/ex/jira/${updatedUserIntegration.siteId}/rest/api/3/priority`;
-      const { data: priorityList } = await axios.get(getPriorityByProjectIdUrl, {
-        headers: {
-          Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
+      const { data: priorityList } = await axios.get(
+        getPriorityByProjectIdUrl,
+        {
+          headers: {
+            Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
+          },
         },
-      });
-
+      );
+      console.log(
+        '🚀 ~ file: tasks.service.ts:2191 ~ TasksService ~ priorityList:',
+        priorityList,
+      );
 
       const priorityListByProjectId =
         priorityList.length > 0
           ? priorityList.map((priority: any) => {
               return {
-                name: priority.name.toUpperCase(),
+                name: priority.name,
                 priorityId: priority.id,
                 priorityCategoryName: priority.name.toUpperCase(),
                 projectId: project.id,
