@@ -896,7 +896,7 @@ export class TasksService {
       const parentChildMapped = new Map<number, number>();
       for (const [integratedTaskId, integratedTask] of mappedIssues) {
         const taskStatus = integratedTask.status.name;
-        const taskPriority = this.formatPriority(integratedTask.priority.name);
+        const taskPriority = integratedTask.priority.name;
         integratedTask.parent &&
           integratedTask.parent.id &&
           parentChildMapped.set(
@@ -2198,12 +2198,16 @@ export class TasksService {
           },
         },
       );
+      console.log(
+        '🚀 ~ file: tasks.service.ts:2191 ~ TasksService ~ priorityList:',
+        priorityList,
+      );
 
       const priorityListByProjectId =
         priorityList.length > 0
           ? priorityList.map((priority: any) => {
               return {
-                name: priority.name.toUpperCase(),
+                name: priority.name,
                 priorityId: priority.id,
                 priorityCategoryName: priority.name.toUpperCase(),
                 projectId: project.id,

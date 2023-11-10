@@ -55,6 +55,7 @@
     "moment": "^2.29.4",
     "node-cron": "^3.0.2",
     "node-fetch": "^3.3.0",
+    "node-mailjet": "^6.0.4",
     "nodemailer": "^6.9.4",
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",

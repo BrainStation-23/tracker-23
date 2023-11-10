@@ -47,7 +47,7 @@ const projectsSlice = createSlice({
   reducers: {
     setProjectsSlice: (state, action: PayloadAction<Project[]>) => {
       const tmpArray: StatusType[] = [];
-      action.payload.forEach((project: Project) => {
+      action.payload?.forEach((project: Project) => {
         project.statuses?.forEach((status: ProjectStatus) => {
           const tmpStatus = {
             name: status.name,

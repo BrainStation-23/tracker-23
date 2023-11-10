@@ -1,5 +1,6 @@
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
+import TablePriorityComponent from "@/components/common/tableComponents/tablePriorityComponent";
 import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
 import MoreFunctionComponent from "@/components/tasks/components/moreFunction";
 import ProgressComponent from "@/components/tasks/components/progressComponent";
@@ -121,17 +122,7 @@ const DashboardTableComponent = ({
       title: "Priority",
       dataIndex: "priority",
       key: "priority",
-      render: (_: any, { priority }: TaskDto) => (
-        <div
-          style={{
-            backgroundColor: PriorityBGColorEnum[priority],
-            border: `1px solid ${PriorityBorderColorEnum[priority]}`,
-          }}
-          className="w-min rounded px-2 text-black"
-        >
-          {taskPriorityEnum[priority]}
-        </div>
-      ),
+      render: (_: any, task: TaskDto) => <TablePriorityComponent task={task} />,
     },
 
     {

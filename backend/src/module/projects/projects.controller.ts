@@ -26,12 +26,12 @@ export class ProjectsController {
   }
 
   @Get('/:id')
-  async importProjects(
+  async importProject(
     @GetUser() user: User,
     @Param('id') id: string,
     @Response() res: any,
   ) {
-    return this.projectsService.importProjects(user, +id, res);
+    return this.projectsService.importProject(user, +id, res);
   }
 
   @Post('/create')
