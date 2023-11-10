@@ -27,6 +27,7 @@ const workspacesSlice = createSlice({
     },
     resetWorkspacesSlice: (state) => {
       state.workspaces = [];
+      state.activeWorkspace = null;
     },
     setActiveWorkspaceSlice: (
       state,
