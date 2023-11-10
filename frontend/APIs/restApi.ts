@@ -29,6 +29,7 @@ import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 import { sortByStatus } from "../src/services/taskActions";
 import { getTimeSheetReportDto } from "models/reports";
 import { disconnectSocket } from "@/services/socket.service";
+import { updateApprovalUserDto } from "models/user";
 
 export async function loginRest(
   data: LoginDto
@@ -710,6 +711,28 @@ export async function getTimeSheetReportRest(data: getTimeSheetReportDto) {
 export async function getInvitedUserInfoRest(token: string) {
   try {
     const res = await axios.get(`${apiEndPoints.invitedUserInfo}` + token);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function getAllUsersRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.allUsers}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function updateApprovalUserRest(
+  userId: number,
+  data: updateApprovalUserDto
+) {
+  try {
+    const res = await axios.patch(
+      `${apiEndPoints.updateApprovalUser}${userId}`,
+      data
+    );
     return res.data;
   } catch (error: any) {
     return false;

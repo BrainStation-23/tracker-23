@@ -37,4 +37,6 @@ export const apiEndPoints = {
   invitedUserInfo: "workspaces/verify/invited-user/",
   invitedUserLogin: `/auth/invitedUser/login`,
   invitedUserRegister: `/auth/invitedUser/register`,
+  allUsers: `/users/userList`,
+  updateApprovalUser: `/users/userList/`,
 };
