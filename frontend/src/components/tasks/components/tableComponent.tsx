@@ -100,14 +100,12 @@ const TableComponent = ({
         );
       },
       sorter: (a: any, b: any) => {
-        if (a.title === b.title) {
+        if (a.title.toLowerCase() === b.title.toLowerCase()) {
           return 0;
         }
-
-        if (a.title > b.title) {
+        if (a.title.toLowerCase() > b.title.toLowerCase()) {
           return 1;
         }
-
         return -1;
       },
     },
