@@ -120,6 +120,19 @@ export class UsersDatabase {
       return null;
     }
   }
+  async updateApprovalUser(userId: number, update: any) {
+    try {
+      return await this.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: update,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
 
   async findUserByEmail(email: string) {
     try {
@@ -134,6 +147,7 @@ export class UsersDatabase {
             lastName: true,
             activeWorkspaceId: true,
             picture: true,
+            approved: true,
           },
         }))
       );
@@ -153,6 +167,7 @@ export class UsersDatabase {
           firstName: true,
           lastName: true,
           hash: true,
+          approved: true,
         },
       });
     } catch (error) {
@@ -198,6 +213,15 @@ export class UsersDatabase {
           passwordResetExpires: { gt: new Date(Date.now()) },
         },
       });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getAllUsers() {
+    try {
+      return await this.prisma.user.findMany();
     } catch (error) {
       console.log(error);
       return null;
