@@ -4772,6 +4772,15 @@ node-int64@^0.4.0:
   resolved "https://registry.npmjs.org/node-int64/-/node-int64-0.4.0.tgz"
   integrity sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==
 
+node-mailjet@^6.0.4:
+  version "6.0.4"
+  resolved "https://registry.yarnpkg.com/node-mailjet/-/node-mailjet-6.0.4.tgz#7b5f9eb06a5a4b3737a2e556e6e91fd905716762"
+  integrity sha512-gNWfbVnsH+KxkhfDLPA8OrQ2Q25OgyKp19C7DSJYmN2zNfqTKIXzhB9BZwgxZtErmPxz2Fp1NR18WPCmrJDuwg==
+  dependencies:
+    axios "^0.27.2"
+    json-bigint "^1.0.0"
+    url-join "^4.0.0"
+
 node-releases@^2.0.8:
   version "2.0.10"
   resolved "https://registry.npmjs.org/node-releases/-/node-releases-2.0.10.tgz"
@@ -6029,6 +6038,11 @@ uri-js@^4.2.2:
   integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   dependencies:
     punycode "^2.1.0"
+
+url-join@^4.0.0:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/url-join/-/url-join-4.0.1.tgz#b642e21a2646808ffa178c4c5fda39844e12cde7"
+  integrity sha512-jk1+QP6ZJqyOiuEI9AEWQfju/nB2Pw466kbA0LEZljHwKeMgd9WrAEgEGxjPDD2+TNbbb37rTyhEfrCXfuKXnA==
 
 url-template@^2.0.8:
   version "2.0.8"
