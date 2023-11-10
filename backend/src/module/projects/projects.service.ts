@@ -114,10 +114,10 @@ export class ProjectsService {
     if (!project) {
       throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
     }
-
-    const deletedTasks = await this.projectDatabase.deleteTasksByProjectId(id);
-    if (!deletedTasks)
-      throw new APIException('Invalid Project ID', HttpStatus.BAD_REQUEST);
+    await this.projectDatabase.deleteTasksByProjectId(id);
+    await this.projectDatabase.deleteSprintByProjectId(id);
+    await this.projectDatabase.deleteStatusDetails(id);
+    await this.projectDatabase.deletePriorities(id);
 
     const updatedProject =
       project.source === 'T23'
@@ -125,12 +125,12 @@ export class ProjectsService {
         : await this.projectDatabase.updateProjectById(id, {
             integrated: false,
           });
-
-    if (!updatedProject)
+    if (!updatedProject) {
       throw new APIException(
         'Could not delete project',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
 
     return res.status(202).json({ message: 'Project Deleted' });
   }

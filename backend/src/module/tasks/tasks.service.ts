@@ -383,19 +383,28 @@ export class TasksService {
     // console.log(dto);
     let project;
     if (dto && !dto.projectId) {
-      const transaction = await this.prisma.$transaction(async (prisma: any) => {
-        const newProject = dto.projectName && await this.workspacesService.createLocalProjectWithTransactionPrismaInstance(user,dto.projectName,prisma);
+      const transaction = await this.prisma.$transaction(
+        async (prisma: any) => {
+          const newProject =
+            dto.projectName &&
+            (await this.workspacesService.createLocalProjectWithTransactionPrismaInstance(
+              user,
+              dto.projectName,
+              prisma,
+            ));
 
-        return [newProject];
-      });
+          return [newProject];
+        },
+      );
       project = transaction && transaction[0];
-    } else{
+    } else {
       project = await this.tasksDatabase.getProject(Number(dto.projectId));
     }
 
     if (dto.isRecurrent) {
       return (
-        project && project.projectName &&
+        project &&
+        project.projectName &&
         (await this.recurrentTask(
           user,
           userWorkspace.id,
@@ -833,7 +842,9 @@ export class TasksService {
 
     const mappedUserWorkspaceAndJiraId =
       await this.mappingUserWorkspaceAndJiraAccountId(user);
-    const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId}&maxResults=1000`;
+    const settings = await this.tasksDatabase.getSettings(user);
+    const syncTime: number = settings ? settings.syncTime : 6;
+    const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND created >= startOfMonth(-${syncTime}M) AND created <= endOfDay()&maxResults=1000`;
     const fields =
       'summary, assignee,timeoriginalestimate,project, comment,parent, created, updated,status,priority';
     let respTasks;
@@ -1017,9 +1028,17 @@ export class TasksService {
       }
 
       for (let index = 0; index < worklogsList.length; index++) {
-        const urlArray = worklogsList[index].config.url.split('/');
-        const jiraTaskId = urlArray[urlArray.length - 2];
-        const taskId = mappedTaskId.get(Number(jiraTaskId));
+        const regex = /\/issue\/(\d+)\/worklog/;
+        const match = worklogsList[index].request.path.match(regex);
+        const taskId = mappedTaskId.get(Number(match[1]));
+        // console.log(
+        //   '🚀 ~ file: tasks.service.ts:1034 ~ TasksService ~ Number(match[1]:',
+        //   Number(match[1]),
+        // );
+        // console.log(
+        //   '🚀 ~ file: tasks.service.ts:1066 ~ TasksService ~ taskId:',
+        //   taskId,
+        // );
 
         taskId &&
           worklogsList[index].data.worklogs.map((log: any) => {
@@ -2171,12 +2190,14 @@ export class TasksService {
   ) {
     try {
       const getPriorityByProjectIdUrl = `https://api.atlassian.com/ex/jira/${updatedUserIntegration.siteId}/rest/api/3/priority`;
-      const { data: priorityList } = await axios.get(getPriorityByProjectIdUrl, {
-        headers: {
-          Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
+      const { data: priorityList } = await axios.get(
+        getPriorityByProjectIdUrl,
+        {
+          headers: {
+            Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
+          },
         },
-      });
-
+      );
 
       const priorityListByProjectId =
         priorityList.length > 0

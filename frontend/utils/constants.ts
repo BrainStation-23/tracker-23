@@ -147,4 +147,5 @@ export const whiteListEmails = [
   "shamsul.tahsin@brainstation-23.com",
   "dumyshala420@gmail.com",
   "tracker23.team@gmail.com",
+  "dipankar47@student.sust.edu",
 ];
