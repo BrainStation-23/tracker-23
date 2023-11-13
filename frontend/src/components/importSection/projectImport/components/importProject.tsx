@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 import PrimaryButton from "@/components/common/buttons/primaryButton";
+import OpenLinkInNewTab from "@/components/common/link/OpenLinkInNewTab";
 
 type Props = {
   project: ProjectDto;
@@ -27,9 +28,13 @@ const ImportProject = ({ project, setSpinning }: Props) => {
         <div className=" font-bold">{project.projectName}</div>
         <div className="flex items-center gap-1">
           <div> Source :</div>
-          <div className="text-sm font-normal text-blue-500">
+          <OpenLinkInNewTab
+            onClick={() => {
+              project.source !== "T23" && window.open(project.source);
+            }}
+          >
             {project.source}
-          </div>
+          </OpenLinkInNewTab>
         </div>
       </div>
       <div>

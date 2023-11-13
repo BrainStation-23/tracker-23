@@ -464,7 +464,7 @@ const Dashboard = () => {
         />
         {morePin && (
           <div
-            className="absolute bottom-0 right-1/2 left-1/2 w-max cursor-pointer hover:text-blue-500"
+            className="absolute bottom-0 right-1/2 left-1/2 w-max cursor-pointer "
             onClick={() => {
               router.push("/taskList?tab=pin");
             }}
