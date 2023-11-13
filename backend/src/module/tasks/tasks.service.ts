@@ -913,7 +913,7 @@ export class TasksService {
           title: integratedTask.summary,
           assigneeId: integratedTask.assignee?.accountId || null,
           estimation: integratedTask.timeoriginalestimate
-            ? integratedTask.timeoriginalestimate / 3600
+            ? Number((integratedTask.timeoriginalestimate / 3600).toFixed(2))
             : null,
           projectName: project.projectName,
           projectId: project.id,
@@ -1167,7 +1167,7 @@ export class TasksService {
                 title: jiraTask.summary,
                 assigneeId: jiraTask.assignee?.accountId || null,
                 estimation: jiraTask.timeoriginalestimate
-                  ? jiraTask.timeoriginalestimate / 3600
+                  ? Number((jiraTask.timeoriginalestimate / 3600).toFixed(2))
                   : null,
                 // projectName: jiraTask.project.name,
                 status: jiraTask.status.name,
@@ -1245,7 +1245,7 @@ export class TasksService {
           title: integratedTask.summary,
           assigneeId: integratedTask.assignee?.accountId || null,
           estimation: integratedTask.timeoriginalestimate
-            ? integratedTask.timeoriginalestimate / 3600
+            ? Number((integratedTask.timeoriginalestimate / 3600).toFixed(2))
             : null,
           projectName: integratedTask.project.name,
           projectId: project.id,
