@@ -124,6 +124,7 @@ const TaskDetailsModal = ({
                 </span>
                 <span className="font-medium">
                   {taskDetails?.estimation ?? <em>No estimation provided.</em>}
+                  {taskDetails?.estimation && " Hour"}
                 </span>
               </div>
               <div className="flex items-center gap-4">
