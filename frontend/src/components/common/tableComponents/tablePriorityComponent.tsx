@@ -10,27 +10,12 @@ type Props = {
 
 const TablePriorityComponent = ({ task }: Props) => {
   const { priority, projectId } = task;
-  console.log(
-    "🚀 ~ file: tablePriorityComponent.tsx:19 ~ TablePriorityComponent ~ { priority, projectId }:",
-    priority,
-    projectId
-  );
   const priorities = useAppSelector(
     (state: RootState) => state.prioritySlice.priorities
   );
   const p = priorities.find((pp) => {
     return pp.projectId == projectId && pp.name == task.priority;
   });
-  console.log(
-    "🚀 ~ file: tablePriorityComponent.tsx:17 ~ TablePriorityComponent ~ p:",
-    priorities,
-    priority,
-    projectId,
-    p,
-    p?.name,
-    task.priority
-    // priorities
-  );
   return (
     <div
       style={{
