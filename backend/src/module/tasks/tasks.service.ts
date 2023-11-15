@@ -2218,10 +2218,6 @@ export class TasksService {
           },
         },
       );
-      console.log(
-        '🚀 ~ file: tasks.service.ts:2191 ~ TasksService ~ priorityList:',
-        priorityList,
-      );
 
       const priorityListByProjectId =
         priorityList.length > 0
