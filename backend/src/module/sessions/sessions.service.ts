@@ -16,7 +16,6 @@ import {
 
 import { ManualTimeEntryReqBody, SessionDto, SessionReqBodyDto } from './dto';
 import { IntegrationsService } from '../integrations/integrations.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { TasksService } from '../tasks/tasks.service';
 import { APIException } from '../exception/api.exception';
@@ -32,6 +31,7 @@ import { ProjectDatabase } from 'src/database/projects';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { TasksDatabase } from 'src/database/tasks';
 import * as dayjs from 'dayjs';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class SessionsService {
@@ -44,6 +44,7 @@ export class SessionsService {
     private projectDatabase: ProjectDatabase,
     private userIntegrationDatabase: UserIntegrationDatabase,
     private tasksDatabase: TasksDatabase,
+    private readonly emailService: EmailService,
   ) {}
 
   async getSessions(user: User, taskId: number) {
@@ -1262,6 +1263,72 @@ export class SessionsService {
       columns,
       rows,
       totalTime,
+    };
+  }
+
+  async sendWeeklyTimeSheet(userId: number) {
+    const userWorkspaceList =
+      await this.userWorkspaceDatabase.getUserWorkspaceList({
+        userId: userId,
+        status: {
+          in: [UserWorkspaceStatus.ACTIVE, UserWorkspaceStatus.INACTIVE],
+        },
+      });
+    const end = dayjs();
+    const start = end.subtract(7, 'day').startOf('day');
+    const formattedEndDate = end.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+    const formattedStartedDate = start.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+    const sessionList = await this.sessionDatabase.getSessions({
+      userWorkspaceId: {
+        in: userWorkspaceList.map((userWorkspace) => userWorkspace.id),
+      },
+      startTime: { gte: new Date(formattedStartedDate) },
+      OR: [{ endTime: { lte: new Date(formattedEndDate) } }, { endTime: null }],
+    });
+    let TotalSpentTime = 0;
+    if (!sessionList || sessionList?.length === 0) {
+      return {
+        TotalSpentTime: 0,
+        value: [],
+      };
+    }
+    const mappedProject = new Map<string, number>();
+    for (const session of sessionList) {
+      let taskTimeSpent = 0;
+      const start = session.startTime;
+      let end = session.endTime ?? null;
+      if (!end) {
+        end = new Date();
+      }
+      const sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
+      TotalSpentTime += sessionTimeSpent;
+      taskTimeSpent += sessionTimeSpent;
+
+      if (!session?.task?.projectName) {
+        throw new APIException('Something is wrong!', HttpStatus.BAD_REQUEST);
+      }
+
+      if (!mappedProject.has(session?.task?.projectName)) {
+        mappedProject.set(session?.task.projectName, taskTimeSpent);
+      } else {
+        let getValue = mappedProject.get(session?.task?.projectName);
+        if (!getValue) getValue = 0;
+        mappedProject.set(session?.task?.projectName, getValue + taskTimeSpent);
+      }
+    }
+
+    const arr = [];
+    const iterator = mappedProject[Symbol.iterator]();
+    for (const item of iterator) {
+      arr.push({
+        projectName: item[0],
+        value: this.tasksService.getHourFromMinutes(item[1]),
+      });
+    }
+
+    return {
+      TotalSpentTime: this.tasksService.getHourFromMinutes(TotalSpentTime),
+      value: arr,
     };
   }
 }

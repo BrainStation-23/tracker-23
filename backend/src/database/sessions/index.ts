@@ -1,6 +1,5 @@
-import {Injectable} from "@nestjs/common";
-import {PrismaService} from "../../module/prisma/prisma.service";
-import {Session} from "@prisma/client";
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../module/prisma/prisma.service';
 
 @Injectable()
 export class SessionDatabase {
@@ -124,7 +123,7 @@ export class SessionDatabase {
       return await this.prisma.session.findUnique({
         where: { id: sessionId },
       });
-    } catch(err) {
+    } catch (err) {
       console.log(err);
       return null;
     }

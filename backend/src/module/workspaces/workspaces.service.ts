@@ -296,6 +296,12 @@ export class WorkspacesService {
       html,
       reqBody.email,
     );
+    // //send email with mailjet
+    // await this.emailService.sendEmailWithMailjet(
+    //   'Invitation to new workspace',
+    //   html,
+    //   reqBody.email,
+    // );
 
     return newUserWorkspace;
   }

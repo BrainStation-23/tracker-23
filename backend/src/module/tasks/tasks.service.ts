@@ -416,19 +416,39 @@ export class TasksService {
         ))
       );
     } else {
-      return await this.prisma.task.create({
-        data: {
-          userWorkspaceId: userWorkspace.id,
-          title: dto.title,
-          description: dto.description,
-          estimation: dto.estimation,
-          due: dto.due,
-          priority: dto.priority,
-          status: dto.status,
-          labels: dto.labels,
-          workspaceId: user.activeWorkspaceId,
-          projectName: project?.projectName,
-          projectId: project?.id,
+      const newTask = await this.prisma.task
+        .create({
+          data: {
+            userWorkspaceId: userWorkspace.id,
+            title: dto.title,
+            description: dto.description,
+            estimation: dto.estimation,
+            due: dto.due,
+            priority: dto.priority,
+            status: dto.status,
+            labels: dto.labels,
+            workspaceId: user.activeWorkspaceId,
+            projectName: project?.projectName,
+            projectId: project?.id,
+          },
+        })
+        .then(async (task) => {
+          await this.prisma.session.create({
+            data: {
+              startTime: dto.startTime,
+              endTime: dto.endTime,
+              status: SessionStatus.STOPPED,
+              userWorkspaceId: userWorkspace.id,
+              taskId: task.id,
+            },
+          });
+          return task;
+        });
+
+      return await this.prisma.task.findUnique({
+        where: { id: newTask.id },
+        include: {
+          sessions: true,
         },
       });
     }
