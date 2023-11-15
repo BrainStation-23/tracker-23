@@ -32,7 +32,6 @@ export class EmailService {
         },
       ],
     });
-
     try {
       const result = await request;
       return result.body;
