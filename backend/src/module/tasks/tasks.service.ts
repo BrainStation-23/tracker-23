@@ -416,19 +416,39 @@ export class TasksService {
         ))
       );
     } else {
-      return await this.prisma.task.create({
-        data: {
-          userWorkspaceId: userWorkspace.id,
-          title: dto.title,
-          description: dto.description,
-          estimation: dto.estimation,
-          due: dto.due,
-          priority: dto.priority,
-          status: dto.status,
-          labels: dto.labels,
-          workspaceId: user.activeWorkspaceId,
-          projectName: project?.projectName,
-          projectId: project?.id,
+      const newTask = await this.prisma.task
+        .create({
+          data: {
+            userWorkspaceId: userWorkspace.id,
+            title: dto.title,
+            description: dto.description,
+            estimation: dto.estimation,
+            due: dto.due,
+            priority: dto.priority,
+            status: dto.status,
+            labels: dto.labels,
+            workspaceId: user.activeWorkspaceId,
+            projectName: project?.projectName,
+            projectId: project?.id,
+          },
+        })
+        .then(async (task) => {
+          await this.prisma.session.create({
+            data: {
+              startTime: dto.startTime,
+              endTime: dto.endTime,
+              status: SessionStatus.STOPPED,
+              userWorkspaceId: userWorkspace.id,
+              taskId: task.id,
+            },
+          });
+          return task;
+        });
+
+      return await this.prisma.task.findUnique({
+        where: { id: newTask.id },
+        include: {
+          sessions: true,
         },
       });
     }
@@ -842,7 +862,9 @@ export class TasksService {
 
     const mappedUserWorkspaceAndJiraId =
       await this.mappingUserWorkspaceAndJiraAccountId(user);
-    const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId}&maxResults=1000`;
+    const settings = await this.tasksDatabase.getSettings(user);
+    const syncTime: number = settings ? settings.syncTime : 6;
+    const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND created >= startOfMonth(-${syncTime}M) AND created <= endOfDay()&maxResults=1000`;
     const fields =
       'summary, assignee,timeoriginalestimate,project, comment,parent, created, updated,status,priority';
     let respTasks;
@@ -911,7 +933,7 @@ export class TasksService {
           title: integratedTask.summary,
           assigneeId: integratedTask.assignee?.accountId || null,
           estimation: integratedTask.timeoriginalestimate
-            ? integratedTask.timeoriginalestimate / 3600
+            ? Number((integratedTask.timeoriginalestimate / 3600).toFixed(2))
             : null,
           projectName: project.projectName,
           projectId: project.id,
@@ -1026,9 +1048,17 @@ export class TasksService {
       }
 
       for (let index = 0; index < worklogsList.length; index++) {
-        const urlArray = worklogsList[index].config.url.split('/');
-        const jiraTaskId = urlArray[urlArray.length - 2];
-        const taskId = mappedTaskId.get(Number(jiraTaskId));
+        const regex = /\/issue\/(\d+)\/worklog/;
+        const match = worklogsList[index].request.path.match(regex);
+        const taskId = mappedTaskId.get(Number(match[1]));
+        // console.log(
+        //   '🚀 ~ file: tasks.service.ts:1034 ~ TasksService ~ Number(match[1]:',
+        //   Number(match[1]),
+        // );
+        // console.log(
+        //   '🚀 ~ file: tasks.service.ts:1066 ~ TasksService ~ taskId:',
+        //   taskId,
+        // );
 
         taskId &&
           worklogsList[index].data.worklogs.map((log: any) => {
@@ -1157,7 +1187,7 @@ export class TasksService {
                 title: jiraTask.summary,
                 assigneeId: jiraTask.assignee?.accountId || null,
                 estimation: jiraTask.timeoriginalestimate
-                  ? jiraTask.timeoriginalestimate / 3600
+                  ? Number((jiraTask.timeoriginalestimate / 3600).toFixed(2))
                   : null,
                 // projectName: jiraTask.project.name,
                 status: jiraTask.status.name,
@@ -1235,7 +1265,7 @@ export class TasksService {
           title: integratedTask.summary,
           assigneeId: integratedTask.assignee?.accountId || null,
           estimation: integratedTask.timeoriginalestimate
-            ? integratedTask.timeoriginalestimate / 3600
+            ? Number((integratedTask.timeoriginalestimate / 3600).toFixed(2))
             : null,
           projectName: integratedTask.project.name,
           projectId: project.id,
@@ -2187,10 +2217,6 @@ export class TasksService {
             Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
           },
         },
-      );
-      console.log(
-        '🚀 ~ file: tasks.service.ts:2191 ~ TasksService ~ priorityList:',
-        priorityList,
       );
 
       const priorityListByProjectId =

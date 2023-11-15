@@ -97,6 +97,45 @@ export class ProjectDatabase {
     }
   }
 
+  async deleteSprintByProjectId(projId: number) {
+    try {
+      const deletedSprints = await this.prisma.sprint.deleteMany({
+        where: { projectId: projId },
+      });
+
+      return deletedSprints;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+  async deleteStatusDetails(projId: number) {
+    try {
+      return await this.prisma.statusDetail.deleteMany({
+        where: {
+          projectId: projId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async deletePriorities(projId: number) {
+    try {
+      return await this.prisma.priorityScheme.deleteMany({
+        where: {
+          projectId: projId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
   async updateProjectById(projId: number, update: any) {
     try {
       return await this.prisma.project.update({

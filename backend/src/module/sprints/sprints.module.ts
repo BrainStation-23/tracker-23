@@ -15,6 +15,8 @@ import { IntegrationDatabase } from 'src/database/integrations';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { UsersDatabase } from 'src/database/users';
 import { EmailService } from '../email/email.service';
+import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
+import { JiraClientService } from '../helper/client';
 
 @Module({
   imports: [HttpModule.register({}), IntegrationsModule],
@@ -31,6 +33,8 @@ import { EmailService } from '../email/email.service';
     UserIntegrationDatabase,
     UsersDatabase,
     EmailService,
+    JiraApiCalls,
+    JiraClientService,
   ],
   controllers: [SprintsController],
   exports: [SprintsService],

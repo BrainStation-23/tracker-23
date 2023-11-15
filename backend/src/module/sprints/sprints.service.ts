@@ -1,9 +1,7 @@
 import { TasksDatabase } from 'src/database/tasks';
 import axios from 'axios';
-
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
-
 import { GetSprintListQueryDto } from './dto';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { IntegrationsService } from '../integrations/integrations.service';
@@ -11,6 +9,8 @@ import { APIException } from '../exception/api.exception';
 import { ProjectDatabase } from 'src/database/projects';
 import { SprintDatabase } from 'src/database/sprints';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
+import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
+import { JiraClientService } from '../helper/client';
 @Injectable()
 export class SprintsService {
   constructor(
@@ -20,6 +20,8 @@ export class SprintsService {
     private sprintDatabase: SprintDatabase,
     private sprintTaskDatabase: SprintTaskDatabase,
     private tasksDatabase: TasksDatabase,
+    private jiraApiCalls: JiraApiCalls,
+    private jiraClient: JiraClientService,
   ) {}
 
   async createSprintAndTask(
@@ -29,120 +31,98 @@ export class SprintsService {
   ) {
     const sprint_list: any[] = [];
     const issue_list: any[] = [];
-    const validSprint: any[] = [];
-    const toBeUpdated: any[] = [];
-    const sprintPromises: Promise<any>[] = [];
-    const issuePromises: Promise<any>[] = [];
+    const sprintResponses: any[] = [];
+    const resolvedPromiseSprintTask: any[] = [];
+    const projectBoardIds: any[] = [];
 
     const project = await this.projectDatabase.getProjectById(projectId);
-
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace)
       throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
-
-    const updated_userIntegration =
-      await this.integrationsService.getUpdatedUserIntegration(
-        user,
-        userIntegrationId,
+    const userIntegration = await this.sprintDatabase.getUserIntegration(
+      userIntegrationId,
+    );
+    if (!userIntegration) {
+      throw new APIException(
+        'User Integration not found',
+        HttpStatus.BAD_REQUEST,
       );
+    }
 
-    if (!updated_userIntegration) return [];
-
-    const boardUrl = `https://api.atlassian.com/ex/jira/${updated_userIntegration.siteId}/rest/agile/1.0/board`;
-    const boardConfig = {
-      method: 'get',
-      url: boardUrl,
-      headers: {
-        Authorization: `Bearer ${updated_userIntegration?.accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    };
-    const boardList = await (await axios(boardConfig)).data;
-    const mappedBoardId = new Map<number, number>();
+    const boardUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/agile/1.0/board`;
+    const boardList = await this.jiraClient.CallJira(
+      userIntegration,
+      this.jiraApiCalls.getBoardList,
+      boardUrl,
+    );
     for (let index = 0; index < boardList.total; index++) {
       const board = boardList.values[index];
-      mappedBoardId.set(Number(board.location.projectId), Number(board.id));
+      if (board.location.projectId === project?.projectId) {
+        projectBoardIds.push(board.id);
+      }
     }
 
     const task_list = await this.sprintDatabase.getTaskByProjectIdAndSource(
       projectId,
     );
-
-    const boardId =
-      project && project.projectId && mappedBoardId.get(project.projectId);
-
-    if (!boardId) {
-      return [];
+    for (let index = 0, len = projectBoardIds.length; index < len; index++) {
+      for (let startAt = 0; ; startAt += 50) {
+        const sprintUrl = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/agile/1.0/board/${projectBoardIds[index]}/sprint`;
+        const sprintRes = await this.jiraClient.CallJira(
+          userIntegration,
+          this.jiraApiCalls.getJiraSprint,
+          sprintUrl,
+          { startAt, maxResults: 50 },
+        );
+        if (!sprintRes) {
+          break;
+        }
+        sprintResponses.push(...sprintRes.data.values);
+        if (sprintRes?.data?.isLast === true) {
+          break;
+        }
+      }
     }
 
-    const sprintUrl = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/agile/1.0/board/${boardId}/sprint`;
-    const sprintConfig = {
-      method: 'get',
-      url: sprintUrl,
-      headers: {
-        Authorization: `Bearer ${updated_userIntegration?.accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    };
-    const res = axios(sprintConfig);
-    sprintPromises.push(res);
-
-    const sprintResponses = await Promise.all(
-      sprintPromises.map((p) =>
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        p.catch((err) => {
-          console.error(
-            '🚀 ~ file: tasks.service.ts:1544 ~ TasksService ~ createSprintAndTask ~ err:',
-            err.config.url,
-            err.message,
-            'This board has no sprint!',
-          );
-        }),
-      ),
-    );
-
-    sprintResponses.map((res) => {
-      res &&
-        res.data &&
-        res.data.values.map((val: any) => {
-          if (val) {
-            validSprint.push(val);
-            if (val.startDate && val.endDate && val.completeDate) {
-              sprint_list.push({
-                jiraSprintId: Number(val.id),
-                projectId: projectId,
-                state: val.state,
-                name: val.name,
-                startDate: new Date(val.startDate),
-                endDate: new Date(val.startDate),
-                completeDate: new Date(val.startDate),
-              });
-            } else {
-              toBeUpdated.push(val.id);
-              sprint_list.push({
-                jiraSprintId: Number(val.id),
-                projectId: projectId,
-                state: val.state,
-                name: val.name,
-              });
-            }
-
-            const sprintIssueUrl = `https://api.atlassian.com/ex/jira/${updated_userIntegration?.siteId}/rest/agile/1.0/sprint/${val.id}/issue`;
-            const sprintIssueConfig = {
-              method: 'get',
-              url: sprintIssueUrl,
-              headers: {
-                Authorization: `Bearer ${updated_userIntegration?.accessToken}`,
-                'Content-Type': 'application/json',
-              },
-            };
-            const res = axios(sprintIssueConfig);
-            issuePromises.push(res);
-          }
+    for (let index = 0, len = sprintResponses.length; index < len; index++) {
+      const val = sprintResponses[index];
+      if (val.startDate && val.endDate && val.completeDate) {
+        sprint_list.push({
+          jiraSprintId: Number(val.id),
+          projectId: projectId,
+          state: val.state,
+          name: val.name,
+          startDate: new Date(val.startDate),
+          endDate: new Date(val.startDate),
+          completeDate: new Date(val.startDate),
         });
-    });
+      } else {
+        // toBeUpdated.push(val.id);
+        sprint_list.push({
+          jiraSprintId: Number(val.id),
+          projectId: projectId,
+          state: val.state,
+          name: val.name,
+        });
+      }
+      for (let startAt = 0; startAt < 5000; startAt += 50) {
+        const sprintIssueUrl = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/agile/1.0/sprint/${val.id}/issue`;
+        const res = await this.jiraClient.CallJira(
+          userIntegration,
+          this.jiraApiCalls.getSprintIssueList,
+          sprintIssueUrl,
+          { startAt, maxResults: 50 },
+        );
+        resolvedPromiseSprintTask.push(res);
+
+        if (res.data.issues.length < 50) {
+          break;
+        }
+      }
+    }
+
     //Get all task related to the sprint
-    const resolvedPromiseSprintTask = await Promise.all(issuePromises);
+    // const resolvedPromiseSprintTask = await Promise.all(issuePromises);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [delSprint, crtSprint, sprints] = await Promise.all([
@@ -168,8 +148,12 @@ export class SprintsService {
         task_list[index].id,
       );
     }
-
-    resolvedPromiseSprintTask.map((res: any) => {
+    for (
+      let index = 0, len = resolvedPromiseSprintTask.length;
+      index < len;
+      index++
+    ) {
+      const res = resolvedPromiseSprintTask[index];
       const urlArray = res.config.url.split('/');
       const jiraSprintId = urlArray[urlArray.length - 2];
       const sprintId = mappedSprintId.get(Number(jiraSprintId));
@@ -182,10 +166,9 @@ export class SprintsService {
             taskId: taskId,
           });
       });
-    });
+    }
 
     const sprintIds: number[] = Array.from(mappedSprintId.values());
-
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [DelSprintTask, CST, sprintTasks] = await Promise.all([
       await this.sprintTaskDatabase.deleteSprintTaskBySprintIds(sprintIds),
