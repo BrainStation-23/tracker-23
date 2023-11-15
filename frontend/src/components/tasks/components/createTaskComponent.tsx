@@ -119,7 +119,6 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
   };
   const options: SelectProps["options"] = [];
   const initialValues = {
-    priority: "MEDIUM",
     projectId: projectData[0]?.value,
   };
   console.log(
@@ -142,6 +141,9 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
       value
     );
   };
+  // useEffect(() => {
+  //   form.resetFields(["priority"]);
+  // }, [priorities]);
 
   return (
     <Spin spinning={CreatingTask} tip={"Processing"}>
@@ -184,6 +186,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
             >
               <Select
                 onChange={handleFrequencyChange}
+                placeholder="Select Priority"
                 options={priorityNames?.map((priorityName) => {
                   return { value: priorityName, label: priorityName };
                 })}
@@ -201,6 +204,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
                 placeholder="Select Project"
                 onChange={(e) => {
                   setSelectedProject(e);
+                  form.resetFields(["priority"]);
                 }}
                 dropdownRender={(menu) => (
                   <>
