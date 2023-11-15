@@ -89,13 +89,13 @@ export class CreateTaskDto {
 }
 
 export enum WeekDaysType {
-  Saturday = 'Saturday',
-  Sunday = 'Sunday',
-  Monday = 'Monday',
-  Tuesday = 'Tuesday',
-  Wednesday = 'Wednesday',
-  Thursday = 'Thursday',
-  Friday = 'Friday',
+  Saturday = 'SATURDAY',
+  Sunday = 'SUNDAY',
+  Monday = 'MONDAY',
+  Tuesday = 'TUESDAY',
+  Wednesday = 'WEDNESDAY',
+  Thursday = 'THURSDAY',
+  Friday = 'FRIDAY',
 }
 
 enum MonthlyRepeatType {
