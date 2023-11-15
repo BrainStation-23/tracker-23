@@ -634,11 +634,7 @@ export class TasksService {
       startTime <= new Date(dto.endDate).getTime();
       startTime += repeatTime
     ) {
-      const weekday = dayjs(new Date(startTime)).format('dddd');
-      // console.log(
-      //   '🚀 ~ file: index.ts:248 ~ TasksDatabase ~ weekday:',
-      //   weekday,
-      // );
+      const weekday = dayjs(new Date(startTime)).format('dddd').toUpperCase();
       const firstPos = myMap?.get(weekday);
       for (let index = 0; index < dto.weekDays.length; index++) {
         let target = myMap?.get(dto.weekDays[index]);
