@@ -97,7 +97,7 @@ export class SessionsService {
     if (!activeSession) {
       throw new BadRequestException('No active session');
     }
-    const timeSpent = Math.ceil(
+    const timeSpent = Math.floor(
       (new Date(Date.now()).getTime() - activeSession.startTime.getTime()) /
         1000,
     );
@@ -186,7 +186,7 @@ export class SessionsService {
       return null;
     }
 
-    const timeSpent = Math.ceil(
+    const timeSpent = Math.floor(
       (session.endTime.getTime() - session.startTime.getTime()) / 1000,
     );
     if (timeSpent < 60) {
@@ -228,7 +228,7 @@ export class SessionsService {
     if (!timeSpent) {
       return 0 + 'm';
     }
-    timeSpent = Math.ceil(timeSpent / 60);
+    timeSpent = Math.floor(timeSpent / 60);
     return timeSpent + 'm';
   }
 
@@ -295,7 +295,7 @@ export class SessionsService {
       dto.taskId,
     );
 
-    const timeSpent = Math.ceil(
+    const timeSpent = Math.floor(
       (endTime.getTime() - startTime.getTime()) / 1000,
     );
     if (timeSpent < 60) {
@@ -450,7 +450,7 @@ export class SessionsService {
       if (doesExistWorklog.authorId === updated_integration.jiraAccountId) {
         const startTime = new Date(`${reqBody.startTime}`);
         const endTime = new Date(`${reqBody.endTime}`);
-        const timeSpentReqBody = Math.ceil(
+        const timeSpentReqBody = Math.floor(
           (endTime.getTime() - startTime.getTime()) / 1000,
         );
         if (timeSpentReqBody < 60) {
