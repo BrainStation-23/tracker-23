@@ -295,7 +295,7 @@ export class SessionsService {
       dto.taskId,
     );
 
-    const timeSpent = Math.ceil(
+    const timeSpent = Math.floor(
       (endTime.getTime() - startTime.getTime()) / 1000,
     );
     if (timeSpent < 60) {
@@ -450,7 +450,7 @@ export class SessionsService {
       if (doesExistWorklog.authorId === updated_integration.jiraAccountId) {
         const startTime = new Date(`${reqBody.startTime}`);
         const endTime = new Date(`${reqBody.endTime}`);
-        const timeSpentReqBody = Math.ceil(
+        const timeSpentReqBody = Math.floor(
           (endTime.getTime() - startTime.getTime()) / 1000,
         );
         if (timeSpentReqBody < 60) {
