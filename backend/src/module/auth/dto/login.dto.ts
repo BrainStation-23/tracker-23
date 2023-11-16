@@ -17,7 +17,7 @@ export class LoginDto {
 
   @IsBoolean()
   @IsOptional()
-  remember: boolean;
+  remember?: boolean;
 }
 export type userDto = {
   email: string;

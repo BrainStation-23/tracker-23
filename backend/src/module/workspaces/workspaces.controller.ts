@@ -120,4 +120,9 @@ export class WorkspacesController {
       reqStatus.status,
     );
   }
+
+  @Get('/verify/invited-user/:token')
+  async verifyInvitedUser(@Param('token') token: string) {
+    return await this.workspacesService.verifyInvitedUser(token);
+  }
 }

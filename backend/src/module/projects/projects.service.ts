@@ -25,7 +25,7 @@ export class ProjectsService {
     private prisma: PrismaService,
   ) {}
 
-  async importProjects(user: User, projId: number, res?: Response) {
+  async importProject(user: User, projId: number, res?: Response) {
     const project = await this.projectDatabase.getProjectByIdWithIntegration(
       projId,
     );
@@ -63,8 +63,8 @@ export class ProjectsService {
 
     res && (await this.tasksService.syncCall(StatusEnum.IN_PROGRESS, user));
 
-    this.tasksService.setProjectStatuses(project, updatedUserIntegration);
-    this.tasksService.importPriorities(project, updatedUserIntegration);
+    await this.tasksService.setProjectStatuses(project, updatedUserIntegration);
+    await this.tasksService.importPriorities(project, updatedUserIntegration);
 
     try {
       await this.tasksService.sendImportingNotification(user);
@@ -114,10 +114,10 @@ export class ProjectsService {
     if (!project) {
       throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
     }
-
-    const deletedTasks = await this.projectDatabase.deleteTasksByProjectId(id);
-    if (!deletedTasks)
-      throw new APIException('Invalid Project ID', HttpStatus.BAD_REQUEST);
+    await this.projectDatabase.deleteTasksByProjectId(id);
+    await this.projectDatabase.deleteSprintByProjectId(id);
+    await this.projectDatabase.deleteStatusDetails(id);
+    await this.projectDatabase.deletePriorities(id);
 
     const updatedProject =
       project.source === 'T23'
@@ -125,12 +125,12 @@ export class ProjectsService {
         : await this.projectDatabase.updateProjectById(id, {
             integrated: false,
           });
-
-    if (!updatedProject)
+    if (!updatedProject) {
       throw new APIException(
         'Could not delete project',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
 
     return res.status(202).json({ message: 'Project Deleted' });
   }
@@ -177,7 +177,7 @@ export class ProjectsService {
   async createProject(user: User, projectName: string) {
     if (!user || (user && !user?.activeWorkspaceId))
       throw new APIException(
-        'No userworkspace detected',
+        'No UserWorkspace detected',
         HttpStatus.BAD_REQUEST,
       );
 
@@ -220,14 +220,27 @@ export class ProjectsService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
 
-    await this.projectDatabase.createLocalPriorities(newProject?.id);
-    return newProject;
+    await this.projectDatabase.createLocalPrioritiesWithTransactionPrismaInstance(
+      newProject?.id,
+      this.prisma,
+    );
+    return await this.projectDatabase.getProject(
+      {
+        id: newProject.id,
+        workspaceId: user?.activeWorkspaceId,
+      },
+      {
+        integration: true,
+        statuses: true,
+        priorities: true,
+      },
+    );
   }
 
   async updateProject(user: User, id: number, data: UpdateProjectRequest) {
     if (!user || (user && !user?.activeWorkspaceId))
       throw new APIException(
-        'No userworkspace detected',
+        'No UserWorkspace detected',
         HttpStatus.BAD_REQUEST,
       );
 

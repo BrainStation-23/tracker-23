@@ -97,6 +97,45 @@ export class ProjectDatabase {
     }
   }
 
+  async deleteSprintByProjectId(projId: number) {
+    try {
+      const deletedSprints = await this.prisma.sprint.deleteMany({
+        where: { projectId: projId },
+      });
+
+      return deletedSprints;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+  async deleteStatusDetails(projId: number) {
+    try {
+      return await this.prisma.statusDetail.deleteMany({
+        where: {
+          projectId: projId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async deletePriorities(projId: number) {
+    try {
+      return await this.prisma.priorityScheme.deleteMany({
+        where: {
+          projectId: projId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
   async updateProjectById(projId: number, update: any) {
     try {
       return await this.prisma.project.update({
@@ -157,7 +196,7 @@ export class ProjectDatabase {
       return await this.prisma.project.delete({
         where: {
           id: projId,
-        }
+        },
       });
     } catch (error) {
       console.log(error);
@@ -165,29 +204,52 @@ export class ProjectDatabase {
     }
   }
 
-  async createLocalPriorities(projectId: number) {
+  async createLocalPrioritiesWithTransactionPrismaInstance(
+    projectId: number,
+    prisma: any,
+  ) {
     try {
-      return await this.prisma.priorityScheme.createMany({
+      return await prisma.priorityScheme.createMany({
         data: [
           {
+            name: 'Lowest',
+            priorityCategoryName: 'LOWEST',
+            iconUrl:
+              'https://pm23.atlassian.net/images/icons/priorities/lowest.svg',
+            color: '#999999',
             projectId,
-            name: 'HIGH',
-            priorityCategoryName: 'HIGH',
           },
           {
-            projectId,
-            name: 'LOW',
+            name: 'Low',
             priorityCategoryName: 'LOW',
+            iconUrl:
+              'https://pm23.atlassian.net/images/icons/priorities/low.svg',
+            color: '#707070',
+            projectId,
           },
           {
             projectId,
-            name: 'MEDIUM',
+            name: 'Medium',
             priorityCategoryName: 'MEDIUM',
+            iconUrl:
+              'https://pm23.atlassian.net/images/icons/priorities/medium.svg',
+            color: '#f79232',
           },
           {
             projectId,
-            name: 'HIGHEST',
+            name: 'High',
+            priorityCategoryName: 'HIGH',
+            iconUrl:
+              'https://pm23.atlassian.net/images/icons/priorities/high.svg',
+            color: '#f15C75',
+          },
+          {
+            projectId,
+            name: 'Highest',
             priorityCategoryName: 'HIGHEST',
+            color: '#d04437',
+            iconUrl:
+              'https://pm23.atlassian.net/images/icons/priorities/highest.svg',
           },
         ],
       });

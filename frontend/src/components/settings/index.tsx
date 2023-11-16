@@ -2,6 +2,13 @@ import { Select, Spin, Tooltip, Typography } from "antd";
 import { userAPI } from "APIs";
 import { useEffect, useState } from "react";
 import { LuHelpCircle } from "react-icons/lu";
+import { useDispatch } from "react-redux";
+
+import {
+  setSettingsReducer,
+  setSyncTimeReducer,
+  setTimeFormatReducer,
+} from "@/storage/redux/settingsSlice";
 
 type TagProps = {
   label: any;
@@ -11,6 +18,7 @@ type TagProps = {
 };
 const SettingComponent = () => {
   const { Text } = Typography;
+  const dispatch = useDispatch();
   const [syncTime, setSyncTime] = useState<number | null>();
   const [timeFormat, setTimeFormat] = useState<string | null>();
   const [spinning, setSpinning] = useState<boolean>(false);
@@ -18,18 +26,25 @@ const SettingComponent = () => {
     const res = await userAPI.getWorkspaceSettings();
     res?.syncTime && setSyncTime(res.syncTime);
     res?.timeFormat && setTimeFormat(res.timeFormat);
+    res && dispatch(setSettingsReducer(res));
     console.log("🚀 ~ file: index.tsx:6 ~ getSettings ~ res:", res);
   };
   const handleSyncTimeChange = async (time: number) => {
     setSpinning(true);
     const res = await userAPI.updateSyncTime(time);
-    if (res) setSyncTime(time);
+    if (res) {
+      setSyncTime(time);
+      dispatch(setSyncTimeReducer(time));
+    }
     setSpinning(false);
   };
-  const handleTimeFormatChange = async (time: string) => {
+  const handleTimeFormatChange = async (time: "Day" | "Hour") => {
     setSpinning(true);
     const res = await userAPI.updateTimeFormat(time);
-    if (res) setTimeFormat(time);
+    if (res) {
+      dispatch(setTimeFormatReducer(time));
+      setTimeFormat(time);
+    }
     setSpinning(false);
   };
   const Options = [1, 6, 12].map((v) => {
@@ -98,7 +113,7 @@ const SettingComponent = () => {
               className="w-[200px]"
               showArrow
               options={TimeFormatOptions}
-              onChange={(value) => {
+              onChange={(value: any) => {
                 handleTimeFormatChange(value);
               }}
             />

@@ -1,11 +1,12 @@
-import { HttpStatus, Injectable } from "@nestjs/common";
-import { Role, User } from "@prisma/client";
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { Role, User } from '@prisma/client';
 
 import { WorkspaceDatabase } from 'src/database/workspaces/index';
-import { UsersDatabase } from "src/database/users";
-import { APIException } from "../exception/api.exception";
+import { UsersDatabase } from 'src/database/users';
+import { APIException } from '../exception/api.exception';
 import { UpdateSettingsReqDto } from './dto/create.settings.dto';
-import { TasksDatabase } from "src/database/tasks";
+import { TasksDatabase } from 'src/database/tasks';
+import { UpdateApprovalUserRequest } from './dto/update.approvalUser.request.dto';
 
 @Injectable()
 export class UsersService {
@@ -32,7 +33,11 @@ export class UsersService {
         HttpStatus.BAD_REQUEST,
       );
 
-    const updateUserRole = await this.usersDatabase.updateRole(user, userId, role);
+    const updateUserRole = await this.usersDatabase.updateRole(
+      user,
+      userId,
+      role,
+    );
     if (!updateUserRole)
       throw new APIException(
         'Restricted Action: User is not in your workspace.',
@@ -43,23 +48,41 @@ export class UsersService {
   }
 
   async updateSettings(user: User, data: UpdateSettingsReqDto) {
-    if(!user.activeWorkspaceId) throw new APIException('No workspace detected', HttpStatus.BAD_REQUEST);
+    if (!user.activeWorkspaceId)
+      throw new APIException('No workspace detected', HttpStatus.BAD_REQUEST);
 
     const settingsExists = await this.tasksDatabase.getSettings(user);
-    if(!settingsExists)
-      throw new APIException(
-        'Cannot update settings',
-        HttpStatus.BAD_REQUEST,
-      );
+    if (!settingsExists)
+      throw new APIException('Cannot update settings', HttpStatus.BAD_REQUEST);
 
     const updatedSettings = await this.usersDatabase.updateSettings(user, data);
     if (!updatedSettings)
-      throw new APIException('Cannot update settings', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new APIException(
+        'Cannot update settings',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
 
     return updatedSettings;
   }
 
   async getSettings(user: User) {
-     return await this.tasksDatabase.getSettings(user);
+    return await this.tasksDatabase.getSettings(user);
+  }
+  async getUserList(user: User) {
+    if (user.email !== 'seefathimel1@gmail.com') {
+      throw new APIException('You are not authorized', HttpStatus.FORBIDDEN);
+    }
+    return await this.usersDatabase.getAllUsers();
+  }
+  async updateApprovalUser(
+    user: User,
+    userId: any,
+    req: UpdateApprovalUserRequest,
+  ) {
+    if (user.email !== 'seefathimel1@gmail.com') {
+      throw new APIException('You are not authorized', HttpStatus.FORBIDDEN);
+    }
+    const updateUserId = parseInt(userId);
+    return await this.usersDatabase.updateApprovalUser(updateUserId, req);
   }
 }

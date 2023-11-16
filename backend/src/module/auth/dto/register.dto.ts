@@ -9,7 +9,7 @@ export class RegisterDto {
   @MinLength(6)
   password: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   firstName: string;
 

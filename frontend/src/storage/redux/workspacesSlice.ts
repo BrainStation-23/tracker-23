@@ -4,11 +4,13 @@ import { WorkspaceDto } from "models/workspaces";
 // Define the initial state using the WorkspaceState interface
 interface WorkspaceState {
   workspaces: WorkspaceDto[];
+  activeWorkspace?: WorkspaceDto;
   reload: Boolean;
 }
 
 const initialState: WorkspaceState = {
   workspaces: [],
+  activeWorkspace: null,
   reload: false,
 };
 
@@ -17,15 +19,30 @@ const workspacesSlice = createSlice({
   initialState,
   reducers: {
     setWorkspacesSlice: (state, action: PayloadAction<WorkspaceDto[]>) => {
+      const workspaces = action.payload;
+      state.activeWorkspace =
+        workspaces?.length > 0 &&
+        workspaces.find((workspace: WorkspaceDto) => workspace.active);
       state.workspaces = action.payload;
     },
     resetWorkspacesSlice: (state) => {
       state.workspaces = [];
+      state.activeWorkspace = null;
+    },
+    setActiveWorkspaceSlice: (
+      state,
+      action: PayloadAction<WorkspaceDto | null>
+    ) => {
+      state.activeWorkspace = action.payload;
     },
     changeWorkspaceReloadStatusSlice: (state) => {
       state.reload = !state.reload;
     },
     updateWorkspaceSlice: (state, action: PayloadAction<WorkspaceDto>) => {
+      if (action.payload.id === state.activeWorkspace.id) {
+        action.payload.active = true;
+        state.activeWorkspace = action.payload;
+      }
       const newWorkspaces = state.workspaces.map((workspace) => {
         if (workspace.id === action.payload.id) return action.payload;
         else return workspace;
@@ -33,6 +50,9 @@ const workspacesSlice = createSlice({
       state.workspaces = newWorkspaces;
     },
     deleteWorkspaceSlice: (state, action: PayloadAction<WorkspaceDto>) => {
+      if (action.payload.id === state.activeWorkspace.id) {
+        state.activeWorkspace = null;
+      }
       const newWorkspaces = state.workspaces.filter(
         (workspace) => workspace.id !== action.payload.id
       );
@@ -53,6 +73,7 @@ export const {
   updateWorkspaceSlice,
   deleteWorkspaceSlice,
   addWorkspaceSlice,
+  setActiveWorkspaceSlice,
 } = workspacesSlice.actions;
 
 export default workspacesSlice.reducer;

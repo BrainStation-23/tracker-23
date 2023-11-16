@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 
 import JiraLogoFullSvg from "@/assets/svg/JiraFullLogoSvg";
 import TrelloLogoSvg from "@/assets/svg/TrelloLogoSvg";
+import OpenLinkInNewTab from "@/components/common/link/OpenLinkInNewTab";
 
 type Props = {
   integration: Integration;
@@ -33,14 +34,14 @@ const IntegrationSelectionCard = ({
         </div>
         <div className="text-sm font-normal">
           Connect to
-          <div
+          <OpenLinkInNewTab
             className="text-sm font-normal text-blue-500"
             onClick={() => {
               window.open(integration.site);
             }}
           >
             {integration.site}
-          </div>
+          </OpenLinkInNewTab>
         </div>
       </div>
       <div className="flex w-full pt-3">

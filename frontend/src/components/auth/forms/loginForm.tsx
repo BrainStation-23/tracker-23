@@ -13,9 +13,10 @@ import Line from "../../dashboard/charts/lineChart";
 
 type Props = {
   setIsModalOpen: Function;
+  email?: string;
 };
 
-const LoginForm = ({ setIsModalOpen }: Props) => {
+const LoginForm = ({ setIsModalOpen, email }: Props) => {
   const router = useRouter();
   const signIn = async (values: any) => {
     console.log(values);
@@ -42,7 +43,7 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
       name="basic"
       // labelCol={{ span: 8 }}
       // wrapperCol={{ span: 16 }}
-      initialValues={{ remember: true }}
+      initialValues={{ remember: true, email }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
       // autoComplete="off"
@@ -66,7 +67,11 @@ const LoginForm = ({ setIsModalOpen }: Props) => {
           },
         ]}
       >
-        <MyInput type="text" placeholder="Enter your email" />
+        <MyInput
+          disabled={email?.length > 0}
+          type="text"
+          placeholder="Enter your email"
+        />
       </MyFormItem>
       <div className="relative">
         <MyFormItem

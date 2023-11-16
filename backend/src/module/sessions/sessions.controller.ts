@@ -14,14 +14,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
-
 import { ManualTimeEntryReqBody, SessionDto, SessionReqBodyDto } from './dto';
 import { SessionsService } from './sessions.service';
 import {
   GetTaskQuery,
   GetTeamTaskQuery,
   GetTeamTaskQueryType,
-  GetTimesheetQuery,
+  GetTimeSheetQuery,
 } from '../tasks/dto';
 
 @Controller('sessions')
@@ -118,10 +117,16 @@ export class SessionsController {
 
   @Get('/timeSheet/per-day')
   @UseGuards(JwtAuthGuard)
-  async getTimsheetPerDay(
+  async getTimeSheetPerDay(
     @GetUser() user: User,
-    @Query() query: GetTimesheetQuery,
+    @Query() query: GetTimeSheetQuery,
   ) {
-    return await this.sessionsService.getTimesheetPerDay(user, query);
+    return await this.sessionsService.getTimeSheetPerDay(user, query);
   }
+
+  // @Get('spent-time/send-weekly-timesheet')
+  // @UseGuards(JwtAuthGuard)
+  // async sendWeeklyTimeSheet(@GetUser() user: User) {
+  //   return this.sessionsService.sendWeeklyTimeSheet(user.id);
+  // }
 }

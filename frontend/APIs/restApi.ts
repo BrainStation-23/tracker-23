@@ -29,12 +29,30 @@ import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 import { sortByStatus } from "../src/services/taskActions";
 import { getTimeSheetReportDto } from "models/reports";
 import { disconnectSocket } from "@/services/socket.service";
+import { updateApprovalUserDto } from "models/user";
 
 export async function loginRest(
   data: LoginDto
 ): Promise<LoginResponseDto | undefined> {
   try {
     const res = await axios.post(`${apiEndPoints.login}`, data);
+    if (res?.data?.access_token) {
+      SetCookie("access_token", res?.data?.access_token);
+      setLocalStorage("access_token", res?.data?.access_token);
+      setLocalStorage("userDetails", res.data);
+    }
+    return res.data;
+  } catch (error: any) {
+    console.log("🚀 ~ file: restApi.ts:48 ~ error:", error);
+    return null;
+  }
+}
+
+export async function loginFromInviteRest(
+  data: LoginDto
+): Promise<LoginResponseDto | undefined> {
+  try {
+    const res = await axios.post(`${apiEndPoints.invitedUserLogin}`, data);
     if (res?.data?.access_token) {
       SetCookie("access_token", res?.data?.access_token);
       setLocalStorage("access_token", res?.data?.access_token);
@@ -64,6 +82,23 @@ export async function registerRest(
 ): Promise<RegisterDto | undefined> {
   try {
     const res = await axios.post(`${apiEndPoints.register}`, data);
+    return res.data;
+  } catch (error: any) {
+    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
+    return null;
+  }
+}
+
+export async function registerFromInviteRest(
+  data: RegisterDto
+): Promise<RegisterDto | undefined> {
+  try {
+    const res = await axios.post(`${apiEndPoints.invitedUserRegister}`, data);
+    if (res?.data?.access_token) {
+      SetCookie("access_token", res?.data?.access_token);
+      setLocalStorage("access_token", res?.data?.access_token);
+      setLocalStorage("userDetails", res.data);
+    }
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
@@ -535,6 +570,12 @@ export async function deleteProjectTasksRest(id: number) {
 export async function getWorkspaceListRest() {
   try {
     const res = await axios.get(`${apiEndPoints.workspaces}`);
+    res.data.workspaces = res.data.workspaces.map((workspace: any) => {
+      return {
+        ...workspace,
+        active: workspace.id === res.data.user.activeWorkspaceId,
+      };
+    });
     return res.data;
   } catch (error: any) {
     return false;
@@ -661,6 +702,36 @@ export async function getTimeSheetReportRest(data: getTimeSheetReportDto) {
     const res = await axios.get(
       `${apiEndPoints.timeSheetReport}/` +
         `?startDate=${data?.startDate}&endDate=${data?.endDate}`
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function getInvitedUserInfoRest(token: string) {
+  try {
+    const res = await axios.get(`${apiEndPoints.invitedUserInfo}` + token);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function getAllUsersRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.allUsers}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function updateApprovalUserRest(
+  userId: number,
+  data: updateApprovalUserDto
+) {
+  try {
+    const res = await axios.patch(
+      `${apiEndPoints.updateApprovalUser}${userId}`,
+      data
     );
     return res.data;
   } catch (error: any) {

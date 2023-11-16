@@ -1,3 +1,5 @@
+import { UserWorkspaceDto, WorkspaceDto } from "models/workspaces";
+
 export interface UserDto {
   id: number;
   email: string;
@@ -7,4 +9,11 @@ export interface UserDto {
   role?: string;
   picture?: string;
   designation?: string;
+  activeWorkspace?: WorkspaceDto;
+  activeUserWorkspace?: UserWorkspaceDto;
+  approved?: boolean;
+}
+
+export interface updateApprovalUserDto {
+  approved: boolean;
 }

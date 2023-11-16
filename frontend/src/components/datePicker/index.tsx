@@ -105,7 +105,7 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
   return (
     <div className="flex items-center gap-0">
       <div
-        className="cursor-pointer rounded bg-inherit bg-thirdLight p-2 text-xl"
+        className="cursor-pointer rounded-l bg-inherit bg-thirdLight p-2 text-xl hover:bg-[#F3F4F6]"
         onClick={() => handlePreviousClick()}
       >
         <LuChevronLeft />
@@ -194,7 +194,7 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
               </div>
             </div>
           )}
-          className="flex w-[250px] items-center rounded bg-gray-50 p-2 hover:bg-gray-100"
+          className="flex w-[250px] cursor-pointer items-center bg-gray-50 p-2 hover:bg-gray-100"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -213,7 +213,7 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
         </Dropdown>
       </div>
       <div
-        className="cursor-pointer rounded bg-inherit bg-thirdLight p-2 text-xl"
+        className="cursor-pointer rounded-r bg-thirdLight p-2 text-xl hover:bg-[#F3F4F6]"
         onClick={() => handleNext()}
       >
         <LuChevronRight />

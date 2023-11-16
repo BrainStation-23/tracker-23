@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
-import { IntegrationType, Task } from "@prisma/client";
-import { PrismaService } from "src/module/prisma/prisma.service";
+import { Injectable } from '@nestjs/common';
+import { IntegrationType, Task } from '@prisma/client';
+import { PrismaService } from 'src/module/prisma/prisma.service';
 
 @Injectable()
 export class SprintDatabase {
@@ -67,7 +67,7 @@ export class SprintDatabase {
     }
   }
 
-  async getTaskByProjectIdAndSource(projectId: number): Promise<Task[] | []>{
+  async getTaskByProjectIdAndSource(projectId: number): Promise<Task[] | []> {
     try {
       return await this.prisma.task.findMany({
         where: {
@@ -78,6 +78,18 @@ export class SprintDatabase {
     } catch (error) {
       console.log(error);
       return [];
+    }
+  }
+
+  async getUserIntegration(id: number) {
+    try {
+      return this.prisma.userIntegration.findUnique({
+        where: {
+          id,
+        },
+      });
+    } catch (err) {
+      return null;
     }
   }
 }

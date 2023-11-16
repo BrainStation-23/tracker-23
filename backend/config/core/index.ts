@@ -6,6 +6,14 @@ const {
   BASE_URL,
   PROMISE_RESOLVE_QUANTITY,
   SYNC_TASK_QUANTITY,
+  INVITE_URL,
+  GOOGLE_EMAIL_USER,
+  NODEMAILER_HOST,
+  NODEMAILER_PORT,
+  NODEMAILER_SECURE,
+  NODEMAILER_SERVICE,
+  NODEMAILER_USER,
+  NODEMAILER_PASS,
 } = process.env;
 
 export const coreConfig = {
@@ -16,4 +24,19 @@ export const coreConfig = {
   baseUrl: BASE_URL || 'http://localhost:8080',
   promiseQuantity: Number(PROMISE_RESOLVE_QUANTITY) || 10,
   syncTaskQuantity: Number(SYNC_TASK_QUANTITY) || 10,
+  ADMIN_URL: INVITE_URL || 'http://localhost:3001/inviteLink',
+};
+
+export const nodemailerConfig = {
+  user: GOOGLE_EMAIL_USER,
+  options: {
+    host: NODEMAILER_HOST || 'smtp.example.com',
+    port: Number(NODEMAILER_PORT) || 465,
+    secure: Boolean(NODEMAILER_SECURE) || true,
+    service: NODEMAILER_SERVICE || 'gmail',
+    auth: {
+      user: NODEMAILER_USER,
+      pass: NODEMAILER_PASS,
+    },
+  },
 };

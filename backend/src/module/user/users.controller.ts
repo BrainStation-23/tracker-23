@@ -5,6 +5,7 @@ import { User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/guard';
 import { UpdateSettingsReqDto } from './dto/create.settings.dto';
 import { UpdateRoleRequest } from './dto/update.role.request.dto';
+import { UpdateApprovalUserRequest } from './dto/update.approvalUser.request.dto';
 
 @Controller('users')
 export class UsersController {
@@ -39,5 +40,25 @@ export class UsersController {
     @Body() data: UpdateSettingsReqDto,
   ) {
     return await this.usersService.updateSettings(user, data);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/userList')
+  async getUserList(@GetUser() user: User) {
+    return await this.usersService.getUserList(user);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Patch('/userList/:userId')
+  async updateApprovalUser(
+    @GetUser() user: User,
+    @Param('userId') userId: number,
+    @Body() req: UpdateApprovalUserRequest,
+  ) {
+    console.log(
+      '🚀 ~ file: users.controller.ts:56 ~ UsersController ~ req:',
+      req,
+    );
+
+    return await this.usersService.updateApprovalUser(user, userId, req);
   }
 }

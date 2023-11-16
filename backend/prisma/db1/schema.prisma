@@ -35,6 +35,7 @@ model Workspace {
   userIntegrations UserIntegration[]
 
   settings Settings?
+  User     User[]
 }
 
 model UserWorkspace {
@@ -60,6 +61,7 @@ model UserWorkspace {
   inviter       User?       @relation("InviterUser", fields: [inviterUserId], references: [id])
   inviterUserId Int?
   designation   Designation @default(DEVELOPER)
+
   // invitationsSent     WorkspaceInvitation[] @relation("InviterUser")
   // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
   @@unique([userId, workspaceId], name: "userWorkspaceIdentifier")
@@ -86,12 +88,14 @@ model User {
   hash                 String?
   firstName            String?
   lastName             String?
+  activeWorkspace      Workspace?      @relation(fields: [activeWorkspaceId], references: [id])
   activeWorkspaceId    Int?
   picture              String?
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
   passwordResetToken   String?
   passwordResetExpires DateTime?
+  approved            Boolean?        @default(false)
   userWorkspaces       UserWorkspace[] @relation("User")
   // ownedWorkspaces     Workspace[]
   // tasks               Task[]
@@ -225,10 +229,10 @@ model Task {
   url                  String?
   key                  String?
   pinned               Boolean?        @default(false)
-  jiraUpdatedAt DateTime?
-  sessions Session[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  jiraUpdatedAt        DateTime?
+  sessions             Session[]
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @default(now())
 
   userWorkspace   UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
   userWorkspaceId Int?
@@ -242,7 +246,8 @@ model Task {
   parentTask   Task?  @relation("childTask", fields: [parentTaskId], references: [id])
   parentTaskId Int?
   childTask    Task[] @relation("childTask")
-   @@unique([workspaceId, projectId, integratedTaskId], name: "TaskIdentifier")
+
+  @@unique([workspaceId, projectId, integratedTaskId], name: "TaskIdentifier")
 }
 
 model Session {
@@ -318,6 +323,8 @@ model PriorityScheme {
   priorityId           String?
   name                 String
   priorityCategoryName String
+  iconUrl              String?
+  color                String?
 
   projects  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId Int

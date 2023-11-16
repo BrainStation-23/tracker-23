@@ -20,12 +20,17 @@ import {
 
 import { RegisterDto } from "../models/auth/index";
 import { TaskDto } from "../models/tasks/index";
+import { updateApprovalUserDto } from "models/user";
 
 export interface apiFunction {
   login: (data: LoginDto) => Promise<LoginResponseDto | undefined>;
+  loginFromInvite: (data: LoginDto) => Promise<LoginResponseDto | undefined>;
   googleLogin: (code: string) => Promise<LoginResponseDto | undefined>;
   logout: () => {};
   registerUser: (data: RegisterDto) => Promise<RegisterDto | undefined>;
+  registerUserFromInvite: (
+    data: RegisterDto
+  ) => Promise<RegisterDto | undefined>;
   createTask: (data: CreateTaskDto) => Promise<TaskDto>;
   deleteTask: (data: any) => Promise<any | undefined>;
   getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
@@ -77,7 +82,13 @@ export interface apiFunction {
   getJiraActiveSprintTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   forgotPassword: (data?: ForgotPasswordDto) => Promise<any>;
   resetPassword: (token: string, data: ResetPasswordDto) => Promise<any>;
-  updateSyncTime: (time: number ) => Promise<any>;
-  updateTimeFormat: (value: string ) => Promise<any>;
+  updateSyncTime: (time: number) => Promise<any>;
+  updateTimeFormat: (value: string) => Promise<any>;
   getTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
+  getInvitedUserInfo: (token: string) => Promise<any>;
+  getAllUsers: () => Promise<any>;
+  updateApprovalUser: (
+    userId: number,
+    data: updateApprovalUserDto
+  ) => Promise<any>;
 }

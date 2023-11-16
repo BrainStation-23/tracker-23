@@ -1,13 +1,19 @@
-import { getTotalSpentTime } from "@/services/timeActions";
 import { TaskDto } from "models/tasks";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+
+import { getTotalSpentTime } from "@/services/timeActions";
+import { useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
+
 type Props = {
   milliseconds: number;
   task?: TaskDto;
 };
 function Stopwatch({ milliseconds, task }: Props) {
   const [time, setTime] = useState(milliseconds);
-
+  const timeFormat = useAppSelector(
+    (state: RootState) => state.settingsSlice.timeFormat
+  );
   useEffect(() => {
     task?.sessions && setTime(getTotalSpentTime(task?.sessions));
     let interval: any = null;
@@ -18,19 +24,33 @@ function Stopwatch({ milliseconds, task }: Props) {
   }, [task?.sessions]);
 
   const formatTime = (time: number) => {
-    const hours = Math.floor(time / 3600000).toString();
-    const h = Math.floor(time / 3600000);
-    const minutes = Math.floor((time % 3600000) / 60000).toString();
-    const sm = ((time % 3600000) / 60000).toFixed(1);
+    let tmp = Math.floor(time / 1000);
+    let days = 0;
+    let hours = 0;
+    let minutes = 0;
+    let sm: any = 0;
 
-    // .padStart(2, "0");
-    const seconds = Math.floor((time % 60000) / 1000)
-      .toString()
-      .padStart(2, "0");
-    return `${h > 0 ? hours + "hrs " : ""} ${
-      (time % 3600000) / 60000 < 1 && h === 0 ? sm : minutes
-    }m`;
-    return `${hours}:${minutes}:${seconds}`;
+    if (timeFormat === "Day") {
+      days = Math.floor(tmp / (8 * 3600));
+      tmp %= 8 * 3600;
+      hours = Math.floor(tmp / 3600);
+      tmp %= 3600;
+      sm = (tmp / 60).toFixed(1);
+      minutes = Math.floor(tmp / 60);
+    } else if (timeFormat === "Hour") {
+      hours = Math.floor(tmp / 3600);
+      tmp %= 3600;
+      minutes = Math.floor(tmp / 60);
+      sm = tmp / 60;
+    }
+
+    const formattedTime = [];
+    days > 0 && formattedTime.push(days + "d");
+    hours > 0 && formattedTime.push(hours + "h");
+    minutes >= 1.0
+      ? formattedTime.push(`${minutes}m`)
+      : formattedTime.push(`${sm}m`);
+    return formattedTime.join(" ");
   };
 
   return (

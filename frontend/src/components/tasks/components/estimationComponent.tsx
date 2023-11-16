@@ -3,6 +3,7 @@ import { TaskDto } from "models/tasks";
 import { useState } from "react";
 
 import EditIconSvg from "@/assets/svg/EditIconSvg";
+import FormatTimeForSettings from "@/components/common/time/formatTimeForSettings";
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 
 interface Props {
@@ -102,7 +103,9 @@ const EstimationComponent = ({ task, handleEstimationChange }: Props) => {
       ) : (
         <div className=" flex justify-center gap-2">
           {task.estimation ? (
-            <div className="text-center">{task.estimation}hrs</div>
+            <div className="text-center">
+              <FormatTimeForSettings time={task.estimation} />
+            </div>
           ) : (
             <div className="text-center">---</div>
           )}
