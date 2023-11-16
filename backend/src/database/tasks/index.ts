@@ -130,7 +130,34 @@ export class TasksDatabase {
           }),
         },
         include: {
-          sessions: true,
+          sessions: {
+            include: {
+              userWorkspace: {
+                select: {
+                  user: {
+                    select: {
+                      firstName: true,
+                      lastName: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          parentTask: {
+            select: {
+              title: true,
+              url: true,
+              key: true,
+            },
+          },
+          childTask: {
+            select: {
+              title: true,
+              url: true,
+              key: true,
+            },
+          },
         },
       });
     } catch (error) {
