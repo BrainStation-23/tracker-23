@@ -20,6 +20,7 @@ import {
 
 import { RegisterDto } from "../models/auth/index";
 import { TaskDto } from "../models/tasks/index";
+import { updateApprovalUserDto } from "models/user";
 
 export interface apiFunction {
   login: (data: LoginDto) => Promise<LoginResponseDto | undefined>;
@@ -85,4 +86,9 @@ export interface apiFunction {
   updateTimeFormat: (value: string) => Promise<any>;
   getTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
   getInvitedUserInfo: (token: string) => Promise<any>;
+  getAllUsers: () => Promise<any>;
+  updateApprovalUser: (
+    userId: number,
+    data: updateApprovalUserDto
+  ) => Promise<any>;
 }

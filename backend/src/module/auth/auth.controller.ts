@@ -9,7 +9,8 @@ import {
   Param,
 } from '@nestjs/common';
 import {
-  ForgotPasswordDto, InvitedUserLoginDto,
+  ForgotPasswordDto,
+  InvitedUserLoginDto,
   InvitedUserRegisterDto,
   LoginDto,
   PasswordResetDto,

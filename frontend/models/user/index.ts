@@ -11,4 +11,9 @@ export interface UserDto {
   designation?: string;
   activeWorkspace?: WorkspaceDto;
   activeUserWorkspace?: UserWorkspaceDto;
+  approved?: boolean;
+}
+
+export interface updateApprovalUserDto {
+  approved: boolean;
 }

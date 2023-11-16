@@ -17,6 +17,7 @@ import {
   exportTasksRest,
   forgotPasswordRest,
   getAllProjectsRest,
+  getAllUsersRest,
   getIntegratedProjectStatusesRest,
   getIntegrationsRest,
   getInvitedUserInfoRest,
@@ -53,6 +54,7 @@ import {
   syncProjectTasksRest,
   syncStatusRest,
   uninstallIntegrationRest,
+  updateApprovalUserRest,
   updateSessionRest,
   updateSyncTimeRest,
   updateTaskEstimationRest,
@@ -120,6 +122,8 @@ const restApi: apiFunction = {
   updateTimeFormat: updateTimeFormatRest,
   getTimeSheetReport: getTimeSheetReportRest,
   getInvitedUserInfo: getInvitedUserInfoRest,
+  getAllUsers: getAllUsersRest,
+  updateApprovalUser: updateApprovalUserRest,
 };
 
 export const userAPI: apiFunction = restApi;
