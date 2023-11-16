@@ -112,6 +112,7 @@ export class AuthService {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      approved: user.approved,
       ...token,
     };
   }
@@ -237,7 +238,15 @@ export class AuthService {
 
   async getFormattedUserData(user: Partial<User>) {
     const token = await this.createToken(user);
-    const { id, firstName, lastName, email, picture, activeWorkspaceId } = user;
+    const {
+      id,
+      firstName,
+      lastName,
+      email,
+      picture,
+      activeWorkspaceId,
+      approved,
+    } = user;
     return {
       id,
       firstName,
@@ -245,6 +254,7 @@ export class AuthService {
       email,
       picture,
       activeWorkspaceId,
+      approved,
       ...token,
     };
   }
@@ -435,9 +445,10 @@ export class AuthService {
     });
 
     return {
-      email: data.email,
-      firstName: data.firstName,
-      ...(data?.lastName && { lastName: data?.lastName }),
+      email: updatedUser.email,
+      firstName: updatedUser.firstName,
+      approved: updatedUser.approved,
+      ...(updatedUser?.lastName && { lastName: updatedUser?.lastName }),
       ...token,
     };
   }
@@ -511,6 +522,7 @@ export class AuthService {
     return {
       email: user.email,
       firstName: user.firstName,
+      approved: user.approved,
       ...(user?.lastName && { lastName: user?.lastName }),
       ...token,
     };

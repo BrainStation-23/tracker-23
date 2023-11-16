@@ -95,6 +95,7 @@ model User {
   updatedAt            DateTime        @updatedAt
   passwordResetToken   String?
   passwordResetExpires DateTime?
+  approved            Boolean?        @default(false)
   userWorkspaces       UserWorkspace[] @relation("User")
   // ownedWorkspaces     Workspace[]
   // tasks               Task[]
