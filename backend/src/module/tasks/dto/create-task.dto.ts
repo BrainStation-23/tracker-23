@@ -40,7 +40,7 @@ export class CreateTaskDto {
   @IsArray()
   labels: Labels[];
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   projectId: number;
 
@@ -82,16 +82,20 @@ export class CreateTaskDto {
   @IsOptional()
   @IsNumber()
   occurrences: number;
+
+  @IsOptional()
+  @IsString()
+  projectName?: string;
 }
 
 export enum WeekDaysType {
-  Saturday = 'Saturday',
-  Sunday = 'Sunday',
-  Monday = 'Monday',
-  Tuesday = 'Tuesday',
-  Wednesday = 'Wednesday',
-  Thursday = 'Thursday',
-  Friday = 'Friday',
+  Saturday = 'SATURDAY',
+  Sunday = 'SUNDAY',
+  Monday = 'MONDAY',
+  Tuesday = 'TUESDAY',
+  Wednesday = 'WEDNESDAY',
+  Thursday = 'THURSDAY',
+  Friday = 'FRIDAY',
 }
 
 enum MonthlyRepeatType {

@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Role, UserWorkspaceStatus } from '@prisma/client';
+import { Role, Settings, User, UserWorkspaceStatus } from '@prisma/client';
 import {
   SendInvitationReqBody,
   WorkspaceReqBody,
+  userWorkspaceType,
 } from 'src/module/workspaces/dto';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 
@@ -17,13 +18,17 @@ export class WorkspaceDatabase {
         },
       });
     } catch (err) {
+      console.log(
+        '🚀 ~ file: index.ts:21 ~ WorkspaceDatabase ~ getWorkspace ~ err:',
+        err,
+      );
       return null;
     }
   }
 
-  async createWorkspace(userId: number, name: string) {
+  async createWorkspace(userId: number, name: string, prisma: any) {
     try {
-      return await this.prisma.workspace.create({
+      return await prisma.workspace.create({
         data: {
           creatorUserId: userId,
           name: name,
@@ -54,6 +59,7 @@ export class WorkspaceDatabase {
         data: {
           name: reqBody.name,
         },
+        include: { userWorkspaces: true },
       });
     } catch (err) {
       return null;
@@ -72,15 +78,68 @@ export class WorkspaceDatabase {
     }
   }
 
-  async createUserWorkspace(
-    userId: number,
-    workspaceId: number,
-    role: Role,
-    status: UserWorkspaceStatus,
-    inviterUserId?: number,
-    invitationId?: string,
-    invitedAt?: Date,
-  ) {
+  async createUserWorkspace({
+    userId,
+    workspaceId,
+    role,
+    status,
+    inviterUserId,
+    invitationId,
+    invitedAt,
+    prisma,
+  }: userWorkspaceType) {
+    const userWorkspaceData: any = {
+      role,
+      userId,
+      workspaceId,
+      status,
+      ...(inviterUserId && { inviterUserId }),
+      ...(invitationId && { invitationId }),
+      ...(invitedAt && { invitedAt }),
+    };
+
+    const includeData = {
+      workspace: {
+        select: {
+          id: true,
+          name: true,
+          picture: true,
+          creatorUserId: true,
+        },
+      },
+      ...(inviterUserId && {
+        inviter: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            picture: true,
+            activeWorkspaceId: true,
+          },
+        },
+      }),
+    };
+    try {
+      return await prisma.userWorkspace.create({
+        data: userWorkspaceData,
+        include: includeData,
+      });
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
+
+  async createUserWorkspaceWithPrisma({
+    userId,
+    workspaceId,
+    role,
+    status,
+    inviterUserId,
+    invitationId,
+    invitedAt,
+  }: userWorkspaceType) {
     const userWorkspaceData: any = {
       role,
       userId,
@@ -119,6 +178,7 @@ export class WorkspaceDatabase {
         include: includeData,
       });
     } catch (err) {
+      console.log(err);
       return null;
     }
   }
@@ -192,11 +252,56 @@ export class WorkspaceDatabase {
         where: {
           id: userWorkspaceId,
         },
+        include: { workspace: true, inviter: true },
         data: {
           status: reqStatus,
         },
       });
     } catch (err) {
+      return null;
+    }
+  }
+
+  async updateRejectedUserWorkspace(
+    rejectedUserWorkspaceId: number,
+    role: Role,
+    status: UserWorkspaceStatus,
+    inviterUserId: number,
+    invitationId: string,
+  ) {
+    try {
+      return await this.prisma.userWorkspace.update({
+        where: { id: rejectedUserWorkspaceId },
+        data: {
+          role,
+          status,
+          inviterUserId,
+          invitationId,
+          invitedAt: new Date(Date.now()),
+        },
+        include: {
+          workspace: {
+            select: {
+              id: true,
+              name: true,
+              picture: true,
+              creatorUserId: true,
+            },
+          },
+          inviter: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              picture: true,
+              activeWorkspaceId: true,
+            },
+          },
+        },
+      });
+    } catch (err) {
+      console.log('🚀 ~ file: index.ts:303 ~ WorkspaceDatabase ~ err:', err);
       return null;
     }
   }
@@ -216,11 +321,30 @@ export class WorkspaceDatabase {
     }
   }
 
-  async findUser(reqBody: SendInvitationReqBody) {
+  async updateUserWithTransactionPrismaInstance(
+    userId: number,
+    workspaceId: number,
+    prisma: any,
+  ) {
     try {
-      return await this.prisma.user.findFirst({
+      return await prisma.user.update({
         where: {
-          email: reqBody.email,
+          id: userId,
+        },
+        data: {
+          activeWorkspaceId: workspaceId,
+        },
+      });
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async findUser(reqBody: SendInvitationReqBody): Promise<User | null> {
+    try {
+      return await this.prisma.user.findUnique({
+        where: {
+          email: reqBody.email.toLowerCase(),
         },
       });
     } catch (err) {
@@ -239,6 +363,7 @@ export class WorkspaceDatabase {
             select: {
               role: true,
               designation: true,
+              status: true,
               user: {
                 select: {
                   id: true,
@@ -261,7 +386,61 @@ export class WorkspaceDatabase {
       return await this.prisma.user.findUnique({
         where: {
           id: userId,
-        }
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async createSettings(
+    workspaceId: number,
+    prisma: any,
+  ): Promise<Settings | null> {
+    try {
+      return await prisma.settings.create({
+        data: {
+          workspaceId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async createInvitedUser(email: string, activeWorkspaceId: number) {
+    try {
+      return await this.prisma.user.create({
+        data: {
+          email,
+          activeWorkspaceId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getUserWorkspaceByToken(invitationId: string) {
+    try {
+      return await this.prisma.userWorkspace.findFirst({
+        where: {
+          invitationId,
+        },
+        select: {
+          id: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
       });
     } catch (error) {
       console.log(error);

@@ -5,9 +5,16 @@ export const publicRoutes = [
   "/socialLogin/redirect",
   "/forgotPassword",
   "/resetPassword",
+  "/inviteLink",
   // "/images",
 ];
-export const ignoreRoutes = ["/_next", "/assets", "/integrations", "/images"];
+export const ignoreRoutes = [
+  "/_next",
+  "/assets",
+  "/integrations",
+  "/images",
+  "/inviteLink",
+];
 export const noNavbar = ["/taskList"];
 export const menuOptions = [
   { link: "/taskList", title: "Tasks Page" },
@@ -43,18 +50,21 @@ export enum statusBGColorEnum {
   BG = "#ECECED",
 }
 export const taskPriorityEnum = {
+  HIGHEST: "Highest",
   HIGH: "High",
   LOW: "Low",
   MEDIUM: "Medium",
   NORMAL: "Medium",
 };
 export enum PriorityBGColorEnum {
+  HIGHEST = "#FFF0ED",
   HIGH = "#FFF0ED",
   LOW = "#FFF9E2",
   MEDIUM = "#FFF4E8",
   NORMAL = "#FFF4E8",
 }
 export enum PriorityBorderColorEnum {
+  HIGHEST = "#FE8A6F",
   HIGH = "#FE8A6F",
   LOW = "#F7DC7E",
   MEDIUM = "#FEBC6F",
@@ -135,4 +145,7 @@ export const whiteListEmails = [
   "samiul.alim@brainstation-23.com",
   "manosh@brainstation-23.com",
   "shamsul.tahsin@brainstation-23.com",
+  "dumyshala420@gmail.com",
+  "tracker23.team@gmail.com",
+  "dipankar47@student.sust.edu",
 ];

@@ -130,7 +130,34 @@ export class TasksDatabase {
           }),
         },
         include: {
-          sessions: true,
+          sessions: {
+            include: {
+              userWorkspace: {
+                select: {
+                  user: {
+                    select: {
+                      firstName: true,
+                      lastName: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          parentTask: {
+            select: {
+              title: true,
+              url: true,
+              key: true,
+            },
+          },
+          childTask: {
+            select: {
+              title: true,
+              url: true,
+              key: true,
+            },
+          },
         },
       });
     } catch (error) {
@@ -141,11 +168,32 @@ export class TasksDatabase {
 
   async getSettings(user: User) {
     try {
+      console.log(
+        user.activeWorkspaceId &&
+          (await this.prisma.settings.findFirst({
+            where: {
+              workspaceId: user.activeWorkspaceId,
+            },
+            select: {
+              id: true,
+              syncTime: true,
+              workspaceId: true,
+              timeFormat: true,
+            },
+          })),
+      );
+
       return (
         user.activeWorkspaceId &&
         (await this.prisma.settings.findFirst({
           where: {
             workspaceId: user.activeWorkspaceId,
+          },
+          select: {
+            id: true,
+            syncTime: true,
+            workspaceId: true,
+            timeFormat: true,
           },
         }))
       );

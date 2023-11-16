@@ -147,7 +147,7 @@ export class IntegrationsService {
       const transactionRes = await this.prisma.$transaction([
         this.prisma.userIntegration.delete({
           where: {
-            userIntegrationIdentifier: {
+            UserIntegrationIdentifier: {
               integrationId: id,
               userWorkspaceId: userWorkspace.id,
             },

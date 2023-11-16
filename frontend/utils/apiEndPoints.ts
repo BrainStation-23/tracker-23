@@ -18,6 +18,7 @@ export const apiEndPoints = {
   notifications: `/notifications`,
   markNotificationSeen: `/notifications/seen/`,
   markAllNotificationsSeen: `/notifications/seen-all/`,
+  markAllNotificationsCleared: `/notifications/clear-all/`,
   authJira: `/integrations/jira/authorization`,
   spentTime: `/sessions/spent-time/time-range`,
   spentTimePerDay: `/sessions/spent-time/per-day`,
@@ -33,4 +34,7 @@ export const apiEndPoints = {
   changeWorkspace: `workspaces/change-workspace`,
   workspaceSettings: `users/settings`,
   timeSheetReport: "sessions/timeSheet/per-day",
+  invitedUserInfo: "workspaces/verify/invited-user/",
+  invitedUserLogin: `/auth/invitedUser/login`,
+  invitedUserRegister: `/auth/invitedUser/register`,
 };

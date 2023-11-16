@@ -7,14 +7,16 @@ type Props = {
   handleCancel?: Function;
   title?: string;
   className?: string;
+  width?: number;
 };
-const GlobalMOdal = ({
+const GlobalModal = ({
   children,
   isModalOpen,
   setIsModalOpen,
   title,
   className,
   handleCancel,
+  width,
 }: Props) => {
   const router = useRouter();
   const handleOk = () => {
@@ -30,7 +32,7 @@ const GlobalMOdal = ({
       open={isModalOpen}
       onOk={handleOk}
       onCancel={handleOnCancel}
-      width={"720px"}
+      width={width ? width : "720px"}
       className={className}
       footer={null}
     >
@@ -39,4 +41,4 @@ const GlobalMOdal = ({
   );
 };
 
-export default GlobalMOdal;
+export default GlobalModal;

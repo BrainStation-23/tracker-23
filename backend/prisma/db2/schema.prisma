@@ -79,7 +79,7 @@ model Integration {
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
 
-  @@unique([siteId, userId], name: "integrationIdentifier")
+  @@unique([siteId, userId], name: "IntegrationIdentifier")
 }
 
 model Projects {
@@ -106,7 +106,7 @@ model StatusDetail {
   transitionStatus Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId        Int
 
-  @@unique([name, projectId], name: "tempStatusDetailIdentifier")
+  @@unique([name, projectId], name: "StatusDetailIdentifier")
 }
 
 model TempIntegration {
@@ -119,7 +119,7 @@ model TempIntegration {
   jiraAccountId String?
   userId        Int
 
-  @@unique([siteId, userId], name: "tempIntegrationIdentifier")
+  @@unique([siteId, userId], name: "TempIntegrationIdentifier")
 }
 
 model Task {

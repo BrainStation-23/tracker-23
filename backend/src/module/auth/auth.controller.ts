@@ -9,7 +9,8 @@ import {
   Param,
 } from '@nestjs/common';
 import {
-  ForgotPasswordDto,
+  ForgotPasswordDto, InvitedUserLoginDto,
+  InvitedUserRegisterDto,
   LoginDto,
   PasswordResetDto,
   RegisterDto,
@@ -48,5 +49,15 @@ export class AuthController {
     @Body() reqBody: PasswordResetDto,
   ) {
     return await this.usersService.resetPassword(token, reqBody);
+  }
+
+  @Post('/invitedUser/register')
+  async invitedUserRegister(@Body() reqBody: InvitedUserRegisterDto) {
+    return await this.usersService.createInvitedUser(reqBody);
+  }
+
+  @Post('/invitedUser/login')
+  async invitedUserLogin(@Body() reqBody: InvitedUserLoginDto) {
+    return await this.usersService.loginInvitedUser(reqBody);
   }
 }

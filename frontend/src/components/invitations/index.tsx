@@ -8,7 +8,7 @@ import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 import PrimaryButton from "../common/buttons/primaryButton";
 import MyActiveTab from "../common/tabs/MyActiveTab";
 import MyInactiveTab from "../common/tabs/MyInactiveTab";
-import GlobalMOdal from "../modals/globalModal";
+import GlobalModal from "../modals/globalModal";
 import InvitesList from "./components/invites";
 import InviteToWorkspace from "./components/inviteToWorkspace";
 
@@ -23,6 +23,13 @@ const InvitationsComponent = () => {
   const getInviteList = async () => {
     const res = await userAPI.getWorkspaceInvitationList();
     if (res) setInviteList(res);
+  };
+  const updateInviteList = (invite: any) => {
+    const newInviteList = inviteList.map((inv) => {
+      if (invite.id === inv.id) return invite;
+      return inv;
+    });
+    setInviteList(newInviteList);
   };
 
   useEffect(() => {
@@ -62,11 +69,18 @@ const InvitationsComponent = () => {
         </PrimaryButton>
       </div>
       <div className="my-5">
-        <InvitesList data={inviteList} activeTab={activeTab} />
+        <InvitesList
+          data={inviteList}
+          activeTab={activeTab}
+          updateInviteList={updateInviteList}
+        />
       </div>
-      <GlobalMOdal {...{ isModalOpen, setIsModalOpen, title: "Invite" }}>
+      <GlobalModal
+        width={300}
+        {...{ isModalOpen, setIsModalOpen, title: "Invite" }}
+      >
         <InviteToWorkspace setIsModalOpen={setIsModalOpen} />
-      </GlobalMOdal>
+      </GlobalModal>
     </div>
   );
 };

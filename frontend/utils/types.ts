@@ -23,9 +23,13 @@ import { TaskDto } from "../models/tasks/index";
 
 export interface apiFunction {
   login: (data: LoginDto) => Promise<LoginResponseDto | undefined>;
+  loginFromInvite: (data: LoginDto) => Promise<LoginResponseDto | undefined>;
   googleLogin: (code: string) => Promise<LoginResponseDto | undefined>;
   logout: () => {};
   registerUser: (data: RegisterDto) => Promise<RegisterDto | undefined>;
+  registerUserFromInvite: (
+    data: RegisterDto
+  ) => Promise<RegisterDto | undefined>;
   createTask: (data: CreateTaskDto) => Promise<TaskDto>;
   deleteTask: (data: any) => Promise<any | undefined>;
   getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
@@ -55,6 +59,7 @@ export interface apiFunction {
   getNotifications: () => Promise<any>;
   markNotificationSeen: (id: number) => Promise<any>;
   markAllNotificationsSeen: () => Promise<any>;
+  markAllNotificationsCleared: () => Promise<any>;
   deleteSession: (sessionId: number) => Promise<any>;
   updateSession: (sessionId: number, data: AddWorkLogParams) => Promise<any>;
   getJiraSprints: () => Promise<any>;
@@ -77,5 +82,7 @@ export interface apiFunction {
   forgotPassword: (data?: ForgotPasswordDto) => Promise<any>;
   resetPassword: (token: string, data: ResetPasswordDto) => Promise<any>;
   updateSyncTime: (time: number) => Promise<any>;
+  updateTimeFormat: (value: string) => Promise<any>;
   getTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
+  getInvitedUserInfo: (token: string) => Promise<any>;
 }

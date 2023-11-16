@@ -11,6 +11,7 @@ import JiraLogoFullSvg from "@/assets/svg/JiraFullLogoSvg";
 import TrelloLogoSvg from "@/assets/svg/TrelloLogoSvg";
 
 import DeleteButton from "../common/buttons/deleteButton";
+import OpenLinkInNewTab from "../common/link/OpenLinkInNewTab";
 
 type Props = {
   data: Integration;
@@ -38,7 +39,7 @@ const ImportCard = ({
       className={`relative flex w-60 flex-col justify-between rounded-xl border-2 border-[#ECECED] p-4 hover:cursor-pointer`}
     >
       <div>
-        {installed && adminMode && (
+        {data.site && adminMode && (
           <DeleteButton
             className="absolute right-2"
             onClick={async () => {
@@ -51,15 +52,14 @@ const ImportCard = ({
         </div>
         {data.site ? (
           <div className="text-sm font-normal">
-            Connected to
-            <div
-              className="text-sm font-normal text-blue-500"
+            Connected to{" "}
+            <OpenLinkInNewTab
               onClick={() => {
                 window.open(data.site);
               }}
             >
               {data.site}
-            </div>
+            </OpenLinkInNewTab>
           </div>
         ) : (
           <div className="text-sm font-normal">

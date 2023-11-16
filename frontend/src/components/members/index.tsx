@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 
-import GlobalMOdal from "../modals/globalModal";
+import GlobalModal from "../modals/globalModal";
 import { userAPI } from "APIs";
 import InviteToWorkspace from "../invitations/components/inviteToWorkspace";
 import MemberList from "./components/memberList";
@@ -64,9 +64,12 @@ const MembersComponent = () => {
       </div>
       <MemberList memberList={memberList} />
 
-      <GlobalMOdal {...{ isModalOpen, setIsModalOpen, title: "Invite" }}>
+      <GlobalModal
+        width={300}
+        {...{ isModalOpen, setIsModalOpen, title: "Invite" }}
+      >
         <InviteToWorkspace setIsModalOpen={setIsModalOpen} />
-      </GlobalMOdal>
+      </GlobalModal>
     </div>
   );
 };

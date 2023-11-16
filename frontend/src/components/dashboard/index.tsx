@@ -4,14 +4,7 @@ import { userAPI } from "APIs";
 import { TableParams, TaskDto } from "models/tasks";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import {
-  PriorityBGColorEnum,
-  PriorityBorderColorEnum,
-  statusBGColorEnum,
-  statusBorderColorEnum,
-  taskPriorityEnum,
-  taskStatusEnum,
-} from "utils/constants";
+import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
@@ -23,18 +16,16 @@ import {
   getFormattedTotalTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
-import { getLocalStorage } from "@/storage/storage";
 
+import TablePriorityComponent from "../common/tableComponents/tablePriorityComponent";
 import { getDateRangeArray } from "../datePicker";
-import GlobalMOdal from "../modals/globalModal";
-import ReportComponent from "../report";
+import GlobalModal from "../modals/globalModal";
 import Stopwatch from "../stopWatch/tabular/timerComponent";
 import ProgressComponent from "../tasks/components/progressComponent";
 import StaticProgressComponent from "../tasks/components/progressComponentStatic";
 import TimeDisplayComponent from "../tasks/components/timeDisplayComponent";
 import SessionStartWarning from "../tasks/components/warning";
 import DonutChart from "./charts/donutChart";
-import Line from "./charts/lineChart";
 import DashboardSection from "./components/sections";
 import DashboardTableComponent from "./components/tableComponentDashboard";
 
@@ -297,17 +288,7 @@ const Dashboard = () => {
       title: "Priority",
       dataIndex: "priority",
       key: "priority",
-      render: (_: any, { priority }: TaskDto) => (
-        <div
-          style={{
-            backgroundColor: PriorityBGColorEnum[priority],
-            border: `1px solid ${PriorityBorderColorEnum[priority]}`,
-          }}
-          className="w-min rounded px-2 text-black"
-        >
-          {taskPriorityEnum[priority]}
-        </div>
-      ),
+      render: (_: any, task: TaskDto) => <TablePriorityComponent task={task} />,
     },
 
     {
@@ -448,7 +429,7 @@ const Dashboard = () => {
   return (
     <>
       {dataFetched ? (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 pb-12">
           <div className="grid grid-cols-1">
             {/* <div className="grid grid-cols-2"> */}
             <DashboardSection
@@ -483,7 +464,7 @@ const Dashboard = () => {
         />
         {morePin && (
           <div
-            className="absolute bottom-0 right-1/2 left-1/2 w-max cursor-pointer hover:text-blue-500"
+            className="absolute bottom-0 right-1/2 left-1/2 w-max cursor-pointer "
             onClick={() => {
               router.push("/taskList?tab=pin");
             }}
@@ -516,7 +497,7 @@ const Dashboard = () => {
           {/* <div>
         <MyTasks />
       </div> */}
-          <GlobalMOdal
+          <GlobalModal
             isModalOpen={warningModalOpen}
             setIsModalOpen={setWarningModalOpen}
           >
@@ -525,7 +506,7 @@ const Dashboard = () => {
               warningData={warningData}
               handleWarningClick={handleWarningClick}
             />
-          </GlobalMOdal>
+          </GlobalModal>
         </div>
       ) : (
         <Spin className="mt-[200px] h-[500px] w-full"></Spin>

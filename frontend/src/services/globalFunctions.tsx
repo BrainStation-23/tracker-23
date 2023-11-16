@@ -1,15 +1,11 @@
-import { UserDto } from "models/user";
-import { WorkspaceDto } from "models/workspaces";
+import { useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
 
-export const getActiveUserWorSpace = (
-  allWorkspaces: WorkspaceDto[],
-  userInfo: UserDto
-) => {
-  const activeWorkspace = allWorkspaces
-    ? allWorkspaces.find(
-        (workSpace) => workSpace.id === userInfo.activeWorkspaceId
-      )
-    : null;
+export const getActiveUserWorkspace = () => {
+  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
+  const activeWorkspace = useAppSelector(
+    (state: RootState) => state.workspacesSlice.activeWorkspace
+  );
 
   const activeUserWorkspace = activeWorkspace
     ? activeWorkspace.userWorkspaces?.find(

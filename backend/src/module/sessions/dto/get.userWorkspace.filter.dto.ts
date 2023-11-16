@@ -5,4 +5,5 @@ export class GetUserWorkspaceFilter {
   userId?: number;
   workspaceId?: number;
   status?: UserWorkspaceStatus;
+  invitationId?: string;
 }

@@ -12,17 +12,19 @@ import {
 
 type Props = {
   setIsModalOpen: Function;
+  setIsModalLoading: Function;
 };
-const AddNewWorkspace = ({ setIsModalOpen }: Props) => {
+const AddNewWorkspace = ({ setIsModalOpen, setIsModalLoading }: Props) => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const [switchWorkspace, setSwitchWorkspace] = useState(false);
 
   const onFinish = async (values: CreateWorkspaceModel) => {
+    setIsModalLoading(true);
     console.log("Form values:", values);
     const res = await userAPI.createWorkspace(values);
-    message.success("Workspace created Successfully");
-    dispatch(addWorkspaceSlice(res));
+    res && message.success("Workspace created Successfully");
+    res && dispatch(addWorkspaceSlice(res));
     if (values.changeWorkspace) {
       message.success("Active Workspace Changed");
       dispatch(changeWorkspaceReloadStatusSlice());
@@ -30,6 +32,7 @@ const AddNewWorkspace = ({ setIsModalOpen }: Props) => {
     setIsModalOpen(false);
     // Here you can perform actions based on the form values, e.g., create a workspace.
     // If switchWorkspace is true, you can switch to the newly created workspace.
+    setIsModalLoading(false);
   };
 
   return (

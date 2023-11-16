@@ -128,7 +128,7 @@ export const getElapsedTime = (date: Date) => {
   return elapsedTime;
 };
 
-export function formatDecimalHours(decimalHours: number, hoursPerDay = 8) {
+export function formatHoursToDay(decimalHours: number, hoursPerDay = 8) {
   const totalMinutes = decimalHours * 60;
   const days = Math.floor(totalMinutes / (60 * hoursPerDay));
   const remainingMinutes = totalMinutes % (60 * hoursPerDay);

@@ -1,15 +1,9 @@
-import { Avatar, Button, Dropdown, MenuProps, Tooltip } from "antd";
+import { Button, MenuProps, Tooltip } from "antd";
 import { userAPI } from "APIs";
 import { LoginResponseDto } from "models/auth";
-import { UserDto } from "models/user";
-import { WorkspaceDto } from "models/workspaces";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 
-import BellIconSvg from "@/assets/svg/BellIconSvg";
-import ProfileIconSvg from "@/assets/svg/ProfileIconSvg";
-import { GetCookie } from "@/services/cookie.service";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
@@ -20,7 +14,6 @@ import SyncButtonComponent from "../common/buttons/syncButton";
 import LogOutButton from "../logout/logOutButton";
 import { sideMenuOptions } from "../sideMenu";
 import NotificationSection from "./components/notificationSection";
-import { getActiveUserWorSpace } from "@/services/globalFunctions";
 
 type Props = {
   extraComponent?: any;
@@ -28,7 +21,6 @@ type Props = {
 
 const Navbar = ({ extraComponent }: Props) => {
   const [userDetails, setUserDetails] = useState<LoginResponseDto>();
-  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const syncing: boolean = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
@@ -45,52 +37,17 @@ const Navbar = ({ extraComponent }: Props) => {
     const res = await userAPI.syncTasks();
     res && dispatch(setSyncStatus(res));
   };
-  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
-
-  const activeUserWorkspace = getActiveUserWorSpace(
-    useAppSelector((state: RootState) => state.workspacesSlice.workspaces),
-    userInfo
-  );
 
   useEffect(() => {
     const tmp = getLocalStorage("userDetails");
     if (!userDetails && tmp) setUserDetails(tmp);
   }, [userDetails, path]);
   const items: MenuProps["items"] = [
-    // {
-    //   key: "3",
-    //   icon: (
-    //     <div>
-    //       <button
-    //         // type="ghost"
-    //         className={`flex w-full items-center`}
-    //         onClick={async () => {}}
-    //       >
-    //         <div className="ml-3 flex items-center gap-1">
-    //           <ProfileIconSvg />{" "}
-    //           <span className="text-[15px] font-semibold"> Account</span>
-    //         </div>
-    //       </button>
-    //     </div>
-    //   ),
-    // },
     {
       key: "1",
       icon: (
         <div className="w-[200px]">
           <SyncButtonComponent type="ghost" className="w-full" text="Sync" />
-          {/* <Button
-            type="ghost"
-            className={`flex w-full items-center ${
-              syncing ? "text-green-500" : ""
-            }`}
-            // onClick={async () => {
-            //   syncFunction();
-            // }}
-          >
-            <SyncOutlined spin={syncing} />{" "}
-            <span className="text-[15px] font-semibold">Sync</span>
-          </Button> */}
         </div>
       ),
       onClick: async () => {
@@ -116,7 +73,7 @@ const Navbar = ({ extraComponent }: Props) => {
   );
   return (
     <div className=" mb-2 flex h-16 w-full items-center justify-between">
-      <div className="py-6 text-xl text-blue-500  hover:text-green-500">
+      <div className="py-6">
         {sideMenuOptions?.map(
           (option) =>
             router.asPath.includes(option.link) && (
@@ -164,68 +121,7 @@ const Navbar = ({ extraComponent }: Props) => {
           )}
 
           <NotificationSection />
-          {/* <Dropdown
-            menu={menuProps}
-            trigger={["click"]}
-            overlayStyle={{
-              width: "100px",
-              backgroundColor: "red",
-            }}
-            overlayClassName='w-32'
-            className="flex w-[300px] items-center rounded bg-gray-50 p-2 hover:bg-gray-100"
-          > */}
-          {/* <div>
-            <Dropdown
-              menu={menuProps}
-              dropdownRender={dropdownRender}
-              trigger={["click"]}
-              className="transition-all delay-1000 duration-1000"
-              overlayClassName="duration-1000 delay-1000 transition-all"
-            >
-              <div
-                className="flex w-[300px] items-center justify-between"
-                // onClick={() => {
-                //   !dropdownOpen && setDropdownOpen(true);
-                // }}
-              >
-                <div className="flex items-center gap-2">
-                  {userDetails?.picture ? (
-                    <Avatar
-                      src={userDetails.picture}
-                      alt="N"
-                      className="h-[40px] w-[40px]"
-                    />
-                  ) : (
-                    <Avatar
-                      src={
-                        "https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
-                      }
-                      alt="N"
-                      className="h-[40px] w-[40px]"
-                    />
-                  )}
-                  <div className="flex flex-col text-sm">
-                    <div className="font-semibold">
-                      {userDetails?.firstName} {userDetails?.lastName}
-                    </div>
-                    <div className="font-normal">
-                      {activeUserWorkspace.designation}
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="flex h-7 w-7 cursor-pointer items-center justify-center bg-[#ECECED]"
-                  style={{
-                    borderRadius: "8px",
-                  }}
-                >
-                  {dropdownOpen ? <FiChevronUp /> : <FiChevronDown />}
-                </div>
-              </div>
-            </Dropdown>
-          </div> */}
-          {/* </Dropdown> */}
-          {/* <LogOutButton /> */}
+
           {extraComponent}
         </div>
       )}

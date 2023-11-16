@@ -1,37 +1,22 @@
-import {
-  Button,
-  Table,
-  TablePaginationConfig,
-  Tooltip,
-  Typography,
-  message,
-} from "antd";
+import { Table, TablePaginationConfig, Tooltip, Typography } from "antd";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { TableParams, TaskDto } from "models/tasks";
 import { useState } from "react";
-import {
-  PriorityBGColorEnum,
-  PriorityBorderColorEnum,
-  statusBGColorEnum,
-  statusBorderColorEnum,
-  taskPriorityEnum,
-  taskStatusEnum,
-} from "utils/constants";
+import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 
 import JiraIconSvg from "@/assets/svg/JiraIconSvg";
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
+import TablePriorityComponent from "@/components/common/tableComponents/tablePriorityComponent";
 import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
 import { getTotalSpentTime } from "@/services/timeActions";
-import { getLocalStorage, setLocalStorage } from "@/storage/storage";
 
+import EstimationComponent from "./estimationComponent";
 import MoreFunctionComponent from "./moreFunction";
 import ProgressComponent from "./progressComponent";
 import StaticProgressComponent from "./progressComponentStatic";
-import TimeDisplayComponent from "./timeDisplayComponent";
 import StatusDropdownComponent from "./statusDropdown";
-import { userAPI } from "APIs";
-import EstimationComponent from "./estimationComponent";
+import TimeDisplayComponent from "./timeDisplayComponent";
 
 const { Text } = Typography;
 const TableComponent = ({
@@ -189,17 +174,7 @@ const TableComponent = ({
       title: "Priority",
       dataIndex: "priority",
       key: "priority",
-      render: (_: any, { priority }: TaskDto) => (
-        <div
-          style={{
-            backgroundColor: PriorityBGColorEnum[priority],
-            border: `1px solid ${PriorityBorderColorEnum[priority]}`,
-          }}
-          className="w-min rounded px-2 text-black"
-        >
-          {taskPriorityEnum[priority]}
-        </div>
-      ),
+      render: (_: any, task: TaskDto) => <TablePriorityComponent task={task} />,
     },
 
     {
@@ -219,7 +194,7 @@ const TableComponent = ({
       title: "Total Spent",
       dataIndex: "total",
       key: "total",
-      // align: "center",
+      align: "center",
       render: (_: any, task: TaskDto) =>
         runningTask?.id !== task.id ? (
           <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
@@ -228,13 +203,6 @@ const TableComponent = ({
             milliseconds={getTotalSpentTime(task.sessions)}
             task={task}
           />
-          // <StopWatchTabular
-          //   task={task}
-          //   // sessions={task.sessions}
-          //   // runningTask={runningTask}
-          //   addSession={() => {}}
-          //   addEndTime={() => {}}
-          // />
         ),
       sorter: (a: any, b: any) =>
         getTotalSpentTime(a.sessions) - getTotalSpentTime(b.sessions),
@@ -255,51 +223,12 @@ const TableComponent = ({
       width: 70,
       render: (_: any, task: TaskDto) => (
         <div className="flex justify-end gap-2">
-          {/* <Button
-            className="h-10 text-sm font-semibold"
-            onClick={() => {
-              setSelectedTask(task);
-              setTaskViewModalOpen(true);
-            }}
-          >
-            View
-          </Button> */}
           <MoreFunctionComponent
             {...{ task, deleteTask, handlePin, handleAddManualWorkLog }}
           />
         </div>
       ),
     },
-    // {
-    //   title: "Tags",
-    //   key: "tags",
-    //   dataIndex: "tags",
-    //   render: (_, { tags }) => (
-    //     <>
-    //       {tags.map((tag) => {
-    //         let color = tag.length > 5 ? "blue" : "green";
-    //         if (tag === "loser") {
-    //           color = "volcano";
-    //         }
-    //         return (
-    //           <Tag color={color} key={tag}>
-    //             {tag.toUpperCase()}
-    //           </Tag>
-    //         );
-    //       })}
-    //     </>
-    //   ),
-    // },
-    // {
-    //   title: "Action",
-    //   key: "action",
-    //   render: (_, task) => (
-    //     <Space size="middle">
-    //       <a>Invite {task.name}</a>
-    //       <a>Delete</a>
-    //     </Space>
-    //   ),
-    // },
   ];
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {

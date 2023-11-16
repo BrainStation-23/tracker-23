@@ -6,11 +6,16 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { IntegrationType, Session, SessionStatus, User } from '@prisma/client';
+import {
+  IntegrationType,
+  Session,
+  SessionStatus,
+  User,
+  UserWorkspaceStatus,
+} from '@prisma/client';
 
 import { ManualTimeEntryReqBody, SessionDto, SessionReqBodyDto } from './dto';
 import { IntegrationsService } from '../integrations/integrations.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { TasksService } from '../tasks/tasks.service';
 import { APIException } from '../exception/api.exception';
@@ -18,7 +23,7 @@ import {
   GetTaskQuery,
   GetTeamTaskQuery,
   GetTeamTaskQueryType,
-  GetTimesheetQuery,
+  GetTimeSheetQuery,
 } from '../tasks/dto';
 import { UserWorkspaceDatabase } from '../../database/userWorkspaces';
 import { SessionDatabase } from '../../database/sessions';
@@ -26,6 +31,7 @@ import { ProjectDatabase } from 'src/database/projects';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { TasksDatabase } from 'src/database/tasks';
 import * as dayjs from 'dayjs';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class SessionsService {
@@ -38,6 +44,7 @@ export class SessionsService {
     private projectDatabase: ProjectDatabase,
     private userIntegrationDatabase: UserIntegrationDatabase,
     private tasksDatabase: TasksDatabase,
+    private readonly emailService: EmailService,
   ) {}
 
   async getSessions(user: User, taskId: number) {
@@ -90,7 +97,7 @@ export class SessionsService {
     if (!activeSession) {
       throw new BadRequestException('No active session');
     }
-    const timeSpent = Math.ceil(
+    const timeSpent = Math.floor(
       (new Date(Date.now()).getTime() - activeSession.startTime.getTime()) /
         1000,
     );
@@ -116,7 +123,7 @@ export class SessionsService {
       const userIntegration =
         project?.integrationId &&
         (await this.userIntegrationDatabase.getUserIntegration({
-          userIntegrationIdentifier: {
+          UserIntegrationIdentifier: {
             integrationId: project?.integrationId,
             userWorkspaceId: userWorkspace.id,
           },
@@ -179,7 +186,7 @@ export class SessionsService {
       return null;
     }
 
-    const timeSpent = Math.ceil(
+    const timeSpent = Math.floor(
       (session.endTime.getTime() - session.startTime.getTime()) / 1000,
     );
     if (timeSpent < 60) {
@@ -221,7 +228,7 @@ export class SessionsService {
     if (!timeSpent) {
       return 0 + 'm';
     }
-    timeSpent = Math.ceil(timeSpent / 60);
+    timeSpent = Math.floor(timeSpent / 60);
     return timeSpent + 'm';
   }
 
@@ -288,7 +295,7 @@ export class SessionsService {
       dto.taskId,
     );
 
-    const timeSpent = Math.ceil(
+    const timeSpent = Math.floor(
       (endTime.getTime() - startTime.getTime()) / 1000,
     );
     if (timeSpent < 60) {
@@ -443,7 +450,7 @@ export class SessionsService {
       if (doesExistWorklog.authorId === updated_integration.jiraAccountId) {
         const startTime = new Date(`${reqBody.startTime}`);
         const endTime = new Date(`${reqBody.endTime}`);
-        const timeSpentReqBody = Math.ceil(
+        const timeSpentReqBody = Math.floor(
           (endTime.getTime() - startTime.getTime()) / 1000,
         );
         if (timeSpentReqBody < 60) {
@@ -719,7 +726,7 @@ export class SessionsService {
 
   async getSpentTimeByDay(
     loggedInUser: Partial<User>,
-    query: GetTaskQuery | GetTimesheetQuery,
+    query: GetTaskQuery | GetTimeSheetQuery,
     user?: Partial<User>,
   ) {
     const sessions =
@@ -788,6 +795,7 @@ export class SessionsService {
           userId: {
             in: userIdArray,
           },
+          status: UserWorkspaceStatus.ACTIVE,
           workspaceId: user?.activeWorkspaceId,
         }));
 
@@ -817,8 +825,8 @@ export class SessionsService {
       : this.getSpentTimePerDay(sessions, startDate, endDate);
   }
 
-  async getTimesheetPerDay(loggedInUser: User, query: GetTimesheetQuery) {
-    //return this.formattedMonthlyTimesheet(query);
+  async getTimeSheetPerDay(loggedInUser: User, query: GetTimeSheetQuery) {
+    //return this.formattedMonthlyTimeSheet(query);
     let userIds, userIdArray, users;
     //console.log('hello')
     if (!loggedInUser?.activeWorkspaceId)
@@ -837,6 +845,7 @@ export class SessionsService {
     } else {
       const userWorkspaces = await this.sessionDatabase.getUserWorkspaceList({
         workspaceId: loggedInUser?.activeWorkspaceId,
+        status: UserWorkspaceStatus.ACTIVE,
       });
 
       users = userWorkspaces?.map((userWorkspace) => userWorkspace?.user);
@@ -869,10 +878,10 @@ export class SessionsService {
     //console.log(response);
     //return response;
     return daysDifference === 31 || daysDifference <= 31
-      ? this.formattedDailyTimesheet(query, response)
+      ? this.formattedDailyTimeSheet(query, response)
       : daysDifference > 31 && daysDifference <= 94
-      ? this.formattedWeeklyTimesheet(query, response)
-      : this.formattedMonthlyTimesheet(query, response);
+      ? this.formattedWeeklyTimeSheet(query, response)
+      : this.formattedMonthlyTimeSheet(query, response);
   }
 
   //private functions
@@ -1115,7 +1124,7 @@ export class SessionsService {
     return months;
   }
 
-  private formattedDailyTimesheet(query: GetTimesheetQuery, response: any) {
+  private formattedDailyTimeSheet(query: GetTimeSheetQuery, response: any) {
     const columns = this.getArrayOfDatesInRange(
       query?.startDate,
       query?.endDate,
@@ -1155,7 +1164,7 @@ export class SessionsService {
     };
   }
 
-  private formattedWeeklyTimesheet(query: GetTimesheetQuery, response: any) {
+  private formattedWeeklyTimeSheet(query: GetTimeSheetQuery, response: any) {
     const { weekArray, weekRange } = this.organizeDateRangeIntoWeeks(
       query.startDate,
       query.endDate,
@@ -1203,7 +1212,7 @@ export class SessionsService {
     };
   }
 
-  private formattedMonthlyTimesheet(query: GetTimesheetQuery, response: any) {
+  private formattedMonthlyTimeSheet(query: GetTimeSheetQuery, response: any) {
     let totalTime = 0;
     const rows: any[] = [];
 
@@ -1254,6 +1263,72 @@ export class SessionsService {
       columns,
       rows,
       totalTime,
+    };
+  }
+
+  async sendWeeklyTimeSheet(userId: number) {
+    const userWorkspaceList =
+      await this.userWorkspaceDatabase.getUserWorkspaceList({
+        userId: userId,
+        status: {
+          in: [UserWorkspaceStatus.ACTIVE, UserWorkspaceStatus.INACTIVE],
+        },
+      });
+    const end = dayjs();
+    const start = end.subtract(7, 'day').startOf('day');
+    const formattedEndDate = end.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+    const formattedStartedDate = start.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+    const sessionList = await this.sessionDatabase.getSessions({
+      userWorkspaceId: {
+        in: userWorkspaceList.map((userWorkspace) => userWorkspace.id),
+      },
+      startTime: { gte: new Date(formattedStartedDate) },
+      OR: [{ endTime: { lte: new Date(formattedEndDate) } }, { endTime: null }],
+    });
+    let TotalSpentTime = 0;
+    if (!sessionList || sessionList?.length === 0) {
+      return {
+        TotalSpentTime: 0,
+        value: [],
+      };
+    }
+    const mappedProject = new Map<string, number>();
+    for (const session of sessionList) {
+      let taskTimeSpent = 0;
+      const start = session.startTime;
+      let end = session.endTime ?? null;
+      if (!end) {
+        end = new Date();
+      }
+      const sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60);
+      TotalSpentTime += sessionTimeSpent;
+      taskTimeSpent += sessionTimeSpent;
+
+      if (!session?.task?.projectName) {
+        throw new APIException('Something is wrong!', HttpStatus.BAD_REQUEST);
+      }
+
+      if (!mappedProject.has(session?.task?.projectName)) {
+        mappedProject.set(session?.task.projectName, taskTimeSpent);
+      } else {
+        let getValue = mappedProject.get(session?.task?.projectName);
+        if (!getValue) getValue = 0;
+        mappedProject.set(session?.task?.projectName, getValue + taskTimeSpent);
+      }
+    }
+
+    const arr = [];
+    const iterator = mappedProject[Symbol.iterator]();
+    for (const item of iterator) {
+      arr.push({
+        projectName: item[0],
+        value: this.tasksService.getHourFromMinutes(item[1]),
+      });
+    }
+
+    return {
+      TotalSpentTime: this.tasksService.getHourFromMinutes(TotalSpentTime),
+      value: arr,
     };
   }
 }

@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { WorkspacesService } from './workspaces.service';
@@ -14,6 +15,7 @@ import { ReqStatusBody, SendInvitationReqBody, WorkspaceReqBody } from './dto';
 import { JwtAuthGuard } from 'src/guard';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
+import { Response } from 'express';
 
 @Controller('workspaces')
 export class WorkspacesController {
@@ -63,8 +65,9 @@ export class WorkspacesController {
   @UseGuards(JwtAuthGuard)
   async deleteWorkspace(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
+    @Res() res: Response,
   ) {
-    return this.workspacesService.deleteWorkspace(workspaceId);
+    return this.workspacesService.deleteWorkspace(workspaceId, res);
   }
 
   @Patch('/change-workspace/:workspaceId')
@@ -116,5 +119,10 @@ export class WorkspacesController {
       Number(userWorkspaceId),
       reqStatus.status,
     );
+  }
+
+  @Get('/verify/invited-user/:token')
+  async verifyInvitedUser(@Param('token') token: string) {
+    return await this.workspacesService.verifyInvitedUser(token);
   }
 }

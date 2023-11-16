@@ -14,6 +14,7 @@ import PrioritySelectorComponent from "./components/prioritySelector";
 import ProjectSelectorComponent from "./components/projectSelector";
 import StatusSelectorComponent from "./components/statusSelector";
 import TopBarMoreComponent from "./components/topBarMoreComponent";
+import MoreButtonTopPanel from "./components/moreButtonTopPanel";
 
 type Props = {
   tasks: TaskDto[];
@@ -22,6 +23,8 @@ type Props = {
   setActiveTab: Function;
   setSearchParamsActiveSprint: Function;
   searchParamsActiveSprint: SearchParamsModel;
+  checkedOptionList: string[];
+  setCheckedOptionList: Function;
 };
 const TopPanelActiveSprint = ({
   tasks,
@@ -30,6 +33,8 @@ const TopPanelActiveSprint = ({
   setActiveTab,
   setSearchParamsActiveSprint,
   searchParamsActiveSprint,
+  checkedOptionList,
+  setCheckedOptionList,
 }: Props) => {
   const [searchText, setSearchText] = useState(
     searchParamsActiveSprint.searchText
@@ -47,7 +52,6 @@ const TopPanelActiveSprint = ({
     getDateRangeArray("this-week")
   );
 
-  const [checkedOptionList, setCheckedOptionList] = useState(["Search"]);
   const options = [
     { label: "Search", value: "Search" },
     { label: "Priority", value: "Priority" },
@@ -141,16 +145,17 @@ const TopPanelActiveSprint = ({
           );
         })}
       </div>
-      <div className="flex gap-2">
-        <div className="mt-[6px] flex h-auto w-full flex-wrap items-center justify-end gap-6">
+      <div className="mt-[3px] flex max-w-[900px] gap-2">
+        <div className="flex h-auto w-full flex-wrap justify-end gap-6">
           {activeTab !== "ActiveSprint" && (
-            <DateRangePicker {...{ setSelectedDate }} />
+            <DateRangePicker {...{ selectedDate, setSelectedDate }} />
           )}
           {checkedOptionList.includes("Search") && (
             <div className="w-[210px]">
               <Input
                 placeholder="Search"
                 prefix={<SearchIconSvg />}
+                defaultValue={searchParamsActiveSprint.searchText}
                 onChange={(event) => {
                   event.persist();
                   debouncedHandleInputChange(event);
@@ -187,30 +192,10 @@ const TopPanelActiveSprint = ({
             </div>
           )}
         </div>
-        <div className="mt-[8px]">
-          <Dropdown
-            menu={menuProps}
-            placement="bottomRight"
-            open={dropdownOpen}
-            onOpenChange={(open) => {
-              setDropdownOpen(open);
-            }}
-            dropdownRender={(menu: React.ReactNode) => (
-              <div className="custom-dropdown-bg float-right">{menu}</div>
-            )}
-            trigger={["click"]}
-            className="custom-dropdown-bg h-min rounded-lg border-[1px] border-secondary p-2"
-            overlayClassName="w-[210px]"
-          >
-            <div>
-              <LuMoreVertical />
-            </div>
-
-            {/* <div className="flex">
-              <FilterIconSvg />
-              <div className="font-normal">More</div>
-            </div> */}
-          </Dropdown>
+        <div className="">
+          <MoreButtonTopPanel
+            {...{ menuProps, dropdownOpen, setDropdownOpen }}
+          />
         </div>
       </div>
     </div>

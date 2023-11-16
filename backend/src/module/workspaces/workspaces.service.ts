@@ -1,21 +1,28 @@
-import { ProjectsService } from './../projects/projects.service';
-import { UsersDatabase } from 'src/database/users';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserWorkspace, UserWorkspaceStatus } from '@prisma/client';
-import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
+import { Response } from 'express';
 import * as crypto from 'crypto';
-import { PrismaService } from '../prisma/prisma.service';
+
+import {
+  CreateUserWorkspaceData,
+  SendInvitationReqBody,
+  WorkspaceReqBody,
+} from './dto';
 import { APIException } from '../exception/api.exception';
 import { WorkspaceDatabase } from 'src/database/workspaces';
-import { TasksDatabase } from 'src/database/tasks';
 import { ProjectDatabase } from 'src/database/projects';
+import { EmailService } from '../email/email.service';
+import { PrismaService } from '../prisma/prisma.service';
+import * as fs from 'fs';
+import * as ejs from 'ejs';
+import { coreConfig } from 'config/core';
 @Injectable()
 export class WorkspacesService {
   constructor(
     private workspaceDatabase: WorkspaceDatabase,
-    private usersDatabase: UsersDatabase,
-    private tasksDatabase: TasksDatabase,
     private projectDatabase: ProjectDatabase,
+    private emailService: EmailService,
+    private prisma: PrismaService,
   ) {}
 
   async createWorkspace(
@@ -23,43 +30,52 @@ export class WorkspacesService {
     name: string,
     changeWorkspace?: boolean,
   ) {
-    const workspace =
-      user.id && (await this.workspaceDatabase.createWorkspace(user.id, name));
-    if (!workspace) {
-      throw new APIException(
-        'Can not create Workspace!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    const transaction = await this.prisma.$transaction(async (prisma: any) => {
+      const workspace =
+        user.id &&
+        (await this.workspaceDatabase.createWorkspace(user.id, name, prisma));
+      if (!workspace) {
+        throw new APIException(
+          'Can not create Workspace!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
 
-    const userWorkspace =
-      user.id &&
-      (await this.workspaceDatabase.createUserWorkspace(
-        user.id,
-        workspace.id,
-        Role.ADMIN,
-        UserWorkspaceStatus.ACTIVE,
-      ));
-    if (!userWorkspace) {
-      throw new APIException(
-        'Can not create userWorkspace!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+      const userWorkspace =
+        user.id &&
+        (await this.workspaceDatabase.createUserWorkspace({
+          userId: user.id,
+          workspaceId: workspace.id,
+          role: Role.ADMIN,
+          status: UserWorkspaceStatus.ACTIVE,
+          prisma,
+        }));
+      if (!userWorkspace) {
+        throw new APIException(
+          'Can not create userWorkspace!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
 
-    //no need to throw error, as it deosn't concern the creation phase
-    const updatedUser =
-      changeWorkspace &&
-      (await this.changeActiveWorkspace(+workspace.id, Number(user.id)));
+      const updatedUser =
+        changeWorkspace &&
+        (await this.changeActiveWorkspaceWithTransactionPrismaInstance(
+          +workspace.id,
+          Number(user.id),
+          prisma,
+        ));
 
-    await this.usersDatabase.createSettings(workspace?.id);
-    updatedUser &&
-      (await this.createLocalProject(
-        updatedUser,
-        `${updatedUser?.firstName}'s Project`,
-      ));
+      await this.workspaceDatabase.createSettings(workspace.id, prisma);
+      updatedUser &&
+        (await this.createLocalProjectWithTransactionPrismaInstance(
+          updatedUser,
+          `${name}'s Project`,
+          prisma,
+        ));
 
-    return workspace;
+      return [workspace, userWorkspace];
+    });
+    return transaction.length == 2 ? transaction[0] : null;
   }
 
   async getWorkspace(workspaceId: number) {
@@ -101,9 +117,10 @@ export class WorkspacesService {
         HttpStatus.NOT_MODIFIED,
       );
     }
+    return updatedWorkspace;
   }
 
-  async deleteWorkspace(workspaceId: number) {
+  async deleteWorkspace(workspaceId: number, res: Response) {
     const deletedWorkspace = await this.workspaceDatabase.deleteWorkspace(
       workspaceId,
     );
@@ -113,6 +130,8 @@ export class WorkspacesService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    return res.status(202).json({ message: 'Workspace Deleted' });
   }
 
   async getUserWorkspace(user: User) {
@@ -132,17 +151,6 @@ export class WorkspacesService {
   }
 
   async changeActiveWorkspace(workspaceId: number, userId: number) {
-    const userWorkspaceExists = await this.workspaceDatabase.getUserWorkspace(
-      userId,
-      workspaceId,
-    );
-    if (!userWorkspaceExists) {
-      throw new APIException(
-        'Invalid UserWorkspace id',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
     const updateUser = await this.workspaceDatabase.updateUser(
       userId,
       workspaceId,
@@ -157,50 +165,144 @@ export class WorkspacesService {
     return updateUser;
   }
 
-  async sendInvitation(user: User, reqBody: SendInvitationReqBody) {
-    const invitedUser = await this.workspaceDatabase.findUser(reqBody);
-    if (!invitedUser) {
-      throw new APIException('User Not found', HttpStatus.BAD_REQUEST);
-    }
-
-    const userWorkspace =
-      user.activeWorkspaceId &&
-      (await this.workspaceDatabase.getUserWorkspace(
-        invitedUser?.id,
-        user.activeWorkspaceId,
-        [UserWorkspaceStatus.ACTIVE, UserWorkspaceStatus.INVITED],
-      ));
-
-    if (userWorkspace) {
+  async changeActiveWorkspaceWithTransactionPrismaInstance(
+    workspaceId: number,
+    userId: number,
+    prisma: any,
+  ) {
+    const updateUser =
+      await this.workspaceDatabase.updateUserWithTransactionPrismaInstance(
+        userId,
+        workspaceId,
+        prisma,
+      );
+    if (!updateUser) {
       throw new APIException(
-        'This user already active or invited in this workspace',
-        HttpStatus.BAD_REQUEST,
+        'Can not change workspace',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    // invitationToken can be used for sending invitation with mail
+
+    return updateUser;
+  }
+
+  async sendInvitation(user: User, reqBody: SendInvitationReqBody) {
+    let newUserWorkspace;
+    const invitedUser = await this.workspaceDatabase.findUser(reqBody);
+
     const invitationToken = crypto.randomBytes(32).toString('hex');
     const invitationHashedToken = crypto
       .createHash('sha256')
       .update(invitationToken)
       .digest('hex');
 
-    const newUserWorkspace =
-      user.activeWorkspaceId &&
-      (await this.workspaceDatabase.createUserWorkspace(
-        invitedUser.id,
-        user.activeWorkspaceId,
-        reqBody.role,
-        UserWorkspaceStatus.INVITED,
-        user.id,
-        invitationHashedToken,
-        new Date(Date.now()),
-      ));
-    if (!newUserWorkspace) {
-      throw new APIException(
-        'Can not send invitation',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+    if (!invitedUser) {
+      const newUser = await this.workspaceDatabase.createInvitedUser(
+        reqBody?.email,
+        Number(user?.activeWorkspaceId),
       );
+      if (!newUser)
+        throw new APIException(
+          'Cannot create user. Failed to send invitation',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+
+      newUserWorkspace =
+        user?.activeWorkspaceId &&
+        (await this.workspaceDatabase.createUserWorkspaceWithPrisma({
+          role: reqBody?.role,
+          status: UserWorkspaceStatus.INVITED,
+          invitationId: invitationHashedToken,
+          userId: newUser?.id,
+          workspaceId: user?.activeWorkspaceId,
+          inviterUserId: user?.id,
+          invitedAt: new Date(Date.now()),
+        }));
+      if (!newUserWorkspace)
+        throw new APIException(
+          'Cannot create userWorkspace. Failed to send invitation',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+    } else {
+      //check if already invited
+      const userWorkspace =
+        user.activeWorkspaceId &&
+        invitedUser?.id &&
+        (await this.workspaceDatabase.getUserWorkspace(
+          invitedUser?.id,
+          user.activeWorkspaceId,
+          [UserWorkspaceStatus.ACTIVE, UserWorkspaceStatus.INVITED],
+        ));
+
+      if (userWorkspace) {
+        throw new APIException(
+          'This user already active or invited in this workspace',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      //check for invitations which were rejected
+      const rejectedUserWorkspace =
+        user.activeWorkspaceId &&
+        invitedUser?.id &&
+        (await this.workspaceDatabase.getUserWorkspace(
+          invitedUser?.id,
+          user.activeWorkspaceId,
+          [UserWorkspaceStatus.REJECTED, UserWorkspaceStatus.DELETED],
+        ));
+
+      if (rejectedUserWorkspace) {
+        newUserWorkspace =
+          user.activeWorkspaceId &&
+          (await this.workspaceDatabase.updateRejectedUserWorkspace(
+            rejectedUserWorkspace.id,
+            reqBody.role,
+            UserWorkspaceStatus.INVITED,
+            user.id,
+            invitationHashedToken,
+          ));
+      } else {
+        newUserWorkspace =
+          user.activeWorkspaceId &&
+          invitedUser?.id &&
+          (await this.workspaceDatabase.createUserWorkspaceWithPrisma({
+            userId: invitedUser.id,
+            workspaceId: user.activeWorkspaceId,
+            role: reqBody.role,
+            status: UserWorkspaceStatus.INVITED,
+            inviterUserId: user.id,
+            invitationId: invitationHashedToken,
+            invitedAt: new Date(Date.now()),
+          }));
+      }
+      if (!newUserWorkspace) {
+        throw new APIException(
+          'Can not send invitation',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
+    const inviteUrl = `${coreConfig?.ADMIN_URL}?code=${invitationHashedToken}`;
+    //console.log(inviteUrl)
+    const template = fs.readFileSync(
+      'src/utils/htmlTemplates/invitation.html',
+      'utf8',
+    );
+
+    const html = ejs.render(template, { url: inviteUrl });
+
+    await this.emailService.sendEmail(
+      'Invitation to new workspace',
+      html,
+      reqBody.email,
+    );
+    // //send email with mailjet
+    // await this.emailService.sendEmailWithMailjet(
+    //   'Invitation to new workspace',
+    //   html,
+    //   reqBody.email,
+    // );
+
     return newUserWorkspace;
   }
 
@@ -236,8 +338,11 @@ export class WorkspacesService {
     if (!workspace) {
       throw new APIException('Workspace Not found', HttpStatus.BAD_REQUEST);
     }
+    const filteredWorkspaces = workspace.userWorkspaces.filter(
+      (userWorkspace) => userWorkspace.status === UserWorkspaceStatus.ACTIVE,
+    );
 
-    const users = workspace.userWorkspaces.map((userWorkspace) => {
+    const users = filteredWorkspaces.map((userWorkspace) => {
       return {
         role: userWorkspace.role,
         designation: userWorkspace.designation,
@@ -251,23 +356,21 @@ export class WorkspacesService {
     return users;
   }
 
-  async createLocalProject(user: User, projectName: string) {
-    if (!user || (user && !user?.activeWorkspaceId))
-      throw new APIException(
-        'No userworkspace detected',
-        HttpStatus.BAD_REQUEST,
-      );
-
-    const projectExists = await this.projectDatabase.getProject(
-      {
+  async createLocalProjectWithTransactionPrismaInstance(
+    user: User,
+    projectName: string,
+    prisma: any,
+  ) {
+    const projectExists = await prisma.project.findFirst({
+      where: {
         projectName,
         source: 'T23',
         workspaceId: user?.activeWorkspaceId,
       },
-      {
+      include: {
         integration: true,
       },
-    );
+    });
 
     if (projectExists)
       throw new APIException(
@@ -277,10 +380,14 @@ export class WorkspacesService {
 
     const newProject =
       user?.activeWorkspaceId &&
-      (await this.projectDatabase.createProject(
-        projectName,
-        user?.activeWorkspaceId,
-      ));
+      (await prisma.project.create({
+        data: {
+          projectName,
+          workspaceId: user?.activeWorkspaceId,
+          source: 'T23',
+          integrated: true,
+        },
+      }));
 
     if (!newProject)
       throw new APIException(
@@ -288,15 +395,62 @@ export class WorkspacesService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
 
-    const statusCreated = await this.projectDatabase.createStatusDetail(
-      newProject?.id,
-    );
+    const statusCreated = await prisma.statusDetail.createMany({
+      data: [
+        {
+          projectId: newProject?.id,
+          name: 'To Do',
+          statusCategoryName: 'TO_DO',
+        },
+        {
+          projectId: newProject?.id,
+          name: 'In Progress',
+          statusCategoryName: 'IN_PROGRESS',
+        },
+        {
+          projectId: newProject?.id,
+          name: 'Done',
+          statusCategoryName: 'DONE',
+        },
+      ],
+    });
     if (!statusCreated)
       throw new APIException(
         'Could not create status',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
 
+    const localPrioritiesCreated =
+      await this.projectDatabase.createLocalPrioritiesWithTransactionPrismaInstance(
+        newProject?.id,
+        prisma,
+      );
+    if (!localPrioritiesCreated)
+      throw new APIException(
+        'Could not create local priorities',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+
     return newProject;
+  }
+
+  async verifyInvitedUser(token: string) {
+    const isRegisteredUser =
+      await this.workspaceDatabase.getUserWorkspaceByToken(token);
+    if (!isRegisteredUser) {
+      throw new APIException('Invalid credentials', HttpStatus.BAD_REQUEST);
+    } else if (!isRegisteredUser?.user?.firstName) {
+      return {
+        ...isRegisteredUser?.user,
+        isValidUser: false,
+        code: token,
+      };
+    } else {
+      return {
+        ...isRegisteredUser?.user,
+        isValidUser: true,
+        code: token,
+      };
+    }
   }
 }

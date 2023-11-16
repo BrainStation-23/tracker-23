@@ -19,6 +19,7 @@ import {
   getAllProjectsRest,
   getIntegratedProjectStatusesRest,
   getIntegrationsRest,
+  getInvitedUserInfoRest,
   getJiraActiveSprintTasksRest,
   getJiraLinkRest,
   getJiraSprintsRest,
@@ -33,11 +34,14 @@ import {
   getWorkspaceSettingsRest,
   googleLoginRest,
   importProjectRest,
+  loginFromInviteRest,
   loginRest,
   logoutRest,
+  markAllNotificationsClearedRest,
   markAllNotificationsSeenRest,
   markNotificationSeenRest,
   pinTaskRest,
+  registerFromInviteRest,
   registerRest,
   rejectWorkspaceInvitationRest,
   resetPasswordRest,
@@ -53,13 +57,16 @@ import {
   updateSyncTimeRest,
   updateTaskEstimationRest,
   updateTaskSTatusRest,
+  updateTimeFormatRest,
   updateWorkspaceRest,
 } from "./restApi";
 
 const restApi: apiFunction = {
   login: loginRest,
+  loginFromInvite: loginFromInviteRest,
   googleLogin: googleLoginRest,
   registerUser: registerRest,
+  registerUserFromInvite: registerFromInviteRest,
   logout: logoutRest,
   createTask: createTaskRest,
   getTasks: getTasksRest,
@@ -88,6 +95,7 @@ const restApi: apiFunction = {
   updateSession: updateSessionRest,
   markNotificationSeen: markNotificationSeenRest,
   markAllNotificationsSeen: markAllNotificationsSeenRest,
+  markAllNotificationsCleared: markAllNotificationsClearedRest,
   updateTaskEstimation: updateTaskEstimationRest,
   getJiraSprints: getJiraSprintsRest,
   getJiraActiveSprintTasks: getJiraActiveSprintTasksRest,
@@ -109,7 +117,9 @@ const restApi: apiFunction = {
   resetPassword: resetPasswordRest,
   getWorkspaceSettings: getWorkspaceSettingsRest,
   updateSyncTime: updateSyncTimeRest,
+  updateTimeFormat: updateTimeFormatRest,
   getTimeSheetReport: getTimeSheetReportRest,
+  getInvitedUserInfo: getInvitedUserInfoRest,
 };
 
 export const userAPI: apiFunction = restApi;

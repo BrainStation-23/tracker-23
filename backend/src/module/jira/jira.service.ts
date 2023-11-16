@@ -75,10 +75,13 @@ export class JiraService {
 
     const updatedIntegration = await Promise.allSettled(
       respResources.map(async (element: any) => {
+        const expires_in = 3500000;
+        const issued_time = Date.now();
+        const token_expire = issued_time + expires_in;
         user.activeWorkspaceId &&
           (await this.integrationDatabase.updateTempIntegration(
             {
-              tempIntegrationIdentifier: {
+              TempIntegrationIdentifier: {
                 siteId: element.id,
                 userWorkspaceId: userWorkspace.id,
               },
@@ -97,6 +100,7 @@ export class JiraService {
               site: element.url,
               jiraAccountId: accountId,
               workspaceId: user.activeWorkspaceId,
+              expiration_time: new Date(token_expire),
             },
           ));
       }),
@@ -137,7 +141,7 @@ export class JiraService {
 
     const getTempIntegration =
       await this.integrationDatabase.findSingleTempIntegration({
-        tempIntegrationIdentifier: {
+        TempIntegrationIdentifier: {
           siteId,
           userWorkspaceId: userWorkspace.id,
         },
@@ -149,7 +153,7 @@ export class JiraService {
 
     const doesExistIntegration =
       await this.integrationDatabase.findUniqueIntegration({
-        integrationIdentifier: {
+        IntegrationIdentifier: {
           siteId: siteId,
           workspaceId: getTempIntegration.workspaceId,
         },
@@ -168,6 +172,7 @@ export class JiraService {
         workspaceId: getTempIntegration.workspaceId,
         integrationId: doesExistIntegration.id,
         siteId,
+        expiration_time: getTempIntegration.expiration_time,
       });
 
       const importedProject = await this.integrationDatabase.findProjects({
@@ -235,6 +240,7 @@ export class JiraService {
         workspaceId: getTempIntegration.workspaceId,
         integrationId: integration.id,
         siteId,
+        expiration_time: getTempIntegration.expiration_time,
       });
 
     const deleteTempIntegration =
@@ -288,7 +294,7 @@ export class JiraService {
     };
   }
 
-  async getIntegratedProjectStatuses(user: User) {
+  async getIntegratedProjectStatusesAndPriorities(user: User) {
     const getUserIntegrationList =
       await this.integrationsService.getUserIntegrations(user);
 
@@ -296,16 +302,17 @@ export class JiraService {
       (userIntegration: any) => userIntegration?.integration?.id,
     );
     try {
-      const projects = await this.projectDatabase.getProjectsWithStatus({
-        integrated: true,
-        integrationId: {
-          in: jiraIntegrationIds?.map((id: any) => Number(id)),
-        },
-      });
+      const projects =
+        await this.projectDatabase.getProjectsWithStatusAndPriorities({
+          integrated: true,
+          integrationId: {
+            in: jiraIntegrationIds?.map((id: any) => Number(id)),
+          },
+        });
 
       const localProjects =
         user.activeWorkspaceId &&
-        (await this.projectDatabase.getProjectsWithStatus({
+        (await this.projectDatabase.getProjectsWithStatusAndPriorities({
           source: 'T23',
           workspaceId: user.activeWorkspaceId,
           integrated: true,

@@ -1,26 +1,28 @@
+import { message, Spin } from "antd";
+import { userAPI } from "APIs";
 import classNames from "classnames";
+import { GetWorkspaceListWithUserDto } from "models/workspaces";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
+import { noNavbar, publicRoutes } from "utils/constants";
+
+import { GetCookie } from "@/services/cookie.service";
+import { initializeSocket } from "@/services/socket.service";
+import { useAppDispatch, useAppSelector } from "@/storage/redux";
+import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
+import { setNotifications } from "@/storage/redux/notificationsSlice";
+import { setPriorities } from "@/storage/redux/prioritySlice";
+import { setProjectsSlice } from "@/storage/redux/projectsSlice";
+import { setSettingsReducer } from "@/storage/redux/settingsSlice";
+import { RootState } from "@/storage/redux/store";
+import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
+import { setUserSlice } from "@/storage/redux/userSlice";
+import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
+
 import Navbar from "../navbar";
 import SideMenu from "../sideMenu";
-import GlobalClock from "../stopWatch/globalClock";
-import { useAppDispatch, useAppSelector } from "@/storage/redux";
-import { RootState } from "@/storage/redux/store";
-import { userAPI } from "APIs";
-import { setSyncStatus, setSyncRunning } from "@/storage/redux/syncSlice";
-import { Spin, message } from "antd";
-import { noNavbar, publicRoutes } from "utils/constants";
-import { setProjectsSlice } from "@/storage/redux/projectsSlice";
-import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
-import { initializeSocket } from "@/services/socket.service";
-import { setNotifications } from "@/storage/redux/notificationsSlice";
-import { GetCookie } from "@/services/cookie.service";
 import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
-import { setUserSlice } from "@/storage/redux/userSlice";
-import { GetWorkspaceListWithUserDto } from "models/workspaces";
-import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
-import { logOutFunction } from "../logout/logoutFunction";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -92,9 +94,21 @@ const CustomLayout = ({ children }: any) => {
       dispatch(setNotifications(notifications));
     }
   };
+  const getSettings = async () => {
+    const res = await userAPI.getWorkspaceSettings();
+    res && dispatch(setSettingsReducer(res));
+  };
+  const getProjects = async () => {
+    const res = await userAPI.getIntegratedProjectStatuses();
+    console.log("🚀 ~ file: index.tsx:361 ~ getProjects ~ res:", res);
+    res && dispatch(setProjectsSlice(res));
+    res && dispatch(setPriorities(res));
+  };
   const initialLoading = async () => {
     await getIntegrations();
     await getNotifications();
+    await getSettings();
+    await getProjects();
   };
   useEffect(() => {
     if (!publicRoutes.some((route) => path.includes(route))) {
@@ -136,6 +150,7 @@ const CustomLayout = ({ children }: any) => {
     let timeout: NodeJS.Timeout;
     timeout =
       !publicRoutes.some((route) => path.includes(route)) &&
+      hasActiveWorkSpace &&
       setTimeout(getSyncStatus, 2000);
     const cleanup = () => {
       clearTimeout(timeout);
@@ -161,7 +176,7 @@ const CustomLayout = ({ children }: any) => {
 
     if (!publicRoutes.includes(router.pathname)) {
       console.log(router.pathname);
-      if (tmp) {
+      if (tmp && hasActiveWorkSpace) {
         myTimeout = setTimeout(getSyncStatus, 5000);
       }
     }
@@ -181,20 +196,20 @@ const CustomLayout = ({ children }: any) => {
     const res: GetWorkspaceListWithUserDto = await userAPI.getWorkspaceList();
     console.log("🚀 ~ file: layout.tsx:159 ~ getWorkspaces ~ res:", res);
     if (res.user) {
-      const activeWorkspace = res.workspaces.filter(
-        (workspace) => workspace.id === res.user.activeWorkspaceId
-      )[0];
-      const workspaces = res.workspaces.map((workspace) => {
-        return {
-          ...workspace,
-          active: workspace.id === res.user.activeWorkspaceId,
-        };
-      });
-      const userWorkspace = activeWorkspace?.userWorkspaces.filter(
-        (userWorkspace) => userWorkspace.userId === res.user.id
-      )[0];
-      dispatch(setUserSlice({ ...res.user, role: userWorkspace?.role }));
-      dispatch(setWorkspacesSlice(workspaces));
+      // const activeWorkspace = res.user.activeWorkspace;
+      // const workspaces = res.workspaces.map((workspace) => {
+      //   return {
+      //     ...workspace,
+      //     active: workspace.id === res.user.activeWorkspaceId,
+      //   };
+      // });
+      // const activeUserWorkspace = activeWorkspace?.userWorkspaces.find(
+      //   (userWorkspace) => userWorkspace.userId === res.user.id
+      // );
+      dispatch(
+        setUserSlice({ ...res.user, role: res.user.activeUserWorkspace?.role })
+      );
+      res.workspaces && dispatch(setWorkspacesSlice(res.workspaces));
     } else {
       const errorRes: any = res;
       errorRes?.error?.message && message.error(errorRes?.error?.message);

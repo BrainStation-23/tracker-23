@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 import PrimaryButton from "@/components/common/buttons/primaryButton";
-import GlobalMOdal from "@/components/modals/globalModal";
+import GlobalModal from "@/components/modals/globalModal";
 
 import AddNewProject from "./components/addNewProject";
 import ImportedProjectsSection from "./components/importedProjectsSections";
@@ -64,8 +64,8 @@ const ProjectImport = () => {
         ) : (
           <Spin spinning={true}></Spin>
         )}
-        <GlobalMOdal
-          className="top-9"
+        <GlobalModal
+          width={600}
           {...{ isModalOpen, setIsModalOpen, title: "Add a New Project" }}
         >
           <Spin spinning={spinning} tip="Processing">
@@ -74,7 +74,7 @@ const ProjectImport = () => {
               {...{ setSpinning, setIsModalOpen }}
             />
           </Spin>
-        </GlobalMOdal>
+        </GlobalModal>
       </div>
     </Spin>
   );

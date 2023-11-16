@@ -1,17 +1,13 @@
 import { Select, Space, Typography } from "antd";
-import { PriorityDto } from "models/tasks";
-import {
-  PriorityBGColorEnum,
-  PriorityBorderColorEnum,
-  taskPriorityEnum,
-} from "utils/constants";
 
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import SortPriorityIconSvg from "@/assets/svg/sortIcons/SortPriorityIconSvg";
+import { useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
 
 type TagProps = {
   label: any;
-  value: PriorityDto;
+  value: string;
   closable: any;
   onClose: any;
 };
@@ -21,6 +17,13 @@ const PrioritySelectorComponent = ({
   setPriority,
   className,
 }: Props) => {
+  const priorityNames = useAppSelector(
+    (state: RootState) => state.prioritySlice.priorityNames
+  );
+  const priorities = useAppSelector(
+    (state: RootState) => state.prioritySlice.priorities
+  );
+
   const tagRender = (props: TagProps) => {
     const { Text } = Typography;
 
@@ -29,25 +32,25 @@ const PrioritySelectorComponent = ({
       event.preventDefault();
       event.stopPropagation();
     };
+    const tmpPriority = priorities.find((priority) => priority.name == value);
     return (
       <div
         style={{
-          backgroundColor: PriorityBGColorEnum[value],
-          border: `1px solid ${PriorityBorderColorEnum[value]}`,
+          border: `1px solid ${tmpPriority.color}`,
         }}
-        className="m-1 flex w-min  cursor-pointer items-center gap-1 rounded px-2 text-black"
+        className="m-1 flex w-min  cursor-pointer items-center gap-1 rounded px-1 text-black"
         onClick={onClose}
       >
         {priority.length > 1 ? (
           <div className="flex w-max max-w-[30px] items-center text-sm">
             <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
-              {taskPriorityEnum[value]}
+              {tmpPriority.name}
             </Text>
           </div>
         ) : (
           <div className="flex w-max max-w-[90px] items-center text-sm">
             <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
-              {taskPriorityEnum[value]}
+              {tmpPriority.name}
             </Text>
           </div>
         )}
@@ -68,17 +71,14 @@ const PrioritySelectorComponent = ({
         <Select
           placeholder="Select Priority"
           mode="multiple"
-          // style={{ width: 120 }}
           className="w-full"
           showArrow
           value={priority}
           tagRender={tagRender}
           maxTagCount={1}
-          options={[
-            { value: "HIGH", label: "High" },
-            { value: "MEDIUM", label: "Medium" },
-            { value: "LOW", label: "Low" },
-          ]}
+          options={priorityNames?.map((priorityName) => {
+            return { value: priorityName, label: priorityName };
+          })}
           onChange={(value) => setPriority(value)}
         />
       </Space>

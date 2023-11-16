@@ -100,19 +100,10 @@ const ProjectSelectorComponent = ({
         mode="multiple"
         tagRender={(props) => tagRender(props)}
         value={projectIds}
-        // defaultValue={[
-        //   '{"name":"To Do","statusCategoryName":"TO_DO"}',
-        //   '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
-        // ]}
         className="w-full"
         showArrow
         maxTagCount={1}
         options={Options}
-        // options={[
-        //   { value: "TO_DO", label: "Todo" },
-        //   { value: "IN_PROGRESS", label: "In Progress" },
-        //   { value: "DONE", label: "Done" },
-        // ]}
         onChange={(value) => {
           setProjectIds(value);
         }}

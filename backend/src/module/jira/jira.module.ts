@@ -20,6 +20,9 @@ import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { WebhooksService } from '../webhooks/webhooks.service';
 import { SessionsService } from '../sessions/sessions.service';
 import { SessionDatabase } from 'src/database/sessions';
+import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
+import { JiraClient } from 'src/utils/jira';
+import { JiraClientService } from '../helper/client';
 
 @Module({
   imports: [HttpModule.register({}), SprintsModule, NotificationModule],
@@ -42,6 +45,8 @@ import { SessionDatabase } from 'src/database/sessions';
     WebhooksService,
     SessionsService,
     SessionDatabase,
+    JiraApiCalls,
+    JiraClientService,
   ],
 })
 export class JiraModule {}

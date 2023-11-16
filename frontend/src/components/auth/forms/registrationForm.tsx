@@ -9,8 +9,9 @@ import { userAPI } from "../../../../APIs/index";
 
 type Props = {
   setIsModalOpen: Function;
+  email?: string;
 };
-const RegistrationForm = ({ setIsModalOpen }: Props) => {
+const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
   const router = useRouter();
 
   const [emailStatus, setEmailStatus] = useState<
@@ -51,7 +52,7 @@ const RegistrationForm = ({ setIsModalOpen }: Props) => {
   return (
     <Form
       name="basic"
-      initialValues={{ remember: true }}
+      initialValues={{ remember: true, email }}
       onFinish={onFinish}
       onValuesChange={(e) => setEmailStatus("validating")}
       onFinishFailed={onFinishFailed}
@@ -100,6 +101,7 @@ const RegistrationForm = ({ setIsModalOpen }: Props) => {
         <Input
           type="email"
           id="validating"
+          disabled={email?.length > 0}
           placeholder="Enter your email"
           className="flex w-full rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
         />

@@ -8,7 +8,6 @@ const MyTasks = () => {
     { title: "Done" },
     { title: "Delegated" },
   ];
-  const activeTabClassName = "border-b-2 border-blue-500";
   return (
     <div className="flex flex-col gap-4">
       <div className="font-bold mt-4"> My Work</div>

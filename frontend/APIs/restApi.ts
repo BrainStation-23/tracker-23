@@ -47,6 +47,23 @@ export async function loginRest(
   }
 }
 
+export async function loginFromInviteRest(
+  data: LoginDto
+): Promise<LoginResponseDto | undefined> {
+  try {
+    const res = await axios.post(`${apiEndPoints.invitedUserLogin}`, data);
+    if (res?.data?.access_token) {
+      SetCookie("access_token", res?.data?.access_token);
+      setLocalStorage("access_token", res?.data?.access_token);
+      setLocalStorage("userDetails", res.data);
+    }
+    return res.data;
+  } catch (error: any) {
+    console.log("🚀 ~ file: restApi.ts:48 ~ error:", error);
+    return null;
+  }
+}
+
 export async function googleLoginRest(
   code: string
 ): Promise<LoginResponseDto | undefined> {
@@ -64,6 +81,23 @@ export async function registerRest(
 ): Promise<RegisterDto | undefined> {
   try {
     const res = await axios.post(`${apiEndPoints.register}`, data);
+    return res.data;
+  } catch (error: any) {
+    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
+    return null;
+  }
+}
+
+export async function registerFromInviteRest(
+  data: RegisterDto
+): Promise<RegisterDto | undefined> {
+  try {
+    const res = await axios.post(`${apiEndPoints.invitedUserRegister}`, data);
+    if (res?.data?.access_token) {
+      SetCookie("access_token", res?.data?.access_token);
+      setLocalStorage("access_token", res?.data?.access_token);
+      setLocalStorage("userDetails", res.data);
+    }
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
@@ -134,6 +168,10 @@ export async function deleteTaskRest(taskId: any) {
 }
 
 export async function getTasksRest(searchParams: SearchParamsModel) {
+  console.log(
+    "🚀 ~ file: restApi.ts:135 ~ getTasksRest ~ searchParams:",
+    searchParams
+  );
   const sprints = searchParams?.sprints;
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
@@ -148,7 +186,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
         (searchParams?.searchText && searchParams?.searchText.length > 0
-          ? `&text=${searchParams.searchText}`
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
@@ -182,7 +220,7 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
         (searchParams?.searchText && searchParams?.searchText.length > 0
-          ? `&text=${searchParams.searchText}`
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
@@ -427,6 +465,16 @@ export async function markAllNotificationsSeenRest() {
     return false;
   }
 }
+export async function markAllNotificationsClearedRest() {
+  try {
+    const res = await axios.patch(
+      `${apiEndPoints.markAllNotificationsCleared}`
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
 
 export async function deleteSessionRest(sessionId: number) {
   try {
@@ -471,7 +519,7 @@ export async function getJiraActiveSprintTasksRest(
     const res = await axios.get(
       `${apiEndPoints.activeSprintTasks}/?state=${["active"]}` +
         (searchParams?.searchText && searchParams?.searchText.length > 0
-          ? `&text=${searchParams.searchText}`
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
@@ -521,6 +569,12 @@ export async function deleteProjectTasksRest(id: number) {
 export async function getWorkspaceListRest() {
   try {
     const res = await axios.get(`${apiEndPoints.workspaces}`);
+    res.data.workspaces = res.data.workspaces.map((workspace: any) => {
+      return {
+        ...workspace,
+        active: workspace.id === res.data.user.activeWorkspaceId,
+      };
+    });
     return res.data;
   } catch (error: any) {
     return false;
@@ -631,6 +685,16 @@ export async function updateSyncTimeRest(time: number) {
     return false;
   }
 }
+export async function updateTimeFormatRest(value: string) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.workspaceSettings}`, {
+      timeFormat: value,
+    });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
 
 export async function getTimeSheetReportRest(data: getTimeSheetReportDto) {
   try {
@@ -638,6 +702,14 @@ export async function getTimeSheetReportRest(data: getTimeSheetReportDto) {
       `${apiEndPoints.timeSheetReport}/` +
         `?startDate=${data?.startDate}&endDate=${data?.endDate}`
     );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function getInvitedUserInfoRest(token: string) {
+  try {
+    const res = await axios.get(`${apiEndPoints.invitedUserInfo}` + token);
     return res.data;
   } catch (error: any) {
     return false;

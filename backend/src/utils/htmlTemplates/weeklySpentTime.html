@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spent Time Report</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Spent Time Report</h2>
+    <p>
+      Total Spent Time:
+      <span id="totalSpentTime"> <%= data.TotalSpentTime %></span> hours
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Project Name</th>
+          <th>Spent Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% data.value.forEach(function(project) { %>
+        <tr>
+          <td><%= project.projectName %></td>
+          <td><%= project.value %> hours</td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </body>
+</html>

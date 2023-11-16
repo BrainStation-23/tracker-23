@@ -16,6 +16,9 @@ import { IntegrationDatabase } from 'src/database/integrations';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { ExportDatabase } from 'src/database/exports';
 import { UsersDatabase } from 'src/database/users';
+import { EmailService } from '../email/email.service';
+import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
+import { JiraClientService } from '../helper/client';
 
 @Module({
   imports: [HttpModule.register({})],
@@ -36,6 +39,9 @@ import { UsersDatabase } from 'src/database/users';
     UserWorkspaceDatabase,
     ExportDatabase,
     UsersDatabase,
+    EmailService,
+    JiraApiCalls,
+    JiraClientService,
   ],
 })
 export class ExportModule {}
