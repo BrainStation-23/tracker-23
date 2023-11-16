@@ -194,7 +194,7 @@ const TableComponent = ({
       title: "Total Spent",
       dataIndex: "total",
       key: "total",
-      // align: "center",
+      align: "center",
       render: (_: any, task: TaskDto) =>
         runningTask?.id !== task.id ? (
           <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />

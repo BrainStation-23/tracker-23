@@ -1,11 +1,12 @@
 import { Button, DatePicker, Form, Spin, TimePicker } from "antd";
 import { userAPI } from "APIs";
 import { AddWorkLogParams, TaskDto } from "models/tasks";
+import { useState } from "react";
 
+import PrimaryButton from "@/components/common/buttons/primaryButton";
 import { localFormat } from "@/components/datePicker";
 
 import { timeFormat } from "../../datePicker/index";
-import { useState } from "react";
 
 type Props = {
   task: TaskDto;
@@ -67,13 +68,7 @@ const EditSessionComponent = ({ task, handleAddManualSession }: Props) => {
             <Button htmlType="button" onClick={onReset}>
               Reset
             </Button>
-            <Button
-              type="ghost"
-              htmlType="submit"
-              className="bg-[#00A3DE] text-white hover:bg-[#00a3deb2]"
-            >
-              Add Entry
-            </Button>
+            <PrimaryButton htmlType="submit">Add Entry</PrimaryButton>
           </div>
         </Form.Item>
       </Form>

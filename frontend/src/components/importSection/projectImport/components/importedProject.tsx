@@ -10,6 +10,7 @@ import {
 } from "@/storage/redux/syncSlice";
 import { userAPI } from "APIs";
 import { message } from "antd";
+import OpenLinkInNewTab from "@/components/common/link/OpenLinkInNewTab";
 
 type Props = {
   project: ProjectDto;
@@ -37,14 +38,13 @@ const ImportedProject = ({ project, deleteProject }: Props) => {
         <div className=" font-bold">{project.projectName}</div>
         <div className="flex items-center gap-1">
           <div> Source :</div>
-          <div
-            className="cursor-pointer text-sm font-normal text-blue-500"
+          <OpenLinkInNewTab
             onClick={() => {
-              window.open(project.source);
+              project.source !== "T23" && window.open(project.source);
             }}
           >
             {project.source}
-          </div>
+          </OpenLinkInNewTab>
         </div>
       </div>
       <div className="flex items-center">

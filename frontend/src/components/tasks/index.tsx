@@ -64,6 +64,7 @@ const TasksPage = () => {
   const [activeTab, setActiveTab] = useState(
     router.query.tab === "pin" ? "Pin" : "All"
   );
+  const [checkedOptionList, setCheckedOptionList] = useState(["Search"]);
   const [searchParams, setSearchParams] = useState({
     searchText: "",
     selectedDate: getDateRangeArray("this-week"),
@@ -615,6 +616,8 @@ const TasksPage = () => {
               setActiveTab,
               searchParamsActiveSprint,
               setSearchParamsActiveSprint,
+              checkedOptionList,
+              setCheckedOptionList,
             }}
           />
         ) : (
@@ -626,6 +629,8 @@ const TasksPage = () => {
               setActiveTab,
               searchParams,
               setSearchParams,
+              checkedOptionList,
+              setCheckedOptionList,
             }}
           />
         )}

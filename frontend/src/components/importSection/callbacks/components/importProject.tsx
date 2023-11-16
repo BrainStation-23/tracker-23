@@ -3,6 +3,7 @@ import { ProjectDto } from "models/projects";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 import PrimaryButton from "@/components/common/buttons/primaryButton";
+import OpenLinkInNewTab from "@/components/common/link/OpenLinkInNewTab";
 
 type Props = {
   project: ProjectDto;
@@ -18,9 +19,7 @@ const ImportProject = ({ project, importIntegrationTasks }: Props) => {
         <div className=" font-bold">{project.projectName}</div>
         <div className="flex items-center gap-1">
           <div> Source :</div>
-          <div className="text-sm font-normal text-blue-500">
-            {project.source}
-          </div>
+          <OpenLinkInNewTab>{project.source}</OpenLinkInNewTab>
         </div>
       </div>
       <div>

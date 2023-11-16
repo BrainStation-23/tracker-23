@@ -15,7 +15,9 @@ import { setSprintListReducer } from "@/storage/redux/tasksSlice";
 
 import { getFormattedTime } from "../../services/timeActions";
 import TablePriorityComponent from "../common/tableComponents/tablePriorityComponent";
+import FormatTimeForSettings from "../common/time/formatTimeForSettings";
 import { getDateRangeArray } from "../datePicker";
+import TimeDisplayComponent from "../tasks/components/timeDisplayComponent";
 import TopPanelExportPage from "./components/topPanelExportPage";
 
 import type { TableProps } from "antd/es/table";
@@ -105,7 +107,7 @@ const columns: any = [
     key: "estimation",
     // defaultSortOrder: "descend",
     render: (_: any, { estimation }: TaskDto) => (
-      <>{estimation ? estimation + " hrs" : "---"}</>
+      <FormatTimeForSettings time={estimation} />
     ),
     sorter: (a: any, b: any) => a.estimation - b.estimation,
     align: "center",
@@ -141,7 +143,9 @@ const columns: any = [
     title: "Total Spent",
     dataIndex: "total",
     key: "total",
-    render: (_: any, task: any) => (task.total ? <>{task.total}</> : <>---</>),
+    render: (_: any, task: any) => (
+      <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
+    ),
     sorter: (a: any, b: any) => a.totalSpent - b.totalSpent,
     align: "center",
   },

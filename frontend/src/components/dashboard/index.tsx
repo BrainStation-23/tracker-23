@@ -429,7 +429,7 @@ const Dashboard = () => {
   return (
     <>
       {dataFetched ? (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 pb-12">
           <div className="grid grid-cols-1">
             {/* <div className="grid grid-cols-2"> */}
             <DashboardSection
@@ -464,7 +464,7 @@ const Dashboard = () => {
         />
         {morePin && (
           <div
-            className="absolute bottom-0 right-1/2 left-1/2 w-max cursor-pointer hover:text-blue-500"
+            className="absolute bottom-0 right-1/2 left-1/2 w-max cursor-pointer "
             onClick={() => {
               router.push("/taskList?tab=pin");
             }}

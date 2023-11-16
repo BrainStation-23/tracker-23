@@ -1,25 +1,19 @@
+import { Table, TablePaginationConfig, Typography } from "antd";
+import { FilterValue, SorterResult } from "antd/es/table/interface";
+import { TableParams, TaskDto } from "models/tasks";
+import { useState } from "react";
+import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
+
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
 import TablePriorityComponent from "@/components/common/tableComponents/tablePriorityComponent";
+import FormatTimeForSettings from "@/components/common/time/formatTimeForSettings";
 import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
-import MoreFunctionComponent from "@/components/tasks/components/moreFunction";
 import ProgressComponent from "@/components/tasks/components/progressComponent";
 import StaticProgressComponent from "@/components/tasks/components/progressComponentStatic";
 import TimeDisplayComponent from "@/components/tasks/components/timeDisplayComponent";
 import { getTotalSpentTime } from "@/services/timeActions";
 import { getLocalStorage, setLocalStorage } from "@/storage/storage";
-import { Button, Table, TablePaginationConfig, Typography } from "antd";
-import { FilterValue, SorterResult } from "antd/es/table/interface";
-import { TableParams, TaskDto } from "models/tasks";
-import { useState } from "react";
-import {
-  PriorityBGColorEnum,
-  PriorityBorderColorEnum,
-  statusBGColorEnum,
-  statusBorderColorEnum,
-  taskPriorityEnum,
-  taskStatusEnum,
-} from "utils/constants";
 
 const { Text } = Typography;
 const DashboardTableComponent = ({
@@ -156,7 +150,9 @@ const DashboardTableComponent = ({
       key: "estimation",
       render: (_: any, task: TaskDto) =>
         task.estimation ? (
-          <div className="text-center">{task.estimation}hrs</div>
+          <div className="text-center">
+            <FormatTimeForSettings time={task.estimation} />
+          </div>
         ) : (
           <div className="text-center">---</div>
         ),

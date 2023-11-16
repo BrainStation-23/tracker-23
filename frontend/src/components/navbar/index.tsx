@@ -73,7 +73,7 @@ const Navbar = ({ extraComponent }: Props) => {
   );
   return (
     <div className=" mb-2 flex h-16 w-full items-center justify-between">
-      <div className="py-6 text-xl text-blue-500  hover:text-green-500">
+      <div className="py-6">
         {sideMenuOptions?.map(
           (option) =>
             router.asPath.includes(option.link) && (

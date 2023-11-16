@@ -1,4 +1,3 @@
-import { formatDecimalHours } from "@/services/timeActions";
 import {
   Avatar,
   Table,
@@ -10,8 +9,8 @@ import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { TableParams } from "models/tasks";
 import { useState } from "react";
 import { LuHelpCircle } from "react-icons/lu";
-import { RootState } from "@/storage/redux/store";
-import { useAppSelector } from "@/storage/redux";
+
+import FormatTimeForSettings from "@/components/common/time/formatTimeForSettings";
 
 const { Text } = Typography;
 type Props = {
@@ -20,10 +19,6 @@ type Props = {
   dateRangeArray: any;
 };
 const TableComponent = ({ data, column, dateRangeArray }: Props) => {
-  const timeFormat = useAppSelector(
-    (state: RootState) => state.settingsSlice.timeFormat
-  );
-
   const columns: any = [
     {
       title: "User",
@@ -77,11 +72,7 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
       render: (_: any, v: any) => {
         return (
           <div className="w-full cursor-pointer rounded px-2 text-center  text-black">
-            {v[date]
-              ? timeFormat === "Day"
-                ? formatDecimalHours(v[date])
-                : v[date] + "h"
-              : "-"}
+            <FormatTimeForSettings time={v[date]} />
           </div>
         );
       },
@@ -96,11 +87,7 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
     render: (_: any, { totalTime }: any) => {
       return (
         <div className="w-full rounded px-2 text-center text-black">
-          {totalTime
-            ? timeFormat === "Day"
-              ? formatDecimalHours(totalTime)
-              : totalTime + "h"
-            : "-"}
+          <FormatTimeForSettings time={totalTime} />
         </div>
       );
     },
