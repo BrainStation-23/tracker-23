@@ -23,6 +23,7 @@ import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
 import Navbar from "../navbar";
 import SideMenu from "../sideMenu";
 import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
+import { deleteFromLocalStorage } from "@/storage/storage";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -251,6 +252,11 @@ const CustomLayout = ({ children }: any) => {
       getWorkspaces();
     }
   }, [reloadWorkspace]);
+  useEffect(() => {
+    !["/inviteLink", "/socialLogin/redirect"].some((route) =>
+      path.includes(route)
+    ) && deleteFromLocalStorage("invitationCode");
+  }, [path]);
   return (
     <>
       {loading &&
