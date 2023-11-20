@@ -2233,12 +2233,17 @@ export class TasksService {
         data: priorityListByProjectId,
       });
 
-      return true;
+      return await this.prisma.priorityScheme.findMany({
+        where: {
+          projectId: project.id,
+        },
+      });
     } catch (error) {
       console.log(
         '🚀 ~ file: task.service.ts:2223 ~ importPriorities ~ error:',
         error.message,
       );
+      return [];
     }
   }
 
