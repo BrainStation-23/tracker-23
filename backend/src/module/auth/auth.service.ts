@@ -136,9 +136,9 @@ export class AuthService {
     if (!req.user) {
       return 'No user from google';
     }
-
-    req?.invitationCode &&
-      (await this.checkEmail(req.invitationCode, req.user.email));
+    const urlParams = new URLSearchParams(req.url);
+    const invitationCode = urlParams.get('invitationCode');
+    invitationCode && (await this.checkEmail(invitationCode, req.user.email));
 
     const queryData = {
       email: req.user.email,
