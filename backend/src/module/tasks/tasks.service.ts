@@ -2206,13 +2206,10 @@ export class TasksService {
   ) {
     try {
       const getPriorityByProjectIdUrl = `https://api.atlassian.com/ex/jira/${updatedUserIntegration.siteId}/rest/api/3/priority`;
-      const { data: priorityList } = await axios.get(
+      const priorityList: any = await this.jiraClient.CallJira(
+        updatedUserIntegration,
+        this.jiraApiCalls.importJiraPriorities,
         getPriorityByProjectIdUrl,
-        {
-          headers: {
-            Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
-          },
-        },
       );
 
       const priorityListByProjectId =

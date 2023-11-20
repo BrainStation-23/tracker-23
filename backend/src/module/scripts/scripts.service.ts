@@ -3,7 +3,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { TasksService } from '../tasks/tasks.service';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { ProjectDatabase } from 'src/database/projects';
-import { Task } from '@prisma/client';
 
 @Injectable()
 export class ScriptsService {
@@ -28,7 +27,7 @@ export class ScriptsService {
       },
     });
     for (const project of projects) {
-      if (project?.priorities?.length === 0 && project.source === 'JIRA') {
+      if (project?.priorities?.length === 0 && project.projectId) {
         if (
           project.integration &&
           project.integration?.userIntegrations.length > 0
@@ -45,10 +44,6 @@ export class ScriptsService {
                 priority: element.name.toUpperCase(),
               },
             });
-            console.log(
-              '🚀 ~ file: scripts.service.ts:53 ~ ScriptsService ~ migratePrioritySchema ~ tasks:',
-              tasks,
-            );
             for (
               let index = 0, taskLen = tasks.length;
               index < taskLen;
@@ -77,28 +72,35 @@ export class ScriptsService {
         project?.priorities?.length === 0 &&
         project.source === 'T23'
       ) {
-        await this.projectDatabase.createLocalPrioritiesWithTransactionPrismaInstance(
-          project?.id,
-        );
-      }
-    }
+        const priorityList =
+          await this.projectDatabase.createLocalPrioritiesWithTransactionPrismaInstance(
+            project?.id,
+          );
 
-    const tasks = await this.prisma.task.findMany();
-    const taskList: Promise<any>[] = [];
-    for (let index = 0, len = tasks.length; index < len; index++) {
-      const task = tasks[index];
-      if (task.priority === task.priority?.toUpperCase()) {
-        taskList.push(
-          this.prisma.task.update({
+        for (let index = 0, len = priorityList.length; index < len; index++) {
+          const element = priorityList[index];
+          const tasks = await this.prisma.task.findMany({
             where: {
-              id: task.id,
+              projectId: project.id,
+              priority: element.name.toUpperCase(),
             },
-            data: {
-              priority: 'haskj',
-            },
-          }),
-        );
-        await Promise.all(taskList);
+          });
+          for (
+            let index = 0, taskLen = tasks.length;
+            index < taskLen;
+            index++
+          ) {
+            const task = tasks[index];
+            await this.prisma.task.update({
+              where: {
+                id: task.id,
+              },
+              data: {
+                priority: element.name,
+              },
+            });
+          }
+        }
       }
     }
   }

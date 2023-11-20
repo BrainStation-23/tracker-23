@@ -212,7 +212,7 @@ export class ProjectDatabase {
     prisma = this.prisma,
   ) {
     try {
-      return await prisma.priorityScheme.createMany({
+      await prisma.priorityScheme.createMany({
         data: [
           {
             name: 'Lowest',
@@ -256,9 +256,15 @@ export class ProjectDatabase {
           },
         ],
       });
+
+      return await prisma.priorityScheme.findMany({
+        where: {
+          projectId,
+        },
+      });
     } catch (error) {
       console.log(error);
-      return null;
+      return [];
     }
   }
 }
