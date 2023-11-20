@@ -149,7 +149,7 @@ export class AuthService {
 
     const oldUser = await this.usersDatabase.findUserByEmail(req.user.email);
 
-    if (oldUser) {
+    if (oldUser?.firstName) {
       if (!oldUser.activeWorkspaceId) {
         const doesExist =
           await this.userWorkspaceDatabase.getSingleUserWorkspace({
@@ -196,11 +196,9 @@ export class AuthService {
       return await this.getFormattedUserData(oldUser);
     }
 
-    const user = await this.usersDatabase.createGoogleLoginUser(queryData);
-    // console.log(
-    //   '🚀 ~ file: auth.service.ts:154 ~ AuthService ~ googleLogin ~ user:',
-    //   user,
-    // );
+    const user = oldUser
+      ? await this.usersDatabase.updateGoogleLoginUser(queryData)
+      : await this.usersDatabase.createGoogleLoginUser(queryData);
     if (!user)
       throw new APIException(
         'Could not create user',

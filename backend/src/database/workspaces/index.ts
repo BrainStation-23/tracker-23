@@ -438,6 +438,7 @@ export class WorkspaceDatabase {
               email: true,
               firstName: true,
               lastName: true,
+              hash: true,
             },
           },
         },
