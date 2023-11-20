@@ -5,13 +5,9 @@ import { useEffect } from "react";
 
 type Props = {
   member: UserDto;
-  updateUser: Function;
+  updateApprovalUser: Function;
 };
-const SingleUser = ({ member, updateUser }: Props) => {
-  const updateApprovalUser = async (data: updateApprovalUserDto) => {
-    const res: UserDto = await userAPI.updateApprovalUser(member.id, data);
-    if (res) updateUser(res);
-  };
+const SingleUser = ({ member, updateApprovalUser }: Props) => {
   useEffect(() => {
     console.log(
       "🚀 ~ file: singleUser.tsx:17 ~ updateApprovalUser ~ member.approved:",
@@ -26,7 +22,7 @@ const SingleUser = ({ member, updateUser }: Props) => {
       <PrimaryButton
         className="flex w-24 justify-center"
         onClick={() => {
-          updateApprovalUser({ approved: !member.approved });
+          updateApprovalUser({ approved: !member.approved }, member);
         }}
       >
         {member.approved ? "Reject" : "Approve"}

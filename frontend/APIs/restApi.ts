@@ -66,10 +66,15 @@ export async function loginFromInviteRest(
 }
 
 export async function googleLoginRest(
-  code: string
+  code: string,
+  invitationCode?: string
 ): Promise<LoginResponseDto | undefined> {
   try {
-    const res = await axios.post(`${apiEndPoints.googleLogin}?code=${code}`);
+    const res = await axios.post(
+      `${apiEndPoints.googleLogin}?code=${code}${
+        invitationCode ? `&&invitationCode=${invitationCode}` : ""
+      }`
+    );
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);

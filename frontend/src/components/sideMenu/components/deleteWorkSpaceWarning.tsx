@@ -1,11 +1,13 @@
+import { message } from "antd";
+import { userAPI } from "APIs";
+import { WorkspaceDto } from "models/workspaces";
+import { useDispatch } from "react-redux";
+
+import PrimaryButton from "@/components/common/buttons/primaryButton";
 import {
   changeWorkspaceReloadStatusSlice,
   deleteWorkspaceSlice,
 } from "@/storage/redux/workspacesSlice";
-import { userAPI } from "APIs";
-import { Button, message } from "antd";
-import { WorkspaceDto } from "models/workspaces";
-import { useDispatch } from "react-redux";
 
 type Props = {
   workspace: WorkspaceDto;
@@ -30,14 +32,11 @@ const DeleteWorkspaceWarning = ({
   };
   return (
     <>
-      Do you want to delete the {workspace?.name} ?
+      Do you want to delete the{" "}
+      <span className="font-bold">{workspace?.name}</span> ?
       <div className="mx-auto mt-5 flex w-[300px] justify-between">
-        <Button type="primary" onClick={() => handleDelete()}>
-          Yes
-        </Button>{" "}
-        <Button type="primary" onClick={() => setIsModalOpen(false)}>
-          No
-        </Button>
+        <PrimaryButton onClick={() => handleDelete()}>Yes</PrimaryButton>
+        <PrimaryButton onClick={() => setIsModalOpen(false)}>No</PrimaryButton>
       </div>
     </>
   );

@@ -23,19 +23,13 @@ import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
 import Navbar from "../navbar";
 import SideMenu from "../sideMenu";
 import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
+import { deleteFromLocalStorage } from "@/storage/storage";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
-  const [showSideBar, setShowSideBar] = useState<boolean>(false);
-  const [hasActiveWorkSpace, setHasActiveWorkSpace] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const path = router.asPath;
   const isPublicRoute = publicRoutes.some((route) => path.includes(route));
-  console.log(
-    "🚀 ~ file: layout.tsx:33 ~ CustomLayout ~ isPublicRoute:",
-    isPublicRoute,
-    router.pathname
-  );
 
   const dispatch = useAppDispatch();
   const syncRunning = useAppSelector(
@@ -53,6 +47,7 @@ const CustomLayout = ({ children }: any) => {
   const [syncing, setSyncing] = useState(
     useAppSelector((state: RootState) => state.syncStatus.syncRunning)
   );
+  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
   const tmp = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
@@ -69,10 +64,6 @@ const CustomLayout = ({ children }: any) => {
     if (!projectStatuses) {
       {
         const res = await userAPI.getIntegratedProjectStatuses();
-        console.log(
-          "🚀 ~ file: layout.tsx:60 ~ getProjectWiseStatues ~ res:",
-          res
-        );
         res && dispatch(setProjectsSlice(res));
       }
     }
@@ -100,7 +91,6 @@ const CustomLayout = ({ children }: any) => {
   };
   const getProjects = async () => {
     const res = await userAPI.getIntegratedProjectStatuses();
-    console.log("🚀 ~ file: index.tsx:361 ~ getProjects ~ res:", res);
     res && dispatch(setProjectsSlice(res));
     res && dispatch(setPriorities(res));
   };
@@ -112,12 +102,12 @@ const CustomLayout = ({ children }: any) => {
   };
   useEffect(() => {
     if (!publicRoutes.some((route) => path.includes(route))) {
-      hasActiveWorkSpace && initialLoading();
+      userInfo?.activeWorkspace && initialLoading();
     }
   }, [
     publicRoutes.some((route) => path.includes(route)),
     path,
-    hasActiveWorkSpace,
+    userInfo?.activeWorkspace,
   ]);
   useEffect(() => {
     const connectSocket = async () => {
@@ -150,7 +140,7 @@ const CustomLayout = ({ children }: any) => {
     let timeout: NodeJS.Timeout;
     timeout =
       !publicRoutes.some((route) => path.includes(route)) &&
-      hasActiveWorkSpace &&
+      userInfo?.activeWorkspace &&
       setTimeout(getSyncStatus, 2000);
     const cleanup = () => {
       clearTimeout(timeout);
@@ -176,7 +166,7 @@ const CustomLayout = ({ children }: any) => {
 
     if (!publicRoutes.includes(router.pathname)) {
       console.log(router.pathname);
-      if (tmp && hasActiveWorkSpace) {
+      if (tmp && userInfo?.activeWorkspace) {
         myTimeout = setTimeout(getSyncStatus, 5000);
       }
     }
@@ -191,7 +181,6 @@ const CustomLayout = ({ children }: any) => {
   useEffect(() => {
     if (syncRunning !== syncing) setSyncing(syncRunning);
   }, [syncing, syncRunning]);
-  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
   const getWorkspaces = async () => {
     const res: GetWorkspaceListWithUserDto = await userAPI.getWorkspaceList();
     console.log("🚀 ~ file: layout.tsx:159 ~ getWorkspaces ~ res:", res);
@@ -215,7 +204,6 @@ const CustomLayout = ({ children }: any) => {
       errorRes?.error?.message && message.error(errorRes?.error?.message);
       // logOutFunction();
     }
-    if (res.user?.activeWorkspaceId) setHasActiveWorkSpace(true);
     setLoading(false);
   };
 
@@ -233,7 +221,6 @@ const CustomLayout = ({ children }: any) => {
         setLoading(true);
         getWorkspaces();
       } else setLoading(false);
-      if (userInfo?.activeWorkspaceId) setHasActiveWorkSpace(true);
     }
   }, [router, path]);
 
@@ -251,6 +238,11 @@ const CustomLayout = ({ children }: any) => {
       getWorkspaces();
     }
   }, [reloadWorkspace]);
+  useEffect(() => {
+    !["/inviteLink", "/socialLogin/redirect"].some((route) =>
+      path.includes(route)
+    ) && deleteFromLocalStorage("invitationCode");
+  }, [path]);
   return (
     <>
       {loading &&
@@ -298,7 +290,7 @@ const CustomLayout = ({ children }: any) => {
             </div>
           </>
         )} */}
-          {hasActiveWorkSpace ||
+          {userInfo?.activeWorkspace ||
           path.includes("socialLogin") ||
           publicRoutes.some((route) => path.includes(route)) ? (
             <div
