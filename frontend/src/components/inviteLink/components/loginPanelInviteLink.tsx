@@ -11,12 +11,9 @@ import MyDivider from "../../common/MyDivider";
 
 type Props = {
   email?: string;
+  onlySocialLogin?: boolean;
 };
-const LoginPanelInviteLink = ({ email }: Props) => {
-  console.log(
-    "🚀 ~ file: loginPanelInviteLink.tsx:16 ~ LoginPanelInviteLink ~ email:",
-    email
-  );
+const LoginPanelInviteLink = ({ email, onlySocialLogin }: Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   useEffect(() => {}, [email]);
   return (
@@ -28,8 +25,16 @@ const LoginPanelInviteLink = ({ email }: Props) => {
           subTitle={"   Sign up or log in to start tracking your time"}
         />
         <GoogleLogin setIsModalOpen={setIsModalOpen} />
-        <MyDivider>or</MyDivider>
-        <LoginFormInvitedUser setIsModalOpen={setIsModalOpen} email={email} />
+        {!onlySocialLogin && (
+          <>
+            {" "}
+            <MyDivider>or</MyDivider>
+            <LoginFormInvitedUser
+              setIsModalOpen={setIsModalOpen}
+              email={email}
+            />
+          </>
+        )}
       </div>
       <Modal
         open={isModalOpen}

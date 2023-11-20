@@ -7,10 +7,12 @@ import { RootState } from "@/storage/redux/store";
 
 import { useAppSelector } from "../../storage/redux/index";
 import UserList from "./components/userList";
+import { Spin } from "antd";
 
 const UsersComponent = () => {
   const router = useRouter();
   const [userList, setUserList] = useState([]);
+  const [spinning, setSpinning] = useState(false);
   const user = useAppSelector((state: RootState) => state.userSlice.user);
 
   const getUserList = async () => {
@@ -30,9 +32,15 @@ const UsersComponent = () => {
     } else router.push("/");
   }, [user]);
   return (
-    <>
-      <UserList userList={userList} updateUser={updateUser} />
-    </>
+    <div>
+      <div className="mb-4 flex justify-between">
+        <h2 className="text-2xl font-bold">User Approval</h2>
+      </div>
+      <div className="text-lg font-semibold">User List</div>
+      <Spin spinning={spinning}>
+        <UserList {...{ userList, updateUser, setSpinning }} />
+      </Spin>
+    </div>
   );
 };
 

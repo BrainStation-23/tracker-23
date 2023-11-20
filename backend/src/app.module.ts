@@ -17,6 +17,7 @@ import { WebhooksModule } from './module/webhooks/webhooks.module';
 import { UsersModule } from './module/user/users.module';
 import { CronService } from './module/cron/cron.service';
 import { HelperModule } from './module/helper/helper.module';
+import { ScriptsModule } from './module/scripts/scripts.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { HelperModule } from './module/helper/helper.module';
     EmailModule,
     ProjectsModule,
     UsersModule,
+    ScriptsModule,
   ],
   providers: [CronService],
 })

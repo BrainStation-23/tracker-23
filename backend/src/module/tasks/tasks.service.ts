@@ -400,7 +400,6 @@ export class TasksService {
     } else {
       project = await this.tasksDatabase.getProject(Number(dto.projectId));
     }
-
     if (dto.isRecurrent) {
       return (
         project &&
@@ -416,37 +415,36 @@ export class TasksService {
         ))
       );
     } else {
-      const newTask = await this.prisma.task
-        .create({
+      const task = await this.prisma.task.create({
+        data: {
+          userWorkspaceId: userWorkspace.id,
+          title: dto.title,
+          description: dto.description,
+          estimation: dto.estimation,
+          due: dto.due,
+          priority: dto.priority,
+          status: dto.status,
+          labels: dto.labels,
+          workspaceId: user.activeWorkspaceId,
+          projectName: project?.projectName,
+          projectId: project?.id,
+        },
+      });
+
+      if (dto.startTime && dto.endTime && task.id) {
+        await this.prisma.session.create({
           data: {
+            startTime: dto.startTime,
+            endTime: dto.endTime,
+            status: SessionStatus.STOPPED,
             userWorkspaceId: userWorkspace.id,
-            title: dto.title,
-            description: dto.description,
-            estimation: dto.estimation,
-            due: dto.due,
-            priority: dto.priority,
-            status: dto.status,
-            labels: dto.labels,
-            workspaceId: user.activeWorkspaceId,
-            projectName: project?.projectName,
-            projectId: project?.id,
+            taskId: task.id,
           },
-        })
-        .then(async (task) => {
-          await this.prisma.session.create({
-            data: {
-              startTime: dto.startTime,
-              endTime: dto.endTime,
-              status: SessionStatus.STOPPED,
-              userWorkspaceId: userWorkspace.id,
-              taskId: task.id,
-            },
-          });
-          return task;
         });
+      }
 
       return await this.prisma.task.findUnique({
-        where: { id: newTask.id },
+        where: { id: task.id },
         include: {
           sessions: true,
         },
@@ -2206,13 +2204,10 @@ export class TasksService {
   ) {
     try {
       const getPriorityByProjectIdUrl = `https://api.atlassian.com/ex/jira/${updatedUserIntegration.siteId}/rest/api/3/priority`;
-      const { data: priorityList } = await axios.get(
+      const priorityList: any = await this.jiraClient.CallJira(
+        updatedUserIntegration,
+        this.jiraApiCalls.importJiraPriorities,
         getPriorityByProjectIdUrl,
-        {
-          headers: {
-            Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
-          },
-        },
       );
 
       const priorityListByProjectId =
@@ -2233,12 +2228,17 @@ export class TasksService {
         data: priorityListByProjectId,
       });
 
-      return true;
+      return await this.prisma.priorityScheme.findMany({
+        where: {
+          projectId: project.id,
+        },
+      });
     } catch (error) {
       console.log(
         '🚀 ~ file: task.service.ts:2223 ~ importPriorities ~ error:',
         error.message,
       );
+      return [];
     }
   }
 
