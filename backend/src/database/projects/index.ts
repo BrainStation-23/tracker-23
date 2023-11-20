@@ -57,10 +57,13 @@ export class ProjectDatabase {
     }
   }
 
-  async getProjects(filter: Record<string, any>): Promise<Project[] | []> {
+  async getProjects(filter: Record<string, any>) {
     try {
       return await this.prisma.project.findMany({
         where: filter,
+        include: {
+          priorities: true,
+        },
       });
     } catch (error) {
       console.log(error);
@@ -206,10 +209,10 @@ export class ProjectDatabase {
 
   async createLocalPrioritiesWithTransactionPrismaInstance(
     projectId: number,
-    prisma: any,
+    prisma = this.prisma,
   ) {
     try {
-      return await prisma.priorityScheme.createMany({
+      await prisma.priorityScheme.createMany({
         data: [
           {
             name: 'Lowest',
@@ -253,9 +256,15 @@ export class ProjectDatabase {
           },
         ],
       });
+
+      return await prisma.priorityScheme.findMany({
+        where: {
+          projectId,
+        },
+      });
     } catch (error) {
       console.log(error);
-      return null;
+      return [];
     }
   }
 }

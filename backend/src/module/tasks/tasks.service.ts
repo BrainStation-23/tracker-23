@@ -2204,13 +2204,10 @@ export class TasksService {
   ) {
     try {
       const getPriorityByProjectIdUrl = `https://api.atlassian.com/ex/jira/${updatedUserIntegration.siteId}/rest/api/3/priority`;
-      const { data: priorityList } = await axios.get(
+      const priorityList: any = await this.jiraClient.CallJira(
+        updatedUserIntegration,
+        this.jiraApiCalls.importJiraPriorities,
         getPriorityByProjectIdUrl,
-        {
-          headers: {
-            Authorization: `Bearer ${updatedUserIntegration?.accessToken}`,
-          },
-        },
       );
 
       const priorityListByProjectId =
@@ -2231,12 +2228,17 @@ export class TasksService {
         data: priorityListByProjectId,
       });
 
-      return true;
+      return await this.prisma.priorityScheme.findMany({
+        where: {
+          projectId: project.id,
+        },
+      });
     } catch (error) {
       console.log(
         '🚀 ~ file: task.service.ts:2223 ~ importPriorities ~ error:',
         error.message,
       );
+      return [];
     }
   }
 

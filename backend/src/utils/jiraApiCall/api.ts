@@ -146,4 +146,17 @@ export class JiraApiCalls {
     const res = await axios(sprintIssueConfig);
     return res;
   }
+
+  async importJiraPriorities(userIntegration: UserIntegration, url: string) {
+    const priorityConfig = {
+      method: 'get',
+      url,
+      headers: {
+        Authorization: `Bearer ${userIntegration?.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    };
+    const priorityList = await (await axios(priorityConfig)).data;
+    return priorityList;
+  }
 }
