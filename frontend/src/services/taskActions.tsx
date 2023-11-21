@@ -147,3 +147,14 @@ export const getFormattedTasks = (tasks: TaskDto[]) => {
   });
   return tmpTasks;
 };
+
+export const getFormattedActiveSprintTasks = (tasks: any[]) => {
+  const formattedTask: any[] = [];
+  for (const task of tasks) {
+    if (task.childTask.length > 0) {
+      formattedTask.push(...task.childTask);
+    }
+  }
+  tasks.push(...formattedTask);
+  return tasks;
+};
