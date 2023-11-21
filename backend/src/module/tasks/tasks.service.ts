@@ -1,10 +1,14 @@
 import axios from 'axios';
 import { coreConfig } from 'config/core';
+import * as dayjs from 'dayjs';
 import { Response } from 'express';
 import { lastValueFrom } from 'rxjs';
+import { TasksDatabase } from 'src/database/tasks';
+import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
+
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
-import * as dayjs from 'dayjs';
+import { ConfigService } from '@nestjs/config';
 import {
   Integration,
   IntegrationType,
@@ -17,6 +21,13 @@ import {
   UserIntegration,
 } from '@prisma/client';
 
+import { APIException } from '../exception/api.exception';
+import { JiraClientService } from '../helper/client';
+import { IntegrationsService } from '../integrations/integrations.service';
+import { MyGateway } from '../notifications/socketGateway';
+import { PrismaService } from '../prisma/prisma.service';
+import { SprintsService } from '../sprints/sprints.service';
+import { WorkspacesService } from '../workspaces/workspaces.service';
 import {
   CreateTaskDto,
   GetTaskQuery,
@@ -25,17 +36,8 @@ import {
   UpdatePinDto,
   WeekDaysType,
 } from './dto';
-import { WorkspacesService } from '../workspaces/workspaces.service';
-import { SprintsService } from '../sprints/sprints.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { IntegrationsService } from '../integrations/integrations.service';
-import { MyGateway } from '../notifications/socketGateway';
-import { APIException } from '../exception/api.exception';
-import { TasksDatabase } from 'src/database/tasks';
-import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
-import { ConfigService } from '@nestjs/config';
-import { JiraClientService } from '../helper/client';
 import { UpdateIssuePriorityReqBodyDto } from './dto/update.issue.req.dto';
+
 @Injectable()
 export class TasksService {
   constructor(
@@ -1164,7 +1166,6 @@ export class TasksService {
           localTask.jiraUpdatedAt &&
           localTask.jiraUpdatedAt < new Date(jiraTask.updated)
         ) {
-          const taskPriority = this.formatPriority(jiraTask.priority.name);
           // const updatedTask =
           localTask &&
             localTask.id &&
@@ -1188,7 +1189,7 @@ export class TasksService {
                 statusCategoryName: jiraTask.status.statusCategory.name
                   .replace(' ', '_')
                   .toUpperCase(),
-                priority: taskPriority,
+                priority: jiraTask.priority.name,
                 updatedAt:
                   localTask.updatedAt <= new Date(jiraTask.updated)
                     ? new Date(jiraTask.updated)
@@ -1249,7 +1250,6 @@ export class TasksService {
       }
       for (const [integratedTaskId, integratedTask] of mappedIssues) {
         const taskStatus = integratedTask.status.name;
-        const taskPriority = this.formatPriority(integratedTask.priority.name);
         taskList.push({
           userWorkspaceId:
             mappedUserWorkspaceAndJiraId.get(
@@ -1267,7 +1267,7 @@ export class TasksService {
           statusCategoryName: integratedTask.status.statusCategory.name
             .replace(' ', '_')
             .toUpperCase(),
-          priority: taskPriority,
+          priority: integratedTask.priority.name,
           integratedTaskId: integratedTaskId,
           createdAt: new Date(integratedTask.created),
           updatedAt: new Date(integratedTask.updated),
@@ -1552,20 +1552,6 @@ export class TasksService {
         return 'IN_PROGRESS';
       default:
         return 'TODO';
-    }
-  }
-
-  formatPriority(priority: string) {
-    return priority.toUpperCase();
-    switch (priority) {
-      case 'Highest':
-        return 'HIGHEST';
-      case 'High':
-        return 'HIGH';
-      case 'Medium':
-        return 'MEDIUM';
-      case 'Low':
-        return 'LOW';
     }
   }
 
@@ -2187,7 +2173,7 @@ export class TasksService {
         if (!doesExist) statusArray.push(statusDetail);
       }
 
-      const createdStatus = await this.prisma.statusDetail.createMany({
+      await this.prisma.statusDetail.createMany({
         data: statusArray,
       });
     } catch (error) {
@@ -2223,7 +2209,11 @@ export class TasksService {
               };
             })
           : [];
-
+      await this.prisma.priorityScheme.deleteMany({
+        where: {
+          projectId: project.id,
+        },
+      });
       await this.prisma.priorityScheme.createMany({
         data: priorityListByProjectId,
       });
