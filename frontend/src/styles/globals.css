@@ -93,11 +93,13 @@ body {
 
 .ant-picker-active-bar,
 .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner,
-.ant-radio-checked .ant-radio-inner {
+.ant-radio-checked .ant-radio-inner,
+.ant-spin-dot-item {
   background: black !important;
 }
 .ant-picker-today-btn,
-.ant-pagination-item-active a {
+.ant-pagination-item-active a,
+.ant-spin {
   color: black !important;
 }
 

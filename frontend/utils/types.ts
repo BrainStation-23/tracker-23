@@ -25,7 +25,10 @@ import { updateApprovalUserDto } from "models/user";
 export interface apiFunction {
   login: (data: LoginDto) => Promise<LoginResponseDto | undefined>;
   loginFromInvite: (data: LoginDto) => Promise<LoginResponseDto | undefined>;
-  googleLogin: (code: string) => Promise<LoginResponseDto | undefined>;
+  googleLogin: (
+    code: string,
+    invitationCode?: string
+  ) => Promise<LoginResponseDto | undefined>;
   logout: () => {};
   registerUser: (data: RegisterDto) => Promise<RegisterDto | undefined>;
   registerUserFromInvite: (

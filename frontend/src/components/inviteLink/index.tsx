@@ -6,20 +6,24 @@ import LoginPanelInviteLink from "./components/loginPanelInviteLink";
 import RegistrationPanelInviteLink from "./components/registrationPanelInviteLink";
 import { userAPI } from "APIs";
 import { Spin } from "antd";
+import { setLocalStorage } from "@/storage/storage";
 
 const InviteLinkComponent = () => {
   const router = useRouter();
   const path = router.asPath;
   const [validUser, setValidUser] = useState(true);
+  const [onlySocialLogin, setOnlySocialLogin] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [userInfo, setUserInfo] = useState<any>();
 
   const getUserInfoFromCode = async () => {
     const code = router?.query?.code;
+    setLocalStorage("invitationCode", code);
     const res: any = code && (await userAPI.getInvitedUserInfo(code as string));
     if (res) {
       setUserInfo(res);
       setValidUser(res.isValidUser);
+      setOnlySocialLogin(res.onlySocialLogin);
     }
     setDataLoaded(true);
   };
@@ -41,7 +45,10 @@ const InviteLinkComponent = () => {
         <AuthLeftPanel />
         {dataLoaded &&
           (validUser ? (
-            <LoginPanelInviteLink email={userInfo?.email} />
+            <LoginPanelInviteLink
+              email={userInfo?.email}
+              onlySocialLogin={onlySocialLogin}
+            />
           ) : (
             <RegistrationPanelInviteLink email={userInfo?.email} />
           ))}

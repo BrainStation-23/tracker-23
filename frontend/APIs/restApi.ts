@@ -23,7 +23,7 @@ import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
 import { RemoveCookie, SetCookie } from "@/services/cookie.service";
-import { getLabels, getStringFromArray } from "@/services/taskActions";
+import { getFormattedActiveSprintTasks, getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
@@ -66,10 +66,15 @@ export async function loginFromInviteRest(
 }
 
 export async function googleLoginRest(
-  code: string
+  code: string,
+  invitationCode?: string
 ): Promise<LoginResponseDto | undefined> {
   try {
-    const res = await axios.post(`${apiEndPoints.googleLogin}?code=${code}`);
+    const res = await axios.post(
+      `${apiEndPoints.googleLogin}?code=${code}${
+        invitationCode ? `&&invitationCode=${invitationCode}` : ""
+      }`
+    );
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
@@ -527,7 +532,7 @@ export async function getJiraActiveSprintTasksRest(
         (status && status.length > 0 ? `&status=${status}` : "")
       // `${apiEndPoints.activeSprintTasks}/?state=${["closed"]}`
     );
-    return res.data;
+    return getFormattedActiveSprintTasks(res.data);
   } catch (error: any) {
     return false;
   }
