@@ -204,6 +204,8 @@ export class UsersDatabase {
           firstName: true,
           lastName: true,
           picture: true,
+          activeWorkspaceId: true,
+          approved: true,
         },
       });
     } catch (error) {

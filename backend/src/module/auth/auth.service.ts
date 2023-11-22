@@ -136,6 +136,7 @@ export class AuthService {
     if (!req.user) {
       return 'No user from google';
     }
+
     const urlParams = new URLSearchParams(req.url);
     const invitationCode = urlParams.get('invitationCode');
     invitationCode && (await this.checkEmail(invitationCode, req.user.email));
@@ -219,11 +220,11 @@ export class AuthService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
 
-    const updateUser =
-      workspace &&
-      (await this.usersDatabase.updateUser(user, {
-        activeWorkspaceId: workspace.id,
-      }));
+    const updateUser = invitationCode
+      ? user
+      : await this.usersDatabase.updateUser(user, {
+          activeWorkspaceId: workspace.id,
+        });
 
     if (!updateUser)
       throw new APIException(
@@ -527,12 +528,42 @@ export class AuthService {
   }
 
   async checkEmail(code: string, reqEmail: string) {
-    const user = await this.userWorkspaceDatabase.checkEmail(code);
-    if (!user) {
+    const userWorkspace = await this.userWorkspaceDatabase.checkEmail(code);
+    if (!userWorkspace) {
       new APIException('Invalid code!', HttpStatus.BAD_REQUEST);
     }
 
-    if (user?.email === reqEmail) return user;
+    if (
+      userWorkspace &&
+      userWorkspace.user &&
+      userWorkspace.user?.email === reqEmail
+    ) {
+      const updatedUserWorkspace =
+        await this.userWorkspaceDatabase.updateUserWorkspace(
+          Number(userWorkspace.id),
+          {
+            status: UserWorkspaceStatus.ACTIVE,
+            respondedAt: new Date(Date.now()),
+          },
+        );
+      if (!updatedUserWorkspace) {
+        throw new APIException(
+          'Can not accept invitation!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const updatedUser = await this.usersDatabase.updateUser(
+        { id: userWorkspace.user.id },
+        {
+          activeWorkspaceId: updatedUserWorkspace?.workspaceId,
+        },
+      );
+
+      if (!updatedUser)
+        throw new APIException('Could not update user', HttpStatus.BAD_REQUEST);
+      return updatedUser;
+    }
     throw new APIException(
       'Try to login with the same email!',
       HttpStatus.BAD_REQUEST,
