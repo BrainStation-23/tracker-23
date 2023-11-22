@@ -159,4 +159,57 @@ export class JiraApiCalls {
     const priorityList = await (await axios(priorityConfig)).data;
     return priorityList;
   }
+
+  async getProjectStatuses(userIntegration: UserIntegration, url: string) {
+    const statusConfig = {
+      method: 'get',
+      url,
+      headers: {
+        Authorization: `Bearer ${userIntegration?.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    };
+    console.log(
+      '🚀 ~ file: api.ts:174 ~ JiraApiCalls ~ getProjectStatuses ~ statusConfig:',
+      statusConfig,
+    );
+    const statusList = await (await axios(statusConfig)).data;
+    return statusList;
+  }
+
+  async importJiraTasks(
+    userIntegration: UserIntegration,
+    url: string,
+    param: any,
+  ) {
+    const taskConfig = {
+      method: 'get',
+      url,
+      headers: {
+        Authorization: `Bearer ${userIntegration?.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      params: param,
+    };
+    const taskList = await (await axios(taskConfig)).data;
+    return taskList;
+  }
+
+  async importJiraWorklog(
+    userIntegration: UserIntegration,
+    url: string,
+    param: any,
+  ) {
+    const worklogConfig = {
+      method: 'get',
+      url,
+      headers: {
+        Authorization: `Bearer ${userIntegration?.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      params: param,
+    };
+    const worklogList = await axios(worklogConfig);
+    return worklogList;
+  }
 }
