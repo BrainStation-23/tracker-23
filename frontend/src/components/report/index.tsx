@@ -4,12 +4,14 @@ import { getArrayOfDatesInRange, getDateRangeArray } from "../datePicker";
 import { formatUserData } from "../datePicker/index";
 import TableComponent from "./components/tableComponentReport";
 import ReportWrapper from "./components/reportWrapper";
+import SpritReportComponent from "./components/sprintReportComponent";
 const ReportComponent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState([]);
   const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
   const [dateRangeArray, setDateRangeArray] = useState([]);
   const [column, setColumns] = useState([]);
+  const [activeTab, setActiveTab] = useState("Time Sheet");
   //  getArrayOfDatesInRange(dateRange[0], dateRange[1]);
   const getReport = async () => {
     setIsLoading(true);
@@ -34,17 +36,22 @@ const ReportComponent = () => {
         <h2 className="text-2xl font-bold">Reports</h2>
       </div> */}
       <ReportWrapper
-        title="Time Sheet"
+        title="Time Reports"
         tooltipMessage="This Week"
         setDateRange={setDateRange}
         selectedDateRange={dateRange}
         isLoading={isLoading}
+        {...{ activeTab, setActiveTab }}
       >
-        <TableComponent
-          data={data}
-          dateRangeArray={dateRangeArray}
-          column={column}
-        />
+        {activeTab === "Time Sheet" ? (
+          <TableComponent
+            data={data}
+            dateRangeArray={dateRangeArray}
+            column={column}
+          />
+        ) : (
+          <SpritReportComponent />
+        )}
       </ReportWrapper>
     </div>
   );
