@@ -146,9 +146,7 @@ export class AuthService {
       lastName: req.user.lastName,
       picture: req.user.picture,
     };
-
     const oldUser = await this.usersDatabase.findUserByEmail(req.user.email);
-
     if (oldUser) {
       if (!oldUser.activeWorkspaceId) {
         const doesExist =
@@ -192,15 +190,24 @@ export class AuthService {
           updatedOldUser && (await this.getFormattedUserData(updatedOldUser));
         return updatedUser;
       }
-
+      if (!(oldUser.firstName && oldUser.lastName && oldUser.picture)) {
+        const updatedOldUser = await this.usersDatabase.updateUser(oldUser, {
+          firstName: queryData.firstName,
+          lastName: queryData.lastName,
+          picture: queryData.picture,
+        });
+        if (!updatedOldUser) {
+          throw new APIException(
+            'Could not update user',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+        return await this.getFormattedUserData(updatedOldUser);
+      }
       return await this.getFormattedUserData(oldUser);
     }
 
     const user = await this.usersDatabase.createGoogleLoginUser(queryData);
-    // console.log(
-    //   '🚀 ~ file: auth.service.ts:154 ~ AuthService ~ googleLogin ~ user:',
-    //   user,
-    // );
     if (!user)
       throw new APIException(
         'Could not create user',
@@ -529,12 +536,42 @@ export class AuthService {
   }
 
   async checkEmail(code: string, reqEmail: string) {
-    const user = await this.userWorkspaceDatabase.checkEmail(code);
-    if (!user) {
+    const userWorkspace = await this.userWorkspaceDatabase.checkEmail(code);
+    if (!userWorkspace) {
       new APIException('Invalid code!', HttpStatus.BAD_REQUEST);
     }
 
-    if (user?.email === reqEmail) return user;
+    if (
+      userWorkspace &&
+      userWorkspace.user &&
+      userWorkspace.user?.email === reqEmail
+    ) {
+      const updatedUserWorkspace =
+        await this.userWorkspaceDatabase.updateUserWorkspace(
+          Number(userWorkspace.id),
+          {
+            status: UserWorkspaceStatus.ACTIVE,
+            respondedAt: new Date(Date.now()),
+          },
+        );
+      if (!updatedUserWorkspace) {
+        throw new APIException(
+          'Can not accept invitation!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const updatedUser = await this.usersDatabase.updateUser(
+        { id: userWorkspace.user.id },
+        {
+          activeWorkspaceId: updatedUserWorkspace?.workspaceId,
+        },
+      );
+
+      if (!updatedUser)
+        throw new APIException('Could not update user', HttpStatus.BAD_REQUEST);
+      return userWorkspace.user;
+    }
     throw new APIException(
       'Try to login with the same email!',
       HttpStatus.BAD_REQUEST,

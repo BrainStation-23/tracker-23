@@ -52,11 +52,11 @@ export class UserWorkspaceDatabase {
         where: {
           invitationId: code,
         },
-        select: {
+        include: {
           user: true,
         },
       });
-      return userWorkspace?.user;
+      return userWorkspace;
     } catch (err) {
       console.log(
         '🚀 ~ file: index.ts:52 ~ UserWorkspaceDatabase ~ checkEmail ~ err:',
