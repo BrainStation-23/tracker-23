@@ -39,9 +39,9 @@ const InvitationsComponent = () => {
     <div>
       <div className="flex justify-between">
         <div className="flex gap-3">
-          {tabs?.map((tab: any) => {
+          {tabs?.map((tab: any, index) => {
             return activeTab === tab ? (
-              <MyActiveTab {...{ tab, setActiveTab }}>
+              <MyActiveTab {...{ tab, setActiveTab }} key={index}>
                 {tab === "All"
                   ? inviteList?.length
                   : tab === "Pending"
@@ -51,7 +51,7 @@ const InvitationsComponent = () => {
                       ?.length}
               </MyActiveTab>
             ) : (
-              <MyInactiveTab {...{ tab, setActiveTab }}>
+              <MyInactiveTab {...{ tab, setActiveTab }} key={index}>
                 {tab === "All"
                   ? inviteList?.length
                   : tab === "Pending"

@@ -68,11 +68,14 @@ const TopPanelReportPage = ({
   return (
     <div className="my-5  flex w-full justify-between">
       <div className="col-span-3 flex gap-3">
-        {tabs?.map((tab) => {
+        {tabs?.map((tab, index) => {
           return activeTab === tab ? (
-            <MyActiveTab {...{ tab, setActiveTab }}></MyActiveTab>
+            <MyActiveTab {...{ tab, setActiveTab }} key={index}></MyActiveTab>
           ) : (
-            <MyInactiveTab {...{ tab, setActiveTab }}></MyInactiveTab>
+            <MyInactiveTab
+              {...{ tab, setActiveTab }}
+              key={index}
+            ></MyInactiveTab>
           );
         })}
       </div>

@@ -23,13 +23,15 @@ const TablePriorityComponent = ({ task }: Props) => {
       }}
       className="flex w-max gap-1 rounded px-1 text-black"
     >
-      <Image
-        src={p?.iconUrl}
-        height={20}
-        width={20}
-        className="text-black"
-        alt="X"
-      />
+      {p?.iconUrl && (
+        <Image
+          src={p?.iconUrl}
+          height={20}
+          width={20}
+          className="text-black"
+          alt="X"
+        />
+      )}
       {priority}
     </div>
   );

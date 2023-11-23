@@ -108,7 +108,10 @@ const TopPanelExportPage = ({ tasks, setSearchParams }: Props) => {
   ];
   if (sprintList.length > 0)
     filterOptions.push(
-      <SprintSelectorComponent {...{ sprints, setSprints }} />
+      <SprintSelectorComponent
+        {...{ sprints, setSprints }}
+        key={Math.random()}
+      />
     );
   useEffect(() => {
     setSearchParams({
