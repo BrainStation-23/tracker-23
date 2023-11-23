@@ -136,27 +136,45 @@ export class UsersDatabase {
 
   async findUserByEmail(email: string) {
     try {
-      return (
-        email &&
-        (await this.prisma.user.findUnique({
-          where: { email: email.toLowerCase() },
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            activeWorkspaceId: true,
-            picture: true,
-            approved: true,
-          },
-        }))
-      );
+      return await this.prisma.user.findUnique({
+        where: { email: email.toLowerCase() },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          activeWorkspaceId: true,
+          picture: true,
+          approved: true,
+        },
+      });
     } catch (error) {
       console.log(error);
       return null;
     }
   }
 
+  async findValidUserByEmail(email: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { email: email.toLowerCase() },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          activeWorkspaceId: true,
+          picture: true,
+          approved: true,
+        },
+      });
+      if (user?.firstName) return user;
+      return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
   async findUserWithHash(dto: LoginDto) {
     try {
       return await this.prisma.user.findUnique({
@@ -186,7 +204,22 @@ export class UsersDatabase {
           firstName: true,
           lastName: true,
           picture: true,
+          activeWorkspaceId: true,
+          approved: true,
         },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+  async updateGoogleLoginUser(data: GoogleLoginCreateUser) {
+    try {
+      return await this.prisma.user.update({
+        where: {
+          email: data.email,
+        },
+        data,
       });
     } catch (error) {
       console.log(error);

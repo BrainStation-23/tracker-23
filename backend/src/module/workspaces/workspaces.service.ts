@@ -439,16 +439,12 @@ export class WorkspacesService {
       await this.workspaceDatabase.getUserWorkspaceByToken(token);
     if (!isRegisteredUser) {
       throw new APIException('Invalid credentials', HttpStatus.BAD_REQUEST);
-    } else if (!isRegisteredUser?.user?.firstName) {
-      return {
-        ...isRegisteredUser?.user,
-        isValidUser: false,
-        code: token,
-      };
     } else {
       return {
         ...isRegisteredUser?.user,
-        isValidUser: true,
+        isValidUser: isRegisteredUser?.user?.firstName ? true : false,
+        onlySocialLogin:
+          isRegisteredUser.user.firstName && !isRegisteredUser.user.hash,
         code: token,
       };
     }
