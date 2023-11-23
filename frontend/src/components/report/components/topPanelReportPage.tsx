@@ -5,9 +5,10 @@ import { useEffect, useState } from "react";
 
 import MyActiveTab from "@/components/common/tabs/MyActiveTab";
 import MyInactiveTab from "@/components/common/tabs/MyInactiveTab";
-import { getDateRangeArray } from "@/components/datePicker";
+import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
+import SprintSelectorComponent from "@/components/tasks/components/topPanel/components/sprintSelector";
 
 type Props = {
   activeSprintTasks: TaskDto[];
@@ -17,17 +18,25 @@ type Props = {
   searchParams: SearchParamsModel;
   checkedOptionList: string[];
   setCheckedOptionList: Function;
+  setDateRange: any;
+  dateRange: Function;
 };
 const TopPanelReportPage = ({
   activeTab,
   setActiveTab,
   setSearchParams,
   searchParams,
+  selectedDate,
+  setSelectedDate,
+  topPanelComponent,
+  sprints,
+  setSprints,
 }: any) => {
-  const [sprints, setSprints] = useState(searchParams?.sprints);
-  const [selectedDate, setSelectedDate] = useState(
-    getDateRangeArray("this-week")
-  );
+  //   const [selectedDate, setSelectedDate] = useState(dateRange);
+  //   console.log(
+  //     "🚀 ~ file: topPanelReportPage.tsx:33 ~ selectedDate:",
+  //     selectedDate
+  //   );
   const sprintList = useAppSelector(
     (state: RootState) => state.tasksSlice.sprintList
   );
@@ -68,14 +77,11 @@ const TopPanelReportPage = ({
         })}
       </div>
       <div className="mt-[3px] flex h-auto max-w-[900px] gap-2">
-        {/* <div className="flex h-auto  w-full flex-wrap justify-end gap-6">
-          {!(sprints?.length > 0) && activeTab !== "ActiveSprint" && (
-            <DateRangePicker {...{ selectedDate, setSelectedDate }} />
-          )}
-
-          {true && (
+        <div className="flex h-auto  w-full flex-wrap justify-end gap-6">
+          {topPanelComponent}
+          {activeTab === "Sprint Estimate" && (
             <div>
-              {sprintList.length > 0 && (
+              {(sprintList.length > 0 || true) && (
                 <SprintSelectorComponent
                   {...{ sprints, setSprints }}
                   className="w-[210px]"
@@ -83,7 +89,7 @@ const TopPanelReportPage = ({
               )}
             </div>
           )}
-        </div> */}
+        </div>
       </div>
     </div>
   );

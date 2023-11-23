@@ -7,30 +7,39 @@ type Props = {
   children: any;
   title: string;
   tooltipMessage?: string;
-  setDateRange: Function;
   isLoading: boolean;
-  selectedDateRange?: any;
   activeTab: string;
   setActiveTab: Function;
+  topPanelComponent: any;
+  sprints: string[];
+  setSprints: Function;
 };
 const ReportWrapper = ({
   children,
   title,
   tooltipMessage,
-  setDateRange,
   isLoading = false,
-  selectedDateRange,
   activeTab,
   setActiveTab,
+  topPanelComponent,
+  sprints,
+  setSprints,
 }: Props) => {
-  console.log("🚀 ~ file: reportWrapper.tsx:26 ~ activeTab:", activeTab);
   return (
     <div className="mt-5">
       <div className="relative flex flex-col gap-5">
         <div className="flex items-center justify-between gap-3">
           <div className="text-2xl font-semibold">{title}</div>
         </div>
-        <TopPanelReportPage {...{ activeTab, setActiveTab }} />
+        <TopPanelReportPage
+          {...{
+            activeTab,
+            setActiveTab,
+            topPanelComponent,
+            sprints,
+            setSprints,
+          }}
+        />
         <Spin className="custom-spin" spinning={isLoading}>
           {
             <div className="flex w-full justify-center  overflow-auto">

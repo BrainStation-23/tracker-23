@@ -25,9 +25,7 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
   const [customDateOpen, setCustomDateOpen] = useState<boolean>(false);
   const [dateRangeType, setDateRangeType] = useState<string>("this-week");
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
-  const [dropdownText, setDropdownText] = useState<any>(
-    getDateRangeArray("this-week")
-  );
+  const [dropdownText, setDropdownText] = useState<any>(selectedDate);
   const [customDateText, setCustomDateText] = useState<any>(
     getDateRangeArray("this-week")
   );
