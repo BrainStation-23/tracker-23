@@ -72,7 +72,7 @@ export class ProjectsService {
             'jira:issue_deleted',
           ],
           projectName: [project.projectKey],
-          userIntegrationId: userIntegration.id,
+          userIntegrationId: userIntegration?.id || 0,
         };
         await this.webhooksService.registerWebhook(user, payload);
       }
