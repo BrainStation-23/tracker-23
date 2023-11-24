@@ -267,4 +267,41 @@ export class ProjectDatabase {
       return [];
     }
   }
+
+  async getProjectListForSprintReport(filter: Record<string, any>) {
+    try {
+      return await this.prisma.project.findMany({
+        where: filter,
+        include: {
+          tasks: {
+            include: {
+              userWorkspace: {
+                include: {
+                  user: true,
+                },
+              },
+              sessions: {
+                include: {
+                  userWorkspace: {
+                    include: {
+                      user: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          sprints: {
+            include: {
+              sprintTask: true,
+            },
+          },
+          priorities: true,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  }
 }

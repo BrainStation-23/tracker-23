@@ -7,13 +7,16 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { SessionsService } from '../sessions/sessions.service.js';
 import { IntegrationsService } from '../integrations/integrations.service.js';
 import { APIException } from '../exception/api.exception.js';
-
+import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
+import { JiraClientService } from '../helper/client';
 @Injectable()
 export class WebhooksService {
   constructor(
     private prisma: PrismaService,
     private sessionService: SessionsService, // private tasksService: TasksService,
     private integrationsService: IntegrationsService,
+    private jiraApiCalls: JiraApiCalls,
+    private jiraClient: JiraClientService,
   ) {}
 
   async getWebhooks(user: User) {
@@ -123,7 +126,8 @@ export class WebhooksService {
       if (
         payload.changelog.items[0].field === 'summary' ||
         payload.changelog.items[0].field === 'priority' ||
-        payload.changelog.items[0].field === 'status'
+        payload.changelog.items[0].field === 'status' ||
+        'resolution'
       ) {
         sendToModify = payload.changelog.items[0].toString;
       } else {
@@ -237,11 +241,19 @@ export class WebhooksService {
         return {
           assigneeId: value,
         };
+      case 'timeestimate':
+        return {
+          estimation: Number(value) / 3600,
+        };
       case 'timeoriginalestimate':
         return {
           estimation: Number(value) / 3600,
         };
       case 'status':
+        return {
+          status: value,
+        };
+      case 'resolution':
         return {
           status: value,
         };
@@ -256,34 +268,13 @@ export class WebhooksService {
 
   async registerWebhook(user: User, reqBody: RegisterWebhookDto) {
     try {
-      const updated_integration =
-        await this.integrationsService.getUpdatedUserIntegration(
-          user,
-          reqBody.userIntegrationId,
-        );
-      // console.log(
-      //   '🚀 ~ file: webhooks.service.ts:161 ~ WebhooksService ~ registerWebhook ~ updated_integration:',
-      //   updated_integration,
-      // );
-      if (!updated_integration) {
+      const userIntegration = await this.prisma.userIntegration.findUnique({
+        where: {
+          id: Number(reqBody.userIntegrationId),
+        },
+      });
+      if (!userIntegration) {
         return null;
-      }
-      const doesExist =
-        updated_integration.siteId &&
-        (await this.prisma.webhook.findMany({
-          where: {
-            siteId: updated_integration.siteId,
-            projectKey: {
-              hasSome: [...reqBody.projectName.map((key) => key)],
-            },
-          },
-        }));
-      // console.log([...reqBody.projectName.map((key) => key)]);
-      if (doesExist && doesExist.length) {
-        throw new APIException(
-          'Already one of the project has webhook registered!',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
       }
       const projectList = reqBody.projectName.map((el) => el);
       const formateReqBody = {
@@ -295,24 +286,15 @@ export class WebhooksService {
           },
         ],
       };
-      // console.log(
-      //   '🚀 ~ file: webhooks.service.ts:195 ~ WebhooksService ~ registerWebhook ~ formateReqBody:',
-      //   formateReqBody,
-      // );
-      // //console.log(formateReqBody);
-      const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/webhook`;
-      const config = {
-        method: 'post',
-        url,
-        headers: {
-          Authorization: `Bearer ${updated_integration?.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        data: formateReqBody,
-      };
-      let webhook;
+      let webhook: any;
       try {
-        webhook = await (await axios(config)).data;
+        const webhookUrl = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/webhook`;
+        webhook = await this.jiraClient.CallJira(
+          userIntegration,
+          this.jiraApiCalls.registerWebhook,
+          webhookUrl,
+          formateReqBody,
+        );
         // console.log(
         //   '🚀 ~ file: webhooks.service.ts:217 ~ WebhooksService ~ registerWebhook ~ webhook:',
         //   webhook.webhookRegistrationResult[0],
@@ -329,14 +311,14 @@ export class WebhooksService {
 
       const localWebhook =
         webhook &&
-        updated_integration.siteId &&
+        userIntegration.siteId &&
         (await this.prisma.webhook.create({
           data: {
             projectKey: reqBody.projectName,
             webhookId: Number(
               webhook.webhookRegistrationResult[0].createdWebhookId,
             ),
-            siteId: updated_integration.siteId,
+            siteId: userIntegration.siteId,
             expirationDate: currentDate,
           },
         }));
