@@ -151,9 +151,13 @@ export class ProjectDatabase {
     }
   }
 
-  async createProject(projectName: string, workspaceId: number) {
+  async createProject(
+    projectName: string,
+    workspaceId: number,
+    prisma = this.prisma,
+  ) {
     try {
-      return await this.prisma.project.create({
+      return await prisma.project.create({
         data: {
           workspaceId,
           projectName: projectName,
@@ -167,9 +171,9 @@ export class ProjectDatabase {
     }
   }
 
-  async createStatusDetail(projectId: number) {
+  async createStatusDetail(projectId: number, prisma = this.prisma) {
     try {
-      return await this.prisma.statusDetail.createMany({
+      return await prisma.statusDetail.createMany({
         data: [
           {
             projectId,
