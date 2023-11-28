@@ -34,6 +34,7 @@ export const apiEndPoints = {
   changeWorkspace: `workspaces/change-workspace`,
   workspaceSettings: `users/settings`,
   timeSheetReport: "sessions/timeSheet/per-day",
+  sprintReport: "sessions/spent-time/sprint-user-report",
   invitedUserInfo: "workspaces/verify/invited-user/",
   invitedUserLogin: `/auth/invitedUser/login`,
   invitedUserRegister: `/auth/invitedUser/register`,

@@ -16,10 +16,6 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     setUserSlice: (state, action: PayloadAction<UserDto>) => {
-      console.log(
-        "🚀 ~ file: userSlice.ts:29 ~ action.payload:",
-        action.payload
-      );
       state.user = action.payload;
     },
     resetUserSlice: (state) => {

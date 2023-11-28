@@ -202,7 +202,6 @@ const ExportPageComponent = () => {
   };
   const getSprintList = async () => {
     const res = await userAPI.getJiraSprints();
-    console.log("🚀 ~ file: index.tsx:365 ~ getSprintList ~ res:", res);
     if (res?.length > 0) dispatch(setSprintListReducer(res));
   };
   const onChange: TableProps<any>["onChange"] = (

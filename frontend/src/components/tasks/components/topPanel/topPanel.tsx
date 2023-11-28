@@ -143,9 +143,9 @@ const TopPanel = ({
   return (
     <div className="my-5  flex w-full justify-between">
       <div className="col-span-3 flex gap-3">
-        {tabs?.map((tab) => {
+        {tabs?.map((tab, index) => {
           return activeTab === tab ? (
-            <MyActiveTab {...{ tab, setActiveTab }}>
+            <MyActiveTab {...{ tab, setActiveTab }} key={index}>
               {tab === "Pin"
                 ? totalPinned
                 : tab === "ActiveSprint"
@@ -153,7 +153,7 @@ const TopPanel = ({
                 : tasks?.length}
             </MyActiveTab>
           ) : (
-            <MyInactiveTab {...{ tab, setActiveTab }}>
+            <MyInactiveTab {...{ tab, setActiveTab }} key={index}>
               {tab === "Pin"
                 ? totalPinned
                 : tab === "ActiveSprint"

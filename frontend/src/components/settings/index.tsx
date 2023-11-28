@@ -27,7 +27,6 @@ const SettingComponent = () => {
     res?.syncTime && setSyncTime(res.syncTime);
     res?.timeFormat && setTimeFormat(res.timeFormat);
     res && dispatch(setSettingsReducer(res));
-    console.log("🚀 ~ file: index.tsx:6 ~ getSettings ~ res:", res);
   };
   const handleSyncTimeChange = async (time: number) => {
     setSpinning(true);
