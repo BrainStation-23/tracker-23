@@ -18,10 +18,11 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
       dataIndex: "name",
       key: "name",
       fixed: "left",
+      width: 100,
       render: (_: any, v: any) => (
         <div>
           <Text
-            className="w-[100px] cursor-pointer"
+            className="w-[110px] cursor-pointer"
             ellipsis={{ tooltip: v.name }}
           >
             {v.name}
@@ -33,7 +34,7 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
   column?.forEach((user) => {
     columns.push({
       title: (
-        <div className="mx-auto flex w-max items-center justify-center gap-2 ">
+        <div className="mx-auto flex w-fit items-center justify-center gap-2 ">
           {user?.picture ? (
             <Avatar src={user.picture} alt="N" className="h-[40px] w-[40px]" />
           ) : (
@@ -48,19 +49,40 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
           {user.name}
         </div>
       ),
-      dataIndex: user.userId,
-      key: user.userId,
+      width: 100,
+      children: [
+        {
+          title: "Estimation",
+          key: user.userId,
+          align: "center",
+          dataIndex: user.userId,
+          render: (_: any, sprintData: any) => {
+            return (
+              <div className="m-auto w-fit cursor-pointer rounded px-2  text-center text-black">
+                <FormatTimeForSettings
+                  time={sprintData[user.userId].estimation}
+                />
+              </div>
+            );
+          },
+        },
+        {
+          title: "Spent Time",
+          key: user.userId,
+          align: "center",
+          dataIndex: user.userId,
+          render: (_: any, sprintData: any) => {
+            return (
+              <div className="m-auto w-fit cursor-pointer rounded px-2  text-center text-black">
+                <FormatTimeForSettings
+                  time={sprintData[user.userId].timeSpent}
+                />
+              </div>
+            );
+          },
+        },
+      ],
       align: "center",
-      // width: 100,
-      render: (_: any, sprintData: any) => {
-        return (
-          <div className="w-full cursor-pointer rounded px-2 text-center  text-black">
-            <FormatTimeForSettings time={sprintData[user.userId].estimation} />
-            {" / "}
-            <FormatTimeForSettings time={sprintData[user.userId].timeSpent} />
-          </div>
-        );
-      },
     });
   });
   // columns.push({
