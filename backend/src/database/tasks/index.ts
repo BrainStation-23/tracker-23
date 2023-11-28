@@ -152,10 +152,8 @@ export class TasksDatabase {
             },
           },
           childTask: {
-            select: {
-              title: true,
-              url: true,
-              key: true,
+            include: {
+              sessions: true,
             },
           },
         },

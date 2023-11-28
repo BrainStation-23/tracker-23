@@ -1331,4 +1331,117 @@ export class SessionsService {
       value: arr,
     };
   }
+
+  async usersSpentAndEstimationReportOnSprint(user: User) {
+    const mappedTaskWithId = new Map<number, any>();
+    const rows: any[] = [];
+    const col = new Set();
+    const projects = await this.projectDatabase.getProjectListForSprintReport({
+      workspaceId: user.activeWorkspaceId,
+      integrated: true,
+    });
+    projects.map((project) => {
+      for (let index = 0, len = project.tasks.length; index < len; index++) {
+        mappedTaskWithId.set(project.tasks[index].id, project.tasks[index]);
+      }
+      for (let index = 0, len = project.sprints.length; index < len; index++) {
+        const sprint = project.sprints[index];
+        const userMap = new Map<
+          number,
+          {
+            userId: number;
+            name: string;
+            picture: string;
+            estimation: number;
+            timeSpent: number;
+          }
+        >();
+        for (
+          let idx = 0, sprintTasklen = sprint.sprintTask.length;
+          idx < sprintTasklen;
+          idx++
+        ) {
+          const sprintTaskId = sprint.sprintTask[idx].taskId;
+          const task = mappedTaskWithId.get(sprintTaskId);
+          const taskUser =
+            task && task.userWorkspace && task.userWorkspace.user;
+          if (taskUser) {
+            const sessionTime = this.getTimeFromSessions(
+              task.sessions,
+              taskUser.id,
+            );
+            if (!userMap.has(taskUser.id)) {
+              // If not in map, create a new user
+              userMap.set(taskUser.id, {
+                userId: taskUser.id,
+                name: taskUser.firstName + ' ' + taskUser.lastName,
+                picture: taskUser.picture,
+                estimation: task.estimation ?? 0,
+                timeSpent: sessionTime ?? 0,
+              });
+            } else {
+              const user = userMap.get(taskUser.id);
+              if (user) {
+                user.estimation += task.estimation ?? 0;
+                user.timeSpent += sessionTime ?? 0;
+              }
+            }
+
+            if (
+              !col.has(
+                JSON.stringify({
+                  userId: taskUser.id,
+                  name: taskUser.firstName + ' ' + taskUser.lastName,
+                  picture: taskUser.picture,
+                }),
+              )
+            ) {
+              col.add(
+                JSON.stringify({
+                  userId: taskUser.id,
+                  name: taskUser.firstName + ' ' + taskUser.lastName,
+                  picture: taskUser.picture,
+                }),
+              );
+            }
+          }
+        }
+        const users = [...userMap.values()].map((user: any) => {
+          return {
+            ...user,
+            timeSpent: Number(user.timeSpent.toFixed(1)),
+          };
+        });
+        rows.push({
+          sprintId: sprint.id,
+          name: sprint.name,
+          users,
+        });
+      }
+    });
+
+    const columns = [...col]?.map((user: any) => {
+      user = JSON.parse(user);
+      return user;
+    });
+    return {
+      columns,
+      rows,
+    };
+  }
+
+  getTimeFromSessions(sessions: any[], userId: string) {
+    let sessionTimeSpent = 0;
+    for (const session of sessions) {
+      if (session.userWorkspace && session.userWorkspace.user.id === userId) {
+        const start = new Date(session.startTime);
+        let end = new Date(session.endTime);
+        if (end.getTime() === 0) {
+          end = new Date();
+        }
+        sessionTimeSpent = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      }
+    }
+    return sessionTimeSpent;
+  }
 }
