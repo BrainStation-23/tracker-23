@@ -73,7 +73,7 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
           dataIndex: user.userId,
           render: (_: any, sprintData: any) => {
             return (
-              <div className="m-auto w-fit cursor-pointer rounded px-2  text-center text-black">
+              <div className="m-auto w-max min-w-[80px] cursor-pointer rounded px-2  text-center text-black">
                 <FormatTimeForSettings
                   time={sprintData[user.userId].timeSpent}
                 />
