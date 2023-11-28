@@ -1402,24 +1402,38 @@ export class SessionsService {
                   userId: user.id,
                   name: user.firstName + ' ' + user.lastName,
                   picture: user.picture,
-                  estimation: task.estimation ?? 0,
+                  estimation:
+                    task?.userWorkspaceId === userWorkspaceId
+                      ? task.estimation ?? 0
+                      : 0,
                   timeSpent: sessionTime.sessionTimeSpent ?? 0,
                 });
               } else {
                 const user = userMap.get(userWorkspaceId);
                 if (user) {
-                  user.estimation += task.estimation ?? 0;
-                  user.timeSpent += sessionTime.sessionTimeSpent ?? 0;
+                  (user.estimation +=
+                    task?.userWorkspaceId === userWorkspaceId
+                      ? task.estimation ?? 0
+                      : 0),
+                    (user.timeSpent += sessionTime.sessionTimeSpent ?? 0);
                 }
               }
             }
           }
         }
         const users = [...userMap.values()].map((user: any) => {
-          return {
-            ...user,
-            timeSpent: Number(user.timeSpent.toFixed(2)),
-          };
+          if (user.timeSpent) {
+            return {
+              ...user,
+              timeSpent: Number(user.timeSpent.toFixed(2)),
+            };
+          } else if (user.timeSpent === 0 && user.estimation === 0) {
+            return {
+              ...user,
+              estimation: null,
+              timeSpent: null,
+            };
+          }
         });
         rows.push({
           sprintId: sprint.id,
@@ -1477,6 +1491,13 @@ export class SessionsService {
             }
           }
         }
+      }
+    }
+    for (const [userWorkspaceId, user] of mappedUserWithWorkspaceId.entries()) {
+      if (!mappedUserWorkspaceWithTimeSpent.has(userWorkspaceId)) {
+        mappedUserWorkspaceWithTimeSpent.set(userWorkspaceId, {
+          sessionTimeSpent: 0,
+        });
       }
     }
     return mappedUserWorkspaceWithTimeSpent;
