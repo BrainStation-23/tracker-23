@@ -62,8 +62,8 @@ export class ProjectsService {
           },
         },
       });
-      if (!doesExistWebhook.length) {
-        const host = this.config.get('WEBHOOK_HOST');
+      const host = this.config.get('WEBHOOK_HOST');
+      if (!doesExistWebhook.length && host) {
         const payload: RegisterWebhookDto = {
           url: `${host}/webhook/receiver`,
           webhookEvents: [
