@@ -1,19 +1,24 @@
 export type getTimeSheetReportDto = {
-    startDate?: any;
-    endDate?: any;
-    userIds?: any;
+  startDate?: any;
+  endDate?: any;
+  userIds?: any;
 };
 
-type SprintUserData = {
-    estimation: number;
-    timeSpent: number;
-};
-export type SprintData = {
-    sprintId: number;
-    name: string;
-} & Record<string, any>;
+export interface SprintUser {
+  userId: number;
+  name: string;
+  picture: string;
+  estimation: number;
+  timeSpent: number;
+}
 
-export type SprintTableData = {
-    columns: string[];
-    rows: SprintData[];
-};
+export interface SprintData {
+  sprintId: number;
+  name: string;
+  users: SprintUser[];
+}
+
+export interface SprintReportDto {
+  columns: SprintUser[];
+  rows: SprintData[];
+}

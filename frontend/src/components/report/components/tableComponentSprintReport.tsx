@@ -1,14 +1,14 @@
 import FormatTimeForSettings from "@/components/common/time/formatTimeForSettings";
-import { Table, TablePaginationConfig, Typography } from "antd";
+import { Avatar, Table, TablePaginationConfig, Typography } from "antd";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
-import { SprintData } from "models/reports";
+import { SprintUser } from "models/reports";
 import { TableParams } from "models/tasks";
 import { useState } from "react";
 
 const { Text } = Typography;
 type Props = {
   data: any;
-  column: any[];
+  column: SprintUser[];
   dateRangeArray?: any;
 };
 const TableComponentSprintReport = ({ data, column }: Props) => {
@@ -30,23 +30,34 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
       ),
     },
   ];
-  column.forEach((user) => {
+  column?.forEach((user) => {
     columns.push({
       title: (
         <div className="mx-auto flex w-max items-center justify-center gap-2 ">
-          {user}
+          {user?.picture ? (
+            <Avatar src={user.picture} alt="N" className="h-[40px] w-[40px]" />
+          ) : (
+            <Avatar
+              src={
+                "https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
+              }
+              alt="N"
+              className="h-[40px] w-[40px]"
+            />
+          )}
+          {user.name}
         </div>
       ),
-      dataIndex: user,
-      key: user,
+      dataIndex: user.userId,
+      key: user.userId,
       align: "center",
       // width: 100,
-      render: (_: any, sprintData: SprintData) => {
+      render: (_: any, sprintData: any) => {
         return (
           <div className="w-full cursor-pointer rounded px-2 text-center  text-black">
-            <FormatTimeForSettings time={sprintData[user].estimation} />
+            <FormatTimeForSettings time={sprintData[user.userId].estimation} />
             {" / "}
-            <FormatTimeForSettings time={sprintData[user].timeSpent} />
+            <FormatTimeForSettings time={sprintData[user.userId].timeSpent} />
           </div>
         );
       },

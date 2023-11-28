@@ -23,7 +23,11 @@ import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
 import { RemoveCookie, SetCookie } from "@/services/cookie.service";
-import { getFormattedActiveSprintTasks, getLabels, getStringFromArray } from "@/services/taskActions";
+import {
+  getFormattedActiveSprintTasks,
+  getLabels,
+  getStringFromArray,
+} from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
@@ -703,6 +707,18 @@ export async function getTimeSheetReportRest(data: getTimeSheetReportDto) {
     const res = await axios.get(
       `${apiEndPoints.timeSheetReport}/` +
         `?startDate=${data?.startDate}&endDate=${data?.endDate}`
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getSprintReportRest(sprints?: number[]) {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.sprintReport}` +
+        (sprints?.length > 0 ? `?sprintId=${sprints}` : "")
     );
     return res.data;
   } catch (error: any) {

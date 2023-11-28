@@ -1,5 +1,4 @@
 import { userAPI } from "APIs";
-import { SprintTableData } from "models/reports";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -9,12 +8,16 @@ import DateRangePicker, { getDateRangeArray } from "../datePicker";
 import ReportWrapper from "./components/reportWrapper";
 import SpritReportComponent from "./components/sprintReportComponent";
 import TableComponent from "./components/tableComponentReport";
+import { SprintReportDto } from "models/reports";
 
 const ReportComponent = () => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState([]);
-  const [sprints, setSprints] = useState([]);
+  const [sprintReportData, setSprintReportData] = useState<SprintReportDto[]>(
+    []
+  );
+  const [sprints, setSprints] = useState<number[]>([]);
   const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
   const [dateRangeArray, setDateRangeArray] = useState([]);
   const [column, setColumns] = useState([]);
@@ -37,10 +40,19 @@ const ReportComponent = () => {
     const res = await userAPI.getJiraSprints();
     if (res?.length > 0) dispatch(setSprintListReducer(res));
   };
+  const getSprintReport = async () => {
+    const res = await userAPI.getSprintReport(sprints);
+    res && setSprintReportData(res);
+  };
   useEffect(() => {
     getReport();
   }, [dateRange]);
+
   useEffect(() => {
+    getSprintReport();
+  }, [sprints]);
+  useEffect(() => {
+    getSprintReport();
     getSprintList();
   }, []);
   return (
@@ -58,10 +70,12 @@ const ReportComponent = () => {
           setSprints,
         }}
         topPanelComponent={
-          <DateRangePicker
-            selectedDate={dateRange}
-            setSelectedDate={setDateRange}
-          />
+          activeTab === "Time Sheet" && (
+            <DateRangePicker
+              selectedDate={dateRange}
+              setSelectedDate={setDateRange}
+            />
+          )
         }
       >
         {activeTab === "Time Sheet" ? (
@@ -71,7 +85,7 @@ const ReportComponent = () => {
             column={column}
           />
         ) : (
-          <SpritReportComponent data={sampleData} />
+          <SpritReportComponent data={sprintReportData} />
         )}
       </ReportWrapper>
     </div>
@@ -79,48 +93,3 @@ const ReportComponent = () => {
 };
 
 export default ReportComponent;
-const sampleData: SprintTableData = {
-  columns: ["user1", "user2", "user3", "user4", "user5", "user6"],
-  rows: [
-    {
-      sprintId: 1,
-      name: "sprint-1",
-      user1: { estimation: 10, timeSpent: 5 },
-      user2: { estimation: 10, timeSpent: 5 },
-      user3: { estimation: 10, timeSpent: 5 },
-      user4: { estimation: 10, timeSpent: 5 },
-      user5: { estimation: 10, timeSpent: 5 },
-      user6: { estimation: 10, timeSpent: 5 },
-    },
-    {
-      sprintId: 2,
-      name: "sprint-2",
-      user1: { estimation: 10, timeSpent: 5 },
-      user2: { estimation: 10, timeSpent: 5 },
-      user3: { estimation: 10, timeSpent: 5 },
-      user4: { estimation: 10, timeSpent: 5 },
-      user5: { estimation: 10, timeSpent: 5 },
-      user6: { estimation: 10, timeSpent: 5 },
-    },
-    {
-      sprintId: 3,
-      name: "sprint-3",
-      user1: { estimation: 8, timeSpent: 4 },
-      user2: { estimation: 8, timeSpent: 4 },
-      user3: { estimation: 8, timeSpent: 4 },
-      user4: { estimation: 8, timeSpent: 4 },
-      user5: { estimation: 8, timeSpent: 4 },
-      user6: { estimation: 8, timeSpent: 4 },
-    },
-    {
-      sprintId: 4,
-      name: "sprint-4",
-      user1: { estimation: 12, timeSpent: 6 },
-      user2: { estimation: 12, timeSpent: 6 },
-      user3: { estimation: 12, timeSpent: 6 },
-      user4: { estimation: 12, timeSpent: 6 },
-      user5: { estimation: 12, timeSpent: 6 },
-      user6: { estimation: 12, timeSpent: 6 },
-    },
-  ],
-};

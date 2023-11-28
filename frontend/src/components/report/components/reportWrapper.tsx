@@ -11,7 +11,7 @@ type Props = {
   activeTab: string;
   setActiveTab: Function;
   topPanelComponent: any;
-  sprints: string[];
+  sprints: number[];
   setSprints: Function;
 };
 const ReportWrapper = ({
