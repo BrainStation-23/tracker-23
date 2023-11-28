@@ -268,7 +268,10 @@ export class ProjectDatabase {
     }
   }
 
-  async getProjectListForSprintReport(filter: Record<string, any>) {
+  async getProjectListForSprintReport(
+    filter: Record<string, any>,
+    query: Record<string, any>,
+  ) {
     try {
       return await this.prisma.project.findMany({
         where: filter,
@@ -292,6 +295,7 @@ export class ProjectDatabase {
             },
           },
           sprints: {
+            where: query,
             include: {
               sprintTask: true,
             },

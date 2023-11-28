@@ -32,6 +32,7 @@ import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { TasksDatabase } from 'src/database/tasks';
 import * as dayjs from 'dayjs';
 import { EmailService } from '../email/email.service';
+import { SprintReportFilterDto } from './dto/sprint-report.dto';
 
 @Injectable()
 export class SessionsService {
@@ -1332,14 +1333,33 @@ export class SessionsService {
     };
   }
 
-  async usersSpentAndEstimationReportOnSprint(user: User) {
+  async usersSpentAndEstimationReportOnSprint(
+    user: User,
+    query?: SprintReportFilterDto,
+  ) {
+    const sprintIds = query?.sprintId as unknown as string;
+    const arrayOfStrings = sprintIds?.split(',');
+    // Convert each string element to a number
+    const sprintIdArray = arrayOfStrings?.map(Number);
+
     const mappedTaskWithId = new Map<number, any>();
     const mappedUserWithWorkspaceId = new Map<number, any>();
     const rows: any[] = [];
-    const projects = await this.projectDatabase.getProjectListForSprintReport({
-      workspaceId: user.activeWorkspaceId,
-      integrated: true,
-    });
+    const projects = await this.projectDatabase.getProjectListForSprintReport(
+      {
+        workspaceId: user.activeWorkspaceId,
+        integrated: true,
+      },
+      {
+        ...(query?.sprintId && {
+          id: {
+            in: sprintIdArray.map((id: any) => {
+              return id;
+            }),
+          },
+        }),
+      },
+    );
 
     const getUserWorkspaceList =
       await this.sessionDatabase.getUserWorkspaceList({
