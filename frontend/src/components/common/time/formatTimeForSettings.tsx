@@ -15,7 +15,7 @@ const FormatTimeForSettings = ({ time }: Props) => {
         ? timeFormat === "Day"
           ? formatHoursToDay(time)
           : time + "h"
-        : "-"}
+        : time}
     </>
   );
 };
