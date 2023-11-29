@@ -1542,13 +1542,6 @@ export class SessionsService {
         }
       }
     }
-    // for (const [userWorkspaceId, user] of mappedUserWithWorkspaceId.entries()) {
-    //   if (!mappedUserWorkspaceWithTimeSpent.has(userWorkspaceId)) {
-    //     mappedUserWorkspaceWithTimeSpent.set(userWorkspaceId, {
-    //       sessionTimeSpent: 0,
-    //     });
-    //   }
-    // }
     return mappedUserWorkspaceWithTimeSpent;
   }
 }
