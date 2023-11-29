@@ -151,9 +151,13 @@ export class ProjectDatabase {
     }
   }
 
-  async createProject(projectName: string, workspaceId: number) {
+  async createProject(
+    projectName: string,
+    workspaceId: number,
+    prisma = this.prisma,
+  ) {
     try {
-      return await this.prisma.project.create({
+      return await prisma.project.create({
         data: {
           workspaceId,
           projectName: projectName,
@@ -167,9 +171,9 @@ export class ProjectDatabase {
     }
   }
 
-  async createStatusDetail(projectId: number) {
+  async createStatusDetail(projectId: number, prisma = this.prisma) {
     try {
-      return await this.prisma.statusDetail.createMany({
+      return await prisma.statusDetail.createMany({
         data: [
           {
             projectId,
@@ -260,6 +264,47 @@ export class ProjectDatabase {
       return await prisma.priorityScheme.findMany({
         where: {
           projectId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  }
+
+  async getProjectListForSprintReport(
+    filter: Record<string, any>,
+    query: Record<string, any>,
+  ) {
+    try {
+      return await this.prisma.project.findMany({
+        where: filter,
+        include: {
+          tasks: {
+            include: {
+              userWorkspace: {
+                include: {
+                  user: true,
+                },
+              },
+              sessions: {
+                include: {
+                  userWorkspace: {
+                    include: {
+                      user: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          sprints: {
+            where: query,
+            include: {
+              sprintTask: true,
+            },
+          },
+          priorities: true,
         },
       });
     } catch (error) {

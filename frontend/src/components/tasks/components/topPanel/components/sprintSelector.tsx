@@ -73,7 +73,7 @@ const SprintSelectorComponent = ({ sprints, setSprints, className }: Props) => {
   };
   useEffect(() => {
     const tmpArray: any[] = [];
-    sprints?.map((st) => {
+    sprints?.forEach((st) => {
       for (const option of Options) {
         if (option.label === JSON.parse(st).label) tmpArray.push(option.value);
       }

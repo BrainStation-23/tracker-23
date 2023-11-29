@@ -363,7 +363,6 @@ const TasksPage = () => {
   };
   const getProjects = async () => {
     const res = await userAPI.getIntegratedProjectStatuses();
-    console.log("🚀 ~ file: index.tsx:361 ~ getProjects ~ res:", res);
     res && dispatch(setProjectsSlice(res));
     res && dispatch(setPriorities(res));
   };
@@ -411,7 +410,6 @@ const TasksPage = () => {
 
   const getSprintList = async () => {
     const res = await userAPI.getJiraSprints();
-    console.log("🚀 ~ file: index.tsx:365 ~ getSprintList ~ res:", res);
     if (res?.length > 0) dispatch(setSprintListReducer(res));
   };
 
@@ -559,7 +557,6 @@ const TasksPage = () => {
     };
 
     if (!publicRoutes.includes(router.pathname)) {
-      console.log(router.pathname);
       if (syncRunning) {
         myTimeout = setTimeout(getSyncStatus, 5000);
       }

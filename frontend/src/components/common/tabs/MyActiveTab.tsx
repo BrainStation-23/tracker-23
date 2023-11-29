@@ -1,5 +1,5 @@
 type Props = {
-  children: any;
+  children?: any;
   tab: string;
   setActiveTab?: Function;
 };
@@ -9,10 +9,16 @@ const MyActiveTab = ({ children, tab, setActiveTab }: Props) => {
       key={Math.random()}
       className="flex h-fit cursor-pointer items-center gap-2 rounded-lg border-[1px] border-primary p-[11px] py-2"
     >
-      <div className="rounded bg-primary px-1 text-xs font-medium text-white">
-        {children}
+      {children && (
+        <div className="rounded bg-primary px-1 text-xs font-medium text-white">
+          {children}
+        </div>
+      )}
+      <div
+        className={`text-[15px] text-[#4D4E55] ${children ? "" : "font-bold"}`}
+      >
+        {tab}
       </div>
-      <div className="text-[15px]">{tab}</div>
     </div>
   );
 };

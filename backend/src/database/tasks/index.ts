@@ -201,9 +201,9 @@ export class TasksDatabase {
     }
   }
 
-  async getTasksbyId(taskId: number) {
+  async getTaskbyId(taskId: number) {
     try {
-      return await this.prisma.task.findFirst({
+      return await this.prisma.task.findUnique({
         where: { id: taskId },
       });
     } catch (error) {

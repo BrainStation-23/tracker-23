@@ -1,15 +1,27 @@
 import { userAPI } from "APIs";
 import { useEffect, useState } from "react";
-import { getArrayOfDatesInRange, getDateRangeArray } from "../datePicker";
-import { formatUserData } from "../datePicker/index";
-import TableComponent from "./components/tableComponentReport";
+import { useDispatch } from "react-redux";
+
+import { setSprintListReducer } from "@/storage/redux/tasksSlice";
+
+import DateRangePicker, { getDateRangeArray } from "../datePicker";
 import ReportWrapper from "./components/reportWrapper";
+import SpritReportComponent from "./components/sprintReportComponent";
+import TableComponent from "./components/tableComponentReport";
+import { SprintReportDto } from "models/reports";
+
 const ReportComponent = () => {
+  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState([]);
+  const [sprintReportData, setSprintReportData] = useState<SprintReportDto[]>(
+    []
+  );
+  const [sprints, setSprints] = useState<number[]>([]);
   const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
   const [dateRangeArray, setDateRangeArray] = useState([]);
   const [column, setColumns] = useState([]);
+  const [activeTab, setActiveTab] = useState("Time Sheet");
   //  getArrayOfDatesInRange(dateRange[0], dateRange[1]);
   const getReport = async () => {
     setIsLoading(true);
@@ -24,27 +36,59 @@ const ReportComponent = () => {
     // setData(formatUserData(res));
     setIsLoading(false);
   };
+  const getSprintList = async () => {
+    const res = await userAPI.getJiraSprints();
+    if (res?.length > 0) dispatch(setSprintListReducer(res));
+  };
+  const getSprintReport = async () => {
+    setIsLoading(true);
+    const res = await userAPI.getSprintReport(sprints);
+    res && setSprintReportData(res);
+    setIsLoading(false);
+  };
   useEffect(() => {
     getReport();
   }, [dateRange]);
-  data.length > 0 && console.log(">>>>>", data[0], data[0]["Oct 01 , 2023"]);
+
+  useEffect(() => {
+    getSprintReport();
+  }, [sprints]);
+  useEffect(() => {
+    getSprintReport();
+    getSprintList();
+  }, []);
   return (
     <div className="">
-      {/* <div className="mb-4 flex justify-between">
-        <h2 className="text-2xl font-bold">Reports</h2>
-      </div> */}
       <ReportWrapper
-        title="Time Sheet"
+        title="Time Reports"
         tooltipMessage="This Week"
-        setDateRange={setDateRange}
-        selectedDateRange={dateRange}
-        isLoading={isLoading}
+        {...{
+          setDateRange,
+          dateRange,
+          isLoading,
+          activeTab,
+          setActiveTab,
+          sprints,
+          setSprints,
+        }}
+        topPanelComponent={
+          activeTab === "Time Sheet" && (
+            <DateRangePicker
+              selectedDate={dateRange}
+              setSelectedDate={setDateRange}
+            />
+          )
+        }
       >
-        <TableComponent
-          data={data}
-          dateRangeArray={dateRangeArray}
-          column={column}
-        />
+        {activeTab === "Time Sheet" ? (
+          <TableComponent
+            data={data}
+            dateRangeArray={dateRangeArray}
+            column={column}
+          />
+        ) : (
+          <SpritReportComponent data={sprintReportData} />
+        )}
       </ReportWrapper>
     </div>
   );

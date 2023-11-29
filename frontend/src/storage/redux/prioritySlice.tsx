@@ -24,13 +24,6 @@ const prioritySlice = createSlice({
       const priorities = priorityListArray.flat();
       state.priorities = priorities;
       const priorityNames = new Set(priorities.map((p) => p.name));
-      console.log(
-        "🚀 ~ file: prioritySlice.tsx:28 ~ priorities:",
-        priorities,
-        priorityNames,
-        priorityNames.values(),
-        Array.from(priorityNames)
-      );
       state.priorityNames = Array.from(priorityNames);
     },
     addPrioritiesSlice: (state, action: PayloadAction<ProjectDto>) => {
