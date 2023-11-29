@@ -226,33 +226,44 @@ export class ProjectsService {
         'Project name already exists',
         HttpStatus.BAD_REQUEST,
       );
+    const newProject = await this.prisma.$transaction(async (prisma: any) => {
+      const projectCreated =
+        user?.activeWorkspaceId &&
+        (await this.projectDatabase.createProject(
+          projectName,
+          user?.activeWorkspaceId,
+          prisma,
+        ));
 
-    const newProject =
-      user?.activeWorkspaceId &&
-      (await this.projectDatabase.createProject(
-        projectName,
-        user?.activeWorkspaceId,
-      ));
+      if (!projectCreated)
+        throw new APIException(
+          'Could not create project!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
 
-    if (!newProject)
-      throw new APIException(
-        'Project could not be created',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+      const statusCreated = await this.projectDatabase.createStatusDetail(
+        projectCreated?.id,
+        prisma,
       );
+      if (!statusCreated)
+        throw new APIException(
+          'Could not create status!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
 
-    const statusCreated = await this.projectDatabase.createStatusDetail(
-      newProject?.id,
-    );
-    if (!statusCreated)
-      throw new APIException(
-        'Could not create status',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-
-    await this.projectDatabase.createLocalPrioritiesWithTransactionPrismaInstance(
-      newProject?.id,
-      this.prisma,
-    );
+      const priorities =
+        await this.projectDatabase.createLocalPrioritiesWithTransactionPrismaInstance(
+          projectCreated?.id,
+          prisma,
+        );
+      if (!priorities) {
+        throw new APIException(
+          'Could not create priorities!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      return projectCreated;
+    });
     return await this.projectDatabase.getProject(
       {
         id: newProject.id,

@@ -91,7 +91,6 @@ export class SessionsService {
       );
     }
     const task = await this.validateTaskAccess(user, taskId);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.tasksService.updateIssueStatus(user, taskId + '', task.status + '');
     const activeSession = await this.sessionDatabase.getSession(taskId);
 
@@ -158,7 +157,7 @@ export class SessionsService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const task = await this.tasksDatabase.getTasksbyId(taskId);
+    const task = await this.tasksDatabase.getTaskbyId(taskId);
 
     if (!task) {
       throw new BadRequestException('Task not found');
