@@ -41,8 +41,10 @@ const ReportComponent = () => {
     if (res?.length > 0) dispatch(setSprintListReducer(res));
   };
   const getSprintReport = async () => {
+    setIsLoading(true);
     const res = await userAPI.getSprintReport(sprints);
     res && setSprintReportData(res);
+    setIsLoading(false);
   };
   useEffect(() => {
     getReport();
