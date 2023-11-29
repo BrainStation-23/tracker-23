@@ -22,6 +22,7 @@ import {
   GetTeamTaskQueryType,
   GetTimeSheetQuery,
 } from '../tasks/dto';
+import { SprintReportFilterDto } from './dto/sprint-report.dto';
 
 @Controller('sessions')
 export class SessionsController {
@@ -126,7 +127,13 @@ export class SessionsController {
 
   @Get('spent-time/sprint-user-report')
   @UseGuards(JwtAuthGuard)
-  async usersSpentAndEstimationReportOnSprint(@GetUser() user: User) {
-    return this.sessionsService.usersSpentAndEstimationReportOnSprint(user);
+  async usersSpentAndEstimationReportOnSprint(
+    @GetUser() user: User,
+    @Query() query: SprintReportFilterDto,
+  ) {
+    return this.sessionsService.usersSpentAndEstimationReportOnSprint(
+      user,
+      query,
+    );
   }
 }

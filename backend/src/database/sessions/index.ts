@@ -44,6 +44,7 @@ export class SessionDatabase {
       return await this.prisma.userWorkspace.findMany({
         where: filter,
         select: {
+          id: true,
           user: {
             select: {
               id: true,
