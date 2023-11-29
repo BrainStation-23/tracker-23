@@ -10,7 +10,7 @@ import {
   ResetPasswordDto,
 } from "models/auth";
 import { SendWorkspaceInviteDto } from "models/invitation";
-import { getTimeSheetReportDto } from "models/reports";
+import { SprintReportDto, getTimeSheetReportDto } from "models/reports";
 import {
   AddWorkLogParams,
   CreateTaskDto,
@@ -88,6 +88,7 @@ export interface apiFunction {
   updateSyncTime: (time: number) => Promise<any>;
   updateTimeFormat: (value: string) => Promise<any>;
   getTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
+  getSprintReport: (data?: number[]) => Promise<SprintReportDto[]>;
   getInvitedUserInfo: (token: string) => Promise<any>;
   getAllUsers: () => Promise<any>;
   updateApprovalUser: (

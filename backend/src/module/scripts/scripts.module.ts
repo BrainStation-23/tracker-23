@@ -23,6 +23,9 @@ import { WorkspaceDatabase } from 'src/database/workspaces';
 import { EmailService } from '../email/email.service';
 import { AuthService } from '../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { WebhooksService } from '../webhooks/webhooks.service';
+import { SessionsService } from '../sessions/sessions.service';
+import { SessionDatabase } from 'src/database/sessions';
 
 @Module({
   imports: [HttpModule.register({})],
@@ -50,6 +53,9 @@ import { JwtService } from '@nestjs/jwt';
     EmailService,
     AuthService,
     JwtService,
+    WebhooksService,
+    SessionsService,
+    SessionDatabase,
   ],
 })
 export class ScriptsModule {}

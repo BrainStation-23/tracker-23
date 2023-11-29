@@ -124,9 +124,9 @@ export class SessionsController {
     return await this.sessionsService.getTimeSheetPerDay(user, query);
   }
 
-  // @Get('spent-time/send-weekly-timesheet')
-  // @UseGuards(JwtAuthGuard)
-  // async sendWeeklyTimeSheet(@GetUser() user: User) {
-  //   return this.sessionsService.sendWeeklyTimeSheet(user.id);
-  // }
+  @Get('spent-time/sprint-user-report')
+  @UseGuards(JwtAuthGuard)
+  async usersSpentAndEstimationReportOnSprint(@GetUser() user: User) {
+    return this.sessionsService.usersSpentAndEstimationReportOnSprint(user);
+  }
 }
