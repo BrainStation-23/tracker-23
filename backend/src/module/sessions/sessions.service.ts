@@ -1336,14 +1336,15 @@ export class SessionsService {
     user: User,
     query?: SprintReportFilterDto,
   ) {
+    const mappedTaskWithId = new Map<number, any>();
+    const mappedUserWithWorkspaceId = new Map<number, any>();
+    const rows: any[] = [];
+
     const sprintIds = query?.sprintId as unknown as string;
     const arrayOfStrings = sprintIds?.split(',');
     // Convert each string element to a number
     const sprintIdArray = arrayOfStrings?.map(Number);
 
-    const mappedTaskWithId = new Map<number, any>();
-    const mappedUserWithWorkspaceId = new Map<number, any>();
-    const rows: any[] = [];
     const projects = await this.projectDatabase.getProjectListForSprintReport(
       {
         workspaceId: user.activeWorkspaceId,
@@ -1376,7 +1377,8 @@ export class SessionsService {
         getUserWorkspaceList[index].user,
       );
     }
-    projects.map((project) => {
+
+    for (const project of projects) {
       for (let index = 0, len = project.tasks.length; index < len; index++) {
         mappedTaskWithId.set(project.tasks[index].id, project.tasks[index]);
       }
@@ -1388,10 +1390,25 @@ export class SessionsService {
             userId: number;
             name: string;
             picture: string;
-            estimation: number;
-            timeSpent: number;
+            estimation: any;
+            timeSpent: any;
           }
         >();
+
+        if (!sprint.sprintTask.length) {
+          for (const [
+            userWorkspaceId,
+            user,
+          ] of mappedUserWithWorkspaceId.entries()) {
+            userMap.set(userWorkspaceId, {
+              userId: user.id,
+              name: user.firstName + ' ' + user.lastName,
+              picture: user.picture,
+              estimation: 0,
+              timeSpent: 0,
+            });
+          }
+        }
         for (
           let idx = 0, sprintTasklen = sprint.sprintTask.length;
           idx < sprintTasklen;
@@ -1399,16 +1416,20 @@ export class SessionsService {
         ) {
           const sprintTaskId = sprint.sprintTask[idx].taskId;
           const task = mappedTaskWithId.get(sprintTaskId);
-          // const taskUser =
-          //   task && task.userWorkspace && task.userWorkspace.user;
           if (task) {
             const MappedSessionTime = this.getTimeFromSessions(
               task.sessions,
               mappedUserWithWorkspaceId,
-              // taskUser.id,
             );
-
-            if (sprint.id === 527) {
+            for (const [
+              userWorkspaceId,
+              user,
+            ] of mappedUserWithWorkspaceId.entries()) {
+              if (!MappedSessionTime.has(userWorkspaceId)) {
+                MappedSessionTime.set(userWorkspaceId, {
+                  sessionTimeSpent: 0,
+                });
+              }
             }
 
             for (const [
@@ -1425,7 +1446,7 @@ export class SessionsService {
                     task?.userWorkspaceId === userWorkspaceId
                       ? task.estimation ?? 0
                       : 0,
-                  timeSpent: sessionTime.sessionTimeSpent ?? 0,
+                  timeSpent: sessionTime?.sessionTimeSpent ?? 0,
                 });
               } else {
                 const user = userMap.get(userWorkspaceId);
@@ -1434,34 +1455,43 @@ export class SessionsService {
                     task?.userWorkspaceId === userWorkspaceId
                       ? task.estimation ?? 0
                       : 0),
-                    (user.timeSpent += sessionTime.sessionTimeSpent ?? 0);
+                    (user.timeSpent += sessionTime?.sessionTimeSpent ?? 0);
                 }
               }
             }
           }
         }
-        const users = [...userMap.values()].map((user: any) => {
+
+        for (const [userWorkspaceId, user] of userMap.entries()) {
           if (user.timeSpent) {
-            return {
+            userMap.set(userWorkspaceId, {
               ...user,
               timeSpent: Number(user.timeSpent.toFixed(2)),
-            };
+            });
           } else if (user.timeSpent === 0 && user.estimation === 0) {
-            return {
-              ...user,
-              estimation: null,
-              timeSpent: null,
-            };
+            const userIntegration =
+              await this.userIntegrationDatabase.getUserIntegration({
+                UserIntegrationIdentifier: {
+                  integrationId: project.integrationId,
+                  userWorkspaceId,
+                },
+              });
+            if (!userIntegration) {
+              userMap.set(userWorkspaceId, {
+                ...user,
+                estimation: null,
+                timeSpent: null,
+              });
+            }
           }
-        });
+        }
         rows.push({
           sprintId: sprint.id,
           name: sprint.name,
-          users,
+          users: [...userMap.values()],
         });
       }
-    });
-
+    }
     const columns = [...mappedUserWithWorkspaceId.values()].map((user: any) => {
       return {
         userId: user.id,
@@ -1512,13 +1542,13 @@ export class SessionsService {
         }
       }
     }
-    for (const [userWorkspaceId, user] of mappedUserWithWorkspaceId.entries()) {
-      if (!mappedUserWorkspaceWithTimeSpent.has(userWorkspaceId)) {
-        mappedUserWorkspaceWithTimeSpent.set(userWorkspaceId, {
-          sessionTimeSpent: 0,
-        });
-      }
-    }
+    // for (const [userWorkspaceId, user] of mappedUserWithWorkspaceId.entries()) {
+    //   if (!mappedUserWorkspaceWithTimeSpent.has(userWorkspaceId)) {
+    //     mappedUserWorkspaceWithTimeSpent.set(userWorkspaceId, {
+    //       sessionTimeSpent: 0,
+    //     });
+    //   }
+    // }
     return mappedUserWorkspaceWithTimeSpent;
   }
 }
