@@ -152,6 +152,7 @@ export class TasksDatabase {
             },
           },
           childTask: {
+            where: { userWorkspaceId: filter.userWorkspaceId },
             include: {
               sessions: true,
             },
