@@ -1271,7 +1271,7 @@ export class SessionsService {
       await this.userWorkspaceDatabase.getUserWorkspaceList({
         userId: userId,
         status: {
-          in: [UserWorkspaceStatus.ACTIVE, UserWorkspaceStatus.INACTIVE],
+          in: [UserWorkspaceStatus.ACTIVE],
         },
       });
     const end = dayjs();
