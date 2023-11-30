@@ -1338,22 +1338,33 @@ export class SessionsService {
   ) {
     const mappedTaskWithId = new Map<number, any>();
     const mappedUserWithWorkspaceId = new Map<number, any>();
+    const existUserIntegration = new Map<number, any>();
     const rows: any[] = [];
 
     const sprintIds = query?.sprintId as unknown as string;
-    const arrayOfStrings = sprintIds?.split(',');
+    const projectIds = query?.projectIds as unknown as string;
+    const arrayOfSprintIds = sprintIds?.split(',');
+    const arrayOfProjectIds = projectIds?.split(',');
     // Convert each string element to a number
-    const sprintIdArray = arrayOfStrings?.map(Number);
+    const sprintIdsArray = arrayOfSprintIds?.map(Number);
+    const projectIdsArray = arrayOfProjectIds?.map(Number);
 
     const projects = await this.projectDatabase.getProjectListForSprintReport(
       {
+        ...(query?.projectIds && {
+          id: {
+            in: projectIdsArray.map((id: any) => {
+              return id;
+            }),
+          },
+        }),
         workspaceId: user.activeWorkspaceId,
         integrated: true,
       },
       {
         ...(query?.sprintId && {
           id: {
-            in: sprintIdArray.map((id: any) => {
+            in: sprintIdsArray.map((id: any) => {
               return id;
             }),
           },
@@ -1468,6 +1479,13 @@ export class SessionsService {
               ...user,
               timeSpent: Number(user.timeSpent.toFixed(2)),
             });
+
+            if (
+              query?.projectIds &&
+              !existUserIntegration.has(userWorkspaceId)
+            ) {
+              existUserIntegration.set(userWorkspaceId, user);
+            }
           } else if (user.timeSpent === 0 && user.estimation === 0) {
             const userIntegration =
               await this.userIntegrationDatabase.getUserIntegration({
@@ -1482,28 +1500,49 @@ export class SessionsService {
                 estimation: null,
                 timeSpent: null,
               });
+              query?.projectIds && userMap.delete(userWorkspaceId);
+            } else {
+              if (
+                query?.projectIds &&
+                !existUserIntegration.has(userWorkspaceId)
+              ) {
+                existUserIntegration.set(userWorkspaceId, user);
+              }
             }
           }
         }
         rows.push({
           sprintId: sprint.id,
           name: sprint.name,
+          projectName: project.projectName,
+          startDate: sprint.startDate,
           users: [...userMap.values()],
         });
       }
     }
-    const columns = [...mappedUserWithWorkspaceId.values()].map((user: any) => {
-      return {
-        userId: user.id,
-        name: user.lastName
-          ? user.firstName + ' ' + user.lastName
-          : user.firstName,
-        picture: user.picture,
-      };
-    });
+
+    const columns = query?.projectIds
+      ? [...existUserIntegration.values()].map((user: any) => {
+          return {
+            userId: user.userId,
+            name: user.name,
+            picture: user.picture,
+          };
+        })
+      : [...mappedUserWithWorkspaceId.values()].map((user: any) => {
+          return {
+            userId: user.id,
+            name: user.lastName
+              ? user.firstName + ' ' + user.lastName
+              : user.firstName,
+            picture: user.picture,
+          };
+        });
+
+    const sortedRows = rows.sort((a, b) => b.startDate - a.startDate);
     return {
       columns,
-      rows,
+      rows: sortedRows,
     };
   }
 

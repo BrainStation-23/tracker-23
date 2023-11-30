@@ -86,25 +86,21 @@ export class SprintsService {
 
     for (let index = 0, len = sprintResponses.length; index < len; index++) {
       const val = sprintResponses[index];
-      if (val.startDate && val.endDate && val.completeDate) {
-        sprint_list.push({
-          jiraSprintId: Number(val.id),
-          projectId: projectId,
-          state: val.state,
-          name: val.name,
-          startDate: new Date(val.startDate),
-          endDate: new Date(val.startDate),
-          completeDate: new Date(val.startDate),
-        });
-      } else {
-        // toBeUpdated.push(val.id);
-        sprint_list.push({
-          jiraSprintId: Number(val.id),
-          projectId: projectId,
-          state: val.state,
-          name: val.name,
-        });
-      }
+      sprint_list.push({
+        jiraSprintId: Number(val.id),
+        projectId: projectId,
+        state: val.state,
+        name: val.name,
+        startDate: val.startDate
+          ? new Date(val.startDate)
+          : new Date(val.createdDate),
+        endDate: val.endDate ? new Date(val.endDate) : null,
+        completeDate: val.completeDate
+          ? new Date(val.completeDate)
+          : val.endDate
+          ? new Date(val.endDate)
+          : null,
+      });
       for (let startAt = 0; startAt < 5000; startAt += 50) {
         const sprintIssueUrl = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/agile/1.0/sprint/${val.id}/issue`;
         const res = await this.jiraClient.CallJira(
