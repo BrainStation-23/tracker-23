@@ -42,7 +42,7 @@ const ReportWrapper = ({
         />
         <Spin className="custom-spin" spinning={isLoading}>
           {
-            <div className="flex w-full justify-center  overflow-auto">
+            <div className="flex w-full justify-start  overflow-auto">
               {children}
             </div>
           }
