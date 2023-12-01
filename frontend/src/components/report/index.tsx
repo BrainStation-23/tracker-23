@@ -14,9 +14,7 @@ const ReportComponent = () => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState([]);
-  const [sprintReportData, setSprintReportData] = useState<SprintReportDto[]>(
-    []
-  );
+  const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
   const [sprints, setSprints] = useState<number[]>([]);
   const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
   const [dateRangeArray, setDateRangeArray] = useState([]);
@@ -42,8 +40,8 @@ const ReportComponent = () => {
   };
   const getSprintReport = async () => {
     setIsLoading(true);
-    const res = await userAPI.getSprintReport(sprints);
-    res && setSprintReportData(res);
+    const res: SprintReportDto = await userAPI.getSprintReport(sprints);
+     res && setSprintReportData(res);
     setIsLoading(false);
   };
   useEffect(() => {
