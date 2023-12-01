@@ -6,6 +6,11 @@ export interface SearchParamsModel {
   projectIds?: number[];
   sprints?: number[];
 }
+export interface SprintReportParamsModel {
+  selectedUsers?: number[];
+  projectIds?: number[];
+  sprints?: number[];
+}
 
 export interface CreateWorkspaceModel {
   name: string;

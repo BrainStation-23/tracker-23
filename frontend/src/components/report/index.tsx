@@ -16,6 +16,8 @@ const ReportComponent = () => {
   const [data, setData] = useState([]);
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
   const [sprints, setSprints] = useState<number[]>([]);
+  const [projects, setProjects] = useState<number[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
   const [dateRangeArray, setDateRangeArray] = useState([]);
   const [column, setColumns] = useState([]);
@@ -26,6 +28,8 @@ const ReportComponent = () => {
     const res = await userAPI.getTimeSheetReport({
       startDate: dateRange[0],
       endDate: dateRange[1],
+      userIds: selectedUsers,
+      projectIds: projects,
     });
     res.columns && setColumns(res.columns);
 
@@ -40,17 +44,21 @@ const ReportComponent = () => {
   };
   const getSprintReport = async () => {
     setIsLoading(true);
-    const res: SprintReportDto = await userAPI.getSprintReport(sprints);
-     res && setSprintReportData(res);
+    const res: SprintReportDto = await userAPI.getSprintReport({
+      sprints,
+      selectedUsers,
+      projectIds: projects,
+    });
+    res && setSprintReportData(res);
     setIsLoading(false);
   };
   useEffect(() => {
     getReport();
-  }, [dateRange]);
+  }, [dateRange, selectedUsers, projects]);
 
   useEffect(() => {
     getSprintReport();
-  }, [sprints]);
+  }, [sprints, selectedUsers, projects]);
   useEffect(() => {
     getSprintReport();
     getSprintList();
@@ -68,6 +76,11 @@ const ReportComponent = () => {
           setActiveTab,
           sprints,
           setSprints,
+          projects,
+          setProjects,
+          sprintReportData,
+          selectedUsers,
+          setSelectedUsers,
         }}
         topPanelComponent={
           activeTab === "Time Sheet" && (
