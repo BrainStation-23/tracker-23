@@ -36,6 +36,9 @@ export class SprintDatabase {
         where: {
           projectId: projectId,
         },
+        include: {
+          sprintTask: true,
+        },
       });
     } catch (error) {
       console.log(error);
