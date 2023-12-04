@@ -198,6 +198,39 @@ export class SprintsService {
             sprintId: sprintId,
             taskId: taskId,
           });
+          existingTaskOfSprintMapped.set(
+            JSON.stringify({ sprintId: sprintId, taskId: taskId }),
+            1,
+          );
+        }
+
+        if (issue?.fields?.subtasks.length) {
+          for (
+            let subIdx = 0, subTaskLen = issue?.fields?.subtasks.length;
+            subIdx < subTaskLen;
+            subIdx++
+          ) {
+            const subTaskId = mappedTaskId.get(
+              Number(issue?.fields?.subtasks[subIdx].id),
+            );
+            if (
+              subTaskId &&
+              sprintId &&
+              !existingTaskOfSprintMapped.has(
+                JSON.stringify({ sprintId: sprintId, taskId: subTaskId }),
+              )
+            ) {
+              issue_list.push({
+                sprintId: sprintId,
+                taskId: subTaskId,
+              });
+
+              existingTaskOfSprintMapped.set(
+                JSON.stringify({ sprintId: sprintId, taskId: subTaskId }),
+                1,
+              );
+            }
+          }
         }
       });
     }
