@@ -1343,11 +1343,14 @@ export class SessionsService {
 
     const sprintIds = query?.sprintId as unknown as string;
     const projectIds = query?.projectIds as unknown as string;
+    const userIds = query?.userId as unknown as string;
     const arrayOfSprintIds = sprintIds?.split(',');
     const arrayOfProjectIds = projectIds?.split(',');
+    const arrayOfUserIds = userIds?.split(',');
     // Convert each string element to a number
     const sprintIdsArray = arrayOfSprintIds?.map(Number);
     const projectIdsArray = arrayOfProjectIds?.map(Number);
+    const userIdsArray = arrayOfUserIds?.map(Number);
 
     const projects = await this.projectDatabase.getProjectListForSprintReport(
       {
@@ -1376,6 +1379,7 @@ export class SessionsService {
       await this.sessionDatabase.getUserWorkspaceList({
         workspaceId: user.activeWorkspaceId,
         status: UserWorkspaceStatus.ACTIVE,
+        ...(query?.userId && { userId: { in: userIdsArray } }),
       });
 
     for (

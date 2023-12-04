@@ -8,4 +8,8 @@ export class SprintReportFilterDto {
   @IsString()
   @IsOptional()
   projectIds: string;
+
+  @IsString()
+  @IsOptional()
+  userId: string;
 }
