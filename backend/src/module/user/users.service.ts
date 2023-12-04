@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Role, User } from '@prisma/client';
+import { Role, User, UserWorkspaceStatus } from '@prisma/client';
 
 import { WorkspaceDatabase } from 'src/database/workspaces/index';
 import { UsersDatabase } from 'src/database/users';
@@ -7,6 +7,10 @@ import { APIException } from '../exception/api.exception';
 import { UpdateSettingsReqDto } from './dto/create.settings.dto';
 import { TasksDatabase } from 'src/database/tasks';
 import { UpdateApprovalUserRequest } from './dto/update.approvalUser.request.dto';
+import { UserListByProjectIdReqDto } from './dto/getUserListByProjectId.dto';
+import { ProjectDatabase } from 'src/database/projects';
+import { SessionDatabase } from 'src/database/sessions';
+import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 
 @Injectable()
 export class UsersService {
@@ -14,6 +18,9 @@ export class UsersService {
     private usersDatabase: UsersDatabase,
     private workspaceDatabase: WorkspaceDatabase,
     private tasksDatabase: TasksDatabase,
+    private projectDatabase: ProjectDatabase,
+    private sessionDatabase: SessionDatabase,
+    private userIntegrationDatabase: UserIntegrationDatabase,
   ) {}
 
   async getUsers(user: User) {
@@ -84,5 +91,54 @@ export class UsersService {
     }
     const updateUserId = parseInt(userId);
     return await this.usersDatabase.updateApprovalUser(updateUserId, req);
+  }
+
+  async userListByProjectId(user: User, query: UserListByProjectIdReqDto) {
+    const projectIds = query?.projectIds as unknown as string;
+    const arrayOfProjectIds = projectIds?.split(',');
+    const projectIdsArray = arrayOfProjectIds?.map(Number);
+    const projects = await this.projectDatabase.getProjects({
+      ...(query?.projectIds && {
+        id: { in: projectIdsArray },
+      }),
+      workspaceId: user.activeWorkspaceId,
+      integrated: true,
+    });
+
+    const getUserWorkspaceList =
+      await this.sessionDatabase.getUserWorkspaceList({
+        workspaceId: user.activeWorkspaceId,
+        status: UserWorkspaceStatus.ACTIVE,
+      });
+
+    const userMap = new Map<number, any>();
+
+    for (const project of projects) {
+      for (
+        let index = 0, len = getUserWorkspaceList.length;
+        index < len;
+        index++
+      ) {
+        const userWorkspace = getUserWorkspaceList[index];
+        const userIntegration =
+          await this.userIntegrationDatabase.getUserIntegration({
+            UserIntegrationIdentifier: {
+              integrationId: project.integrationId,
+              userWorkspaceId: userWorkspace.id,
+            },
+          });
+
+        if (userIntegration && !userMap.has(userWorkspace.id)) {
+          userMap.set(userWorkspace.id, {
+            id: userWorkspace.user.id,
+            name: userWorkspace.user.lastName
+              ? userWorkspace.user.firstName + ' ' + userWorkspace.user.lastName
+              : userWorkspace.user.firstName,
+            picture: userWorkspace.user.picture,
+          });
+        }
+      }
+    }
+    return [...userMap.values()];
   }
 }
