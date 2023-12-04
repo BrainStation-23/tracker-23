@@ -6,6 +6,7 @@ import { WorkspaceDto } from "models/workspaces";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
+import PrimaryButton from "@/components/common/buttons/primaryButton";
 type Props = {
   workspace: WorkspaceDto;
   setSelectedWorkspace: Function;
@@ -58,14 +59,14 @@ const EditWorkspace = ({
                     Switch to this workspace
                 </Checkbox>
             </Form.Item> */}
-      <div className="mx-auto flex w-[300px] justify-between">
+      <div className="mx-auto flex w-[200px] justify-between">
         <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Save
-          </Button>
+          <PrimaryButton htmlType="submit">Save</PrimaryButton>
         </Form.Item>
         <Form.Item>
-          <Button type="primary">Cancel</Button>
+          <PrimaryButton onClick={() => setIsModalOpen(false)}>
+            Cancel
+          </PrimaryButton>
         </Form.Item>
       </div>
     </Form>

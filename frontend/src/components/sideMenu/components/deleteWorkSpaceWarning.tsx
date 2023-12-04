@@ -34,7 +34,7 @@ const DeleteWorkspaceWarning = ({
     <>
       Do you want to delete the{" "}
       <span className="font-bold">{workspace?.name}</span> ?
-      <div className="mx-auto mt-5 flex w-[300px] justify-between">
+      <div className="mx-auto mt-8 flex w-[200px] justify-between px-5">
         <PrimaryButton onClick={() => handleDelete()}>Yes</PrimaryButton>
         <PrimaryButton onClick={() => setIsModalOpen(false)}>No</PrimaryButton>
       </div>

@@ -205,10 +205,7 @@ const WorkspaceNav = () => {
     menu: React.ReactNode,
     tmpWorkspace: WorkspaceDto
   ) => (
-    <div
-      style={contentStyle}
-      className="py-4 font-semibold"
-    >
+    <div style={contentStyle} className="py-4 font-semibold">
       <div
         className={`mx-4 flex items-center gap-2 ${
           tmpWorkspace.active
@@ -305,6 +302,7 @@ const WorkspaceNav = () => {
       <GlobalModal
         {...{ isModalOpen, setIsModalOpen }}
         title={modalTitles[mode]}
+        width={350}
       >
         <Spin spinning={isModalLoading}>
           {mode === 1 && (
