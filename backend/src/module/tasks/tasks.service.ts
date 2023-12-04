@@ -865,7 +865,6 @@ export class TasksService {
       'summary, assignee,timeoriginalestimate,project, comment,parent, created, updated,status,priority';
     let respTasks;
     const parentChildMapped = new Map<number, number>();
-    const mappedTaskId = new Map<number, number>();
 
     for (let startAt = 0; startAt < 5000; startAt += 100) {
       let worklogPromises: Promise<any>[] = [];
@@ -954,6 +953,7 @@ export class TasksService {
           key: integratedTask?.key,
         });
       }
+      const mappedTaskId = new Map<number, number>();
       try {
         const [t, tasks] = await Promise.all([
           await this.prisma.task.createMany({
@@ -970,6 +970,13 @@ export class TasksService {
             },
           }),
         ]);
+
+        for (let index = 0; index < tasks.length; index++) {
+          mappedTaskId.set(
+            Number(tasks[index].integratedTaskId),
+            tasks[index].id,
+          );
+        }
       } catch (err) {
         console.log(
           '🚀 ~ file: tasks.service.ts:924 ~ TasksService ~ err:',
@@ -1059,6 +1066,7 @@ export class TasksService {
       }
     }
     //parent task update
+    const mappedTaskIdForParentChild = new Map<number, number>();
     const updateTaskPromises: Promise<any>[] = [];
     const tasks = await this.prisma.task.findMany({
       where: {
@@ -1072,8 +1080,10 @@ export class TasksService {
     });
 
     for (let index = 0; index < tasks.length; index++) {
-      if (!mappedTaskId.has(Number(tasks[index].integratedTaskId))) {
-        mappedTaskId.set(
+      if (
+        !mappedTaskIdForParentChild.has(Number(tasks[index].integratedTaskId))
+      ) {
+        mappedTaskIdForParentChild.set(
           Number(tasks[index].integratedTaskId),
           tasks[index].id,
         );
@@ -1083,7 +1093,8 @@ export class TasksService {
       const task = tasks[index];
       const parentJiraId =
         task.integratedTaskId && parentChildMapped.get(task.integratedTaskId);
-      const parentLocalId = parentJiraId && mappedTaskId.get(parentJiraId);
+      const parentLocalId =
+        parentJiraId && mappedTaskIdForParentChild.get(parentJiraId);
       updateTaskPromises.push(
         this.prisma.task.update({
           where: {
