@@ -25,7 +25,6 @@ import { apiEndPoints } from "utils/apiEndPoints";
 
 import { RemoveCookie, SetCookie } from "@/services/cookie.service";
 import {
-  getFormattedActiveSprintTasks,
   getLabels,
   getStringFromArray,
 } from "@/services/taskActions";
@@ -533,7 +532,7 @@ export async function getJiraActiveSprintTasksRest(
         (status && status.length > 0 ? `&status=${status}` : "")
       // `${apiEndPoints.activeSprintTasks}/?state=${["closed"]}`
     );
-    return getFormattedActiveSprintTasks(res.data);
+    return res.data
   } catch (error: any) {
     return false;
   }
