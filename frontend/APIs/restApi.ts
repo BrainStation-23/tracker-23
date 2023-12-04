@@ -4,6 +4,7 @@ import {
   CreateLocalProjectModel,
   CreateWorkspaceModel,
   SearchParamsModel,
+  SprintReportParamsModel,
 } from "models/apiParams";
 import {
   ForgotPasswordDto,
@@ -702,11 +703,18 @@ export async function updateTimeFormatRest(value: string) {
   }
 }
 
-export async function getTimeSheetReportRest(data: getTimeSheetReportDto) {
+export async function getTimeSheetReportRest({
+  startDate,
+  endDate,
+  userIds,
+  projectIds,
+}: getTimeSheetReportDto) {
   try {
     const res = await axios.get(
       `${apiEndPoints.timeSheetReport}/` +
-        `?startDate=${data?.startDate}&endDate=${data?.endDate}`
+        `?startDate=${startDate}&endDate=${endDate}` +
+        (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "")
     );
     return res.data;
   } catch (error: any) {
@@ -714,11 +722,22 @@ export async function getTimeSheetReportRest(data: getTimeSheetReportDto) {
   }
 }
 
-export async function getSprintReportRest(sprints?: number[]) {
+export async function getSprintReportRest({
+  sprints,
+  selectedUsers,
+  projectIds,
+}: SprintReportParamsModel) {
   try {
     const res = await axios.get(
       `${apiEndPoints.sprintReport}` +
-        (sprints?.length > 0 ? `?sprintId=${sprints}` : "")
+        (sprints?.length > 0 ||
+        selectedUsers?.length > 0 ||
+        projectIds?.length > 0
+          ? `?`
+          : "") +
+        (sprints?.length > 0 ? `sprintId=${sprints}` : "") +
+        (selectedUsers?.length > 0 ? `&userId=${selectedUsers}` : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "")
     );
     return res.data;
   } catch (error: any) {

@@ -2,6 +2,7 @@ import {
   CreateLocalProjectModel,
   CreateWorkspaceModel,
   SearchParamsModel,
+  SprintReportParamsModel,
 } from "models/apiParams";
 import {
   ForgotPasswordDto,
@@ -88,7 +89,7 @@ export interface apiFunction {
   updateSyncTime: (time: number) => Promise<any>;
   updateTimeFormat: (value: string) => Promise<any>;
   getTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
-  getSprintReport: (data?: number[]) => Promise<SprintReportDto>;
+  getSprintReport: (data?: SprintReportParamsModel) => Promise<SprintReportDto>;
   getInvitedUserInfo: (token: string) => Promise<any>;
   getAllUsers: () => Promise<any>;
   updateApprovalUser: (
