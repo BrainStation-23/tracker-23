@@ -25,8 +25,8 @@ const DeleteWorkspaceWarning = ({
     if (res) {
       message.success("Workspace deleted Successfully");
       dispatch(deleteWorkspaceSlice(workspace));
-      setSelectedWorkspace(null);
-      dispatch(changeWorkspaceReloadStatusSlice());
+      // setSelectedWorkspace(null);
+      // dispatch(changeWorkspaceReloadStatusSlice());
       setIsModalOpen(false);
     }
   };

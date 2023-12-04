@@ -208,12 +208,6 @@ const WorkspaceNav = () => {
     <div
       style={contentStyle}
       className="py-4 font-semibold"
-      onClick={() => {
-        if (tmpWorkspace.active) {
-          setWorkspaceInMoreMode(null);
-          setDropdownOpen(false);
-        }
-      }}
     >
       <div
         className={`mx-4 flex items-center gap-2 ${
@@ -222,9 +216,14 @@ const WorkspaceNav = () => {
             : "cursor-not-allowed  text-gray-300"
         }`}
         onClick={() => {
-          setMode(1);
-          setSelectedWorkspace(tmpWorkspace);
-          setIsModalOpen(true);
+          if (tmpWorkspace.active) {
+            setMode(1);
+            setSelectedWorkspace(tmpWorkspace);
+
+            setIsModalOpen(true);
+            setWorkspaceInMoreMode(null);
+            setDropdownOpen(false);
+          }
         }}
       >
         <LuPenLine /> Edit
@@ -232,12 +231,16 @@ const WorkspaceNav = () => {
       <div style={{ padding: 8 }}></div>
       <div
         className={`mx-4 flex items-center gap-2 ${
-          tmpWorkspace.active
+          !tmpWorkspace.active
             ? " cursor-pointer"
             : "cursor-not-allowed text-gray-300"
         }`}
         onClick={() => {
-          handleWorkspaceDeleteClick(tmpWorkspace);
+          if (!tmpWorkspace.active) {
+            handleWorkspaceDeleteClick(tmpWorkspace);
+            setWorkspaceInMoreMode(null);
+            setDropdownOpen(false);
+          }
         }}
       >
         <LuTrash2 /> Delete
@@ -259,8 +262,8 @@ const WorkspaceNav = () => {
           setDropdownOpen(v);
         }}
       >
-        <div className="h-max w-[240px] cursor-pointer rounded-lg border-2 p-1 flex items-center">
-          <div className="grid grid-cols-12 gap-2 ice">
+        <div className="flex h-max w-[240px] cursor-pointer items-center rounded-lg border-2 p-1">
+          <div className="ice grid grid-cols-12 gap-2">
             <Avatar
               className="col-span-3 flex h-[48px] w-[48px] flex-col justify-center rounded font-medium text-primary"
               size={"large"}
