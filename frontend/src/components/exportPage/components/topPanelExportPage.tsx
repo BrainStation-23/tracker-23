@@ -8,11 +8,11 @@ import { LuDownload } from "react-icons/lu";
 
 import FilterIconSvg from "@/assets/svg/filterIconSvg";
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
+import PrioritySelectorComponent from "@/components/common/topPanels/components/prioritySelector";
+import ProjectSelectorComponent from "@/components/common/topPanels/components/projectSelector";
+import SprintSelectorComponent from "@/components/common/topPanels/components/sprintSelector";
+import StatusSelectorComponent from "@/components/common/topPanels/components/statusSelector";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
-import PrioritySelectorComponent from "@/components/tasks/components/topPanel/components/prioritySelector";
-import ProjectSelectorComponent from "@/components/tasks/components/topPanel/components/projectSelector";
-import SprintSelectorComponent from "@/components/tasks/components/topPanel/components/sprintSelector";
-import StatusSelectorComponent from "@/components/tasks/components/topPanel/components/statusSelector";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 

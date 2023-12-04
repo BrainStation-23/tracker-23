@@ -1,6 +1,6 @@
-import { QuestionCircleOutlined } from "@ant-design/icons";
 import { Spin, Tooltip } from "antd";
-import DateRangePicker from "../../datePicker";
+import { SprintReportDto } from "models/reports";
+
 import TopPanelReportPage from "./topPanelReportPage";
 
 type Props = {
@@ -13,6 +13,11 @@ type Props = {
   topPanelComponent: any;
   sprints: number[];
   setSprints: Function;
+  selectedUsers: number[];
+  setSelectedUsers: Function;
+  projects?: any;
+  setProjects?: Function;
+  sprintReportData: SprintReportDto;
 };
 const ReportWrapper = ({
   children,
@@ -24,6 +29,11 @@ const ReportWrapper = ({
   topPanelComponent,
   sprints,
   setSprints,
+  projects,
+  setProjects,
+  sprintReportData,
+  selectedUsers,
+  setSelectedUsers,
 }: Props) => {
   return (
     <div className="mt-5">
@@ -38,7 +48,12 @@ const ReportWrapper = ({
             topPanelComponent,
             sprints,
             setSprints,
+            projects,
+            setProjects,
+            selectedUsers,
+            setSelectedUsers,
           }}
+          userList={sprintReportData?.columns}
         />
         <Spin className="custom-spin" spinning={isLoading}>
           {
