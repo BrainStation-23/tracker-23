@@ -34,6 +34,7 @@ export class SprintsService {
     const sprintResponses: any[] = [];
     const resolvedPromiseSprintTask: any[] = [];
     const projectBoardIds: any[] = [];
+    const mappedSprintWithJiraId = new Map<number, any>();
 
     const project = await this.projectDatabase.getProjectById(projectId);
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
@@ -44,7 +45,7 @@ export class SprintsService {
     );
     if (!userIntegration) {
       throw new APIException(
-        'User Integration not found',
+        'User Integration not found!',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -84,49 +85,42 @@ export class SprintsService {
       }
     }
 
+    const localDbSprints = await this.sprintDatabase.findSprintListByProjectId(
+      projectId,
+    );
     for (let index = 0, len = sprintResponses.length; index < len; index++) {
-      const val = sprintResponses[index];
-      if (val.startDate && val.endDate && val.completeDate) {
-        sprint_list.push({
-          jiraSprintId: Number(val.id),
-          projectId: projectId,
-          state: val.state,
-          name: val.name,
-          startDate: new Date(val.startDate),
-          endDate: new Date(val.startDate),
-          completeDate: new Date(val.startDate),
-        });
-      } else {
-        // toBeUpdated.push(val.id);
-        sprint_list.push({
-          jiraSprintId: Number(val.id),
-          projectId: projectId,
-          state: val.state,
-          name: val.name,
-        });
-      }
-      for (let startAt = 0; startAt < 5000; startAt += 50) {
-        const sprintIssueUrl = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/agile/1.0/sprint/${val.id}/issue`;
-        const res = await this.jiraClient.CallJira(
-          userIntegration,
-          this.jiraApiCalls.getSprintIssueList,
-          sprintIssueUrl,
-          { startAt, maxResults: 50 },
-        );
-        resolvedPromiseSprintTask.push(res);
-
-        if (res.data.issues.length < 50) {
-          break;
-        }
+      const sprint = sprintResponses[index];
+      if (!mappedSprintWithJiraId.has(Number(sprint.id))) {
+        mappedSprintWithJiraId.set(Number(sprint.id), sprint);
       }
     }
 
-    //Get all task related to the sprint
-    // const resolvedPromiseSprintTask = await Promise.all(issuePromises);
+    for (let index = 0, len = localDbSprints.length; index < len; index++) {
+      const jiraSprintId = localDbSprints[index].jiraSprintId;
+      jiraSprintId && mappedSprintWithJiraId.delete(jiraSprintId);
+    }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [delSprint, crtSprint, sprints] = await Promise.all([
-      await this.sprintDatabase.deleteSprintByProjectId(projectId),
+    // for (let index = 0, len = sprintResponses.length; index < len; index++) {
+    for (const [jiraSprintId, val] of mappedSprintWithJiraId) {
+      // const val = sprintResponses[index];
+      sprint_list.push({
+        jiraSprintId: jiraSprintId,
+        projectId: projectId,
+        state: val.state,
+        name: val.name,
+        startDate: val.startDate
+          ? new Date(val.startDate)
+          : new Date(val.createdDate),
+        endDate: val.endDate ? new Date(val.endDate) : null,
+        completeDate: val.completeDate
+          ? new Date(val.completeDate)
+          : val.endDate
+          ? new Date(val.endDate)
+          : null,
+      });
+    }
+
+    const [crtSprint, sprints] = await Promise.all([
       await this.sprintDatabase.createSprints(sprint_list),
       await this.sprintDatabase.findSprintListByProjectId(projectId),
     ]);
@@ -148,6 +142,39 @@ export class SprintsService {
         task_list[index].id,
       );
     }
+    //relation between {sprintId, taskId} and sprintTaskId
+    const existingTaskOfSprintMapped = new Map<string, number>();
+    for (let index = 0, len = sprints.length; index < len; index++) {
+      const sprint = sprints[index];
+
+      //jira task fetch by sprint id
+      for (let startAt = 0; startAt < 5000; startAt += 50) {
+        const sprintIssueUrl = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/agile/1.0/sprint/${sprint.jiraSprintId}/issue`;
+        const res = await this.jiraClient.CallJira(
+          userIntegration,
+          this.jiraApiCalls.getSprintIssueList,
+          sprintIssueUrl,
+          { startAt, maxResults: 50 },
+        );
+        resolvedPromiseSprintTask.push(res);
+
+        if (res.data.issues.length < 50) {
+          break;
+        }
+      }
+
+      for (let idx = 0; idx < sprint.sprintTask.length; idx++) {
+        const sprintTask = sprint.sprintTask[idx];
+        existingTaskOfSprintMapped.set(
+          JSON.stringify({
+            sprintId: sprintTask.sprintId,
+            taskId: sprintTask.taskId,
+          }),
+          sprintTask.id,
+        );
+      }
+    }
+
     for (
       let index = 0, len = resolvedPromiseSprintTask.length;
       index < len;
@@ -160,18 +187,56 @@ export class SprintsService {
 
       res.data.issues.map((issue: any) => {
         const taskId = mappedTaskId.get(Number(issue.id));
-        taskId &&
+        if (
+          taskId &&
+          sprintId &&
+          !existingTaskOfSprintMapped.has(
+            JSON.stringify({ sprintId: sprintId, taskId: taskId }),
+          )
+        ) {
           issue_list.push({
             sprintId: sprintId,
             taskId: taskId,
           });
+          existingTaskOfSprintMapped.set(
+            JSON.stringify({ sprintId: sprintId, taskId: taskId }),
+            1,
+          );
+        }
+
+        if (issue?.fields?.subtasks.length) {
+          for (
+            let subIdx = 0, subTaskLen = issue?.fields?.subtasks.length;
+            subIdx < subTaskLen;
+            subIdx++
+          ) {
+            const subTaskId = mappedTaskId.get(
+              Number(issue?.fields?.subtasks[subIdx].id),
+            );
+            if (
+              subTaskId &&
+              sprintId &&
+              !existingTaskOfSprintMapped.has(
+                JSON.stringify({ sprintId: sprintId, taskId: subTaskId }),
+              )
+            ) {
+              issue_list.push({
+                sprintId: sprintId,
+                taskId: subTaskId,
+              });
+
+              existingTaskOfSprintMapped.set(
+                JSON.stringify({ sprintId: sprintId, taskId: subTaskId }),
+                1,
+              );
+            }
+          }
+        }
       });
     }
 
     const sprintIds: number[] = Array.from(mappedSprintId.values());
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [DelSprintTask, CST, sprintTasks] = await Promise.all([
-      await this.sprintTaskDatabase.deleteSprintTaskBySprintIds(sprintIds),
+    const [createdSprintTask, sprintTasks] = await Promise.all([
       await this.sprintTaskDatabase.createSprintTask(issue_list),
       await this.sprintTaskDatabase.findSprintTaskBySprintIds(sprintIds),
     ]);

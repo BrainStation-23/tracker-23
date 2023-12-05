@@ -5,10 +5,6 @@ type Props = {
   memberList: UserDto[];
 };
 const MemberList = ({ memberList }: Props) => {
-  console.log(
-    "🚀 ~ file: memberList.tsx:5 ~ MemberList ~ memberList:",
-    memberList
-  );
   return (
     <div className="my-5 flex gap-4">
       {memberList.map((member) => (

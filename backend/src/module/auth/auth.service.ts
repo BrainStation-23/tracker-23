@@ -124,7 +124,7 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id };
     const access_token = await this.jwt.signAsync(payload, {
       secret: this.config.get('JWT_SECRET'),
-      expiresIn: remember ? '30d' : '1d',
+      expiresIn: remember ? '30d' : '5d',
     });
 
     return {
@@ -136,6 +136,7 @@ export class AuthService {
     if (!req.user) {
       return 'No user from google';
     }
+
     const urlParams = new URLSearchParams(req.url);
     const invitationCode = urlParams.get('invitationCode');
     invitationCode && (await this.checkEmail(invitationCode, req.user.email));
@@ -149,7 +150,7 @@ export class AuthService {
 
     const oldUser = await this.usersDatabase.findUserByEmail(req.user.email);
 
-    if (oldUser) {
+    if (oldUser?.firstName) {
       if (!oldUser.activeWorkspaceId) {
         const doesExist =
           await this.userWorkspaceDatabase.getSingleUserWorkspace({
@@ -196,11 +197,9 @@ export class AuthService {
       return await this.getFormattedUserData(oldUser);
     }
 
-    const user = await this.usersDatabase.createGoogleLoginUser(queryData);
-    // console.log(
-    //   '🚀 ~ file: auth.service.ts:154 ~ AuthService ~ googleLogin ~ user:',
-    //   user,
-    // );
+    const user = oldUser
+      ? await this.usersDatabase.updateGoogleLoginUser(queryData)
+      : await this.usersDatabase.createGoogleLoginUser(queryData);
     if (!user)
       throw new APIException(
         'Could not create user',
@@ -221,11 +220,11 @@ export class AuthService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
 
-    const updateUser =
-      workspace &&
-      (await this.usersDatabase.updateUser(user, {
-        activeWorkspaceId: workspace.id,
-      }));
+    const updateUser = invitationCode
+      ? user
+      : await this.usersDatabase.updateUser(user, {
+          activeWorkspaceId: workspace.id,
+        });
 
     if (!updateUser)
       throw new APIException(
@@ -529,12 +528,42 @@ export class AuthService {
   }
 
   async checkEmail(code: string, reqEmail: string) {
-    const user = await this.userWorkspaceDatabase.checkEmail(code);
-    if (!user) {
+    const userWorkspace = await this.userWorkspaceDatabase.checkEmail(code);
+    if (!userWorkspace) {
       new APIException('Invalid code!', HttpStatus.BAD_REQUEST);
     }
 
-    if (user?.email === reqEmail) return user;
+    if (
+      userWorkspace &&
+      userWorkspace.user &&
+      userWorkspace.user?.email === reqEmail
+    ) {
+      const updatedUserWorkspace =
+        await this.userWorkspaceDatabase.updateUserWorkspace(
+          Number(userWorkspace.id),
+          {
+            status: UserWorkspaceStatus.ACTIVE,
+            respondedAt: new Date(Date.now()),
+          },
+        );
+      if (!updatedUserWorkspace) {
+        throw new APIException(
+          'Can not accept invitation!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const updatedUser = await this.usersDatabase.updateUser(
+        { id: userWorkspace.user.id },
+        {
+          activeWorkspaceId: updatedUserWorkspace?.workspaceId,
+        },
+      );
+
+      if (!updatedUser)
+        throw new APIException('Could not update user', HttpStatus.BAD_REQUEST);
+      return updatedUser;
+    }
     throw new APIException(
       'Try to login with the same email!',
       HttpStatus.BAD_REQUEST,

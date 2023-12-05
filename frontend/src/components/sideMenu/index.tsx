@@ -77,7 +77,6 @@ const SideMenu = () => {
         </div>
         <div className="mb-[45px]">
           <WorkspaceNav />
-          {/* <WorkspaceSelection /> */}
         </div>
       </div>
     </div>

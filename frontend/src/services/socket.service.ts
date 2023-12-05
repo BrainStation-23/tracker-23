@@ -15,8 +15,6 @@ let socket = io(config?.baseUrl, {
 }); // Replace with your backend server URL
 
 export async function initializeSocket() {
-  console.log("ok");
-
   socket = io(config?.baseUrl, {
     withCredentials: true,
     // extraHeaders: {
@@ -51,7 +49,7 @@ export async function initializeSocket() {
 export async function disconnectSocket() {
   console.log("off");
 
- socket.disconnect()
+  socket.disconnect();
 }
 
 export function sendNotification(payload: any) {

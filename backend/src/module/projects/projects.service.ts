@@ -12,6 +12,9 @@ import { StatusEnum } from '../tasks/dto';
 import { ProjectDatabase } from 'src/database/projects';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { PrismaService } from '../prisma/prisma.service';
+import { WebhooksService } from '../webhooks/webhooks.service';
+import { ConfigService } from '@nestjs/config';
+import { RegisterWebhookDto } from '../webhooks/dto';
 
 @Injectable()
 export class ProjectsService {
@@ -23,6 +26,8 @@ export class ProjectsService {
     private projectDatabase: ProjectDatabase,
     private userIntegrationDatabase: UserIntegrationDatabase,
     private prisma: PrismaService,
+    private readonly webhooksService: WebhooksService,
+    private readonly config: ConfigService,
   ) {}
 
   async importProject(user: User, projId: number, res?: Response) {
@@ -48,6 +53,30 @@ export class ProjectsService {
           userWorkspaceId: userWorkspace.id,
         },
       }));
+    if (userIntegration && project.projectKey && userIntegration?.siteId) {
+      const doesExistWebhook = await this.prisma.webhook.findMany({
+        where: {
+          siteId: userIntegration?.siteId,
+          projectKey: {
+            hasSome: [project.projectKey],
+          },
+        },
+      });
+      const host = this.config.get('WEBHOOK_HOST');
+      if (!doesExistWebhook.length && host) {
+        const payload: RegisterWebhookDto = {
+          url: `${host}/webhook/receiver`,
+          webhookEvents: [
+            'jira:issue_created',
+            'jira:issue_updated',
+            'jira:issue_deleted',
+          ],
+          projectName: [project.projectKey],
+          userIntegrationId: userIntegration?.id || 0,
+        };
+        await this.webhooksService.registerWebhook(user, payload);
+      }
+    }
 
     const updatedUserIntegration =
       userIntegration &&
@@ -197,33 +226,44 @@ export class ProjectsService {
         'Project name already exists',
         HttpStatus.BAD_REQUEST,
       );
+    const newProject = await this.prisma.$transaction(async (prisma: any) => {
+      const projectCreated =
+        user?.activeWorkspaceId &&
+        (await this.projectDatabase.createProject(
+          projectName,
+          user?.activeWorkspaceId,
+          prisma,
+        ));
 
-    const newProject =
-      user?.activeWorkspaceId &&
-      (await this.projectDatabase.createProject(
-        projectName,
-        user?.activeWorkspaceId,
-      ));
+      if (!projectCreated)
+        throw new APIException(
+          'Could not create project!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
 
-    if (!newProject)
-      throw new APIException(
-        'Project could not be created',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+      const statusCreated = await this.projectDatabase.createStatusDetail(
+        projectCreated?.id,
+        prisma,
       );
+      if (!statusCreated)
+        throw new APIException(
+          'Could not create status!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
 
-    const statusCreated = await this.projectDatabase.createStatusDetail(
-      newProject?.id,
-    );
-    if (!statusCreated)
-      throw new APIException(
-        'Could not create status',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-
-    await this.projectDatabase.createLocalPrioritiesWithTransactionPrismaInstance(
-      newProject?.id,
-      this.prisma,
-    );
+      const priorities =
+        await this.projectDatabase.createLocalPrioritiesWithTransactionPrismaInstance(
+          projectCreated?.id,
+          prisma,
+        );
+      if (!priorities) {
+        throw new APIException(
+          'Could not create priorities!',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      return projectCreated;
+    });
     return await this.projectDatabase.getProject(
       {
         id: newProject.id,

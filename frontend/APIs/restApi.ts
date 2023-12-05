@@ -4,6 +4,7 @@ import {
   CreateLocalProjectModel,
   CreateWorkspaceModel,
   SearchParamsModel,
+  SprintReportParamsModel,
 } from "models/apiParams";
 import {
   ForgotPasswordDto,
@@ -23,7 +24,7 @@ import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
 import { RemoveCookie, SetCookie } from "@/services/cookie.service";
-import { getFormattedActiveSprintTasks, getLabels, getStringFromArray } from "@/services/taskActions";
+import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
@@ -174,10 +175,6 @@ export async function deleteTaskRest(taskId: any) {
 }
 
 export async function getTasksRest(searchParams: SearchParamsModel) {
-  console.log(
-    "🚀 ~ file: restApi.ts:135 ~ getTasksRest ~ searchParams:",
-    searchParams
-  );
   const sprints = searchParams?.sprints;
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
@@ -532,7 +529,7 @@ export async function getJiraActiveSprintTasksRest(
         (status && status.length > 0 ? `&status=${status}` : "")
       // `${apiEndPoints.activeSprintTasks}/?state=${["closed"]}`
     );
-    return getFormattedActiveSprintTasks(res.data);
+    return res.data;
   } catch (error: any) {
     return false;
   }
@@ -702,11 +699,41 @@ export async function updateTimeFormatRest(value: string) {
   }
 }
 
-export async function getTimeSheetReportRest(data: getTimeSheetReportDto) {
+export async function getTimeSheetReportRest({
+  startDate,
+  endDate,
+  userIds,
+  projectIds,
+}: getTimeSheetReportDto) {
   try {
     const res = await axios.get(
       `${apiEndPoints.timeSheetReport}/` +
-        `?startDate=${data?.startDate}&endDate=${data?.endDate}`
+        `?startDate=${startDate}&endDate=${endDate}` +
+        (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "")
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getSprintReportRest({
+  sprints,
+  selectedUsers,
+  projectIds,
+}: SprintReportParamsModel) {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.sprintReport}` +
+        (sprints?.length > 0 ||
+        selectedUsers?.length > 0 ||
+        projectIds?.length > 0
+          ? `?`
+          : "") +
+        (sprints?.length > 0 ? `sprintId=${sprints}` : "") +
+        (selectedUsers?.length > 0 ? `&userId=${selectedUsers}` : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "")
     );
     return res.data;
   } catch (error: any) {
@@ -737,6 +764,18 @@ export async function updateApprovalUserRest(
     const res = await axios.patch(
       `${apiEndPoints.updateApprovalUser}${userId}`,
       data
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function userListByProjectRest(projectIds: number[]) {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.userListByProject}` +
+        (projectIds?.length > 0 ? `?projectIds=${projectIds}` : "")
     );
     return res.data;
   } catch (error: any) {

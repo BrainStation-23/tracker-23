@@ -105,6 +105,7 @@ export interface SprintDto {
   startDate: string;
   endDate: string;
   completeDate: string;
+  projectId?: number;
 }
 
 export type StatusDto = "TO_DO" | "IN_PROGRESS" | "DONE";

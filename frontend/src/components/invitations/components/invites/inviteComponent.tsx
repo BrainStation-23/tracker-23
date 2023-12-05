@@ -8,19 +8,24 @@ import { addWorkspaceSlice } from "@/storage/redux/workspacesSlice";
 type Props = {
   invite: InviteUserWorkspaceDto;
   updateInviteList: Function;
+  setSpinning: Function;
 };
-const InviteComponent = ({ invite, updateInviteList }: Props) => {
+const InviteComponent = ({ invite, updateInviteList, setSpinning }: Props) => {
   const dispatch = useDispatch();
   const acceptInvite = async () => {
+    setSpinning(true);
     const res = await userAPI.acceptWorkspaceInvitation(invite.id);
     res && message.success("Invitation Accepted");
     res && updateInviteList(res);
     res.workspace && dispatch(addWorkspaceSlice(res.workspace));
+    setSpinning(false);
   };
   const rejectInvite = async () => {
+    setSpinning(true);
     const res = await userAPI.rejectWorkspaceInvitation(invite.id);
     res && updateInviteList(res);
     res && message.success("Invitation Rejected");
+    setSpinning(false);
   };
 
   return (

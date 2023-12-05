@@ -165,7 +165,6 @@ const CustomLayout = ({ children }: any) => {
     };
 
     if (!publicRoutes.includes(router.pathname)) {
-      console.log(router.pathname);
       if (tmp && userInfo?.activeWorkspace) {
         myTimeout = setTimeout(getSyncStatus, 5000);
       }
@@ -208,11 +207,6 @@ const CustomLayout = ({ children }: any) => {
   };
 
   useEffect(() => {
-    console.log(
-      !publicRoutes.some((route) => path.includes(route)),
-      !path.includes("socialLogin")
-    );
-
     if (
       !publicRoutes.some((route) => path.includes(route)) &&
       !path.includes("socialLogin")
@@ -225,11 +219,6 @@ const CustomLayout = ({ children }: any) => {
   }, [router, path]);
 
   useEffect(() => {
-    console.log(
-      !publicRoutes.some((route) => path.includes(route)),
-      !path.includes("socialLogin")
-    );
-
     if (
       !publicRoutes.some((route) => path.includes(route)) &&
       !path.includes("socialLogin")

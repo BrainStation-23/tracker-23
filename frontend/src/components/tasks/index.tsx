@@ -21,6 +21,8 @@ import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 import { setSprintListReducer } from "@/storage/redux/tasksSlice";
 
 import PrimaryButton from "../common/buttons/primaryButton";
+import TopPanel from "../common/topPanels/topPanel";
+import TopPanelActiveSprint from "../common/topPanels/topPanelActiveSprint";
 import { getDateRangeArray } from "../datePicker";
 import GlobalModal from "../modals/globalModal";
 import TaskDetailsModal from "../modals/taskDetails.modal";
@@ -28,8 +30,6 @@ import Navbar from "../navbar";
 import CreateTaskComponent from "./components/createTaskComponent";
 import ManualTimeEntry from "./components/manualTimeEntry";
 import TableComponent from "./components/tableComponent";
-import TopPanel from "./components/topPanel/topPanel";
-import TopPanelActiveSprint from "./components/topPanel/topPanelActiveSprint";
 import SessionStartWarning from "./components/warning";
 
 export const TaskContext = createContext<any>({
@@ -363,7 +363,6 @@ const TasksPage = () => {
   };
   const getProjects = async () => {
     const res = await userAPI.getIntegratedProjectStatuses();
-    console.log("🚀 ~ file: index.tsx:361 ~ getProjects ~ res:", res);
     res && dispatch(setProjectsSlice(res));
     res && dispatch(setPriorities(res));
   };
@@ -411,7 +410,6 @@ const TasksPage = () => {
 
   const getSprintList = async () => {
     const res = await userAPI.getJiraSprints();
-    console.log("🚀 ~ file: index.tsx:365 ~ getSprintList ~ res:", res);
     if (res?.length > 0) dispatch(setSprintListReducer(res));
   };
 
@@ -559,7 +557,6 @@ const TasksPage = () => {
     };
 
     if (!publicRoutes.includes(router.pathname)) {
-      console.log(router.pathname);
       if (syncRunning) {
         myTimeout = setTimeout(getSyncStatus, 5000);
       }

@@ -32,6 +32,7 @@ import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { TasksDatabase } from 'src/database/tasks';
 import * as dayjs from 'dayjs';
 import { EmailService } from '../email/email.service';
+import { SprintReportFilterDto } from './dto/sprint-report.dto';
 
 @Injectable()
 export class SessionsService {
@@ -90,7 +91,6 @@ export class SessionsService {
       );
     }
     const task = await this.validateTaskAccess(user, taskId);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.tasksService.updateIssueStatus(user, taskId + '', task.status + '');
     const activeSession = await this.sessionDatabase.getSession(taskId);
 
@@ -157,7 +157,7 @@ export class SessionsService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const task = await this.tasksDatabase.getTasksbyId(taskId);
+    const task = await this.tasksDatabase.getTaskbyId(taskId);
 
     if (!task) {
       throw new BadRequestException('Task not found');
@@ -1271,7 +1271,7 @@ export class SessionsService {
       await this.userWorkspaceDatabase.getUserWorkspaceList({
         userId: userId,
         status: {
-          in: [UserWorkspaceStatus.ACTIVE, UserWorkspaceStatus.INACTIVE],
+          in: [UserWorkspaceStatus.ACTIVE],
         },
       });
     const end = dayjs();
@@ -1330,5 +1330,261 @@ export class SessionsService {
       TotalSpentTime: this.tasksService.getHourFromMinutes(TotalSpentTime),
       value: arr,
     };
+  }
+
+  async usersSpentAndEstimationReportOnSprint(
+    user: User,
+    query?: SprintReportFilterDto,
+  ) {
+    const mappedTaskWithId = new Map<number, any>();
+    const mappedUserWithWorkspaceId = new Map<number, any>();
+    const existUserIntegration = new Map<number, any>();
+    const rows: any[] = [];
+
+    const sprintIds = query?.sprintId as unknown as string;
+    const projectIds = query?.projectIds as unknown as string;
+    const userIds = query?.userId as unknown as string;
+    const arrayOfSprintIds = sprintIds?.split(',');
+    const arrayOfProjectIds = projectIds?.split(',');
+    const arrayOfUserIds = userIds?.split(',');
+    // Convert each string element to a number
+    const sprintIdsArray = arrayOfSprintIds?.map(Number);
+    const projectIdsArray = arrayOfProjectIds?.map(Number);
+    const userIdsArray = arrayOfUserIds?.map(Number);
+
+    const projects = await this.projectDatabase.getProjectListForSprintReport(
+      {
+        ...(query?.projectIds && {
+          id: {
+            in: projectIdsArray.map((id: any) => {
+              return id;
+            }),
+          },
+        }),
+        workspaceId: user.activeWorkspaceId,
+        integrated: true,
+      },
+      {
+        ...(query?.sprintId && {
+          id: {
+            in: sprintIdsArray.map((id: any) => {
+              return id;
+            }),
+          },
+        }),
+      },
+    );
+
+    const getUserWorkspaceList =
+      await this.sessionDatabase.getUserWorkspaceList({
+        workspaceId: user.activeWorkspaceId,
+        status: UserWorkspaceStatus.ACTIVE,
+        ...(query?.userId && { userId: { in: userIdsArray } }),
+      });
+
+    for (
+      let index = 0, len = getUserWorkspaceList.length;
+      index < len;
+      index++
+    ) {
+      mappedUserWithWorkspaceId.set(
+        getUserWorkspaceList[index].id,
+        getUserWorkspaceList[index].user,
+      );
+    }
+
+    for (const project of projects) {
+      for (let index = 0, len = project.tasks.length; index < len; index++) {
+        mappedTaskWithId.set(project.tasks[index].id, project.tasks[index]);
+      }
+      for (let index = 0, len = project.sprints.length; index < len; index++) {
+        const sprint = project.sprints[index];
+        const userMap = new Map<
+          number,
+          {
+            userId: number;
+            name: string;
+            picture: string;
+            estimation: any;
+            timeSpent: any;
+          }
+        >();
+
+        if (!sprint.sprintTask.length) {
+          for (const [
+            userWorkspaceId,
+            user,
+          ] of mappedUserWithWorkspaceId.entries()) {
+            userMap.set(userWorkspaceId, {
+              userId: user.id,
+              name: user.firstName + ' ' + user.lastName,
+              picture: user.picture,
+              estimation: 0,
+              timeSpent: 0,
+            });
+          }
+        }
+        for (
+          let idx = 0, sprintTasklen = sprint.sprintTask.length;
+          idx < sprintTasklen;
+          idx++
+        ) {
+          const sprintTaskId = sprint.sprintTask[idx].taskId;
+          const task = mappedTaskWithId.get(sprintTaskId);
+          if (task) {
+            const MappedSessionTime = this.getTimeFromSessions(
+              task.sessions,
+              mappedUserWithWorkspaceId,
+            );
+            for (const [
+              userWorkspaceId,
+              user,
+            ] of mappedUserWithWorkspaceId.entries()) {
+              if (!MappedSessionTime.has(userWorkspaceId)) {
+                MappedSessionTime.set(userWorkspaceId, {
+                  sessionTimeSpent: 0,
+                });
+              }
+            }
+
+            for (const [
+              userWorkspaceId,
+              sessionTime,
+            ] of MappedSessionTime.entries()) {
+              if (!userMap.has(userWorkspaceId)) {
+                const user = mappedUserWithWorkspaceId.get(userWorkspaceId);
+                userMap.set(userWorkspaceId, {
+                  userId: user.id,
+                  name: user.firstName + ' ' + user.lastName,
+                  picture: user.picture,
+                  estimation:
+                    task?.userWorkspaceId === userWorkspaceId
+                      ? task.estimation ?? 0
+                      : 0,
+                  timeSpent: sessionTime?.sessionTimeSpent ?? 0,
+                });
+              } else {
+                const user = userMap.get(userWorkspaceId);
+                if (user) {
+                  (user.estimation +=
+                    task?.userWorkspaceId === userWorkspaceId
+                      ? task.estimation ?? 0
+                      : 0),
+                    (user.timeSpent += sessionTime?.sessionTimeSpent ?? 0);
+                }
+              }
+            }
+          }
+        }
+
+        for (const [userWorkspaceId, user] of userMap.entries()) {
+          if (user.timeSpent) {
+            userMap.set(userWorkspaceId, {
+              ...user,
+              timeSpent: Number(user.timeSpent.toFixed(2)),
+            });
+
+            if (
+              query?.projectIds &&
+              !existUserIntegration.has(userWorkspaceId)
+            ) {
+              existUserIntegration.set(userWorkspaceId, user);
+            }
+          } else if (user.timeSpent === 0 && user.estimation === 0) {
+            const userIntegration =
+              await this.userIntegrationDatabase.getUserIntegration({
+                UserIntegrationIdentifier: {
+                  integrationId: project.integrationId,
+                  userWorkspaceId,
+                },
+              });
+            if (!userIntegration) {
+              userMap.set(userWorkspaceId, {
+                ...user,
+                estimation: null,
+                timeSpent: null,
+              });
+              query?.projectIds && userMap.delete(userWorkspaceId);
+            } else {
+              if (
+                query?.projectIds &&
+                !existUserIntegration.has(userWorkspaceId)
+              ) {
+                existUserIntegration.set(userWorkspaceId, user);
+              }
+            }
+          }
+        }
+        rows.push({
+          sprintId: sprint.id,
+          name: sprint.name,
+          projectName: project.projectName,
+          startDate: sprint.startDate,
+          users: [...userMap.values()],
+        });
+      }
+    }
+
+    const columns = query?.projectIds
+      ? [...existUserIntegration.values()].map((user: any) => {
+          return {
+            userId: user.userId,
+            name: user.name,
+            picture: user.picture,
+          };
+        })
+      : [...mappedUserWithWorkspaceId.values()].map((user: any) => {
+          return {
+            userId: user.id,
+            name: user.lastName
+              ? user.firstName + ' ' + user.lastName
+              : user.firstName,
+            picture: user.picture,
+          };
+        });
+
+    const sortedRows = rows.sort((a, b) => b.startDate - a.startDate);
+    return {
+      columns,
+      rows: sortedRows,
+    };
+  }
+
+  getTimeFromSessions(
+    sessions: any[],
+    mappedUserWithWorkspaceId: Map<number, any>,
+  ) {
+    const mappedUserWorkspaceWithTimeSpent = new Map<
+      number,
+      { sessionTimeSpent: number }
+    >();
+    for (const session of sessions) {
+      let sessionTimeSpent = 0;
+      if (session.userWorkspace) {
+        const user = mappedUserWithWorkspaceId.get(session.userWorkspace.id);
+        if (user) {
+          const start = new Date(session.startTime);
+          let end = new Date(session.endTime);
+          if (end.getTime() === 0) {
+            end = new Date();
+          }
+          sessionTimeSpent =
+            (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+          if (!mappedUserWorkspaceWithTimeSpent.has(session.userWorkspace.id)) {
+            mappedUserWorkspaceWithTimeSpent.set(session.userWorkspace.id, {
+              sessionTimeSpent,
+            });
+          } else {
+            const getUserWorkspace = mappedUserWorkspaceWithTimeSpent.get(
+              session.userWorkspace.id,
+            );
+            if (getUserWorkspace) {
+              getUserWorkspace.sessionTimeSpent += sessionTimeSpent ?? 0;
+            }
+          }
+        }
+      }
+    }
+    return mappedUserWorkspaceWithTimeSpent;
   }
 }

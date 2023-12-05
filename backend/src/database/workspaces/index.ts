@@ -139,6 +139,7 @@ export class WorkspaceDatabase {
     inviterUserId,
     invitationId,
     invitedAt,
+    prisma = this.prisma,
   }: userWorkspaceType) {
     const userWorkspaceData: any = {
       role,
@@ -173,7 +174,7 @@ export class WorkspaceDatabase {
       }),
     };
     try {
-      return await this.prisma.userWorkspace.create({
+      return await prisma.userWorkspace.create({
         data: userWorkspaceData,
         include: includeData,
       });
@@ -410,9 +411,13 @@ export class WorkspaceDatabase {
     }
   }
 
-  async createInvitedUser(email: string, activeWorkspaceId: number) {
+  async createInvitedUserFromWorkspace(
+    email: string,
+    activeWorkspaceId: number,
+    prisma = this.prisma,
+  ) {
     try {
-      return await this.prisma.user.create({
+      return await prisma.user.create({
         data: {
           email,
           activeWorkspaceId,
@@ -438,6 +443,7 @@ export class WorkspaceDatabase {
               email: true,
               firstName: true,
               lastName: true,
+              hash: true,
             },
           },
         },

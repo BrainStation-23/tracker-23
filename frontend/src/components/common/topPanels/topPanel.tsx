@@ -1,9 +1,8 @@
-import { Dropdown, Input, MenuProps } from "antd";
+import { Input, MenuProps } from "antd";
 import { debounce } from "lodash";
 import { SearchParamsModel } from "models/apiParams";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
-import { LuMoreVertical } from "react-icons/lu";
 
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
 import MyActiveTab from "@/components/common/tabs/MyActiveTab";
@@ -12,12 +11,12 @@ import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
+import MoreButtonTopPanel from "./components/moreButtonTopPanel";
 import PrioritySelectorComponent from "./components/prioritySelector";
 import ProjectSelectorComponent from "./components/projectSelector";
 import SprintSelectorComponent from "./components/sprintSelector";
 import StatusSelectorComponent from "./components/statusSelector";
 import TopBarMoreComponent from "./components/topBarMoreComponent";
-import MoreButtonTopPanel from "./components/moreButtonTopPanel";
 
 type Props = {
   tasks: TaskDto[];
@@ -143,9 +142,9 @@ const TopPanel = ({
   return (
     <div className="my-5  flex w-full justify-between">
       <div className="col-span-3 flex gap-3">
-        {tabs?.map((tab) => {
+        {tabs?.map((tab, index) => {
           return activeTab === tab ? (
-            <MyActiveTab {...{ tab, setActiveTab }}>
+            <MyActiveTab {...{ tab, setActiveTab }} key={index}>
               {tab === "Pin"
                 ? totalPinned
                 : tab === "ActiveSprint"
@@ -153,7 +152,7 @@ const TopPanel = ({
                 : tasks?.length}
             </MyActiveTab>
           ) : (
-            <MyInactiveTab {...{ tab, setActiveTab }}>
+            <MyInactiveTab {...{ tab, setActiveTab }} key={index}>
               {tab === "Pin"
                 ? totalPinned
                 : tab === "ActiveSprint"

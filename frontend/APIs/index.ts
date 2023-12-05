@@ -27,6 +27,7 @@ import {
   getNotificationsRest,
   getProjectWiseHourRest,
   getSpentTimePerDayRest,
+  getSprintReportRest,
   getTasksRest,
   getTimeSheetReportRest,
   getWorkspaceInvitationListRest,
@@ -60,7 +61,7 @@ import {
   updateTaskEstimationRest,
   updateTaskSTatusRest,
   updateTimeFormatRest,
-  updateWorkspaceRest,
+  updateWorkspaceRest,userListByProjectRest
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -121,9 +122,11 @@ const restApi: apiFunction = {
   updateSyncTime: updateSyncTimeRest,
   updateTimeFormat: updateTimeFormatRest,
   getTimeSheetReport: getTimeSheetReportRest,
+  getSprintReport: getSprintReportRest,
   getInvitedUserInfo: getInvitedUserInfoRest,
   getAllUsers: getAllUsersRest,
   updateApprovalUser: updateApprovalUserRest,
+  userListByProject: userListByProjectRest,
 };
 
 export const userAPI: apiFunction = restApi;
