@@ -1,6 +1,9 @@
+import { Empty, Spin } from "antd";
 import { InviteUserWorkspaceDto } from "models/invitations";
+import { useState } from "react";
+
 import InviteComponent from "./inviteComponent";
-import { Empty } from "antd";
+
 type Props = {
   data: InviteUserWorkspaceDto[];
   activeTab: "All" | "Pending" | "Responded";
@@ -13,19 +16,24 @@ const InvitesList = ({ data, activeTab, updateInviteList }: Props) => {
       : activeTab === "Responded"
       ? data.filter((invite) => invite.status !== "INVITED")
       : data;
+
+  const [spinning, setSpinning] = useState(false);
   return (
     <div className="flex flex-col gap-4">
-      {filteredData?.length > 0 ? (
-        filteredData?.map((invite: any) => (
-          <InviteComponent
-            invite={invite}
-            key={invite.id}
-            updateInviteList={updateInviteList}
-          />
-        ))
-      ) : (
-        <Empty description="No invitations"></Empty>
-      )}
+      <Spin spinning={spinning}>
+        {filteredData?.length > 0 ? (
+          filteredData?.map((invite: any) => (
+            <InviteComponent
+              invite={invite}
+              key={invite.id}
+              updateInviteList={updateInviteList}
+              {...{ setSpinning }}
+            />
+          ))
+        ) : (
+          <Empty description="No invitations"></Empty>
+        )}
+      </Spin>
     </div>
   );
 };

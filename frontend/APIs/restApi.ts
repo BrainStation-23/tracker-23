@@ -24,10 +24,7 @@ import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
 import { RemoveCookie, SetCookie } from "@/services/cookie.service";
-import {
-  getLabels,
-  getStringFromArray,
-} from "@/services/taskActions";
+import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
@@ -532,7 +529,7 @@ export async function getJiraActiveSprintTasksRest(
         (status && status.length > 0 ? `&status=${status}` : "")
       // `${apiEndPoints.activeSprintTasks}/?state=${["closed"]}`
     );
-    return res.data
+    return res.data;
   } catch (error: any) {
     return false;
   }
@@ -767,6 +764,18 @@ export async function updateApprovalUserRest(
     const res = await axios.patch(
       `${apiEndPoints.updateApprovalUser}${userId}`,
       data
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function userListByProjectRest(projectIds: number[]) {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.userListByProject}` +
+        (projectIds?.length > 0 ? `?projectIds=${projectIds}` : "")
     );
     return res.data;
   } catch (error: any) {

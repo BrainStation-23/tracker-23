@@ -1,12 +1,11 @@
-import { Spin, Tooltip } from "antd";
-import { SprintReportDto } from "models/reports";
+import { Spin } from "antd";
+import { SprintReportDto, SprintUser } from "models/reports";
 
 import TopPanelReportPage from "./topPanelReportPage";
 
 type Props = {
   children: any;
   title: string;
-  tooltipMessage?: string;
   isLoading: boolean;
   activeTab: string;
   setActiveTab: Function;
@@ -17,12 +16,11 @@ type Props = {
   setSelectedUsers: Function;
   projects?: any;
   setProjects?: Function;
-  sprintReportData: SprintReportDto;
+  users: SprintUser[];
 };
 const ReportWrapper = ({
   children,
   title,
-  tooltipMessage,
   isLoading = false,
   activeTab,
   setActiveTab,
@@ -31,9 +29,9 @@ const ReportWrapper = ({
   setSprints,
   projects,
   setProjects,
-  sprintReportData,
   selectedUsers,
   setSelectedUsers,
+  users,
 }: Props) => {
   return (
     <div className="mt-5">
@@ -53,7 +51,7 @@ const ReportWrapper = ({
             selectedUsers,
             setSelectedUsers,
           }}
-          userList={sprintReportData?.columns}
+          userList={users}
         />
         <Spin className="custom-spin" spinning={isLoading}>
           {

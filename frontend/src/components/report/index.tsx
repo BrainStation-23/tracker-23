@@ -1,4 +1,5 @@
 import { userAPI } from "APIs";
+import { SprintReportDto, SprintUser } from "models/reports";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -8,7 +9,6 @@ import DateRangePicker, { getDateRangeArray } from "../datePicker";
 import ReportWrapper from "./components/reportWrapper";
 import SpritReportComponent from "./components/sprintReportComponent";
 import TableComponent from "./components/tableComponentReport";
-import { SprintReportDto } from "models/reports";
 
 const ReportComponent = () => {
   const dispatch = useDispatch();
@@ -16,6 +16,7 @@ const ReportComponent = () => {
   const [data, setData] = useState([]);
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
   const [sprints, setSprints] = useState<number[]>([]);
+  const [users, setUsers] = useState<SprintUser[]>([]);
   const [projects, setProjects] = useState<number[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
@@ -52,6 +53,13 @@ const ReportComponent = () => {
     res && setSprintReportData(res);
     setIsLoading(false);
   };
+
+  const getUserListByProject = async () => {
+    const res = await userAPI.userListByProject(projects);
+    res && setUsers(res);
+    console.log("🚀 ~ file: index.tsx:58 ~ getUserListByProject ~ res:", res);
+  };
+
   useEffect(() => {
     getReport();
   }, [dateRange, selectedUsers, projects]);
@@ -60,6 +68,9 @@ const ReportComponent = () => {
     getSprintReport();
   }, [sprints, selectedUsers, projects]);
   useEffect(() => {
+    getUserListByProject();
+  }, [projects]);
+  useEffect(() => {
     getSprintReport();
     getSprintList();
   }, []);
@@ -67,7 +78,6 @@ const ReportComponent = () => {
     <div className="">
       <ReportWrapper
         title="Time Reports"
-        tooltipMessage="This Week"
         {...{
           setDateRange,
           dateRange,
@@ -81,6 +91,7 @@ const ReportComponent = () => {
           sprintReportData,
           selectedUsers,
           setSelectedUsers,
+          users,
         }}
         topPanelComponent={
           activeTab === "Time Sheet" && (
