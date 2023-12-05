@@ -864,6 +864,8 @@ export class TasksService {
     const fields =
       'summary, assignee,timeoriginalestimate,project, comment,parent, created, updated,status,priority';
     let respTasks;
+    const parentChildMapped = new Map<number, number>();
+
     for (let startAt = 0; startAt < 5000; startAt += 100) {
       let worklogPromises: Promise<any>[] = [];
       // let taskPromises: Promise<any>[] = [];
@@ -909,16 +911,18 @@ export class TasksService {
         key && mappedIssues.delete(key);
       }
 
-      const parentChildMapped = new Map<number, number>();
       for (const [integratedTaskId, integratedTask] of mappedIssues) {
         const taskStatus = integratedTask.status.name;
         const taskPriority = integratedTask.priority.name;
-        integratedTask.parent &&
-          integratedTask.parent.id &&
-          parentChildMapped.set(
-            integratedTaskId,
-            Number(integratedTask.parent.id),
-          );
+
+        if (!parentChildMapped.has(integratedTaskId)) {
+          integratedTask.parent &&
+            integratedTask.parent.id &&
+            parentChildMapped.set(
+              integratedTaskId,
+              Number(integratedTask.parent.id),
+            );
+        }
 
         taskList.push({
           userWorkspaceId:
@@ -950,7 +954,6 @@ export class TasksService {
         });
       }
       const mappedTaskId = new Map<number, number>();
-      const updateTaskPromises: Promise<any>[] = [];
       try {
         const [t, tasks] = await Promise.all([
           await this.prisma.task.createMany({
@@ -974,26 +977,6 @@ export class TasksService {
             tasks[index].id,
           );
         }
-
-        for (let index = 0; index < tasks.length; index++) {
-          const task = tasks[index];
-          const parentJiraId =
-            task.integratedTaskId &&
-            parentChildMapped.get(task.integratedTaskId);
-          const parentLocalId = parentJiraId && mappedTaskId.get(parentJiraId);
-          updateTaskPromises.push(
-            this.prisma.task.update({
-              where: {
-                id: task.id,
-              },
-              data: {
-                parentTaskId: parentLocalId,
-              },
-            }),
-          );
-        }
-
-        await Promise.allSettled(updateTaskPromises);
       } catch (err) {
         console.log(
           '🚀 ~ file: tasks.service.ts:924 ~ TasksService ~ err:',
@@ -1047,21 +1030,9 @@ export class TasksService {
         const regex = /\/issue\/(\d+)\/worklog/;
         const match = worklogsList[index].request.path.match(regex);
         const taskId = mappedTaskId.get(Number(match[1]));
-        // console.log(
-        //   '🚀 ~ file: tasks.service.ts:1034 ~ TasksService ~ Number(match[1]:',
-        //   Number(match[1]),
-        // );
-        // console.log(
-        //   '🚀 ~ file: tasks.service.ts:1066 ~ TasksService ~ taskId:',
-        //   taskId,
-        // );
 
         taskId &&
           worklogsList[index].data.worklogs.map((log: any) => {
-            // console.log(
-            //   '🚀 ~ file: tasks.service.ts:1059 ~ TasksService ~ worklogsList[index].data.worklogs.map ~   mappedUserWorkspaceAndJiraId.get(log.author.accountId):',
-            //   mappedUserWorkspaceAndJiraId.get(log.author.accountId),
-            // );
             const lastTime =
               new Date(log.started).getTime() +
               Number(log.timeSpentSeconds * 1000);
@@ -1083,10 +1054,10 @@ export class TasksService {
           data: sessionArray,
         });
       } catch (error) {
-        // console.log(
-        //   '🚀 ~ file: tasks.service.ts:986 ~ TasksService ~ error:',
-        //   error,
-        // );
+        console.log(
+          '🚀 ~ file: tasks.service.ts:986 ~ TasksService ~ error:',
+          error,
+        );
 
         throw new APIException(
           'Can not sync with jira',
@@ -1094,6 +1065,48 @@ export class TasksService {
         );
       }
     }
+    //parent task update
+    const mappedTaskIdForParentChild = new Map<number, number>();
+    const updateTaskPromises: Promise<any>[] = [];
+    const tasks = await this.prisma.task.findMany({
+      where: {
+        projectId: project.id,
+        source: IntegrationType.JIRA,
+      },
+      select: {
+        id: true,
+        integratedTaskId: true,
+      },
+    });
+
+    for (let index = 0; index < tasks.length; index++) {
+      if (
+        !mappedTaskIdForParentChild.has(Number(tasks[index].integratedTaskId))
+      ) {
+        mappedTaskIdForParentChild.set(
+          Number(tasks[index].integratedTaskId),
+          tasks[index].id,
+        );
+      }
+    }
+    for (let index = 0; index < tasks.length; index++) {
+      const task = tasks[index];
+      const parentJiraId =
+        task.integratedTaskId && parentChildMapped.get(task.integratedTaskId);
+      const parentLocalId =
+        parentJiraId && mappedTaskIdForParentChild.get(parentJiraId);
+      updateTaskPromises.push(
+        this.prisma.task.update({
+          where: {
+            id: task.id,
+          },
+          data: {
+            parentTaskId: parentLocalId,
+          },
+        }),
+      );
+    }
+    await Promise.allSettled(updateTaskPromises);
   }
 
   private async syncTasksFetchAndProcessTasksAndWorklog(

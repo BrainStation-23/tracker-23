@@ -11,9 +11,7 @@ export class SprintsController {
 
   @Get('sprint-list')
   @UseGuards(JwtAuthGuard)
-  async getSprintList(
-    @GetUser() user: User,
-  ) {
+  async getSprintList(@GetUser() user: User) {
     return this.sprintsService.getSprintList(user);
   }
 

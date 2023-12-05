@@ -53,7 +53,7 @@ export class CronService {
       }
     });
 
-    cron.schedule('0 0 * * 0', async () => {
+    cron.schedule('0 6 * * 0', async () => {
       const users = await this.prisma.user.findMany({
         select: {
           id: true,

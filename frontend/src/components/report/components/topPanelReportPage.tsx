@@ -5,10 +5,11 @@ import { useEffect, useState } from "react";
 
 import MyActiveTab from "@/components/common/tabs/MyActiveTab";
 import MyInactiveTab from "@/components/common/tabs/MyInactiveTab";
-import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
+import ProjectSelectorComponent from "@/components/common/topPanels/components/projectSelector";
+import SprintSelectorComponent from "@/components/common/topPanels/components/sprintSelector";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
-import SprintSelectorComponent from "@/components/tasks/components/topPanel/components/sprintSelector";
+import UsersSelectorComponent from "@/components/common/topPanels/components/usersSelector";
 
 type Props = {
   activeSprintTasks: TaskDto[];
@@ -20,6 +21,8 @@ type Props = {
   setCheckedOptionList: Function;
   setDateRange: any;
   dateRange: Function;
+  projects?: any;
+  setProjects?: any;
 };
 const TopPanelReportPage = ({
   activeTab,
@@ -31,6 +34,11 @@ const TopPanelReportPage = ({
   topPanelComponent,
   sprints,
   setSprints,
+  projects,
+  setProjects,
+  userList,
+  selectedUsers,
+  setSelectedUsers,
 }: any) => {
   //   const [selectedDate, setSelectedDate] = useState(dateRange);
   //   console.log(
@@ -80,12 +88,22 @@ const TopPanelReportPage = ({
         })}
       </div>
       <div className="mt-[3px] flex h-auto max-w-[900px] gap-2">
-        <div className="flex h-auto  w-full flex-wrap justify-end gap-6">
+        <div className="flex h-auto w-full flex-wrap items-center justify-end gap-6">
           {topPanelComponent}
+          <UsersSelectorComponent
+            {...{ userList, selectedUsers, setSelectedUsers }}
+            className="w-[210px]"
+          />
+          <ProjectSelectorComponent
+            projectIds={projects}
+            setProjectIds={setProjects}
+            className="w-[210px]"
+          />
           {activeTab === "Sprint Estimate" && (
             <div>
-              {(sprintList.length > 0 || true) && (
+              {sprintList.length > 0 && (
                 <SprintSelectorComponent
+                  projectIds={projects}
                   {...{ sprints, setSprints }}
                   className="w-[210px]"
                 />
