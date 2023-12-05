@@ -96,4 +96,5 @@ export interface apiFunction {
     userId: number,
     data: updateApprovalUserDto
   ) => Promise<any>;
+  userListByProject: (projectIds: number[]) => Promise<any>;
 }

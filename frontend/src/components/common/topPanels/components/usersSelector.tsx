@@ -2,11 +2,9 @@ import { Select, Typography } from "antd";
 import { SprintUser } from "models/reports";
 import { StatusDto } from "models/tasks";
 import { useEffect } from "react";
+import { LuUsers } from "react-icons/lu";
 
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
-import SortStatusIconSvg from "@/assets/svg/sortIcons/SortStatusIconSvg";
-import { StatusType } from "@/storage/redux/projectsSlice";
-import { LuUsers } from "react-icons/lu";
 
 type Props = {
   selectedUsers?: number[];
@@ -28,28 +26,15 @@ const UsersSelectorComponent = ({
 }: Props) => {
   const { Text } = Typography;
 
-  const defaultValues: any = [
-    // { name: "To Do", statusCategoryName: "TO_DO" },
-    // { name: "In Progress", statusCategoryName: "IN_PROGRESS" },
-  ];
-
   const Options = userList?.map((user: SprintUser) => {
     return {
       value: user.userId,
       label: user.name,
     };
   });
-  if (Options?.length === 0) {
-    defaultValues.forEach((val: SprintUser) => {
-      Options.push({
-        value: val.userId,
-        label: val.name,
-      });
-    });
-  }
+
   const tagRender = (props: TagProps) => {
     const { label, value, closable, onClose } = props;
-    const statusObj: StatusType = value && JSON.parse(value);
 
     const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
       event.preventDefault();

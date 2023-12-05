@@ -61,7 +61,7 @@ import {
   updateTaskEstimationRest,
   updateTaskSTatusRest,
   updateTimeFormatRest,
-  updateWorkspaceRest,
+  updateWorkspaceRest,userListByProjectRest
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -126,6 +126,7 @@ const restApi: apiFunction = {
   getInvitedUserInfo: getInvitedUserInfoRest,
   getAllUsers: getAllUsersRest,
   updateApprovalUser: updateApprovalUserRest,
+  userListByProject: userListByProjectRest,
 };
 
 export const userAPI: apiFunction = restApi;
