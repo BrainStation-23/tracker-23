@@ -130,7 +130,7 @@ export class UsersService {
 
         if (userIntegration && !userMap.has(userWorkspace.id)) {
           userMap.set(userWorkspace.id, {
-            id: userWorkspace.user.id,
+            userId: userWorkspace.user.id,
             name: userWorkspace.user.lastName
               ? userWorkspace.user.firstName + ' ' + userWorkspace.user.lastName
               : userWorkspace.user.firstName,
