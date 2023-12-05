@@ -27,6 +27,10 @@ const Sessions = ({
   SetSpinning,
 }: Props) => {
   const [form] = Form.useForm();
+  taskDetails.sessions.sort(
+    (a, b) =>
+      formatDate(b.startTime).getTime() - formatDate(a.startTime).getTime()
+  );
   const endedSessions = taskDetails?.sessions?.filter(
     (session: any) => session.endTime
   );
@@ -95,8 +99,10 @@ const Sessions = ({
                 className="grid grid-cols-12 gap-4 text-sm font-medium"
                 key={session.id}
               >
-                <div className="col-span-1 font-semibold">#{index + 1}</div>
-                <div className="col-span-3">
+                <div className="col-span-1 my-auto font-semibold">
+                  #{index + 1}
+                </div>
+                <div className="col-span-3 my-auto">
                   {session.id !== sessionInEdit ? (
                     ` ${getFormattedTime(startTime)}`
                   ) : (
@@ -111,7 +117,7 @@ const Sessions = ({
                     </>
                   )}
                 </div>
-                <div className="col-span-4">
+                <div className="col-span-4 my-auto">
                   {session.id !== sessionInEdit ? (
                     <>
                       {`${getFormattedShortTime(startTime)} `} -
@@ -132,7 +138,7 @@ const Sessions = ({
                     </div>
                   )}
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-2 my-auto">
                   {" "}
                   {getFormattedTotalTime(endTime - startTime)}
                 </div>
