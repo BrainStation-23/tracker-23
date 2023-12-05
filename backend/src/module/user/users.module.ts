@@ -12,6 +12,8 @@ import { NotificationModule } from '../notifications/notifications.module';
 import { TasksDatabase } from 'src/database/tasks';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { ProjectDatabase } from 'src/database/projects';
+import { SessionDatabase } from 'src/database/sessions';
+import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 
 @Module({
   imports: [HttpModule.register({}), NotificationModule],
@@ -26,7 +28,9 @@ import { ProjectDatabase } from 'src/database/projects';
     WorkspaceDatabase,
     TasksDatabase,
     UserWorkspaceDatabase,
-    ProjectDatabase
+    ProjectDatabase,
+    UserIntegrationDatabase,
+    SessionDatabase,
   ],
   exports: [],
 })

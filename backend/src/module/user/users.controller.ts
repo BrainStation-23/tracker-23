@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
@@ -6,6 +14,7 @@ import { JwtAuthGuard } from 'src/guard';
 import { UpdateSettingsReqDto } from './dto/create.settings.dto';
 import { UpdateRoleRequest } from './dto/update.role.request.dto';
 import { UpdateApprovalUserRequest } from './dto/update.approvalUser.request.dto';
+import { UserListByProjectIdReqDto } from './dto/getUserListByProjectId.dto';
 
 @Controller('users')
 export class UsersController {
@@ -60,5 +69,14 @@ export class UsersController {
     );
 
     return await this.usersService.updateApprovalUser(user, userId, req);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/userListByProjectId')
+  async userListByProjectId(
+    @GetUser() user: User,
+    @Query() query: UserListByProjectIdReqDto,
+  ) {
+    return await this.usersService.userListByProjectId(user, query);
   }
 }
