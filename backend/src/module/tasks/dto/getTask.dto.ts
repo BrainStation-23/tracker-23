@@ -102,7 +102,7 @@ export class GetTeamTaskQuery {
   projectIds?: string;
 }
 
-export class GetTimeSheetQuery {
+export class GetTimeSheetQueryDto {
   @IsString()
   @IsOptional()
   startDate?: Date;
@@ -114,9 +114,13 @@ export class GetTimeSheetQuery {
   @IsString()
   @IsOptional()
   userIds?: string;
+
+  @IsString()
+  @IsOptional()
+  projectIds?: string;
 }
 
-export class ProjectTaskDeto {
+export class ProjectTaskDto {
   @IsNumber()
   projectId: string;
 }
