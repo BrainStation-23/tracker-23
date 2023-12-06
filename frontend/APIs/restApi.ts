@@ -179,6 +179,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
   const projectIds = searchParams?.projectIds;
+  const { userIds } = searchParams;
   try {
     const res = await axios.get(
       apiEndPoints.tasks +
@@ -188,6 +189,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
           : searchParams?.selectedDate?.length === 2
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
+        (userIds ? `&userIds=${userIds}` : "") +
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +

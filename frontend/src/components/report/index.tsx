@@ -1,28 +1,45 @@
 import { userAPI } from "APIs";
+import { SearchParamsModel } from "models/apiParams";
 import { SprintReportDto, SprintUser } from "models/reports";
+import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
+import {
+  formatDate,
+  getFormattedTime,
+  getFormattedTotalTime,
+  getTotalSpentTime,
+} from "@/services/timeActions";
 import { setSprintListReducer } from "@/storage/redux/tasksSlice";
 
 import DateRangePicker, { getDateRangeArray } from "../datePicker";
 import ReportWrapper from "./components/reportWrapper";
 import SpritReportComponent from "./components/sprintReportComponent";
 import TableComponent from "./components/tableComponentReport";
+import TaskListReportComponent from "./components/taskListReportComponent";
+import TopPanelTaskListComponents from "./components/topPanelTaskListComponents";
 
 const ReportComponent = () => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState([]);
+  const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
   const [sprints, setSprints] = useState<number[]>([]);
   const [users, setUsers] = useState<SprintUser[]>([]);
   const [projects, setProjects] = useState<number[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [selectedUser, setSelectedUser] = useState<number>();
   const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
   const [dateRangeArray, setDateRangeArray] = useState([]);
   const [column, setColumns] = useState([]);
-  const [activeTab, setActiveTab] = useState("Time Sheet");
+  const [searchText, setSearchText] = useState("");
+  const [status, setStatus] = useState([]);
+  const [priority, setPriority] = useState([]);
+  const [activeTab, setActiveTab] = useState<
+    "Time Sheet" | "Sprint Estimate" | "Task List"
+  >("Time Sheet");
   //  getArrayOfDatesInRange(dateRange[0], dateRange[1]);
   const getReport = async () => {
     setIsLoading(true);
@@ -59,6 +76,47 @@ const ReportComponent = () => {
     res && setUsers(res);
     console.log("🚀 ~ file: index.tsx:58 ~ getUserListByProject ~ res:", res);
   };
+  const getTasks = async () => {
+    setIsLoading(true);
+    const res = await userAPI.getTasks({
+      searchText,
+      selectedDate: dateRange,
+      priority,
+      status,
+      sprints,
+      projectIds: projects,
+      userIds: [selectedUser],
+    });
+    const tmpTasks = res?.map((task: TaskDto) => {
+      const started = task.sessions[0]
+        ? getFormattedTime(formatDate(task.sessions[0].startTime))
+        : "Not Started";
+      const ended = task.sessions[task.sessions.length - 1]?.endTime
+        ? getFormattedTime(
+            formatDate(task.sessions[task.sessions.length - 1].endTime)
+          )
+        : task.sessions[0]
+        ? "Running"
+        : "Not Started";
+      const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
+      return {
+        ...task,
+        id: task.id,
+        title: task?.title,
+        description: task.description,
+        estimation: task.estimation,
+        startTime: formatDate(task.sessions[0]?.startTime),
+        endTime: formatDate(task.sessions[task.sessions.length - 1]?.endTime),
+        started: started,
+        ended: ended,
+        total: total,
+        totalSpent: getTotalSpentTime(task.sessions),
+        priority: task.priority,
+      };
+    });
+    setTasks(tmpTasks || []);
+    setIsLoading(false);
+  };
 
   useEffect(() => {
     getReport();
@@ -74,8 +132,19 @@ const ReportComponent = () => {
     getSprintReport();
     getSprintList();
   }, []);
+  useEffect(() => {
+    getTasks();
+  }, [
+    searchText,
+    dateRange,
+    priority,
+    status,
+    sprints,
+    projects,
+    selectedUser,
+  ]);
   return (
-    <div className="">
+    <div>
       <ReportWrapper
         title="Time Reports"
         {...{
@@ -92,14 +161,32 @@ const ReportComponent = () => {
           selectedUsers,
           setSelectedUsers,
           users,
+          selectedUser,
+          setSelectedUser,
         }}
+        datePicker={
+          <DateRangePicker
+            selectedDate={dateRange}
+            setSelectedDate={setDateRange}
+          />
+        }
         topPanelComponent={
-          activeTab === "Time Sheet" && (
-            <DateRangePicker
-              selectedDate={dateRange}
-              setSelectedDate={setDateRange}
-            />
-          )
+          <>
+            {activeTab === "Task List" && (
+              <TopPanelTaskListComponents
+                {...{
+                  searchText,
+                  setSearchText,
+                  status,
+                  setStatus,
+                  priority,
+                  setPriority,
+                  sprints,
+                  setSprints,
+                }}
+              />
+            )}
+          </>
         }
       >
         {activeTab === "Time Sheet" ? (
@@ -108,8 +195,10 @@ const ReportComponent = () => {
             dateRangeArray={dateRangeArray}
             column={column}
           />
-        ) : (
+        ) : activeTab === "Sprint Estimate" ? (
           <SpritReportComponent data={sprintReportData} />
+        ) : (
+          <TaskListReportComponent {...{ tasks }} />
         )}
       </ReportWrapper>
     </div>

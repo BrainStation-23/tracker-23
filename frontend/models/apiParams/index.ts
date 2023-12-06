@@ -4,6 +4,7 @@ export interface SearchParamsModel {
   priority?: string[];
   status?: string[];
   projectIds?: number[];
+  userIds?: number[];
   sprints?: number[];
 }
 export interface SprintReportParamsModel {
