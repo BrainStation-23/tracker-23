@@ -20,7 +20,7 @@ import {
   GetTaskQuery,
   GetTeamTaskQuery,
   GetTeamTaskQueryType,
-  GetTimeSheetQuery,
+  GetTimeSheetQueryDto,
 } from '../tasks/dto';
 import { SprintReportFilterDto } from './dto/sprint-report.dto';
 
@@ -85,7 +85,10 @@ export class SessionsController {
 
   @Get('spent-time/per-day')
   @UseGuards(JwtAuthGuard)
-  async getSpentTimeByDay(@GetUser() user: User, @Query() query: GetTaskQuery) {
+  async getSpentTimeByDay(
+    @GetUser() user: User,
+    @Query() query: GetTimeSheetQueryDto,
+  ) {
     return this.sessionsService.getSpentTimeByDay(user, query);
   }
 
@@ -120,7 +123,7 @@ export class SessionsController {
   @UseGuards(JwtAuthGuard)
   async getTimeSheetPerDay(
     @GetUser() user: User,
-    @Query() query: GetTimeSheetQuery,
+    @Query() query: GetTimeSheetQueryDto,
   ) {
     return await this.sessionsService.getTimeSheetPerDay(user, query);
   }

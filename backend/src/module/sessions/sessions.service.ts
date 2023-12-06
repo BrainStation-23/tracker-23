@@ -23,7 +23,7 @@ import {
   GetTaskQuery,
   GetTeamTaskQuery,
   GetTeamTaskQueryType,
-  GetTimeSheetQuery,
+  GetTimeSheetQueryDto,
 } from '../tasks/dto';
 import { UserWorkspaceDatabase } from '../../database/userWorkspaces';
 import { SessionDatabase } from '../../database/sessions';
@@ -726,7 +726,7 @@ export class SessionsService {
 
   async getSpentTimeByDay(
     loggedInUser: Partial<User>,
-    query: GetTaskQuery | GetTimeSheetQuery,
+    query: GetTimeSheetQueryDto,
     user?: Partial<User>,
   ) {
     const sessions =
@@ -825,58 +825,83 @@ export class SessionsService {
       : this.getSpentTimePerDay(sessions, startDate, endDate);
   }
 
-  async getTimeSheetPerDay(loggedInUser: User, query: GetTimeSheetQuery) {
-    //return this.formattedMonthlyTimeSheet(query);
-    let userIds, userIdArray, users;
-    //console.log('hello')
-    if (!loggedInUser?.activeWorkspaceId)
-      throw new APIException(
-        'No user workspace detected',
-        HttpStatus.BAD_REQUEST,
-      );
+  async getTimeSheetPerDay(loggedInUser: User, query: GetTimeSheetQueryDto) {
+    const mappedUserWithWorkspaceId = new Map<number, any>();
+    const existUserWorkspaceId = new Map<number, any>();
+    const projectIdArray: number[] = [];
 
-    if (query?.userIds) {
-      userIds = query?.userIds as unknown as string;
+    const projectIds = query?.projectIds as unknown as string;
+    const arrayOfProjectIds = projectIds?.split(',');
+    const projectIdsArray = arrayOfProjectIds?.map(Number);
 
-      userIdArray =
-        userIds && userIds.split(',').map((item: any) => Number(item.trim()));
+    const userIds = query?.userIds as unknown as string;
+    const arrayOfUserIds = userIds?.split(',');
+    const userIdsArray = arrayOfUserIds?.map(Number);
 
-      users = userIdArray && (await this.sessionDatabase.getUsers(userIdArray));
-    } else {
-      const userWorkspaces = await this.sessionDatabase.getUserWorkspaceList({
-        workspaceId: loggedInUser?.activeWorkspaceId,
+    const projects = await this.projectDatabase.getProjects({
+      ...(query?.projectIds && {
+        id: {
+          in: projectIdsArray.map((id: any) => {
+            return id;
+          }),
+        },
+      }),
+      workspaceId: loggedInUser.activeWorkspaceId,
+      integrated: true,
+    });
+
+    const getUserWorkspaceList =
+      await this.sessionDatabase.getUserWorkspaceList({
+        workspaceId: loggedInUser.activeWorkspaceId,
         status: UserWorkspaceStatus.ACTIVE,
+        ...(query?.userIds && { userId: { in: userIdsArray } }),
       });
 
-      users = userWorkspaces?.map((userWorkspace) => userWorkspace?.user);
-    }
-
-    if (!users)
-      throw new APIException(
-        'Could not get users',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+    for (
+      let index = 0, len = getUserWorkspaceList.length;
+      index < len;
+      index++
+    ) {
+      mappedUserWithWorkspaceId.set(
+        getUserWorkspaceList[index].id,
+        getUserWorkspaceList[index].user,
       );
+    }
+    for (const project of projects) {
+      projectIdArray.push(project.id);
+      for (const [
+        userWorkspaceId,
+        user,
+      ] of mappedUserWithWorkspaceId.entries()) {
+        const userIntegration =
+          await this.userIntegrationDatabase.getUserIntegration({
+            UserIntegrationIdentifier: {
+              integrationId: project.integrationId,
+              userWorkspaceId,
+            },
+          });
+        if (userIntegration && !existUserWorkspaceId.has(userWorkspaceId)) {
+          existUserWorkspaceId.set(userWorkspaceId, user);
+        }
+      }
+    }
 
     const daysDifference = this.calculateDaysBetweenDates(
       query?.startDate,
       query?.endDate,
     );
-
-    const response = await Promise.all(
-      users?.map(async (user: any) => {
-        const sessions = await this.getSpentTimeByDay(
-          loggedInUser,
-          query,
-          user,
-        );
-        return {
-          ...user,
-          sessions,
-        };
-      }),
-    );
-    //console.log(response);
-    //return response;
+    const response: any[] = [];
+    for (const [userWorkspaceId, user] of existUserWorkspaceId.entries()) {
+      const sessions = await this.getSessionsByDay(
+        query,
+        userWorkspaceId,
+        projectIdArray.length ? projectIdArray : null,
+      );
+      response.push({
+        ...user,
+        sessions,
+      });
+    }
     return daysDifference === 31 || daysDifference <= 31
       ? this.formattedDailyTimeSheet(query, response)
       : daysDifference > 31 && daysDifference <= 94
@@ -1124,7 +1149,7 @@ export class SessionsService {
     return months;
   }
 
-  private formattedDailyTimeSheet(query: GetTimeSheetQuery, response: any) {
+  private formattedDailyTimeSheet(query: GetTimeSheetQueryDto, response: any) {
     const columns = this.getArrayOfDatesInRange(
       query?.startDate,
       query?.endDate,
@@ -1164,7 +1189,7 @@ export class SessionsService {
     };
   }
 
-  private formattedWeeklyTimeSheet(query: GetTimeSheetQuery, response: any) {
+  private formattedWeeklyTimeSheet(query: GetTimeSheetQueryDto, response: any) {
     const { weekArray, weekRange } = this.organizeDateRangeIntoWeeks(
       query.startDate,
       query.endDate,
@@ -1212,7 +1237,10 @@ export class SessionsService {
     };
   }
 
-  private formattedMonthlyTimeSheet(query: GetTimeSheetQuery, response: any) {
+  private formattedMonthlyTimeSheet(
+    query: GetTimeSheetQueryDto,
+    response: any,
+  ) {
     let totalTime = 0;
     const rows: any[] = [];
 
@@ -1481,6 +1509,7 @@ export class SessionsService {
           if (user.timeSpent) {
             userMap.set(userWorkspaceId, {
               ...user,
+              estimation: Number(user.estimation.toFixed(2)),
               timeSpent: Number(user.timeSpent.toFixed(2)),
             });
 
@@ -1586,5 +1615,32 @@ export class SessionsService {
       }
     }
     return mappedUserWorkspaceWithTimeSpent;
+  }
+
+  async getSessionsByDay(
+    query: GetTimeSheetQueryDto,
+    userWorkspaceId: number,
+    projectIds: number[] | null,
+  ) {
+    const sessions = await this.sessionDatabase.getSessions({
+      userWorkspaceId,
+      ...(projectIds?.length && {
+        task: {
+          projectId: {
+            in: projectIds,
+          },
+        },
+      }),
+    });
+    if (!sessions)
+      return {
+        TotalSpentTime: 0,
+      };
+
+    let { startDate, endDate } = query;
+    startDate = startDate ? new Date(startDate) : new Date();
+    endDate = endDate ? new Date(endDate) : new Date();
+
+    return this.getSpentTimePerDay(sessions, startDate, endDate);
   }
 }

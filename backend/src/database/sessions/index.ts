@@ -5,7 +5,7 @@ import { PrismaService } from '../../module/prisma/prisma.service';
 export class SessionDatabase {
   constructor(private prisma: PrismaService) {}
 
-  async getSessions(filter: any) {
+  async getSessions(filter: Record<string, any>) {
     try {
       return await this.prisma.session.findMany({
         where: filter,
@@ -35,11 +35,11 @@ export class SessionDatabase {
       });
     } catch (error) {
       console.log(error);
-      return null;
+      return [];
     }
   }
 
-  async getUserWorkspaceList(filter: any) {
+  async getUserWorkspaceList(filter: Record<string, any>) {
     try {
       return await this.prisma.userWorkspace.findMany({
         where: filter,
@@ -62,7 +62,7 @@ export class SessionDatabase {
     }
   }
 
-  async updateTask(filter: any, update: any) {
+  async updateTask(filter: Record<string, any>, update: any) {
     try {
       return await this.prisma.task.update({
         where: filter,
