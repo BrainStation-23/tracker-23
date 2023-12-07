@@ -1,29 +1,28 @@
 import {
   BadRequestException,
-  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { IntegrationType, Task, User } from '@prisma/client';
+import { Task, User } from '@prisma/client';
 import * as tmp from 'tmp';
-import { Workbook } from 'exceljs';
+import { Cell, Workbook } from 'exceljs';
 import { Response } from 'express';
-import { PrismaService } from '../prisma/prisma.service';
 import { SprintsService } from '../sprints/sprints.service';
 import { ExportTeamTaskDataQuery, GetTaskQuery } from '../tasks/dto';
-import { APIException } from '../exception/api.exception';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { ExportDatabase } from 'src/database/exports';
+import { SprintReportFilterDto } from '../sessions/dto/sprint-report.dto';
+import { SessionsService } from '../sessions/sessions.service';
 
 const oneDay = 3600 * 24 * 1000;
 
 @Injectable()
 export class ExportService {
   constructor(
-    private prisma: PrismaService,
     private sprintService: SprintsService,
     private userWorkspaceDatabase: UserWorkspaceDatabase,
     private exportDatabase: ExportDatabase,
+    private sessionsService: SessionsService,
   ) {}
 
   async exportToExcel(
@@ -56,8 +55,8 @@ export class ExportService {
     await this.generateExcelFiles(res, data);
   }
 
-  async getTasks(user: User, query: any) {
-    let userWorkspace, userIds, userIdArray, userWorkspaceIds: number[];
+  async getTasks(user: User, query: GetTaskQuery) {
+    let userWorkspace, userWorkspaceIds: number[];
     const { priority, status, text } = query;
     const sprintIds = query.sprintId as unknown as string;
     const projectIds = query.projectIds as unknown as string;
@@ -69,15 +68,15 @@ export class ExportService {
       projectIds && projectIds.split(',').map((item) => Number(item.trim()));
 
     if (query?.userIds) {
-      userIds = query?.userIds as unknown as string;
-      userIdArray =
-        userIds && userIds.split(',').map((item) => Number(item.trim()));
+      const userIds = query?.userIds as unknown as string;
+      const arrayOfUserIds = userIds?.split(',');
+      const userIdsArray = arrayOfUserIds?.map(Number);
       userWorkspace =
         user?.activeWorkspaceId &&
-        userIdArray &&
+        userIdsArray &&
         (await this.userWorkspaceDatabase.getUserWorkspaceList({
           userId: {
-            in: userIdArray,
+            in: userIdsArray,
           },
           workspaceId: user?.activeWorkspaceId,
         }));
@@ -296,5 +295,85 @@ export class ExportService {
     // ${
     //   seconds ?? seconds + "s"
     // }
+  }
+
+  async exportSprintReportDataToExcel(
+    user: User,
+    query: SprintReportFilterDto,
+    res: Response,
+  ) {
+    const data =
+      await this.sessionsService.usersSpentAndEstimationReportOnSprint(
+        user,
+        query,
+      );
+    if (!data) {
+      throw new NotFoundException('No data to download');
+    }
+    const userNameHeaders = [' '];
+    data.columns.forEach((user) => {
+      userNameHeaders.push(`${user.name}`);
+      userNameHeaders.push(' ');
+    });
+    const headers = ['Sprint'];
+    data.columns.forEach(() => {
+      headers.push('Estimation');
+      headers.push('Time Spent');
+    });
+
+    const workbook = new Workbook();
+    const worksheet = workbook.addWorksheet('Sprint report sheet');
+    worksheet.addRow(userNameHeaders);
+    worksheet.addRow(headers);
+    // Add data rows
+    data.rows.forEach((row) => {
+      const rowData = [row.name];
+      row.users.forEach((user: any) => {
+        rowData.push(user.estimation, user.timeSpent);
+      });
+      worksheet.addRow(rowData);
+    });
+
+    worksheet.mergeCells('A1', 'A2');
+    const mergedCell = worksheet.getCell('A1');
+    mergedCell.value = 'Sprint';
+
+    const row1 = worksheet.findRow(1);
+    let col = 2;
+    let cell1: any;
+    row1?.eachCell((cell, colNumber) => {
+      if (colNumber === col) {
+        cell1 = cell;
+        col += 2;
+      } else if (colNumber !== 1) {
+        worksheet.mergeCells(`${cell1.model.address}:${cell.model.address}`);
+      }
+    });
+
+    console.log('Excel sheet generated successfully.');
+    const file: any = await new Promise((resolve) => {
+      tmp.file(
+        {
+          discardDescriptor: true,
+          prefix: `SprintReport`,
+          postfix: '.xlsx',
+          mode: parseInt('0600', 8),
+        },
+        (err, file) => {
+          if (err) {
+            throw new BadRequestException(err);
+          }
+          workbook.xlsx
+            .writeFile(file)
+            .then(() => {
+              resolve(file);
+            })
+            .catch((err) => {
+              throw new BadRequestException(err);
+            });
+        },
+      );
+    });
+    res.download(file);
   }
 }

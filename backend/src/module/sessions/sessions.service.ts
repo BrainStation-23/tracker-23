@@ -1549,7 +1549,7 @@ export class SessionsService {
           name: sprint.name,
           projectName: project.projectName,
           startDate: sprint.startDate,
-          users: [...userMap.values()],
+          users: [...userMap.values()].sort((a, b) => a.userId - b.userId),
         });
       }
     }
@@ -1572,9 +1572,10 @@ export class SessionsService {
           };
         });
 
+    const sortedColumns = columns.sort((a, b) => a.userId - b.userId);
     const sortedRows = rows.sort((a, b) => b.startDate - a.startDate);
     return {
-      columns,
+      columns: sortedColumns,
       rows: sortedRows,
     };
   }

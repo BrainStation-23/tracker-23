@@ -5,6 +5,7 @@ import { User } from '@prisma/client';
 import { Response } from 'express';
 import { JwtAuthGuard } from 'src/guard';
 import { ExportTeamTaskDataQuery, GetTaskQuery } from '../tasks/dto';
+import { SprintReportFilterDto } from '../sessions/dto/sprint-report.dto';
 
 @Controller('export')
 export class ExportController {
@@ -30,5 +31,16 @@ export class ExportController {
     @Query() query: ExportTeamTaskDataQuery,
   ): Promise<void> {
     await this.exportService.exportTeamDataToExcel(user, query, res);
+  }
+
+  @Get('sprint-report')
+  @UseGuards(JwtAuthGuard)
+  // @Header('Content-Type', 'text/xlsx')
+  async exportSprintReportDataToExcel(
+    @Res() res: Response,
+    @GetUser() user: User,
+    @Query() query: SprintReportFilterDto,
+  ): Promise<void> {
+    await this.exportService.exportSprintReportDataToExcel(user, query, res);
   }
 }

@@ -46,6 +46,10 @@ export class GetTaskQuery {
   @IsString()
   @IsOptional()
   projectIds: string[];
+
+  @IsString()
+  @IsOptional()
+  userIds: string;
 }
 
 export class ExportTeamTaskDataQuery {
