@@ -16,7 +16,9 @@ export const getFormattedTotalTime = (time: number) => {
   if (mins + tmp === 0)
     return `${seconds ? seconds + " s" : ""}
     `;
-  return `${tmp ? tmp + "hrs " : ""}${mins ? mins + "m" : ""}
+  return `${mins < 0 ? "- " : ""}${tmp ? Math.abs(tmp) + "hrs " : ""}${
+    mins ? Math.abs(mins) + "m" : ""
+  }
   `;
   // ${
   //   seconds ?? seconds + "s"

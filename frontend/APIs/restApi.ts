@@ -24,10 +24,7 @@ import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
 import { RemoveCookie, SetCookie } from "@/services/cookie.service";
-import {
-  getLabels,
-  getStringFromArray,
-} from "@/services/taskActions";
+import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
@@ -182,6 +179,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
   const projectIds = searchParams?.projectIds;
+  const { userIds } = searchParams;
   try {
     const res = await axios.get(
       apiEndPoints.tasks +
@@ -191,6 +189,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
           : searchParams?.selectedDate?.length === 2
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
+        (userIds ? `&userIds=${userIds}` : "") +
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
@@ -532,7 +531,7 @@ export async function getJiraActiveSprintTasksRest(
         (status && status.length > 0 ? `&status=${status}` : "")
       // `${apiEndPoints.activeSprintTasks}/?state=${["closed"]}`
     );
-    return res.data
+    return res.data;
   } catch (error: any) {
     return false;
   }
@@ -767,6 +766,18 @@ export async function updateApprovalUserRest(
     const res = await axios.patch(
       `${apiEndPoints.updateApprovalUser}${userId}`,
       data
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function userListByProjectRest(projectIds: number[]) {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.userListByProject}` +
+        (projectIds?.length > 0 ? `?projectIds=${projectIds}` : "")
     );
     return res.data;
   } catch (error: any) {

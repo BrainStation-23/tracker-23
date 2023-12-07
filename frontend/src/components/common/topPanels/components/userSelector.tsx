@@ -1,14 +1,15 @@
 import { Select, Typography } from "antd";
 import { SprintUser } from "models/reports";
 import { StatusDto } from "models/tasks";
-import { useEffect } from "react";
 import { LuUsers } from "react-icons/lu";
 
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
+import { useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
 
 type Props = {
-  selectedUsers?: number[];
-  setSelectedUsers?: Function;
+  selectedUser: number;
+  setSelectedUser?: Function;
   className?: string;
   userList: any;
 };
@@ -18,13 +19,14 @@ type TagProps = {
   closable: any;
   onClose: any;
 };
-const UsersSelectorComponent = ({
-  selectedUsers,
-  setSelectedUsers,
+const UserSelectorComponent = ({
+  selectedUser,
+  setSelectedUser,
   className,
   userList,
 }: Props) => {
   const { Text } = Typography;
+  const user = useAppSelector((state: RootState) => state.userSlice.user);
 
   const Options = userList?.map((user: SprintUser) => {
     return {
@@ -45,7 +47,7 @@ const UsersSelectorComponent = ({
         onClick={onClose}
         className="m-1 flex w-max cursor-pointer items-center gap-1 rounded border-[1px] border-secondary px-2 py-0.5 text-xs font-medium text-black"
       >
-        {selectedUsers.length > 1 ? (
+        {selectedUser ? (
           <div className="flex w-max max-w-[30px] items-center text-sm">
             <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
               {label}
@@ -62,15 +64,7 @@ const UsersSelectorComponent = ({
       </div>
     );
   };
-  useEffect(() => {
-    const tmpArray: any[] = [];
-    selectedUsers?.map((user) => {
-      Options?.map((option: any) => {
-        if (option.value === user) tmpArray.push(option.value);
-      });
-    });
-  }, [selectedUsers]);
-  return (
+  return user.role === "ADMIN" ? (
     <div
       className={`flex w-full items-center gap-2 text-sm font-normal text-black ${
         className ? className : ""
@@ -79,19 +73,20 @@ const UsersSelectorComponent = ({
       <LuUsers size={20} />
       <Select
         placeholder="Select User"
-        mode="multiple"
         tagRender={(props) => tagRender(props)}
-        value={selectedUsers}
+        value={selectedUser}
         className="w-full"
         showArrow
         maxTagCount={1}
         options={Options}
         onChange={(value) => {
-          setSelectedUsers(value);
+          setSelectedUser(value);
         }}
       />
     </div>
+  ) : (
+    <></>
   );
 };
 
-export default UsersSelectorComponent;
+export default UserSelectorComponent;

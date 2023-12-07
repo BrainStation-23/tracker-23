@@ -14,7 +14,7 @@ const FormatTimeForSettings = ({ time }: Props) => {
       {time
         ? timeFormat === "Day"
           ? formatHoursToDay(time)
-          : time + "h"
+          : Math.round(time * 100) / 100 + "h"
         : time}
     </>
   );
