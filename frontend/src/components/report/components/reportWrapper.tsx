@@ -21,6 +21,8 @@ type Props = {
   projects?: any;
   setProjects?: Function;
   users: SprintUser[];
+  downloading: boolean;
+  excelExport: Function;
 };
 const ReportWrapper = ({
   children,
@@ -39,6 +41,8 @@ const ReportWrapper = ({
   datePicker,
   selectedUser,
   setSelectedUser,
+  downloading,
+  excelExport,
 }: Props) => {
   return (
     <div className="mt-5">
@@ -49,8 +53,8 @@ const ReportWrapper = ({
             type="ghost"
             className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
             icon={<LuDownload className="text-xl" />}
-            // loading={downloading}
-            // onClick={() => excelExport()}
+            loading={downloading}
+            onClick={() => excelExport()}
           >
             Export to Excel
           </Button>

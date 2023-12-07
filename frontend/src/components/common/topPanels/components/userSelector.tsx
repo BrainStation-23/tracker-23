@@ -4,6 +4,8 @@ import { StatusDto } from "models/tasks";
 import { LuUsers } from "react-icons/lu";
 
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
+import { useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
 
 type Props = {
   selectedUser: number;
@@ -24,6 +26,7 @@ const UserSelectorComponent = ({
   userList,
 }: Props) => {
   const { Text } = Typography;
+  const user = useAppSelector((state: RootState) => state.userSlice.user);
 
   const Options = userList?.map((user: SprintUser) => {
     return {
@@ -61,7 +64,7 @@ const UserSelectorComponent = ({
       </div>
     );
   };
-  return (
+  return user.role === "ADMIN" ? (
     <div
       className={`flex w-full items-center gap-2 text-sm font-normal text-black ${
         className ? className : ""
@@ -81,6 +84,8 @@ const UserSelectorComponent = ({
         }}
       />
     </div>
+  ) : (
+    <></>
   );
 };
 

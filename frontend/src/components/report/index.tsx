@@ -1,5 +1,6 @@
+import { message } from "antd";
 import { userAPI } from "APIs";
-import { SearchParamsModel } from "models/apiParams";
+import dayjs from "dayjs";
 import { SprintReportDto, SprintUser } from "models/reports";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
@@ -23,6 +24,7 @@ import TopPanelTaskListComponents from "./components/topPanelTaskListComponents"
 const ReportComponent = () => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
+  const [downloading, setDownloading] = useState<boolean>(false);
   const [data, setData] = useState([]);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
@@ -55,6 +57,50 @@ const ReportComponent = () => {
     setDateRangeArray(res.dateRange);
     // setData(formatUserData(res));
     setIsLoading(false);
+  };
+
+  const excelExport = async () => {
+    setDownloading(true);
+    if (activeTab === "Task List") {
+      try {
+        const res = await userAPI.exportTasks({
+          searchText,
+          selectedDate: dateRange,
+          priority,
+          status,
+          sprints,
+          projectIds: projects,
+          userIds: [selectedUser],
+        });
+        console.log(
+          "🚀 ~ file: topPanelExportPage.tsx:54 ~ excelExport ~ res:",
+          res
+        );
+        if (!res) {
+          message.error(
+            res?.error?.message ? res?.error?.message : "Export Failed"
+          );
+        } else {
+          const blob = new Blob([res], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          const fileName = `Tracker 23 Report - ${dayjs()}.xlsx`;
+          link.setAttribute("download", fileName); // Specify the desired file name
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          message.success("Exported to " + fileName);
+          // Use FileSaver.js to save the Blob as a file
+          // saveAs(blob, "exported_data.xlsx");
+        }
+      } catch (error) {
+        message.error("Export Failed");
+      }
+    }
+    setDownloading(false);
   };
   const getSprintList = async () => {
     const res = await userAPI.getJiraSprints();
@@ -163,6 +209,8 @@ const ReportComponent = () => {
           users,
           selectedUser,
           setSelectedUser,
+          downloading,
+          excelExport,
         }}
         datePicker={
           <DateRangePicker
