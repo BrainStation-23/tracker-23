@@ -39,6 +39,7 @@ export interface apiFunction {
   deleteTask: (data: any) => Promise<any | undefined>;
   getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   exportTasks: (searchParams?: SearchParamsModel) => Promise<any>;
+  exportSprintReport: (searchParams?: SprintReportParamsModel) => Promise<any>;
   syncTasks: () => Promise<any>;
   syncProjectTasks: (projectId: number) => Promise<any>;
   syncStatus: (token?: string) => Promise<any>;

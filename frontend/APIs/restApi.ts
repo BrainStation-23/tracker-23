@@ -215,6 +215,7 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
   const sprints = searchParams?.sprints;
   const priority = getStringFromArray(searchParams?.priority);
   const projectIds = searchParams?.projectIds;
+  const { userIds } = searchParams;
   try {
     const res = await axios.get(
       apiEndPoints.export +
@@ -227,9 +228,35 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
+        (userIds ? `&userIds=${userIds}` : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (status && status.length > 0 ? `&status=${status}` : ""),
+      {
+        responseType: "blob", // Set responseType to 'blob' to receive binary data
+      }
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function exportSprintReportRest({
+  sprints,
+  selectedUsers,
+  projectIds,
+}: SprintReportParamsModel) {
+  try {
+    const res = await axios.get(
+      apiEndPoints.exportSprintReport +
+        (sprints?.length > 0 ||
+        selectedUsers?.length > 0 ||
+        projectIds?.length > 0
+          ? `?`
+          : "") +
+        (sprints?.length > 0 ? `sprintId=${sprints}` : "") +
+        (selectedUsers?.length > 0 ? `&userId=${selectedUsers}` : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : ""),
       {
         responseType: "blob", // Set responseType to 'blob' to receive binary data
       }

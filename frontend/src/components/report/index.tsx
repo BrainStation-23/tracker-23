@@ -87,7 +87,42 @@ const ReportComponent = () => {
           const url = window.URL.createObjectURL(blob);
           const link = document.createElement("a");
           link.href = url;
-          const fileName = `Tracker 23 Report - ${dayjs()}.xlsx`;
+          const fileName = `Tracker 23 TaskList Report - ${dayjs()}.xlsx`;
+          link.setAttribute("download", fileName); // Specify the desired file name
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          message.success("Exported to " + fileName);
+          // Use FileSaver.js to save the Blob as a file
+          // saveAs(blob, "exported_data.xlsx");
+        }
+      } catch (error) {
+        message.error("Export Failed");
+      }
+    }
+    if (activeTab === "Sprint Estimate") {
+      try {
+        const res = await userAPI.exportSprintReport({
+          sprints,
+          selectedUsers,
+          projectIds: projects,
+        });
+        console.log(
+          "🚀 ~ file: topPanelExportPage.tsx:54 ~ excelExport ~ res:",
+          res
+        );
+        if (!res) {
+          message.error(
+            res?.error?.message ? res?.error?.message : "Export Failed"
+          );
+        } else {
+          const blob = new Blob([res], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          const fileName = `Tracker 23 Sprint Report - ${dayjs()}.xlsx`;
           link.setAttribute("download", fileName); // Specify the desired file name
           document.body.appendChild(link);
           link.click();

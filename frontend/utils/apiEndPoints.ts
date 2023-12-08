@@ -6,6 +6,7 @@ export const apiEndPoints = {
   resetPassword: `/auth/resetPassword`,
   tasks: `/tasks`,
   export: `/export`,
+  exportSprintReport: `/export/sprint-report`,
   projects: `/projects`,
   synAllTasks: `/tasks/syncAll`,
   syncProjectTasks: `/tasks/sync`,
