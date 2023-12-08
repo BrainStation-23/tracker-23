@@ -38,6 +38,7 @@ export interface apiFunction {
   createTask: (data: CreateTaskDto) => Promise<TaskDto>;
   deleteTask: (data: any) => Promise<any | undefined>;
   getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
+  getTaskListReport: (searchParams?: SearchParamsModel) => Promise<any>;
   exportTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   exportSprintReport: (searchParams?: SprintReportParamsModel) => Promise<any>;
   syncTasks: () => Promise<any>;

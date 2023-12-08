@@ -130,9 +130,9 @@ const ReportComponent = () => {
     res && setUsers(res);
     console.log("🚀 ~ file: index.tsx:58 ~ getUserListByProject ~ res:", res);
   };
-  const getTasks = async () => {
+  const getTaskListReport = async () => {
     setIsLoading(true);
-    const res = await userAPI.getTasks({
+    const res = await userAPI.getTaskListReport({
       searchText,
       selectedDate: dateRange,
       priority,
@@ -187,7 +187,7 @@ const ReportComponent = () => {
     getSprintList();
   }, []);
   useEffect(() => {
-    getTasks();
+    getTaskListReport();
   }, [
     searchText,
     dateRange,
