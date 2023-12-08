@@ -195,4 +195,168 @@ export class ExportDatabase {
       return [];
     }
   }
+
+  async getTasksWithDetails(filter: any) {
+    try {
+      const queryFilter: any = {};
+
+      if (filter.text) {
+        queryFilter.OR = [
+          {
+            title: {
+              contains: filter.text.replace(
+                /[+\-]/g,
+                (match: any) => `\\${match}`,
+              ),
+              mode: 'insensitive',
+            },
+          },
+          {
+            key: {
+              contains: filter.text.replace(
+                /[+\-]/g,
+                (match: any) => `\\${match}`,
+              ),
+            },
+          },
+        ];
+      }
+      return await this.prisma.task.findMany({
+        where: {
+          userWorkspaceId:
+            filter?.userWorkspaceIds.length > 0
+              ? { in: filter?.userWorkspaceIds }
+              : filter?.currentUserWorkspace.id,
+          source: IntegrationType.JIRA,
+          id: { in: filter?.taskIds },
+          ...(filter?.projectIdArray && {
+            projectId: {
+              in: filter?.projectIdArray.map((id: any) => Number(id)),
+            },
+          }),
+          ...(filter?.priority1 && {
+            priority: { in: filter?.priority1 },
+          }),
+          ...(filter?.status1 && { status: { in: filter?.status1 } }),
+          ...queryFilter,
+        },
+        include: {
+          sessions: {
+            include: {
+              userWorkspace: {
+                select: {
+                  user: {
+                    select: {
+                      firstName: true,
+                      lastName: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          parentTask: {
+            select: {
+              title: true,
+              url: true,
+              key: true,
+            },
+          },
+          childTask: {
+            select: {
+              title: true,
+              url: true,
+              key: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  }
+
+  async getTasksWithinTimeRangeWithDetails(filter: any) {
+    try {
+      const queryFilter: any = {};
+
+      if (filter.text) {
+        queryFilter.OR = [
+          {
+            title: {
+              contains: filter.text.replace(
+                /[+\-]/g,
+                (match: any) => `\\${match}`,
+              ),
+              mode: 'insensitive',
+            },
+          },
+          {
+            key: {
+              contains: filter.text.replace(
+                /[+\-]/g,
+                (match: any) => `\\${match}`,
+              ),
+            },
+          },
+        ];
+      }
+
+      return await this.prisma.task.findMany({
+        where: {
+          userWorkspaceId:
+            filter?.userWorkspaceIds.length > 0
+              ? { in: filter?.userWorkspaceIds }
+              : filter?.currentUserWorkspace.id,
+          ...(filter?.projectIdArray && {
+            projectId: {
+              in: filter?.projectIdArray.map((id: any) => Number(id)),
+            },
+          }),
+          ...(filter?.startDate &&
+            filter?.endDate && {
+              createdAt: { lte: filter?.endDate },
+              updatedAt: { gte: filter?.startDate },
+            }),
+          ...(filter?.priority1 && { priority: { in: filter?.priority1 } }),
+          ...(filter?.status1 && { status: { in: filter?.status1 } }),
+          ...queryFilter,
+        },
+        include: {
+          sessions: {
+            include: {
+              userWorkspace: {
+                select: {
+                  user: {
+                    select: {
+                      firstName: true,
+                      lastName: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          parentTask: {
+            select: {
+              title: true,
+              url: true,
+              key: true,
+            },
+          },
+          childTask: {
+            select: {
+              title: true,
+              url: true,
+              key: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  }
 }

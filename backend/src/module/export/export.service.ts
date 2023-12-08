@@ -107,12 +107,9 @@ export class ExportService {
     }
 
     if (sprintIdArray && sprintIdArray.length) {
-      // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
       const taskIds = await this.sprintService.getSprintTasksIds(sprintIdArray);
 
       return await this.exportDatabase.getTasks({
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
         userWorkspaceIds,
         currentUserWorkspace,
         taskIds,
@@ -124,8 +121,6 @@ export class ExportService {
     }
 
     return await this.exportDatabase.getTasksWithinTimeRange({
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
       userWorkspaceIds,
       currentUserWorkspace,
       startDate,
@@ -426,5 +421,82 @@ export class ExportService {
       );
     });
     res.download(file);
+  }
+
+  async getTasksWithDetails(user: User, query: GetTaskQuery) {
+    let userWorkspace: any[] = [],
+      userWorkspaceIds: number[] = [];
+    const { priority, status, text } = query;
+    const sprintIds = query.sprintId as unknown as string;
+    const projectIds = query.projectIds as unknown as string;
+
+    let { startDate, endDate } = query as unknown as GetTaskQuery;
+    const sprintIdArray =
+      sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
+    const projectIdArray =
+      projectIds && projectIds.split(',').map((item) => Number(item.trim()));
+
+    const currentUserWorkspace =
+      user.activeWorkspaceId &&
+      (await this.userWorkspaceDatabase.getSingleUserWorkspace({
+        userId: user.id,
+        workspaceId: user.activeWorkspaceId,
+      }));
+    if (query?.userIds) {
+      if (currentUserWorkspace && currentUserWorkspace.role === Role.ADMIN) {
+        const userIds = query?.userIds as unknown as string;
+        const arrayOfUserIds = userIds?.split(',');
+        const userIdsArray = arrayOfUserIds?.map(Number);
+        userWorkspace =
+          userIdsArray &&
+          (await this.userWorkspaceDatabase.getUserWorkspaceList({
+            userId: {
+              in: userIdsArray,
+            },
+            workspaceId: user?.activeWorkspaceId,
+          }));
+
+        userWorkspaceIds = userWorkspace?.map(
+          (workspace: any) => workspace?.id,
+        );
+      } else return [];
+    }
+    if (!currentUserWorkspace && userWorkspace?.length === 0) {
+      return [];
+    }
+
+    const priority1: any = (priority as unknown as string)?.split(',');
+    const status1: any = (status as unknown as string)?.split(',');
+    startDate = startDate && new Date(startDate);
+    endDate = endDate && new Date(endDate);
+    if (endDate) {
+      const oneDay = 3600 * 24 * 1000;
+      endDate = new Date(endDate.getTime() + oneDay);
+    }
+
+    if (sprintIdArray && sprintIdArray.length) {
+      const taskIds = await this.sprintService.getSprintTasksIds(sprintIdArray);
+
+      return await this.exportDatabase.getTasksWithDetails({
+        userWorkspaceIds,
+        currentUserWorkspace,
+        taskIds,
+        projectIdArray,
+        priority1,
+        status1,
+        text,
+      });
+    }
+
+    return await this.exportDatabase.getTasksWithinTimeRangeWithDetails({
+      userWorkspaceIds,
+      currentUserWorkspace,
+      startDate,
+      endDate,
+      projectIdArray,
+      priority1,
+      status1,
+      text,
+    });
   }
 }
