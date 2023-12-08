@@ -775,7 +775,10 @@ export async function exportTimeSheetReportRest({
       `${apiEndPoints.exportTimeSheetReport}` +
         `?startDate=${startDate}&endDate=${endDate}` +
         (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
-        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "")
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : ""),
+      {
+        responseType: "blob", // Set responseType to 'blob' to receive binary data
+      }
     );
     return res.data;
   } catch (error: any) {
