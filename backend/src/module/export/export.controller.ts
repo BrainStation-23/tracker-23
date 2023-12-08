@@ -43,4 +43,10 @@ export class ExportController {
   ): Promise<void> {
     await this.exportService.exportSprintReportDataToExcel(user, query, res);
   }
+
+  @Get('user-task-list')
+  @UseGuards(JwtAuthGuard)
+  async getUserTaskList(@GetUser() user: User, @Query() query: GetTaskQuery) {
+    return await this.exportService.getTasks(user, query);
+  }
 }

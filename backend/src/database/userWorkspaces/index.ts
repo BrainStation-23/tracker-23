@@ -24,9 +24,7 @@ export class UserWorkspaceDatabase {
     }
   }
 
-  async getUserWorkspaceList(
-    filter: Record<string, any>,
-  ): Promise<UserWorkspace[] | []> {
+  async getUserWorkspaceList(filter: Record<string, any>): Promise<any[] | []> {
     try {
       return await this.prisma.userWorkspace.findMany({
         where: filter,
