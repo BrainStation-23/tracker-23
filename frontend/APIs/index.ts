@@ -14,7 +14,9 @@ import {
   deleteSessionRest,
   deleteTaskRest,
   deleteWorkspaceRest,
+  exportSprintReportRest,
   exportTasksRest,
+  exportTimeSheetReportRest,
   forgotPasswordRest,
   getAllProjectsRest,
   getAllUsersRest,
@@ -28,6 +30,7 @@ import {
   getProjectWiseHourRest,
   getSpentTimePerDayRest,
   getSprintReportRest,
+  getTaskListReportRest,
   getTasksRest,
   getTimeSheetReportRest,
   getWorkspaceInvitationListRest,
@@ -61,7 +64,8 @@ import {
   updateTaskEstimationRest,
   updateTaskSTatusRest,
   updateTimeFormatRest,
-  updateWorkspaceRest,userListByProjectRest
+  updateWorkspaceRest,
+  userListByProjectRest,
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -73,7 +77,9 @@ const restApi: apiFunction = {
   logout: logoutRest,
   createTask: createTaskRest,
   getTasks: getTasksRest,
+  getTaskListReport: getTaskListReportRest,
   exportTasks: exportTasksRest,
+  exportSprintReport: exportSprintReportRest,
   syncTasks: syncAllTasksRest,
   syncProjectTasks: syncProjectTasksRest,
   syncStatus: syncStatusRest,
@@ -122,6 +128,7 @@ const restApi: apiFunction = {
   updateSyncTime: updateSyncTimeRest,
   updateTimeFormat: updateTimeFormatRest,
   getTimeSheetReport: getTimeSheetReportRest,
+  exportTimeSheetReport: exportTimeSheetReportRest,
   getSprintReport: getSprintReportRest,
   getInvitedUserInfo: getInvitedUserInfoRest,
   getAllUsers: getAllUsersRest,

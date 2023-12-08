@@ -4,7 +4,12 @@ import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
 import { Response } from 'express';
 import { JwtAuthGuard } from 'src/guard';
-import { ExportTeamTaskDataQuery, GetTaskQuery } from '../tasks/dto';
+import {
+  ExportTeamTaskDataQuery,
+  GetTaskQuery,
+  GetTimeSheetQueryDto,
+} from '../tasks/dto';
+import { SprintReportFilterDto } from '../sessions/dto/sprint-report.dto';
 
 @Controller('export')
 export class ExportController {
@@ -30,5 +35,32 @@ export class ExportController {
     @Query() query: ExportTeamTaskDataQuery,
   ): Promise<void> {
     await this.exportService.exportTeamDataToExcel(user, query, res);
+  }
+
+  @Get('sprint-report')
+  @UseGuards(JwtAuthGuard)
+  // @Header('Content-Type', 'text/xlsx')
+  async exportSprintReportDataToExcel(
+    @Res() res: Response,
+    @GetUser() user: User,
+    @Query() query: SprintReportFilterDto,
+  ): Promise<void> {
+    await this.exportService.exportSprintReportDataToExcel(user, query, res);
+  }
+
+  @Get('user-task-list')
+  @UseGuards(JwtAuthGuard)
+  async getUserTaskList(@GetUser() user: User, @Query() query: GetTaskQuery) {
+    return await this.exportService.getTasks(user, query);
+  }
+
+  @Get('time-sheet')
+  @UseGuards(JwtAuthGuard)
+  async exportTimeSheetDataToExcel(
+    @Res() res: Response,
+    @GetUser() user: User,
+    @Query() query: GetTimeSheetQueryDto,
+  ): Promise<void> {
+    await this.exportService.exportTimeSheetDataToExcel(user, query, res);
   }
 }

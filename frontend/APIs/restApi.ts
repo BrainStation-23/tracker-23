@@ -179,6 +179,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
   const projectIds = searchParams?.projectIds;
+  const { userIds } = searchParams;
   try {
     const res = await axios.get(
       apiEndPoints.tasks +
@@ -188,6 +189,43 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
           : searchParams?.selectedDate?.length === 2
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
+        (userIds ? `&userIds=${userIds}` : "") +
+        (searchParams?.searchText && searchParams?.searchText.length > 0
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
+          : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
+        (priority && priority.length > 0 ? `&priority=${priority}` : "") +
+        (status && status.length > 0 ? `&status=${status}` : "")
+    );
+    const sortedTasks = sortByStatus(res.data);
+    // const sortedTasks = sortByStatus(getFormattedTasks(res.data));
+    // setTasksSliceHook(sortedTasks);
+    return sortedTasks;
+  } catch (error: any) {
+    // if (error?.response?.status === 401) {
+    //   await logoutRest();
+    // }
+
+    return false;
+  }
+}
+
+export async function getTaskListReportRest(searchParams: SearchParamsModel) {
+  const sprints = searchParams?.sprints;
+  const status = getStringFromArray(getLabels(searchParams?.status));
+  const priority = getStringFromArray(searchParams?.priority);
+  const projectIds = searchParams?.projectIds;
+  const { userIds } = searchParams;
+  try {
+    const res = await axios.get(
+      apiEndPoints.taskListReport +
+        "?" +
+        (sprints?.length > 0
+          ? `sprintId=${sprints}`
+          : searchParams?.selectedDate?.length === 2
+          ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
+          : "") +
+        (userIds ? `&userIds=${userIds}` : "") +
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
@@ -213,6 +251,7 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
   const sprints = searchParams?.sprints;
   const priority = getStringFromArray(searchParams?.priority);
   const projectIds = searchParams?.projectIds;
+  const { userIds } = searchParams;
   try {
     const res = await axios.get(
       apiEndPoints.export +
@@ -225,9 +264,35 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
+        (userIds ? `&userIds=${userIds}` : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (status && status.length > 0 ? `&status=${status}` : ""),
+      {
+        responseType: "blob", // Set responseType to 'blob' to receive binary data
+      }
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function exportSprintReportRest({
+  sprints,
+  selectedUsers,
+  projectIds,
+}: SprintReportParamsModel) {
+  try {
+    const res = await axios.get(
+      apiEndPoints.exportSprintReport +
+        (sprints?.length > 0 ||
+        selectedUsers?.length > 0 ||
+        projectIds?.length > 0
+          ? `?`
+          : "") +
+        (sprints?.length > 0 ? `sprintId=${sprints}` : "") +
+        (selectedUsers?.length > 0 ? `&userId=${selectedUsers}` : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : ""),
       {
         responseType: "blob", // Set responseType to 'blob' to receive binary data
       }
@@ -693,6 +758,28 @@ export async function updateTimeFormatRest(value: string) {
     const res = await axios.patch(`${apiEndPoints.workspaceSettings}`, {
       timeFormat: value,
     });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function exportTimeSheetReportRest({
+  startDate,
+  endDate,
+  userIds,
+  projectIds,
+}: getTimeSheetReportDto) {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.exportTimeSheetReport}` +
+        `?startDate=${startDate}&endDate=${endDate}` +
+        (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : ""),
+      {
+        responseType: "blob", // Set responseType to 'blob' to receive binary data
+      }
+    );
     return res.data;
   } catch (error: any) {
     return false;
