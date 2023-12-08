@@ -14,26 +14,29 @@ export class ExportDatabase {
         queryFilter.OR = [
           {
             title: {
-              contains: filter.text,
+              contains: filter.text.replace(
+                /[+\-]/g,
+                (match: any) => `\\${match}`,
+              ),
               mode: 'insensitive',
             },
           },
           {
             key: {
-              contains: filter.text,
+              contains: filter.text.replace(
+                /[+\-]/g,
+                (match: any) => `\\${match}`,
+              ),
             },
           },
         ];
       }
       return await this.prisma.task.findMany({
         where: {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
-          userWorkspaceId: filter?.userWorkspaceIds
-            ? { in: filter?.userWorkspaceIds }
-            : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              //@ts-ignore
-              filter?.userWorkspace.id,
+          userWorkspaceId:
+            filter?.userWorkspaceIds.length > 0
+              ? { in: filter?.userWorkspaceIds }
+              : filter?.currentUserWorkspace.id,
           source: IntegrationType.JIRA,
           id: { in: filter?.taskIds },
           ...(filter?.projectIdArray && {
@@ -105,13 +108,19 @@ export class ExportDatabase {
         queryFilter.OR = [
           {
             title: {
-              contains: filter.text,
+              contains: filter.text.replace(
+                /[+\-]/g,
+                (match: any) => `\\${match}`,
+              ),
               mode: 'insensitive',
             },
           },
           {
             key: {
-              contains: filter.text,
+              contains: filter.text.replace(
+                /[+\-]/g,
+                (match: any) => `\\${match}`,
+              ),
             },
           },
         ];
@@ -119,13 +128,10 @@ export class ExportDatabase {
 
       return await this.prisma.task.findMany({
         where: {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
-          userWorkspaceId: filter?.userWorkspaceIds
-            ? { in: filter?.userWorkspaceIds }
-            : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              //@ts-ignore
-              filter?.userWorkspace.id,
+          userWorkspaceId:
+            filter?.userWorkspaceIds.length > 0
+              ? { in: filter?.userWorkspaceIds }
+              : filter?.currentUserWorkspace.id,
           ...(filter?.projectIdArray && {
             projectId: {
               in: filter?.projectIdArray.map((id: any) => Number(id)),

@@ -3,9 +3,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Task, User } from '@prisma/client';
+import { Role, Task, User } from '@prisma/client';
 import * as tmp from 'tmp';
-import { Cell, Workbook } from 'exceljs';
+import { Workbook } from 'exceljs';
 import { Response } from 'express';
 import { SprintsService } from '../sprints/sprints.service';
 import { ExportTeamTaskDataQuery, GetTaskQuery } from '../tasks/dto';
@@ -13,8 +13,6 @@ import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { ExportDatabase } from 'src/database/exports';
 import { SprintReportFilterDto } from '../sessions/dto/sprint-report.dto';
 import { SessionsService } from '../sessions/sessions.service';
-
-const oneDay = 3600 * 24 * 1000;
 
 @Injectable()
 export class ExportService {
@@ -56,7 +54,8 @@ export class ExportService {
   }
 
   async getTasks(user: User, query: GetTaskQuery) {
-    let userWorkspace, userWorkspaceIds: number[];
+    let userWorkspace: any[] = [],
+      userWorkspaceIds: number[] = [];
     const { priority, status, text } = query;
     const sprintIds = query.sprintId as unknown as string;
     const projectIds = query.projectIds as unknown as string;
@@ -67,34 +66,32 @@ export class ExportService {
     const projectIdArray =
       projectIds && projectIds.split(',').map((item) => Number(item.trim()));
 
+    const currentUserWorkspace =
+      user.activeWorkspaceId &&
+      (await this.userWorkspaceDatabase.getSingleUserWorkspace({
+        userId: user.id,
+        workspaceId: user.activeWorkspaceId,
+      }));
     if (query?.userIds) {
-      const userIds = query?.userIds as unknown as string;
-      const arrayOfUserIds = userIds?.split(',');
-      const userIdsArray = arrayOfUserIds?.map(Number);
-      userWorkspace =
-        user?.activeWorkspaceId &&
-        userIdsArray &&
-        (await this.userWorkspaceDatabase.getUserWorkspaceList({
-          userId: {
-            in: userIdsArray,
-          },
-          workspaceId: user?.activeWorkspaceId,
-        }));
+      if (currentUserWorkspace && currentUserWorkspace.role === Role.ADMIN) {
+        const userIds = query?.userIds as unknown as string;
+        const arrayOfUserIds = userIds?.split(',');
+        const userIdsArray = arrayOfUserIds?.map(Number);
+        userWorkspace =
+          userIdsArray &&
+          (await this.userWorkspaceDatabase.getUserWorkspaceList({
+            userId: {
+              in: userIdsArray,
+            },
+            workspaceId: user?.activeWorkspaceId,
+          }));
 
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      userWorkspaceIds = userWorkspace?.map((workspace: any) => workspace?.id);
-    } else {
-      userWorkspace =
-        user.activeWorkspaceId &&
-        (await this.userWorkspaceDatabase.getSingleUserWorkspace({
-          userId: user.id,
-          workspaceId: user.activeWorkspaceId,
-        }));
+        userWorkspaceIds = userWorkspace?.map(
+          (workspace: any) => workspace?.id,
+        );
+      } else return [];
     }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    if (!userWorkspace || userWorkspace?.length === 0) {
+    if (!currentUserWorkspace && userWorkspace?.length === 0) {
       return [];
     }
 
@@ -115,7 +112,7 @@ export class ExportService {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         userWorkspaceIds,
-        userWorkspace,
+        currentUserWorkspace,
         taskIds,
         projectIdArray,
         priority1,
@@ -128,7 +125,7 @@ export class ExportService {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       userWorkspaceIds,
-      userWorkspace,
+      currentUserWorkspace,
       startDate,
       endDate,
       projectIdArray,
