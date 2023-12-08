@@ -108,6 +108,29 @@ const ReportComponent = () => {
         message.error("Export Failed");
       }
     }
+    if (activeTab === "Time Sheet") {
+      try {
+        const res = await userAPI.exportTimeSheetReport({
+          startDate: dateRange[0],
+          endDate: dateRange[1],
+          userIds: selectedUsers,
+          projectIds: projects,
+        });
+        console.log(
+          "🚀 ~ file: topPanelExportPage.tsx:54 ~ excelExport ~ res:",
+          res
+        );
+        if (!res) {
+          message.error(
+            res?.error?.message ? res?.error?.message : "Export Failed"
+          );
+        } else {
+          ExcelExport({ file: res, name: "Tracker 23 Time Sheet Report" });
+        }
+      } catch (error) {
+        message.error("Export Failed");
+      }
+    }
     setDownloading(false);
   };
   const getSprintList = async () => {

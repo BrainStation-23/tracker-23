@@ -764,6 +764,25 @@ export async function updateTimeFormatRest(value: string) {
   }
 }
 
+export async function exportTimeSheetReportRest({
+  startDate,
+  endDate,
+  userIds,
+  projectIds,
+}: getTimeSheetReportDto) {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.exportTimeSheetReport}` +
+        `?startDate=${startDate}&endDate=${endDate}` +
+        (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "")
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
 export async function getTimeSheetReportRest({
   startDate,
   endDate,

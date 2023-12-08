@@ -91,6 +91,7 @@ export interface apiFunction {
   updateSyncTime: (time: number) => Promise<any>;
   updateTimeFormat: (value: string) => Promise<any>;
   getTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
+  exportTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
   getSprintReport: (data?: SprintReportParamsModel) => Promise<SprintReportDto>;
   getInvitedUserInfo: (token: string) => Promise<any>;
   getAllUsers: () => Promise<any>;
