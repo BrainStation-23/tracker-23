@@ -1,11 +1,11 @@
 import { message } from "antd";
 import { userAPI } from "APIs";
-import dayjs from "dayjs";
 import { SprintReportDto, SprintUser } from "models/reports";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
+import { ExcelExport } from "@/services/exportHelpers";
 import {
   formatDate,
   getFormattedTime,
@@ -42,7 +42,6 @@ const ReportComponent = () => {
   const [activeTab, setActiveTab] = useState<
     "Time Sheet" | "Sprint Estimate" | "Task List"
   >("Time Sheet");
-  //  getArrayOfDatesInRange(dateRange[0], dateRange[1]);
   const getReport = async () => {
     setIsLoading(true);
     const res = await userAPI.getTimeSheetReport({
@@ -81,20 +80,7 @@ const ReportComponent = () => {
             res?.error?.message ? res?.error?.message : "Export Failed"
           );
         } else {
-          const blob = new Blob([res], {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          });
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          const fileName = `Tracker 23 TaskList Report - ${dayjs()}.xlsx`;
-          link.setAttribute("download", fileName); // Specify the desired file name
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          message.success("Exported to " + fileName);
-          // Use FileSaver.js to save the Blob as a file
-          // saveAs(blob, "exported_data.xlsx");
+          ExcelExport({ file: res, name: "Tracker 23 TaskList Report" });
         }
       } catch (error) {
         message.error("Export Failed");
@@ -116,20 +102,7 @@ const ReportComponent = () => {
             res?.error?.message ? res?.error?.message : "Export Failed"
           );
         } else {
-          const blob = new Blob([res], {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          });
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          const fileName = `Tracker 23 Sprint Report - ${dayjs()}.xlsx`;
-          link.setAttribute("download", fileName); // Specify the desired file name
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          message.success("Exported to " + fileName);
-          // Use FileSaver.js to save the Blob as a file
-          // saveAs(blob, "exported_data.xlsx");
+          ExcelExport({ file: res, name: "Tracker 23 Sprint Report" });
         }
       } catch (error) {
         message.error("Export Failed");
