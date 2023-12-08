@@ -8,7 +8,11 @@ import * as tmp from 'tmp';
 import { Workbook } from 'exceljs';
 import { Response } from 'express';
 import { SprintsService } from '../sprints/sprints.service';
-import { ExportTeamTaskDataQuery, GetTaskQuery } from '../tasks/dto';
+import {
+  ExportTeamTaskDataQuery,
+  GetTaskQuery,
+  GetTimeSheetQueryDto,
+} from '../tasks/dto';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { ExportDatabase } from 'src/database/exports';
 import { SprintReportFilterDto } from '../sessions/dto/sprint-report.dto';
@@ -28,9 +32,7 @@ export class ExportService {
     query: GetTaskQuery,
     res: Response,
   ): Promise<any> {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    const data: Task[] = await this.getTasks(user, query);
+    const data = await this.getTasks(user, query);
     if (!(data?.length > 0)) {
       throw new NotFoundException('No data to download');
     }
@@ -136,9 +138,7 @@ export class ExportService {
   }
 
   //private functions
-  async generateExcelFiles(res: Response, data: Task[]) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
+  async generateExcelFiles(res: Response, data: any[]) {
     const rows = [];
     const modifiedData = data?.map((doc: any) => {
       const modifiedDoc = {
@@ -149,7 +149,6 @@ export class ExportService {
           doc?.userWorkspace?.user?.lastName,
         email: doc?.userWorkspace?.user?.email,
       };
-      //console.log(modifiedDoc)
       // Format the sessions data to be user-friendly
       const formattedSessions = doc.sessions.map((session: any) => {
         return {
@@ -162,7 +161,6 @@ export class ExportService {
       modifiedDoc.sessions = formattedSessions;
       delete modifiedDoc?.userWorkspace;
       delete doc?.userWorkspace;
-      //console.log(modifiedDoc);
 
       rows.push(Object.values(modifiedDoc));
       return {
@@ -353,6 +351,62 @@ export class ExportService {
         {
           discardDescriptor: true,
           prefix: `SprintReport`,
+          postfix: '.xlsx',
+          mode: parseInt('0600', 8),
+        },
+        (err, file) => {
+          if (err) {
+            throw new BadRequestException(err);
+          }
+          workbook.xlsx
+            .writeFile(file)
+            .then(() => {
+              resolve(file);
+            })
+            .catch((err) => {
+              throw new BadRequestException(err);
+            });
+        },
+      );
+    });
+    res.download(file);
+  }
+
+  async exportTimeSheetDataToExcel(
+    user: User,
+    query: GetTimeSheetQueryDto,
+    res: Response,
+  ) {
+    const data = await this.sessionsService.getTimeSheetPerDay(user, query);
+    if (!data) {
+      throw new NotFoundException('No data to download');
+    }
+    const headers = ['User'];
+    data.columns.forEach((date) => {
+      headers.push(`${date}`);
+    });
+    headers.push('Total');
+
+    const workbook = new Workbook();
+    const worksheet = workbook.addWorksheet('Time sheet report for per day');
+    worksheet.addRow(headers);
+    for (let index = 0; index < data.rows.length; index++) {
+      const row = data.rows[index];
+      const rowData = [row.name];
+      for (let idx = 0; idx < data.columns.length; idx++) {
+        const date = data.columns[idx];
+        rowData.push(row[date]);
+      }
+      rowData.push(row.totalTime);
+      worksheet.addRow(rowData);
+    }
+
+    console.log('Excel sheet generated successfully.');
+    const file: any = await new Promise((resolve) => {
+      tmp.file(
+        {
+          discardDescriptor: true,
+          prefix: `PerDayTimeSheet`,
           postfix: '.xlsx',
           mode: parseInt('0600', 8),
         },
