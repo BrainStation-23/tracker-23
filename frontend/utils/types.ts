@@ -38,7 +38,9 @@ export interface apiFunction {
   createTask: (data: CreateTaskDto) => Promise<TaskDto>;
   deleteTask: (data: any) => Promise<any | undefined>;
   getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
+  getTaskListReport: (searchParams?: SearchParamsModel) => Promise<any>;
   exportTasks: (searchParams?: SearchParamsModel) => Promise<any>;
+  exportSprintReport: (searchParams?: SprintReportParamsModel) => Promise<any>;
   syncTasks: () => Promise<any>;
   syncProjectTasks: (projectId: number) => Promise<any>;
   syncStatus: (token?: string) => Promise<any>;
@@ -89,6 +91,7 @@ export interface apiFunction {
   updateSyncTime: (time: number) => Promise<any>;
   updateTimeFormat: (value: string) => Promise<any>;
   getTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
+  exportTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
   getSprintReport: (data?: SprintReportParamsModel) => Promise<SprintReportDto>;
   getInvitedUserInfo: (token: string) => Promise<any>;
   getAllUsers: () => Promise<any>;

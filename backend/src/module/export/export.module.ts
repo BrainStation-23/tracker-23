@@ -2,46 +2,20 @@ import { Module } from '@nestjs/common';
 import { ExportService } from './export.service';
 import { ExportController } from './export.controller';
 import { HttpModule } from '@nestjs/axios';
-import { PrismaService } from '../prisma/prisma.service';
-import { IntegrationsService } from '../integrations/integrations.service';
-import { WorkspacesService } from '../workspaces/workspaces.service';
-import { SprintsService } from '../sprints/sprints.service';
-import { WorkspaceDatabase } from 'src/database/workspaces';
-import { ProjectDatabase } from 'src/database/projects';
-import { SprintDatabase } from 'src/database/sprints';
-import { SprintTaskDatabase } from 'src/database/sprintTasks';
-import { TasksDatabase } from 'src/database/tasks';
-import { UserIntegrationDatabase } from 'src/database/userIntegrations';
-import { IntegrationDatabase } from 'src/database/integrations';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { ExportDatabase } from 'src/database/exports';
-import { UsersDatabase } from 'src/database/users';
-import { EmailService } from '../email/email.service';
-import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
-import { JiraClientService } from '../helper/client';
+import { SessionsModule } from '../sessions/sessions.module';
+import { SprintsModule } from '../sprints/sprints.module';
+import { WorkspacesModule } from '../workspaces/workspaces.module';
 
 @Module({
-  imports: [HttpModule.register({})],
-  controllers: [ExportController],
-  providers: [
-    ExportService,
-    PrismaService,
-    WorkspacesService,
-    IntegrationsService,
-    SprintsService,
-    WorkspaceDatabase,
-    ProjectDatabase,
-    SprintDatabase,
-    SprintTaskDatabase,
-    TasksDatabase,
-    IntegrationDatabase,
-    UserIntegrationDatabase,
-    UserWorkspaceDatabase,
-    ExportDatabase,
-    UsersDatabase,
-    EmailService,
-    JiraApiCalls,
-    JiraClientService,
+  imports: [
+    HttpModule.register({}),
+    SessionsModule,
+    SprintsModule,
+    WorkspacesModule,
   ],
+  controllers: [ExportController],
+  providers: [ExportService, ExportDatabase],
 })
 export class ExportModule {}

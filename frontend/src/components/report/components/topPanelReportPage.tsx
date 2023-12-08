@@ -7,9 +7,10 @@ import MyActiveTab from "@/components/common/tabs/MyActiveTab";
 import MyInactiveTab from "@/components/common/tabs/MyInactiveTab";
 import ProjectSelectorComponent from "@/components/common/topPanels/components/projectSelector";
 import SprintSelectorComponent from "@/components/common/topPanels/components/sprintSelector";
+import UserSelectorComponent from "@/components/common/topPanels/components/userSelector";
+import UsersSelectorComponent from "@/components/common/topPanels/components/usersSelector";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
-import UsersSelectorComponent from "@/components/common/topPanels/components/usersSelector";
 
 type Props = {
   activeSprintTasks: TaskDto[];
@@ -23,6 +24,7 @@ type Props = {
   dateRange: Function;
   projects?: any;
   setProjects?: any;
+  datePicker: any;
 };
 const TopPanelReportPage = ({
   activeTab,
@@ -39,6 +41,9 @@ const TopPanelReportPage = ({
   userList,
   selectedUsers,
   setSelectedUsers,
+  selectedUser,
+  setSelectedUser,
+  datePicker,
 }: any) => {
   //   const [selectedDate, setSelectedDate] = useState(dateRange);
   //   console.log(
@@ -56,7 +61,7 @@ const TopPanelReportPage = ({
   ];
   if (sprintList.length > 0) options.push({ label: "Sprint", value: "Sprint" });
 
-  const tabs = ["Time Sheet", "Sprint Estimate"];
+  const tabs = ["Time Sheet", "Sprint Estimate", "Task List"];
 
   const filterOptions: any = [];
 
@@ -74,7 +79,7 @@ const TopPanelReportPage = ({
   };
   useEffect(() => {}, [activeTab]);
   return (
-    <div className="my-5  flex w-full justify-between">
+    <div className="my-5 flex w-full justify-between">
       <div className="col-span-3 flex gap-3">
         {tabs?.map((tab, index) => {
           return activeTab === tab ? (
@@ -87,29 +92,34 @@ const TopPanelReportPage = ({
           );
         })}
       </div>
-      <div className="mt-[3px] flex h-auto max-w-[900px] gap-2">
+      <div className="mt-[3px] flex h-auto max-w-[950px] gap-2">
         <div className="flex h-auto w-full flex-wrap items-center justify-end gap-6">
+          {activeTab !== "Sprint Estimate" && datePicker}
           {topPanelComponent}
-          <UsersSelectorComponent
-            {...{ userList, selectedUsers, setSelectedUsers }}
-            className="w-[210px]"
-          />
+          {activeTab === "Task List" ? (
+            <UserSelectorComponent
+              {...{ userList, selectedUser, setSelectedUser }}
+              className="w-[210px]"
+            />
+          ) : (
+            <UsersSelectorComponent
+              {...{ userList, selectedUsers, setSelectedUsers }}
+              className="w-[210px]"
+            />
+          )}
           <ProjectSelectorComponent
             projectIds={projects}
             setProjectIds={setProjects}
             className="w-[210px]"
           />
-          {activeTab === "Sprint Estimate" && (
-            <div>
-              {sprintList.length > 0 && (
-                <SprintSelectorComponent
-                  projectIds={projects}
-                  {...{ sprints, setSprints }}
-                  className="w-[210px]"
-                />
-              )}
-            </div>
-          )}
+          {(activeTab === "Sprint Estimate" || activeTab === "Task List") &&
+            sprintList.length > 0 && (
+              <SprintSelectorComponent
+                projectIds={projects}
+                {...{ sprints, setSprints }}
+                className="w-[210px]"
+              />
+            )}
         </div>
       </div>
     </div>

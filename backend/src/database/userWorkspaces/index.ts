@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../module/prisma/prisma.service';
-import { GetUserWorkspaceFilter } from '../../module/sessions/dto/get.userWorkspace.filter.dto';
 import { UserWorkspace } from '@prisma/client';
 
 @Injectable()
@@ -8,11 +7,16 @@ export class UserWorkspaceDatabase {
   constructor(private prisma: PrismaService) {}
 
   async getSingleUserWorkspace(
-    filter: GetUserWorkspaceFilter,
+    filter: Record<string, any>,
   ): Promise<UserWorkspace | null> {
     try {
-      return await this.prisma.userWorkspace.findFirst({
-        where: filter,
+      return await this.prisma.userWorkspace.findUnique({
+        where: {
+          userWorkspaceIdentifier: {
+            userId: filter.userId,
+            workspaceId: filter.workspaceId,
+          },
+        },
       });
     } catch (e) {
       console.log(e);
@@ -20,7 +24,7 @@ export class UserWorkspaceDatabase {
     }
   }
 
-  async getUserWorkspaceList(filter: any): Promise<UserWorkspace[] | []> {
+  async getUserWorkspaceList(filter: Record<string, any>): Promise<any[] | []> {
     try {
       return await this.prisma.userWorkspace.findMany({
         where: filter,
@@ -33,7 +37,7 @@ export class UserWorkspaceDatabase {
 
   async updateUserWorkspace(
     id: number,
-    update: any,
+    update: Record<string, any>,
   ): Promise<UserWorkspace | null> {
     try {
       return await this.prisma.userWorkspace.update({
