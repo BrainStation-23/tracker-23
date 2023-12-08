@@ -51,7 +51,7 @@ export class ExportController {
   @Get('user-task-list')
   @UseGuards(JwtAuthGuard)
   async getUserTaskList(@GetUser() user: User, @Query() query: GetTaskQuery) {
-    return await this.exportService.getTasks(user, query);
+    return await this.exportService.getTasksWithDetails(user, query);
   }
 
   @Get('time-sheet')
