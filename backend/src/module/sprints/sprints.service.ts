@@ -265,10 +265,6 @@ export class SprintsService {
   }
 
   async getActiveSprintTasks(user: User, reqBody: GetSprintListQueryDto) {
-    console.log(
-      '🚀 ~ file: sprints.service.ts:275 ~ getActiveSprintTasks ~ reqBody:',
-      reqBody,
-    );
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace || !user.activeWorkspaceId)
       throw new APIException(
@@ -283,19 +279,11 @@ export class SprintsService {
     const st = reqBody.state as unknown as string;
     let array: string[] = [];
     array = st.split(',').map((item) => item.trim());
-    console.log(
-      '🚀 ~ file: sprints.service.ts:293 ~ getActiveSprintTasks ~ array:',
-      array,
-    );
 
     const sprints = await this.sprintDatabase.getSprintList({
       projectId: { in: projectIds },
       state: { in: array },
     });
-    console.log(
-      '🚀 ~ file: sprints.service.ts:302 ~ getActiveSprintTasks ~ sprints:',
-      sprints,
-    );
 
     const sprintIds = sprints.map((sprint) => Number(sprint.id));
     const taskIds = await this.getSprintTasksIds(sprintIds);

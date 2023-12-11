@@ -31,10 +31,6 @@ export class SprintDatabase {
   }
 
   async updateSprints(id: number, updateReqBody: any) {
-    console.log(
-      '🚀 ~ file: index.ts:34 ~ SprintDatabase ~ updateSprints ~ updateReqBody:',
-      updateReqBody,
-    );
     try {
       return await this.prisma.sprint.update({
         where: { id },
