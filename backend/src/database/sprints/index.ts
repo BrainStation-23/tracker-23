@@ -30,6 +30,22 @@ export class SprintDatabase {
     }
   }
 
+  async updateSprints(id: number, updateReqBody: any) {
+    console.log(
+      '🚀 ~ file: index.ts:34 ~ SprintDatabase ~ updateSprints ~ updateReqBody:',
+      updateReqBody,
+    );
+    try {
+      return await this.prisma.sprint.update({
+        where: { id },
+        data: updateReqBody,
+      });
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  }
+
   async findSprintListByProjectId(projectId: number) {
     try {
       return await this.prisma.sprint.findMany({
