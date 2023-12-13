@@ -55,6 +55,6 @@ import { SessionDatabase } from 'src/database/sessions';
     SessionDatabase,
   ],
   controllers: [ProjectsController],
-  exports: [ProjectsService],
+  exports: [ProjectsService, ProjectDatabase],
 })
 export class ProjectsModule {}

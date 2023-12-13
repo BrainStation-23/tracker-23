@@ -8,5 +8,6 @@ import { UserIntegrationDatabase } from 'src/database/userIntegrations';
   imports: [HttpModule.register({})],
   controllers: [],
   providers: [JiraClientService, ConfigService, UserIntegrationDatabase],
+  exports: [JiraClientService],
 })
 export class HelperModule {}

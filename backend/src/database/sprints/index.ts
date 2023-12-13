@@ -107,4 +107,24 @@ export class SprintDatabase {
       return null;
     }
   }
+
+  async getSprintById(query: Record<string, any>) {
+    try {
+      return this.prisma.sprint.findUnique({
+        where: query,
+        include: {
+          project: {
+            select: {
+              id: true,
+              projectName: true,
+              integrationId: true,
+            },
+          },
+          sprintTask: true,
+        },
+      });
+    } catch (err) {
+      return null;
+    }
+  }
 }
