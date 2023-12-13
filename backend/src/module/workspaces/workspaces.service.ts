@@ -208,6 +208,14 @@ export class WorkspacesService {
               HttpStatus.INTERNAL_SERVER_ERROR,
             );
 
+          await this.workspaceDatabase.updateUserApproval(
+            newUser.id,
+            {
+              approved: true,
+            },
+            prisma,
+          );
+
           newUserWorkspace =
             user?.activeWorkspaceId &&
             (await this.workspaceDatabase.createUserWorkspaceWithPrisma({

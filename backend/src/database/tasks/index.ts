@@ -1,9 +1,8 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { IntegrationType, SessionStatus, Settings, User } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+import { IntegrationType, SessionStatus, User } from '@prisma/client';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 import { CreateTaskDto } from 'src/module/tasks/dto';
 import { GetActiveSprintTasks } from 'src/module/sprints/dto/get.active.sprint.tasks.filter.dto';
-import { APIException } from 'src/module/exception/api.exception';
 
 @Injectable()
 export class TasksDatabase {
@@ -233,6 +232,20 @@ export class TasksDatabase {
     } catch (error) {
       console.log(error);
       return null;
+    }
+  }
+
+  async getTasks(query: Record<string, any>) {
+    try {
+      return await this.prisma.task.findMany({
+        where: query,
+        include: {
+          sessions: true,
+        },
+      });
+    } catch (err) {
+      console.log(err);
+      return [];
     }
   }
 }
