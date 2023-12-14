@@ -30,7 +30,9 @@ export class SprintTaskDatabase {
     }
   }
 
-  async findSprintTaskBySprintIds(sprintIds: any[]): Promise<SprintTask[] | []> {
+  async findSprintTaskBySprintIds(
+    sprintIds: any[],
+  ): Promise<SprintTask[] | []> {
     try {
       return await this.prisma.sprintTask.findMany({
         where: {
@@ -39,6 +41,29 @@ export class SprintTaskDatabase {
       });
     } catch (error) {
       console.log(error);
+      return [];
+    }
+  }
+
+  async getUserWorkspaces(filter: Record<string, any>) {
+    try {
+      return await this.prisma.userWorkspace.findMany({
+        where: filter,
+        select: {
+          id: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              picture: true,
+              email: true,
+            },
+          },
+        },
+      });
+    } catch (e) {
+      console.log(e);
       return [];
     }
   }
