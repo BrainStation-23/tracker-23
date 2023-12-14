@@ -23,3 +23,9 @@ export interface SprintReportDto {
   columns: SprintUser[];
   rows: SprintData[];
 }
+
+export type ReportPageTabs =
+  | "Time Sheet"
+  | "Sprint Estimate"
+  | "Sprint Report"
+  | "Task List";

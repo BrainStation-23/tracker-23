@@ -61,7 +61,7 @@ const TopPanelReportPage = ({
   ];
   if (sprintList.length > 0) options.push({ label: "Sprint", value: "Sprint" });
 
-  const tabs = ["Time Sheet", "Sprint Estimate", "Task List"];
+  const tabs = ["Time Sheet", "Sprint Estimate", "Task List", "Sprint Report"];
 
   const filterOptions: any = [];
 

@@ -1,6 +1,6 @@
 import { message } from "antd";
 import { userAPI } from "APIs";
-import { SprintReportDto, SprintUser } from "models/reports";
+import { ReportPageTabs, SprintReportDto, SprintUser } from "models/reports";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -16,7 +16,8 @@ import { setSprintListReducer } from "@/storage/redux/tasksSlice";
 
 import DateRangePicker, { getDateRangeArray } from "../datePicker";
 import ReportWrapper from "./components/reportWrapper";
-import SpritReportComponent from "./components/sprintReportComponent";
+import SpritEstimateReportComponent from "./components/sprintEstimateReportComponent";
+import SprintReportComponent from "./components/sprintReportComponents";
 import TableComponent from "./components/tableComponentReport";
 import TaskListReportComponent from "./components/taskListReportComponent";
 import TopPanelTaskListComponents from "./components/topPanelTaskListComponents";
@@ -39,9 +40,10 @@ const ReportComponent = () => {
   const [searchText, setSearchText] = useState("");
   const [status, setStatus] = useState([]);
   const [priority, setPriority] = useState([]);
-  const [activeTab, setActiveTab] = useState<
-    "Time Sheet" | "Sprint Estimate" | "Task List"
-  >("Time Sheet");
+  const [activeTab, setActiveTab] = useState<ReportPageTabs>(
+    // "Time Sheet"
+    "Sprint Report"
+  );
   const getReport = async () => {
     setIsLoading(true);
     const res = await userAPI.getTimeSheetReport({
@@ -56,6 +58,27 @@ const ReportComponent = () => {
     setDateRangeArray(res.dateRange);
     // setData(formatUserData(res));
     setIsLoading(false);
+  };
+
+  const conponentToRender = () => {
+    switch (activeTab) {
+      case "Time Sheet":
+        return (
+          <TableComponent
+            data={data}
+            dateRangeArray={dateRangeArray}
+            column={column}
+          />
+        );
+      case "Sprint Estimate":
+        return <SpritEstimateReportComponent data={sprintReportData} />;
+      case "Task List":
+        return <TaskListReportComponent {...{ tasks }} />;
+      case "Sprint Report":
+        return <SprintReportComponent />;
+      default:
+        return <></>;
+    }
   };
 
   const excelExport = async () => {
@@ -268,17 +291,7 @@ const ReportComponent = () => {
           </>
         }
       >
-        {activeTab === "Time Sheet" ? (
-          <TableComponent
-            data={data}
-            dateRangeArray={dateRangeArray}
-            column={column}
-          />
-        ) : activeTab === "Sprint Estimate" ? (
-          <SpritReportComponent data={sprintReportData} />
-        ) : (
-          <TaskListReportComponent {...{ tasks }} />
-        )}
+        {conponentToRender()}
       </ReportWrapper>
     </div>
   );
