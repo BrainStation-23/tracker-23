@@ -6,10 +6,10 @@ export class SprintViewReqBodyDto {
   sprintId: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   startDate: Date;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   endDate: Date;
 }

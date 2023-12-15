@@ -25,7 +25,7 @@ export class SprintsController {
     return this.sprintsService.getActiveSprintTasks(user, reqBody);
   }
 
-  @Get('spent-view')
+  @Get('sprint-view')
   @UseGuards(JwtAuthGuard)
   async sprintView(
     @GetUser() user: User,
