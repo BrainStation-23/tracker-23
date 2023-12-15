@@ -52,7 +52,7 @@ export class AuthService {
           step: 'INVITATION',
           index: 2,
           completed: false,
-          finalStep: false,
+          finalStep: true,
           optional: false,
         },
       ];

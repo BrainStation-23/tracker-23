@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Role, User, UserWorkspaceStatus } from '@prisma/client';
+import { Role, User, UserStatus, UserWorkspaceStatus } from '@prisma/client';
 
 import { WorkspaceDatabase } from 'src/database/workspaces/index';
 import { UsersDatabase } from 'src/database/users';
@@ -189,12 +189,16 @@ export class UsersService {
       index: onboardingStep.index,
       optional: onboardingStep.optional,
       completed: reqBody.completed,
-      finalStep: reqBody.finalStep,
+      finalStep: onboardingStep.finalStep,
     };
 
     const updatedUser = await this.usersDatabase.updateUserById(
       { id: userId },
-      { onboadingSteps: user.onboadingSteps },
+      {
+        onboadingSteps: user.onboadingSteps,
+        ...(onboardingStep.finalStep &&
+          reqBody.completed && { status: UserStatus.ACTIVE }),
+      },
     );
     if (!updatedUser) {
       throw new APIException(

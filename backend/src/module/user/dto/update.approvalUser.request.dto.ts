@@ -14,8 +14,4 @@ export class UpdateUserOnboardingStepReqBody {
   @IsNotEmpty()
   @IsBoolean()
   completed: boolean;
-
-  @IsNotEmpty()
-  @IsBoolean()
-  finalStep: boolean;
 }
