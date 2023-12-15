@@ -19,7 +19,7 @@ export interface SprintData {
   users: SprintUser[];
 }
 
-export interface SprintReportDto {
+export interface SprintUserReportDto {
   columns: SprintUser[];
   rows: SprintData[];
 }

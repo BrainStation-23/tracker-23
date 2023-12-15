@@ -3,6 +3,12 @@ type Props = {
   total: number;
 };
 const ProgressComponent = ({ done, total }: Props) => {
+  if (total === 0) {
+    return <div>No Assigned Tasks</div>;
+  }
+  if (typeof total !== "number") {
+    return <></>;
+  }
   return (
     <div className="h-4 w-full rounded bg-gray-200">
       <div

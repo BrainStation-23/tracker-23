@@ -5,6 +5,7 @@ import {
   CreateWorkspaceModel,
   SearchParamsModel,
   SprintReportParamsModel,
+  SprintUserReportParamsModel,
 } from "models/apiParams";
 import {
   ForgotPasswordDto,
@@ -281,7 +282,7 @@ export async function exportSprintReportRest({
   sprints,
   selectedUsers,
   projectIds,
-}: SprintReportParamsModel) {
+}: SprintUserReportParamsModel) {
   try {
     const res = await axios.get(
       apiEndPoints.exportSprintReport +
@@ -805,14 +806,14 @@ export async function getTimeSheetReportRest({
   }
 }
 
-export async function getSprintReportRest({
+export async function getSprintUserReportRest({
   sprints,
   selectedUsers,
   projectIds,
-}: SprintReportParamsModel) {
+}: SprintUserReportParamsModel) {
   try {
     const res = await axios.get(
-      `${apiEndPoints.sprintReport}` +
+      `${apiEndPoints.sprintUserReport}` +
         (sprints?.length > 0 ||
         selectedUsers?.length > 0 ||
         projectIds?.length > 0
@@ -821,6 +822,23 @@ export async function getSprintReportRest({
         (sprints?.length > 0 ? `sprintId=${sprints}` : "") +
         (selectedUsers?.length > 0 ? `&userId=${selectedUsers}` : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "")
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getSprintReportRest({
+  sprintId,
+  startDate,
+  endDate,
+}: SprintReportParamsModel) {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.sprintReport}?` +
+        (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +  
+        (sprintId ? `&sprintId=${sprintId}` : "")
     );
     return res.data;
   } catch (error: any) {

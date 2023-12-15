@@ -60,18 +60,18 @@ const SprintReportTabel = ({ data }: any) => {
     },
     {
       title: "Sprint Assigned Task",
-      dataIndex: "sprintAssignedTask",
-      key: "sprintAssignedTask",
-      render: (task: any, record: any, index: number) => {
-        if (record.assignedTask)
+      dataIndex: "assignedTask",
+      key: "assignedTask",
+      render: (assignedTask: any, record: any, index: number) => {
+        if (assignedTask)
           return {
             children: (
               <div>
                 <Text
                   className="w-[200px] cursor-pointer"
-                  ellipsis={{ tooltip: record?.assignedTask?.title }}
+                  ellipsis={{ tooltip: assignedTask?.title }}
                 >
-                  {record?.assignedTask?.title}
+                  {assignedTask?.title}
                 </Text>
               </div>
             ),
@@ -158,7 +158,7 @@ const SprintReportTabel = ({ data }: any) => {
 
   return (
     <>
-      {data.length ? (
+      {data?.length ? (
         <div className="flex flex-col gap-4">
           <Table
             columns={columns}
@@ -179,8 +179,8 @@ const SprintReportTabel = ({ data }: any) => {
           />
         </div>
       ) : (
-        <Empty description="No data" />
-      )}{" "}
+        <Empty description="Select Project And Sprint to View Data" />
+      )}
     </>
   );
 };

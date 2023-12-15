@@ -1,6 +1,10 @@
 import { message } from "antd";
 import { userAPI } from "APIs";
-import { ReportPageTabs, SprintReportDto, SprintUser } from "models/reports";
+import {
+  ReportPageTabs,
+  SprintUserReportDto,
+  SprintUser,
+} from "models/reports";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -21,20 +25,29 @@ import SprintReportComponent from "./components/sprintReportComponents";
 import TableComponent from "./components/tableComponentReport";
 import TaskListReportComponent from "./components/taskListReportComponent";
 import TopPanelTaskListComponents from "./components/topPanelTaskListComponents";
+import TopPanelSprintReportComponents from "./components/topPanelSprintReportComponents";
 
 const ReportComponent = () => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
+  const [SprintReportFecthedOnce, setSprintReportFecthedOnce] = useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
   const [data, setData] = useState([]);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
-  const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
+  const [sprintUserReportData, setSprintUserReportData] =
+    useState<SprintUserReportDto>();
+  const [sprintReportData, setSprintReportData] = useState<any>();
   const [sprints, setSprints] = useState<number[]>([]);
+  const [sprintReportSprintId, setSprintReportSprintId] = useState<number>();
   const [users, setUsers] = useState<SprintUser[]>([]);
   const [projects, setProjects] = useState<number[]>([]);
+  const [projectSprintReport, setProjectSprintReport] = useState<number>();
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [selectedUser, setSelectedUser] = useState<number>();
   const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
+  const [dateRangeSprintReport, setDateRangeSprintReport] = useState(
+    getDateRangeArray("this-week")
+  );
   const [dateRangeArray, setDateRangeArray] = useState([]);
   const [column, setColumns] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -71,11 +84,11 @@ const ReportComponent = () => {
           />
         );
       case "Sprint Estimate":
-        return <SpritEstimateReportComponent data={sprintReportData} />;
+        return <SpritEstimateReportComponent data={sprintUserReportData} />;
       case "Task List":
         return <TaskListReportComponent {...{ tasks }} />;
       case "Sprint Report":
-        return <SprintReportComponent />;
+        return <SprintReportComponent data={sprintReportData} />;
       default:
         return <></>;
     }
@@ -160,14 +173,42 @@ const ReportComponent = () => {
     const res = await userAPI.getJiraSprints();
     if (res?.length > 0) dispatch(setSprintListReducer(res));
   };
-  const getSprintReport = async () => {
+  const getSprintUserReport = async () => {
     setIsLoading(true);
-    const res: SprintReportDto = await userAPI.getSprintReport({
+    const res: SprintUserReportDto = await userAPI.getSprintUserReport({
       sprints,
       selectedUsers,
       projectIds: projects,
     });
+    res && setSprintUserReportData(res);
+    setIsLoading(false);
+  };
+  const getSprintReport = async () => {
+    if (
+      !(
+        sprintReportSprintId &&
+        dateRangeSprintReport[0] &&
+        dateRangeSprintReport[0]
+      )
+    ) {
+      console.log(
+        "🚀 ~ file: index.tsx:200 ~ getSprintReport ~ sprintReportSprintId , dateRangeSprintReport[0] , dateRangeSprintReport[0]:",
+        sprintReportSprintId,
+        dateRangeSprintReport[0],
+        dateRangeSprintReport[0]
+      );
+      setSprintReportData(null);
+      return;
+    }
+    setIsLoading(true);
+    const res: SprintUserReportDto = await userAPI.getSprintReport({
+      sprintId: sprintReportSprintId,
+      startDate: dateRangeSprintReport[0],
+      endDate: dateRangeSprintReport[1],
+    });
+    console.log("🚀 ~ file: index.tsx:193 ~ getSprintReport ~ res:", res);
     res && setSprintReportData(res);
+    res && setSprintReportFecthedOnce(true);
     setIsLoading(false);
   };
 
@@ -223,13 +264,13 @@ const ReportComponent = () => {
   }, [dateRange, selectedUsers, projects]);
 
   useEffect(() => {
-    getSprintReport();
+    getSprintUserReport();
   }, [sprints, selectedUsers, projects]);
   useEffect(() => {
     getUserListByProject();
   }, [projects]);
   useEffect(() => {
-    getSprintReport();
+    getSprintUserReport();
     getSprintList();
   }, []);
   useEffect(() => {
@@ -243,6 +284,15 @@ const ReportComponent = () => {
     projects,
     selectedUser,
   ]);
+
+  useEffect(() => {
+    activeTab === "Sprint Report" && getSprintReport();
+  }, [sprintReportSprintId, dateRangeSprintReport]);
+  useEffect(() => {
+    activeTab === "Sprint Report" &&
+      !SprintReportFecthedOnce &&
+      getSprintReport();
+  }, [activeTab]);
   return (
     <div>
       <ReportWrapper
@@ -257,7 +307,7 @@ const ReportComponent = () => {
           setSprints,
           projects,
           setProjects,
-          sprintReportData,
+          sprintUserReportData,
           selectedUsers,
           setSelectedUsers,
           users,
@@ -285,6 +335,19 @@ const ReportComponent = () => {
                   setPriority,
                   sprints,
                   setSprints,
+                }}
+              />
+            )}
+            {activeTab === "Sprint Report" && (
+              <TopPanelSprintReportComponents
+                {...{
+                  sprint: sprintReportSprintId,
+                  setSprint: setSprintReportSprintId,
+                  dateRange: dateRangeSprintReport,
+                  setDateRange: setDateRangeSprintReport,
+                  activeTab,
+                  project: projectSprintReport,
+                  setProject: setProjectSprintReport,
                 }}
               />
             )}
