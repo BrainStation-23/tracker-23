@@ -260,4 +260,27 @@ export class UsersDatabase {
       return null;
     }
   }
+  async updateUserById(
+    filter: Record<string, any>,
+    reqBody: Record<string, any>,
+  ) {
+    try {
+      return await this.prisma.user.update({
+        where: filter,
+        data: reqBody,
+      });
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async deleteUserById(filter: Record<string, any>) {
+    try {
+      return await this.prisma.user.delete({
+        where: filter,
+      });
+    } catch (err) {
+      return null;
+    }
+  }
 }

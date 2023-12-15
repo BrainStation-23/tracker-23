@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Param,
   Patch,
   Query,
@@ -12,9 +13,13 @@ import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/guard';
 import { UpdateSettingsReqDto } from './dto/create.settings.dto';
-import { UpdateRoleRequest } from './dto/update.role.request.dto';
-import { UpdateApprovalUserRequest } from './dto/update.approvalUser.request.dto';
-import { UserListByProjectIdReqDto } from './dto/getUserListByProjectId.dto';
+import { APIException } from '../exception/api.exception';
+import {
+  UpdateApprovalUserRequest,
+  UpdateRoleRequest,
+  UpdateUserOnboardingStepReqBody,
+  UserListByProjectIdReqDto,
+} from './dto';
 
 @Controller('users')
 export class UsersController {
@@ -78,5 +83,20 @@ export class UsersController {
     @Query() query: UserListByProjectIdReqDto,
   ) {
     return await this.usersService.userListByProjectId(user, query);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('/update/:userId')
+  async updateUserById(
+    @Param('userId') userId: string,
+    @Body() reqBody: UpdateUserOnboardingStepReqBody,
+  ) {
+    return await this.usersService.updateUserById(Number(userId), reqBody);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/delete/:userId')
+  async deleteUserById(@Param('userId') userId: string) {
+    return await this.usersService.deleteUserById(Number(userId));
   }
 }

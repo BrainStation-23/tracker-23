@@ -1,4 +1,12 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { UserStatus } from '@prisma/client';
+import {
+  IsArray,
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class RegisterDto {
   @IsString()
@@ -33,6 +41,14 @@ export class CreateUserData {
   @IsOptional()
   @IsString()
   lastName: string;
+
+  @IsOptional()
+  @IsString()
+  status: UserStatus;
+
+  @IsOptional()
+  @IsArray()
+  onboadingSteps: object[];
 }
 
 export class GoogleLoginCreateUser {
