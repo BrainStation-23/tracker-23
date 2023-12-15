@@ -15,4 +15,10 @@ export class DataMigrationController {
   async getAndCreateTask() {
     return this.dataMigrationService.getAndCreateTasks();
   }
+
+  @Get('user/update-status')
+  // @UseGuards(JwtAuthGuard)
+  async updateUserStatus() {
+    return await this.dataMigrationService.updateUserStatus();
+  }
 }
