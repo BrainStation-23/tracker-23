@@ -1,7 +1,6 @@
 import { MenuProps } from "antd";
-import { SearchParamsModel } from "models/apiParams";
-import { TaskDto } from "models/tasks";
-import { useEffect, useState } from "react";
+import { ReportPageTabs, SprintUser } from "models/reports";
+import { useEffect } from "react";
 
 import MyActiveTab from "@/components/common/tabs/MyActiveTab";
 import MyInactiveTab from "@/components/common/tabs/MyInactiveTab";
@@ -13,26 +12,23 @@ import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
 type Props = {
-  activeSprintTasks: TaskDto[];
-  activeTab: string;
+  activeTab: ReportPageTabs;
   setActiveTab: Function;
-  setSearchParams: Function;
-  searchParams: SearchParamsModel;
-  checkedOptionList: string[];
-  setCheckedOptionList: Function;
-  setDateRange: any;
-  dateRange: Function;
   projects?: any;
   setProjects?: any;
   datePicker: any;
+  topPanelComponent: any;
+  sprints: number[];
+  setSprints: Function;
+  userList: SprintUser[];
+  selectedUsers: number[];
+  setSelectedUsers: Function;
+  selectedUser: number;
+  setSelectedUser: Function;
 };
 const TopPanelReportPage = ({
   activeTab,
   setActiveTab,
-  setSearchParams,
-  searchParams,
-  selectedDate,
-  setSelectedDate,
   topPanelComponent,
   sprints,
   setSprints,
@@ -44,7 +40,7 @@ const TopPanelReportPage = ({
   selectedUser,
   setSelectedUser,
   datePicker,
-}: any) => {
+}: Props) => {
   //   const [selectedDate, setSelectedDate] = useState(dateRange);
   //   console.log(
   //     "🚀 ~ file: topPanelReportPage.tsx:33 ~ selectedDate:",
@@ -61,7 +57,7 @@ const TopPanelReportPage = ({
   ];
   if (sprintList.length > 0) options.push({ label: "Sprint", value: "Sprint" });
 
-  const tabs = ["Time Sheet", "Sprint Estimate", "Task List"];
+  const tabs = ["Time Sheet", "Sprint Estimate", "Task List", "Sprint Report"];
 
   const filterOptions: any = [];
 
@@ -94,32 +90,37 @@ const TopPanelReportPage = ({
       </div>
       <div className="mt-[3px] flex h-auto max-w-[950px] gap-2">
         <div className="flex h-auto w-full flex-wrap items-center justify-end gap-6">
-          {activeTab !== "Sprint Estimate" && datePicker}
+          {!["Sprint Estimate", "Sprint Report"].includes(activeTab) &&
+            datePicker}
           {topPanelComponent}
-          {activeTab === "Task List" ? (
-            <UserSelectorComponent
-              {...{ userList, selectedUser, setSelectedUser }}
-              className="w-[210px]"
-            />
-          ) : (
-            <UsersSelectorComponent
-              {...{ userList, selectedUsers, setSelectedUsers }}
-              className="w-[210px]"
-            />
-          )}
-          <ProjectSelectorComponent
-            projectIds={projects}
-            setProjectIds={setProjects}
-            className="w-[210px]"
-          />
-          {(activeTab === "Sprint Estimate" || activeTab === "Task List") &&
-            sprintList.length > 0 && (
-              <SprintSelectorComponent
+          {!["Sprint Report"].includes(activeTab) && (
+            <>
+              {activeTab === "Task List" ? (
+                <UserSelectorComponent
+                  {...{ userList, selectedUser, setSelectedUser }}
+                  className="w-[210px]"
+                />
+              ) : (
+                <UsersSelectorComponent
+                  {...{ userList, selectedUsers, setSelectedUsers }}
+                  className="w-[210px]"
+                />
+              )}
+              <ProjectSelectorComponent
                 projectIds={projects}
-                {...{ sprints, setSprints }}
+                setProjectIds={setProjects}
                 className="w-[210px]"
               />
-            )}
+              {(activeTab === "Sprint Estimate" || activeTab === "Task List") &&
+                sprintList.length > 0 && (
+                  <SprintSelectorComponent
+                    projectIds={projects}
+                    {...{ sprints, setSprints }}
+                    className="w-[210px]"
+                  />
+                )}
+            </>
+          )}
         </div>
       </div>
     </div>
