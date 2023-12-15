@@ -13,6 +13,7 @@ type Props = {
   projectIds: number[];
   setProjectIds: Function;
   className?: string;
+  mode?: "multi" | "single";
 };
 type TagProps = {
   label: any;
@@ -24,6 +25,7 @@ const ProjectSelectorComponent = ({
   projectIds,
   setProjectIds,
   className,
+  mode = "multi",
 }: Props) => {
   const { Text } = Typography;
 
@@ -95,19 +97,34 @@ const ProjectSelectorComponent = ({
       }`}
     >
       <SortStatusIconSvg />
-      <Select
-        placeholder="Select Project"
-        mode="multiple"
-        tagRender={(props) => tagRender(props)}
-        value={projectIds}
-        className="w-full"
-        showArrow
-        maxTagCount={1}
-        options={Options}
-        onChange={(value) => {
-          setProjectIds(value);
-        }}
-      />
+      {mode == "single" ? (
+        <Select
+          placeholder="Select Project"
+          tagRender={(props) => tagRender(props)}
+          value={projectIds[0] ? projectIds : null}
+          className="w-full"
+          showArrow
+          maxTagCount={1}
+          options={Options}
+          onChange={(value) => {
+            setProjectIds(value);
+          }}
+        />
+      ) : (
+        <Select
+          placeholder="Select Project"
+          mode="multiple"
+          tagRender={(props) => tagRender(props)}
+          value={projectIds}
+          className="w-full"
+          showArrow
+          maxTagCount={1}
+          options={Options}
+          onChange={(value) => {
+            setProjectIds(value);
+          }}
+        />
+      )}
     </div>
   );
 };

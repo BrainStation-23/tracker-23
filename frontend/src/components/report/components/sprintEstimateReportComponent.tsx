@@ -1,9 +1,8 @@
 import TableComponentSprintReport from "./tableComponentSprintReport";
 type Props = {
   data: any;
-  // data: SprintTableData;
 };
-const SpritReportComponent = ({ data }: Props) => {
+const SpritEstimateReportComponent = ({ data }: Props) => {
   const tableData = data?.rows;
   tableData?.forEach((td: any) => {
     td?.users?.forEach((ud: any) => {
@@ -13,4 +12,4 @@ const SpritReportComponent = ({ data }: Props) => {
   return <TableComponentSprintReport data={tableData} column={data?.columns} />;
 };
 
-export default SpritReportComponent;
+export default SpritEstimateReportComponent;

@@ -1,17 +1,18 @@
 import { Select, Typography } from "antd";
 import { SprintDto } from "models/tasks";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { GiSprint } from "react-icons/gi";
 
+import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
-import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 
 type Props = {
   sprints: any[];
   setSprints: Function;
   className?: string;
   projectIds?: number[];
+  mode?: "multi" | "single";
 };
 type TagProps = {
   label: any;
@@ -24,8 +25,8 @@ const SprintSelectorComponent = ({
   setSprints,
   className,
   projectIds,
+  mode = "multi",
 }: Props) => {
-  console.log("🚀 ~ file: sprintSelector.tsx:28 ~ projectIds:", projectIds);
   const { Text } = Typography;
   const defaultValues: any = [];
   const sprintList = useAppSelector(
@@ -93,11 +94,13 @@ const SprintSelectorComponent = ({
   };
   useEffect(() => {
     const tmpArray: any[] = [];
-    sprints?.forEach((st) => {
-      for (const option of Options) {
-        if (option.label === JSON.parse(st).label) tmpArray.push(option.value);
-      }
-    });
+    mode !== "single" &&
+      sprints?.forEach((st) => {
+        for (const option of Options) {
+          if (option.label === JSON.parse(st).label)
+            tmpArray.push(option.value);
+        }
+      });
   }, [sprints]);
   if (Options.length > 0)
     return (
@@ -107,20 +110,36 @@ const SprintSelectorComponent = ({
         }`}
       >
         <GiSprint size={24} />
-        <Select
-          placeholder="Select Sprint"
-          mode="multiple"
-          tagRender={(props) => tagRender(props)}
-          value={sprints}
-          defaultValue={[]}
-          className="w-full"
-          showArrow
-          maxTagCount={1}
-          options={Options}
-          onChange={(value) => {
-            setSprints(value);
-          }}
-        />
+        {mode === "single" ? (
+          <Select
+            placeholder="Select Sprint"
+            tagRender={(props) => tagRender(props)}
+            value={sprints[0] ? sprints : null}
+            className="w-full"
+            showArrow
+            maxTagCount={1}
+            options={Options}
+            onChange={(value) => {
+              console.log("🚀 ~ file: sprintSelector.tsx:123 ~ value:", value);
+              setSprints(value);
+            }}
+          />
+        ) : (
+          <Select
+            placeholder="Select Sprint"
+            mode="multiple"
+            tagRender={(props) => tagRender(props)}
+            value={sprints}
+            defaultValue={[]}
+            className="w-full"
+            showArrow
+            maxTagCount={1}
+            options={Options}
+            onChange={(value) => {
+              setSprints(value);
+            }}
+          />
+        )}
       </div>
     );
 };

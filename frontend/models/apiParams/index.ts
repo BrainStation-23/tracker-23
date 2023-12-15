@@ -7,10 +7,15 @@ export interface SearchParamsModel {
   userIds?: number[];
   sprints?: number[];
 }
-export interface SprintReportParamsModel {
+export interface SprintUserReportParamsModel {
   selectedUsers?: number[];
   projectIds?: number[];
   sprints?: number[];
+}
+export interface SprintReportParamsModel {
+  startDate: string;
+  endDate: string;
+  sprintId: number;
 }
 
 export interface CreateWorkspaceModel {

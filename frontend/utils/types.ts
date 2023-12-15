@@ -2,7 +2,7 @@ import {
   CreateLocalProjectModel,
   CreateWorkspaceModel,
   SearchParamsModel,
-  SprintReportParamsModel,
+  SprintUserReportParamsModel,
 } from "models/apiParams";
 import {
   ForgotPasswordDto,
@@ -11,7 +11,7 @@ import {
   ResetPasswordDto,
 } from "models/auth";
 import { SendWorkspaceInviteDto } from "models/invitation";
-import { SprintReportDto, getTimeSheetReportDto } from "models/reports";
+import { SprintUserReportDto, getTimeSheetReportDto } from "models/reports";
 import {
   AddWorkLogParams,
   CreateTaskDto,
@@ -40,7 +40,9 @@ export interface apiFunction {
   getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   getTaskListReport: (searchParams?: SearchParamsModel) => Promise<any>;
   exportTasks: (searchParams?: SearchParamsModel) => Promise<any>;
-  exportSprintReport: (searchParams?: SprintReportParamsModel) => Promise<any>;
+  exportSprintReport: (
+    searchParams?: SprintUserReportParamsModel
+  ) => Promise<any>;
   syncTasks: () => Promise<any>;
   syncProjectTasks: (projectId: number) => Promise<any>;
   syncStatus: (token?: string) => Promise<any>;
@@ -92,7 +94,10 @@ export interface apiFunction {
   updateTimeFormat: (value: string) => Promise<any>;
   getTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
   exportTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
-  getSprintReport: (data?: SprintReportParamsModel) => Promise<SprintReportDto>;
+  getSprintUserReport: (
+    data?: SprintUserReportParamsModel
+  ) => Promise<SprintUserReportDto>;
+  getSprintReport: (data?: any) => Promise<SprintUserReportDto>;
   getInvitedUserInfo: (token: string) => Promise<any>;
   getAllUsers: () => Promise<any>;
   updateApprovalUser: (

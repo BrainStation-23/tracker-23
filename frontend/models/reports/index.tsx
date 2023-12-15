@@ -19,7 +19,13 @@ export interface SprintData {
   users: SprintUser[];
 }
 
-export interface SprintReportDto {
+export interface SprintUserReportDto {
   columns: SprintUser[];
   rows: SprintData[];
 }
+
+export type ReportPageTabs =
+  | "Time Sheet"
+  | "Sprint Estimate"
+  | "Sprint Report"
+  | "Task List";
