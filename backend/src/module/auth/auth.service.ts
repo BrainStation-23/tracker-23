@@ -17,7 +17,7 @@ import {
   RegisterDto,
   userDto,
 } from './dto';
-import { User, UserWorkspaceStatus } from '@prisma/client';
+import { User, UserStatus, UserWorkspaceStatus } from '@prisma/client';
 import { Request } from 'express';
 import * as crypto from 'crypto';
 import { WorkspacesService } from '../workspaces/workspaces.service';
@@ -40,11 +40,29 @@ export class AuthService {
 
   async createUser(dto: RegisterDto) {
     try {
+      const onboadingSteps = [
+        {
+          step: 'ACCESS_SELECTION',
+          index: 1,
+          completed: false,
+          finalStep: false,
+          optional: false,
+        },
+        {
+          step: 'INVITATION',
+          index: 2,
+          completed: false,
+          finalStep: true,
+          optional: false,
+        },
+      ];
       const user = await this.usersDatabase.createUser({
         email: dto?.email,
         firstName: dto?.firstName,
         lastName: dto?.lastName,
         hash: await argon.hash(dto?.password),
+        status: UserStatus.ONBOARD,
+        onboadingSteps: [...onboadingSteps],
       });
 
       const workspace =
