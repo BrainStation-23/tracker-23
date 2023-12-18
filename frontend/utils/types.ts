@@ -1,4 +1,4 @@
-import { updateOnboardingUserDto } from './../models/user/index';
+import { updateOnboardingUserDto } from "./../models/user/index";
 import {
   CreateLocalProjectModel,
   CreateWorkspaceModel,
@@ -32,10 +32,10 @@ export interface apiFunction {
     invitationCode?: string
   ) => Promise<LoginResponseDto | undefined>;
   logout: () => {};
-  registerUser: (data: RegisterDto) => Promise<RegisterDto | undefined>;
+  registerUser: (data: RegisterDto) => Promise<LoginResponseDto | undefined>;
   registerUserFromInvite: (
     data: RegisterDto
-  ) => Promise<RegisterDto | undefined>;
+  ) => Promise<LoginResponseDto | undefined>;
   createTask: (data: CreateTaskDto) => Promise<TaskDto>;
   deleteTask: (data: any) => Promise<any | undefined>;
   getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
