@@ -245,11 +245,6 @@ export class AuthService {
       : await this.usersDatabase.updateUser(user, {
           activeWorkspaceId: workspace.id,
         });
-
-    console.log(
-      '🚀 ~ file: auth.service.ts:244 ~ AuthService ~ googleLogin ~ updateUser:',
-      updateUser,
-    );
     if (!updateUser)
       throw new APIException(
         'Could not update user',
