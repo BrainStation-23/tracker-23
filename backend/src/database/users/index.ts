@@ -186,6 +186,7 @@ export class UsersDatabase {
           lastName: true,
           hash: true,
           approved: true,
+          status: true,
         },
       });
     } catch (error) {

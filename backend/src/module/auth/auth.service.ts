@@ -132,6 +132,7 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       approved: user.approved,
+      status: user.status,
       ...token,
     };
   }
@@ -543,6 +544,7 @@ export class AuthService {
       email: user.email,
       firstName: user.firstName,
       approved: user.approved,
+      status: user.status,
       ...(user?.lastName && { lastName: user?.lastName }),
       ...token,
     };
