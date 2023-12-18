@@ -417,7 +417,7 @@ export class AuthService {
         hash: await argon.hash(data?.password),
         firstName: data?.firstName,
         onboadingSteps: [...this.onboadingSteps],
-        status: UserStatus.ONBOARD,
+        status: UserStatus.ACTIVE,
         ...(data?.lastName && { lastName: data?.lastName }),
       },
     );
