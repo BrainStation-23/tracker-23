@@ -58,13 +58,17 @@ export class GoogleLoginCreateUser {
 
   @IsOptional()
   @IsString()
-  firstName: string;
+  firstName?: string;
 
   @IsOptional()
   @IsString()
-  lastName: string;
+  lastName?: string;
 
   @IsOptional()
   @IsString()
-  picture: string;
+  picture?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: UserStatus;
 }

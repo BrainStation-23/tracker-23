@@ -239,11 +239,32 @@ export class UsersDatabase {
   }
   async updateGoogleLoginUser(data: GoogleLoginCreateUser) {
     try {
+      const onboadingSteps = [
+        {
+          step: 'ACCESS_SELECTION',
+          index: 1,
+          completed: false,
+          finalStep: false,
+          optional: false,
+        },
+        {
+          step: 'INVITATION',
+          index: 2,
+          completed: false,
+          finalStep: true,
+          optional: false,
+        },
+      ];
+      const newModifiedData = {
+        ...data,
+        onboadingSteps: [...onboadingSteps],
+        status: UserStatus.ACTIVE,
+      };
       return await this.prisma.user.update({
         where: {
           email: data.email,
         },
-        data,
+        data: newModifiedData,
       });
     } catch (error) {
       console.log(error);
