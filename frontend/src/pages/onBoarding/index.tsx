@@ -4,10 +4,6 @@ import { NextPage } from "next";
 var cookie = require("cookie");
 
 const OnBoardingPage: NextPage = () => {
-  return (
-    <>
-      <OnBoarding />
-    </>
-  );
+  return <OnBoarding />;
 };
 export default OnBoardingPage;

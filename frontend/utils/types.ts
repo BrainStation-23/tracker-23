@@ -1,3 +1,4 @@
+import { updateOnboardingUserDto } from './../models/user/index';
 import {
   CreateLocalProjectModel,
   CreateWorkspaceModel,
@@ -103,6 +104,10 @@ export interface apiFunction {
   updateApprovalUser: (
     userId: number,
     data: updateApprovalUserDto
+  ) => Promise<any>;
+  updateOnboardingUser: (
+    userId: number,
+    data: updateOnboardingUserDto
   ) => Promise<any>;
   userListByProject: (projectIds: number[]) => Promise<any>;
 }

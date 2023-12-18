@@ -197,6 +197,12 @@ const CustomLayout = ({ children }: any) => {
       dispatch(
         setUserSlice({ ...res.user, role: res.user.activeUserWorkspace?.role })
       );
+      const tmpUser = res.user;
+      if (tmpUser?.status === "ONBOARD") {
+        !path.includes("onBoarding") && router.push("/onBoarding");
+      } else if (tmpUser?.status === "ACTIVE") {
+        path.includes("onBoarding") && router.push("/taskList");
+      }
       res.workspaces && dispatch(setWorkspacesSlice(res.workspaces));
     } else {
       const errorRes: any = res;
@@ -217,6 +223,13 @@ const CustomLayout = ({ children }: any) => {
       } else setLoading(false);
     }
   }, [router, path]);
+  useEffect(() => {
+    if (userInfo?.status === "ONBOARD") {
+      !path.includes("onBoarding") && router.push("/onBoarding");
+    } else if (userInfo?.status === "ACTIVE") {
+      path.includes("onBoarding") && router.push("/taskList");
+    }
+  }, [router, path, userInfo]);
 
   useEffect(() => {
     if (
@@ -258,27 +271,6 @@ const CustomLayout = ({ children }: any) => {
                 </div>
               </div>
             )}
-          {/* {!publicRoutes.some((route) => path.includes(route)) && (
-          <>
-            <div
-              className={`duration-500  ${showSideBar ? "pr-48" : "pr-0"} `}
-              style={{ height: "calc(100vh - 80px)" }}
-            >
-              <SideBar
-                showSideBar={showSideBar}
-                setShowSideBar={setShowSideBar}
-              />
-            </div>
-            <div
-              className={`fixed left-0 p-4 hover:text-green-500  ${
-                !showSideBar ? "delay-500 scale-x-100" : "scale-x-0 "
-              } `}
-              onClick={() => setShowSideBar(!showSideBar)}
-            >
-              <DoubleRightOutlined />
-            </div>
-          </>
-        )} */}
           {userInfo?.activeWorkspace ||
           path.includes("socialLogin") ||
           publicRoutes.some((route) => path.includes(route)) ? (
@@ -290,12 +282,7 @@ const CustomLayout = ({ children }: any) => {
               {!isPublicRoute &&
                 !path.includes("onBoarding") &&
                 !noNavbar.some((route) => path.includes(route)) && <Navbar />}
-              <div className="h-full w-full bg-white">
-                {/* {!isPublicRoute && !path.includes("onBoarding") && (
-                  <GlobalClock />
-                )} */}
-                {children}
-              </div>
+              <div className="h-full w-full bg-white">{children}</div>
             </div>
           ) : (
             <div

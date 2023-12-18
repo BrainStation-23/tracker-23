@@ -136,7 +136,7 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.log("🚀 ~ file: index.tsx:238 ~ getTasks ~ error:", error);
-      message.error("Error getting tasks");
+      // message.error("Error getting tasks");
     } finally {
       setLoading(false);
     }

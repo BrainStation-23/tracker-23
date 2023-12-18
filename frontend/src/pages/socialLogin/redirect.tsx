@@ -20,7 +20,8 @@ const GoogleCallbackPage = () => {
       setLocalStorage("access_token", res?.access_token);
       setLocalStorage("userDetails", res);
       message.success("Successfully Logged in");
-      router.push("/taskList");
+      if (res?.status === "ONBOARD") router.push("/onBoarding");
+      else router.push("/taskList");
     } else {
       message.error("Login Failed");
       router.push("/login");
