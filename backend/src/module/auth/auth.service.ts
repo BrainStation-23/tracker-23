@@ -246,6 +246,10 @@ export class AuthService {
           activeWorkspaceId: workspace.id,
         });
 
+    console.log(
+      '🚀 ~ file: auth.service.ts:244 ~ AuthService ~ googleLogin ~ updateUser:',
+      updateUser,
+    );
     if (!updateUser)
       throw new APIException(
         'Could not update user',
@@ -265,6 +269,7 @@ export class AuthService {
       picture,
       activeWorkspaceId,
       approved,
+      status,
     } = user;
     return {
       id,
@@ -274,6 +279,7 @@ export class AuthService {
       picture,
       activeWorkspaceId,
       approved,
+      status,
       ...token,
     };
   }
