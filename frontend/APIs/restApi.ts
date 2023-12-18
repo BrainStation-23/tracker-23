@@ -86,7 +86,7 @@ export async function googleLoginRest(
 
 export async function registerRest(
   data: RegisterDto
-): Promise<RegisterDto | undefined> {
+): Promise<LoginResponseDto | undefined> {
   try {
     const res = await axios.post(`${apiEndPoints.register}`, data);
     return res.data;
@@ -98,7 +98,7 @@ export async function registerRest(
 
 export async function registerFromInviteRest(
   data: RegisterDto
-): Promise<RegisterDto | undefined> {
+): Promise<LoginResponseDto | undefined> {
   try {
     const res = await axios.post(`${apiEndPoints.invitedUserRegister}`, data);
     if (res?.data?.access_token) {
