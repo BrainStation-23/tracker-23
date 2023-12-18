@@ -31,7 +31,7 @@ import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 import { sortByStatus } from "../src/services/taskActions";
 import { getTimeSheetReportDto } from "models/reports";
 import { disconnectSocket } from "@/services/socket.service";
-import { updateApprovalUserDto } from "models/user";
+import { updateApprovalUserDto, updateOnboardingUserDto } from "models/user";
 
 export async function loginRest(
   data: LoginDto
@@ -146,7 +146,7 @@ export async function logoutRest() {
     RemoveCookie("access_token");
     clearLocalStorage();
     // deleteFromLocalStorage("userDetails");
-    message.success("Logged Out");
+    // message.success("Logged Out");
     await disconnectSocket();
     Router.push("/login");
     return true;
@@ -837,7 +837,7 @@ export async function getSprintReportRest({
   try {
     const res = await axios.get(
       `${apiEndPoints.sprintReport}?` +
-        (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +  
+        (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
         (sprintId ? `&sprintId=${sprintId}` : "")
     );
     return res.data;
@@ -875,7 +875,20 @@ export async function updateApprovalUserRest(
     return false;
   }
 }
-
+export async function updateOnboardingUserRest(
+  userId: number,
+  data: updateOnboardingUserDto
+) {
+  try {
+    const res = await axios.patch(
+      `${apiEndPoints.updateOnboardingUser}${userId}`,
+      data
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
 export async function userListByProjectRest(projectIds: number[]) {
   try {
     const res = await axios.get(

@@ -44,5 +44,6 @@ export const apiEndPoints = {
   invitedUserRegister: `/auth/invitedUser/register`,
   allUsers: `/users/userList`,
   updateApprovalUser: `/users/userList/`,
+  updateOnboardingUser: `/users/update/`,
   userListByProject: `/users/userListByProjectId`,
 };

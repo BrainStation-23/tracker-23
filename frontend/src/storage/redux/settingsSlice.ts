@@ -27,10 +27,17 @@ const settingsSlice = createSlice({
       if (action.payload.timeFormat)
         state.timeFormat = action.payload.timeFormat;
     },
+    resetSettingsReducer: (state) => {
+      state = initialState;
+    },
   },
 });
 
-export const { setSyncTimeReducer, setTimeFormatReducer, setSettingsReducer } =
-  settingsSlice.actions;
+export const {
+  setSyncTimeReducer,
+  setTimeFormatReducer,
+  setSettingsReducer,
+  resetSettingsReducer,
+} = settingsSlice.actions;
 
 export default settingsSlice.reducer;

@@ -60,6 +60,7 @@ import {
   syncStatusRest,
   uninstallIntegrationRest,
   updateApprovalUserRest,
+  updateOnboardingUserRest,
   updateSessionRest,
   updateSyncTimeRest,
   updateTaskEstimationRest,
@@ -135,6 +136,7 @@ const restApi: apiFunction = {
   getInvitedUserInfo: getInvitedUserInfoRest,
   getAllUsers: getAllUsersRest,
   updateApprovalUser: updateApprovalUserRest,
+  updateOnboardingUser: updateOnboardingUserRest,
   userListByProject: userListByProjectRest,
 };
 

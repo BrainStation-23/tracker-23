@@ -1,35 +1,48 @@
+import { Form, message, Steps, theme } from "antd";
+import { userAPI } from "APIs";
 import React, { useState } from "react";
-import { Button, Form, message, Steps, theme } from "antd";
-import PurposeStep from "./components/purpose";
-import NamingStep from "./components/namingSection";
-import PreviousIconSvg from "@/assets/svg/PreviousIconSvg";
+import { useDispatch } from "react-redux";
+
+import PrimaryButton from "@/components/common/buttons/primaryButton";
+import { useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
+import { changeWorkspaceReloadStatusSlice } from "@/storage/redux/workspacesSlice";
+
+import AccessSelectionStep from "./components/accessSelectionStep";
 import InviteSection from "./components/inviteSection";
 
 const OnboardingSteps: React.FC = () => {
+  const dispatch = useDispatch();
+  const user = useAppSelector((state: RootState) => state.userSlice.user);
+  const { onboadingSteps } = user;
+
   const { token } = theme.useToken();
-  const [current, setCurrent] = useState(0);
+
+  const findCurrentStep = () => {
+    let temp: number = 0;
+    for (const step of onboadingSteps) {
+      if (step.completed) temp = step.index;
+    }
+    return temp;
+  };
+  const [current, setCurrent] = useState(findCurrentStep());
+  const [emails, setEmails] = useState<string[]>([]);
+  console.log("🚀 ~ file: onboardingSteps.tsx:27 ~ emails:", emails);
   const [accountName, setAccountName] = useState(null);
   const steps = [
     {
       title: "Purpose",
-      content: <PurposeStep />,
+      content: <AccessSelectionStep />,
     },
-    {
-      title: "Name",
-      content: <NamingStep />,
-    },
+    // {
+    //   title: "Name",
+    //   content: <NamingStep />,
+    // },
     {
       title: "Invite Your TeamMates",
-      content: <InviteSection />,
+      content: <InviteSection {...{ emails, setEmails }} />,
     },
   ];
-  const next = () => {
-    setCurrent(current + 1);
-  };
-
-  const prev = () => {
-    setCurrent(current - 1);
-  };
 
   const items = steps.map((item) => ({ key: item.title, title: item.title }));
 
@@ -42,10 +55,31 @@ const OnboardingSteps: React.FC = () => {
     marginTop: 16,
     padding: 30,
   };
-  const onFinish = (value: any) => {
+
+  const updateOnboarding = async (data: any) => {
+    const res = await userAPI.updateOnboardingUser(user.id, data);
+    return res;
+  };
+
+  const onFinish = async (value: any) => {
     console.log("🚀 ~ file: namingSection.tsx:7 ~ onFinish ~ value:", value);
     setAccountName(value.account);
-    setCurrent(current + 1);
+    let res: any;
+    if (current === 0) {
+      res = await updateOnboarding({
+        index: current + 1,
+        completed: true,
+      });
+    } else {
+      res = await updateOnboarding({
+        index: current + 1,
+        completed: true,
+        emails: emails.toString(), // Doing this because backend wants this way
+      });
+      res && message.success("Onboarding successfull");
+      res && dispatch(changeWorkspaceReloadStatusSlice());
+    }
+    res && setCurrent(current + 1);
   };
   const onFinishFailed = (value: any) => {
     console.log("🚀 ~ file: namingSection.tsx:7 ~ onFinish ~ value:", value);
@@ -54,14 +88,15 @@ const OnboardingSteps: React.FC = () => {
   return (
     <Form
       name="basic"
-      initialValues={{ remember: true }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
       autoComplete="off"
+      layout="vertical"
       // className="mx-auto w-60"
+      requiredMark={false}
     >
       <div className="mt-[110px] ml-[96px] w-[560px]">
-        <div className="h-[70px]">
+        {/* <div className="h-[70px]">
           {current > 0 && (
             <div
               className="flex cursor-pointer items-center gap-2"
@@ -71,24 +106,22 @@ const OnboardingSteps: React.FC = () => {
               <PreviousIconSvg /> Back
             </div>
           )}
-        </div>
+        </div> */}
         <Steps current={current} items={items} />
-        <div style={contentStyle}>{steps[current].content}</div>
+        <div style={contentStyle}>{steps[current]?.content}</div>
         <div style={{ marginTop: 24 }}>
           {current < steps.length - 1 && (
-            <Button type="primary" htmlType="submit">
-              Continue
-            </Button>
+            <PrimaryButton htmlType="submit">Continue</PrimaryButton>
           )}
           {current === steps.length - 1 && (
-            <Button
-              type="primary"
-              onClick={() => message.success("Processing complete!")}
-            >
-              Done
-            </Button>
+            <PrimaryButton htmlType="submit">Done</PrimaryButton>
           )}
         </div>
+        {current > 1 && (
+          <div className="mx-auto mt-5 w-full p-5 text-lg font-semibold">
+            Onboarding Completed
+          </div>
+        )}
       </div>
     </Form>
   );

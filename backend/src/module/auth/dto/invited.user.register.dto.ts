@@ -4,7 +4,6 @@ import {
   MinLength,
   IsOptional,
   IsNotEmpty,
-  IsNumber,
 } from 'class-validator';
 
 export class InvitedUserRegisterDto {
