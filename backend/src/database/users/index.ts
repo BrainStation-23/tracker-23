@@ -146,6 +146,7 @@ export class UsersDatabase {
           activeWorkspaceId: true,
           picture: true,
           approved: true,
+          status: true,
         },
       });
     } catch (error) {
@@ -228,6 +229,7 @@ export class UsersDatabase {
           picture: true,
           activeWorkspaceId: true,
           approved: true,
+          status: true,
         },
       });
     } catch (error) {
