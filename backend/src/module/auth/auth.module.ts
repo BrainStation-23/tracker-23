@@ -9,32 +9,26 @@ import { PassportModule } from '@nestjs/passport';
 import { APP_FILTER } from '@nestjs/core';
 import { TokenErrorFilter } from 'src/filters/token-error.filter';
 import { HttpModule } from '@nestjs/axios';
-import { WorkspacesService } from '../workspaces/workspaces.service';
-import { EmailService } from '../email/email.service';
-import { WorkspaceDatabase } from 'src/database/workspaces';
-import { UsersDatabase } from 'src/database/users';
-import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
-import { TasksDatabase } from 'src/database/tasks';
-import { ProjectDatabase } from 'src/database/projects';
+import { EmailModule } from '../email/email.module';
+import { WorkspacesModule } from '../workspaces/workspaces.module';
+import { UsersModule } from '../user/users.module';
+import { ProjectsModule } from '../projects/projects.module';
 
 @Module({
   imports: [
     HttpModule.register({}),
     JwtModule.register({}),
     PassportModule.register({}),
+    EmailModule,
+    WorkspacesModule,
+    UsersModule,
+    ProjectsModule,
   ],
   controllers: [AuthController, GoogleOAuth2Controller],
   providers: [
     AuthService,
     JwtStrategy,
     GoogleStrategy,
-    WorkspacesService,
-    EmailService,
-    WorkspaceDatabase,
-    UsersDatabase,
-    UserWorkspaceDatabase,
-    TasksDatabase,
-    ProjectDatabase,
     {
       provide: APP_FILTER,
       useClass: TokenErrorFilter,
