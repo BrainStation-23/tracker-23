@@ -38,31 +38,32 @@ export class AuthService {
     private userWorkspaceDatabase: UserWorkspaceDatabase,
   ) {}
 
+  private onboadingSteps: any[] = [
+    {
+      step: 'ACCESS_SELECTION',
+      index: 1,
+      completed: false,
+      finalStep: false,
+      optional: false,
+    },
+    {
+      step: 'INVITATION',
+      index: 2,
+      completed: false,
+      finalStep: true,
+      optional: false,
+    },
+  ];
+
   async createUser(dto: RegisterDto) {
     try {
-      const onboadingSteps = [
-        {
-          step: 'ACCESS_SELECTION',
-          index: 1,
-          completed: false,
-          finalStep: false,
-          optional: false,
-        },
-        {
-          step: 'INVITATION',
-          index: 2,
-          completed: false,
-          finalStep: true,
-          optional: false,
-        },
-      ];
       const user = await this.usersDatabase.createUser({
         email: dto?.email,
         firstName: dto?.firstName,
         lastName: dto?.lastName,
         hash: await argon.hash(dto?.password),
         status: UserStatus.ONBOARD,
-        onboadingSteps: [...onboadingSteps],
+        onboadingSteps: [...this.onboadingSteps],
       });
 
       const workspace =
@@ -131,6 +132,7 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       approved: user.approved,
+      status: user.status,
       ...token,
     };
   }
@@ -413,6 +415,8 @@ export class AuthService {
       {
         hash: await argon.hash(data?.password),
         firstName: data?.firstName,
+        onboadingSteps: [...this.onboadingSteps],
+        status: UserStatus.ONBOARD,
         ...(data?.lastName && { lastName: data?.lastName }),
       },
     );
@@ -540,6 +544,7 @@ export class AuthService {
       email: user.email,
       firstName: user.firstName,
       approved: user.approved,
+      status: user.status,
       ...(user?.lastName && { lastName: user?.lastName }),
       ...token,
     };

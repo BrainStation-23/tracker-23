@@ -1,7 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserStatus, UserWorkspaceStatus } from '@prisma/client';
-
-import { WorkspaceDatabase } from 'src/database/workspaces/index';
 import { UsersDatabase } from 'src/database/users';
 import { APIException } from '../exception/api.exception';
 import { UpdateSettingsReqDto } from './dto/create.settings.dto';
@@ -168,21 +166,23 @@ export class UsersService {
     }
     const emailIds = reqBody?.emails as unknown as string;
     const arrayOfEmailIds = emailIds?.split(',');
-    for (let index = 0, len = arrayOfEmailIds.length; index < len; index++) {
-      const email = arrayOfEmailIds[index];
-      const reqBody: SendInvitationReqBody = {
-        email,
-        role: Role.USER,
-      };
-      const invitedUser = await this.workspacesService.sendInvitation(
-        user,
-        reqBody,
-      );
-      if (!invitedUser) {
-        throw new APIException(
-          'Could not send invitation',
-          HttpStatus.BAD_REQUEST,
+    if (reqBody?.emails) {
+      for (let index = 0, len = arrayOfEmailIds.length; index < len; index++) {
+        const email = arrayOfEmailIds[index];
+        const reqBody: SendInvitationReqBody = {
+          email,
+          role: Role.USER,
+        };
+        const invitedUser = await this.workspacesService.sendInvitation(
+          user,
+          reqBody,
         );
+        if (!invitedUser) {
+          throw new APIException(
+            'Could not send invitation',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
       }
     }
 
