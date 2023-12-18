@@ -245,7 +245,6 @@ export class AuthService {
       : await this.usersDatabase.updateUser(user, {
           activeWorkspaceId: workspace.id,
         });
-
     if (!updateUser)
       throw new APIException(
         'Could not update user',
@@ -265,6 +264,7 @@ export class AuthService {
       picture,
       activeWorkspaceId,
       approved,
+      status,
     } = user;
     return {
       id,
@@ -274,6 +274,7 @@ export class AuthService {
       picture,
       activeWorkspaceId,
       approved,
+      status,
       ...token,
     };
   }
