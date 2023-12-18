@@ -30,6 +30,7 @@ import {
   getProjectWiseHourRest,
   getSpentTimePerDayRest,
   getSprintReportRest,
+  getSprintUserReportRest,
   getTaskListReportRest,
   getTasksRest,
   getTimeSheetReportRest,
@@ -59,6 +60,7 @@ import {
   syncStatusRest,
   uninstallIntegrationRest,
   updateApprovalUserRest,
+  updateOnboardingUserRest,
   updateSessionRest,
   updateSyncTimeRest,
   updateTaskEstimationRest,
@@ -129,10 +131,12 @@ const restApi: apiFunction = {
   updateTimeFormat: updateTimeFormatRest,
   getTimeSheetReport: getTimeSheetReportRest,
   exportTimeSheetReport: exportTimeSheetReportRest,
+  getSprintUserReport: getSprintUserReportRest,
   getSprintReport: getSprintReportRest,
   getInvitedUserInfo: getInvitedUserInfoRest,
   getAllUsers: getAllUsersRest,
   updateApprovalUser: updateApprovalUserRest,
+  updateOnboardingUser: updateOnboardingUserRest,
   userListByProject: userListByProjectRest,
 };
 

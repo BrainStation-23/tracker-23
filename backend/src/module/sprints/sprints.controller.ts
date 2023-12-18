@@ -4,6 +4,7 @@ import { JwtAuthGuard } from 'src/guard';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
 import { GetSprintListQueryDto } from './dto';
+import { SprintViewReqBodyDto } from './dto/sprintView.dto';
 
 @Controller('sprints')
 export class SprintsController {
@@ -22,5 +23,14 @@ export class SprintsController {
     @Query() reqBody: GetSprintListQueryDto,
   ) {
     return this.sprintsService.getActiveSprintTasks(user, reqBody);
+  }
+
+  @Get('sprint-view')
+  @UseGuards(JwtAuthGuard)
+  async sprintView(
+    @GetUser() user: User,
+    @Query() query: SprintViewReqBodyDto,
+  ) {
+    return this.sprintsService.sprintView(user, query);
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Role, User } from '@prisma/client';
+import { Role, User, UserStatus } from '@prisma/client';
 import {
   CreateUserData,
   GoogleLoginCreateUser,
@@ -146,6 +146,7 @@ export class UsersDatabase {
           activeWorkspaceId: true,
           picture: true,
           approved: true,
+          status: true,
         },
       });
     } catch (error) {
@@ -186,6 +187,7 @@ export class UsersDatabase {
           lastName: true,
           hash: true,
           approved: true,
+          status: true,
         },
       });
     } catch (error) {
@@ -196,8 +198,29 @@ export class UsersDatabase {
 
   async createGoogleLoginUser(data: GoogleLoginCreateUser) {
     try {
+      const onboadingSteps = [
+        {
+          step: 'ACCESS_SELECTION',
+          index: 1,
+          completed: false,
+          finalStep: false,
+          optional: false,
+        },
+        {
+          step: 'INVITATION',
+          index: 2,
+          completed: false,
+          finalStep: true,
+          optional: false,
+        },
+      ];
+      const newModifiedData = {
+        ...data,
+        onboadingSteps: [...onboadingSteps],
+        status: UserStatus.ONBOARD,
+      };
       return await this.prisma.user.create({
-        data,
+        data: newModifiedData,
         select: {
           id: true,
           email: true,
@@ -206,6 +229,7 @@ export class UsersDatabase {
           picture: true,
           activeWorkspaceId: true,
           approved: true,
+          status: true,
         },
       });
     } catch (error) {
@@ -215,11 +239,32 @@ export class UsersDatabase {
   }
   async updateGoogleLoginUser(data: GoogleLoginCreateUser) {
     try {
+      const onboadingSteps = [
+        {
+          step: 'ACCESS_SELECTION',
+          index: 1,
+          completed: false,
+          finalStep: false,
+          optional: false,
+        },
+        {
+          step: 'INVITATION',
+          index: 2,
+          completed: false,
+          finalStep: true,
+          optional: false,
+        },
+      ];
+      const newModifiedData = {
+        ...data,
+        onboadingSteps: [...onboadingSteps],
+        status: UserStatus.ACTIVE,
+      };
       return await this.prisma.user.update({
         where: {
           email: data.email,
         },
-        data,
+        data: newModifiedData,
       });
     } catch (error) {
       console.log(error);
@@ -257,6 +302,38 @@ export class UsersDatabase {
       return await this.prisma.user.findMany();
     } catch (error) {
       console.log(error);
+      return null;
+    }
+  }
+  async updateUserById(
+    filter: Record<string, any>,
+    reqBody: Record<string, any>,
+  ) {
+    try {
+      return await this.prisma.user.update({
+        where: filter,
+        data: reqBody,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          approved: true,
+          status: true,
+          picture: true,
+          onboadingSteps: true,
+        },
+      });
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async deleteUserById(filter: Record<string, any>) {
+    try {
+      return await this.prisma.user.delete({
+        where: filter,
+      });
+    } catch (err) {
       return null;
     }
   }

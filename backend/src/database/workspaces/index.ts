@@ -322,6 +322,23 @@ export class WorkspaceDatabase {
     }
   }
 
+  async updateUserApproval(
+    userId: number,
+    query: Record<string, any>,
+    prisma = this.prisma,
+  ) {
+    try {
+      return await prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: query,
+      });
+    } catch (err) {
+      return null;
+    }
+  }
+
   async updateUserWithTransactionPrismaInstance(
     userId: number,
     workspaceId: number,

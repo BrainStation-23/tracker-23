@@ -65,6 +65,9 @@ const appSlice = createSlice({
     setSocket: (state, action: PayloadAction<string | null>) => {
       state.socket = action.payload;
     },
+    resetNotificationSlice: (state) => {
+      state = initialState;
+    },
   },
 });
 
@@ -76,6 +79,7 @@ export const {
   markNotificationAsSeen,
   markAllNotificationsAsSeen,
   setSocket,
+  resetNotificationSlice,
 } = appSlice.actions;
 
 export default appSlice.reducer;

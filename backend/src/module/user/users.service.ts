@@ -1,22 +1,25 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Role, User, UserWorkspaceStatus } from '@prisma/client';
-
-import { WorkspaceDatabase } from 'src/database/workspaces/index';
+import { Role, User, UserStatus, UserWorkspaceStatus } from '@prisma/client';
 import { UsersDatabase } from 'src/database/users';
 import { APIException } from '../exception/api.exception';
 import { UpdateSettingsReqDto } from './dto/create.settings.dto';
 import { TasksDatabase } from 'src/database/tasks';
-import { UpdateApprovalUserRequest } from './dto/update.approvalUser.request.dto';
+import {
+  UpdateApprovalUserRequest,
+  UpdateUserOnboardingStepReqBody,
+} from './dto/update.approvalUser.request.dto';
 import { UserListByProjectIdReqDto } from './dto/getUserListByProjectId.dto';
 import { ProjectDatabase } from 'src/database/projects';
 import { SessionDatabase } from 'src/database/sessions';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import { SendInvitationReqBody } from '../workspaces/dto';
+import { WorkspacesService } from '../workspaces/workspaces.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private usersDatabase: UsersDatabase,
-    private workspaceDatabase: WorkspaceDatabase,
+    private workspacesService: WorkspacesService,
     private tasksDatabase: TasksDatabase,
     private projectDatabase: ProjectDatabase,
     private sessionDatabase: SessionDatabase,
@@ -140,5 +143,90 @@ export class UsersService {
       }
     }
     return [...userMap.values()];
+  }
+
+  async deleteUserById(userId: number) {
+    const deletedUser = await this.usersDatabase.deleteUserById({ id: userId });
+    if (!deletedUser) {
+      throw new APIException(
+        'Can not delete this user!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return deletedUser;
+  }
+
+  async updateUserById(
+    userId: number,
+    reqBody: UpdateUserOnboardingStepReqBody,
+  ) {
+    const user = await this.usersDatabase.findUniqueUser({ id: userId });
+    if (!user) {
+      throw new APIException('User not found!', HttpStatus.BAD_REQUEST);
+    }
+    const emailIds = reqBody?.emails as unknown as string;
+    const arrayOfEmailIds = emailIds?.split(',');
+    if (reqBody?.emails) {
+      for (let index = 0, len = arrayOfEmailIds.length; index < len; index++) {
+        const email = arrayOfEmailIds[index];
+        const reqBody: SendInvitationReqBody = {
+          email,
+          role: Role.USER,
+        };
+        const invitedUser = await this.workspacesService.sendInvitation(
+          user,
+          reqBody,
+        );
+        if (!invitedUser) {
+          throw new APIException(
+            'Could not send invitation',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+    }
+
+    // Find the index of the onboarding step to update
+    const indexToUpdate = user.onboadingSteps.findIndex(
+      (step: any) => step.index === Number(reqBody.index),
+    );
+    if (indexToUpdate === -1) {
+      throw new APIException(
+        'Onboarding step not found!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // Assert the type of onboarding step
+    const onboardingStep = user.onboadingSteps[indexToUpdate] as {
+      step: string;
+      index: number;
+      optional: boolean;
+      completed: boolean;
+      finalStep: boolean;
+    };
+    user.onboadingSteps[indexToUpdate] = {
+      step: onboardingStep.step,
+      index: onboardingStep.index,
+      optional: onboardingStep.optional,
+      completed: reqBody.completed,
+      finalStep: onboardingStep.finalStep,
+    };
+
+    const updatedUser = await this.usersDatabase.updateUserById(
+      { id: userId },
+      {
+        onboadingSteps: user.onboadingSteps,
+        ...(onboardingStep.finalStep &&
+          reqBody.completed && { status: UserStatus.ACTIVE }),
+      },
+    );
+    if (!updatedUser) {
+      throw new APIException(
+        'Can not update this user!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return updatedUser;
   }
 }

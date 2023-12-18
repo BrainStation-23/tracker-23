@@ -5,6 +5,7 @@ import {
   CreateWorkspaceModel,
   SearchParamsModel,
   SprintReportParamsModel,
+  SprintUserReportParamsModel,
 } from "models/apiParams";
 import {
   ForgotPasswordDto,
@@ -30,7 +31,7 @@ import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 import { sortByStatus } from "../src/services/taskActions";
 import { getTimeSheetReportDto } from "models/reports";
 import { disconnectSocket } from "@/services/socket.service";
-import { updateApprovalUserDto } from "models/user";
+import { updateApprovalUserDto, updateOnboardingUserDto } from "models/user";
 
 export async function loginRest(
   data: LoginDto
@@ -85,7 +86,7 @@ export async function googleLoginRest(
 
 export async function registerRest(
   data: RegisterDto
-): Promise<RegisterDto | undefined> {
+): Promise<LoginResponseDto | undefined> {
   try {
     const res = await axios.post(`${apiEndPoints.register}`, data);
     return res.data;
@@ -97,7 +98,7 @@ export async function registerRest(
 
 export async function registerFromInviteRest(
   data: RegisterDto
-): Promise<RegisterDto | undefined> {
+): Promise<LoginResponseDto | undefined> {
   try {
     const res = await axios.post(`${apiEndPoints.invitedUserRegister}`, data);
     if (res?.data?.access_token) {
@@ -145,7 +146,7 @@ export async function logoutRest() {
     RemoveCookie("access_token");
     clearLocalStorage();
     // deleteFromLocalStorage("userDetails");
-    message.success("Logged Out");
+    // message.success("Logged Out");
     await disconnectSocket();
     Router.push("/login");
     return true;
@@ -281,7 +282,7 @@ export async function exportSprintReportRest({
   sprints,
   selectedUsers,
   projectIds,
-}: SprintReportParamsModel) {
+}: SprintUserReportParamsModel) {
   try {
     const res = await axios.get(
       apiEndPoints.exportSprintReport +
@@ -805,14 +806,14 @@ export async function getTimeSheetReportRest({
   }
 }
 
-export async function getSprintReportRest({
+export async function getSprintUserReportRest({
   sprints,
   selectedUsers,
   projectIds,
-}: SprintReportParamsModel) {
+}: SprintUserReportParamsModel) {
   try {
     const res = await axios.get(
-      `${apiEndPoints.sprintReport}` +
+      `${apiEndPoints.sprintUserReport}` +
         (sprints?.length > 0 ||
         selectedUsers?.length > 0 ||
         projectIds?.length > 0
@@ -821,6 +822,23 @@ export async function getSprintReportRest({
         (sprints?.length > 0 ? `sprintId=${sprints}` : "") +
         (selectedUsers?.length > 0 ? `&userId=${selectedUsers}` : "") +
         (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "")
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getSprintReportRest({
+  sprintId,
+  startDate,
+  endDate,
+}: SprintReportParamsModel) {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.sprintReport}?` +
+        (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
+        (sprintId ? `&sprintId=${sprintId}` : "")
     );
     return res.data;
   } catch (error: any) {
@@ -857,7 +875,20 @@ export async function updateApprovalUserRest(
     return false;
   }
 }
-
+export async function updateOnboardingUserRest(
+  userId: number,
+  data: updateOnboardingUserDto
+) {
+  try {
+    const res = await axios.patch(
+      `${apiEndPoints.updateOnboardingUser}${userId}`,
+      data
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
 export async function userListByProjectRest(projectIds: number[]) {
   try {
     const res = await axios.get(

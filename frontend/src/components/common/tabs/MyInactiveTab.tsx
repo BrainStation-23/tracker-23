@@ -15,7 +15,7 @@ const MyInactiveTab = ({ children, tab, setActiveTab }: Props) => {
           {children}
         </div>
       )}
-      <div className="text-[15px] text-[#4D4E55]">{tab}</div>
+      <div className="w-max text-[15px] text-[#4D4E55]">{tab}</div>
     </div>
   );
 };

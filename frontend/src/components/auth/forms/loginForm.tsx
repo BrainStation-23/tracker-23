@@ -22,7 +22,9 @@ const LoginForm = ({ setIsModalOpen, email }: Props) => {
     console.log(values);
     const data = await userAPI.login(values);
     console.log("🚀 ~ file: loginForm.tsx:23 ~ signIn ~ data:", data);
-    if (GetCookie("access_token")) router.push("/taskList");
+    if (data?.status === "ONBOARD" && GetCookie("access_token"))
+      router.push("/onBoarding");
+    else if (GetCookie("access_token")) router.push("/onBoarding");
     !data && setIsModalOpen(false);
   };
 

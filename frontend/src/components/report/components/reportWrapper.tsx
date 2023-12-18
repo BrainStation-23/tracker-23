@@ -1,14 +1,14 @@
 import { Button, Spin } from "antd";
-import { SprintReportDto, SprintUser } from "models/reports";
+import { ReportPageTabs, SprintUser } from "models/reports";
+import { LuDownload } from "react-icons/lu";
 
 import TopPanelReportPage from "./topPanelReportPage";
-import { LuDownload } from "react-icons/lu";
 
 type Props = {
   children: any;
   title: string;
   isLoading: boolean;
-  activeTab: string;
+  activeTab: ReportPageTabs;
   setActiveTab: Function;
   topPanelComponent: any;
   datePicker: any;

@@ -70,6 +70,8 @@ export class ProjectsService {
             'jira:issue_created',
             'jira:issue_updated',
             'jira:issue_deleted',
+            // 'sprint_started',
+            // 'sprint_closed',
           ],
           projectName: [project.projectKey],
           userIntegrationId: userIntegration?.id || 0,

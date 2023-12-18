@@ -95,7 +95,9 @@ model User {
   updatedAt            DateTime        @updatedAt
   passwordResetToken   String?
   passwordResetExpires DateTime?
-  approved            Boolean?        @default(false)
+  approved             Boolean?        @default(false)
+  status               UserStatus?
+  onboadingSteps       Json[]
   userWorkspaces       UserWorkspace[] @relation("User")
   // ownedWorkspaces     Workspace[]
   // tasks               Task[]
@@ -388,3 +390,11 @@ enum Designation {
   DEVELOPER
   MANAGER
 }
+
+enum UserStatus {
+  ONBOARD
+  ACTIVE
+}
+
+
+

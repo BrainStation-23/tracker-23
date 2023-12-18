@@ -44,9 +44,10 @@ body {
 }
 
 .ant-steps .ant-steps-item-process .ant-steps-item-icon,
-.ant-radio-wrapper .ant-radio-checked .ant-radio-inner {
-  background-color: #00a3de;
-  border-color: #00a3de;
+.ant-radio-wrapper .ant-radio-checked .ant-radio-inner,
+.ant-steps-item-content > .ant-steps-item-title::after {
+  background-color: #1a202c !important;
+  border-color: #1a202c;
 }
 
 .ant-btn-primary {

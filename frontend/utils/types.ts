@@ -1,8 +1,9 @@
+import { updateOnboardingUserDto } from "./../models/user/index";
 import {
   CreateLocalProjectModel,
   CreateWorkspaceModel,
   SearchParamsModel,
-  SprintReportParamsModel,
+  SprintUserReportParamsModel,
 } from "models/apiParams";
 import {
   ForgotPasswordDto,
@@ -11,7 +12,7 @@ import {
   ResetPasswordDto,
 } from "models/auth";
 import { SendWorkspaceInviteDto } from "models/invitation";
-import { SprintReportDto, getTimeSheetReportDto } from "models/reports";
+import { SprintUserReportDto, getTimeSheetReportDto } from "models/reports";
 import {
   AddWorkLogParams,
   CreateTaskDto,
@@ -31,16 +32,18 @@ export interface apiFunction {
     invitationCode?: string
   ) => Promise<LoginResponseDto | undefined>;
   logout: () => {};
-  registerUser: (data: RegisterDto) => Promise<RegisterDto | undefined>;
+  registerUser: (data: RegisterDto) => Promise<LoginResponseDto | undefined>;
   registerUserFromInvite: (
     data: RegisterDto
-  ) => Promise<RegisterDto | undefined>;
+  ) => Promise<LoginResponseDto | undefined>;
   createTask: (data: CreateTaskDto) => Promise<TaskDto>;
   deleteTask: (data: any) => Promise<any | undefined>;
   getTasks: (searchParams?: SearchParamsModel) => Promise<any>;
   getTaskListReport: (searchParams?: SearchParamsModel) => Promise<any>;
   exportTasks: (searchParams?: SearchParamsModel) => Promise<any>;
-  exportSprintReport: (searchParams?: SprintReportParamsModel) => Promise<any>;
+  exportSprintReport: (
+    searchParams?: SprintUserReportParamsModel
+  ) => Promise<any>;
   syncTasks: () => Promise<any>;
   syncProjectTasks: (projectId: number) => Promise<any>;
   syncStatus: (token?: string) => Promise<any>;
@@ -92,12 +95,19 @@ export interface apiFunction {
   updateTimeFormat: (value: string) => Promise<any>;
   getTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
   exportTimeSheetReport: (data: getTimeSheetReportDto) => Promise<any>;
-  getSprintReport: (data?: SprintReportParamsModel) => Promise<SprintReportDto>;
+  getSprintUserReport: (
+    data?: SprintUserReportParamsModel
+  ) => Promise<SprintUserReportDto>;
+  getSprintReport: (data?: any) => Promise<SprintUserReportDto>;
   getInvitedUserInfo: (token: string) => Promise<any>;
   getAllUsers: () => Promise<any>;
   updateApprovalUser: (
     userId: number,
     data: updateApprovalUserDto
+  ) => Promise<any>;
+  updateOnboardingUser: (
+    userId: number,
+    data: updateOnboardingUserDto
   ) => Promise<any>;
   userListByProject: (projectIds: number[]) => Promise<any>;
 }

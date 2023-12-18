@@ -10,13 +10,8 @@ export class UserWorkspaceDatabase {
     filter: Record<string, any>,
   ): Promise<UserWorkspace | null> {
     try {
-      return await this.prisma.userWorkspace.findUnique({
-        where: {
-          userWorkspaceIdentifier: {
-            userId: filter.userId,
-            workspaceId: filter.workspaceId,
-          },
-        },
+      return await this.prisma.userWorkspace.findFirst({
+        where: filter,
       });
     } catch (e) {
       console.log(e);

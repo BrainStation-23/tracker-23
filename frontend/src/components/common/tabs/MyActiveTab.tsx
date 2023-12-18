@@ -15,7 +15,9 @@ const MyActiveTab = ({ children, tab, setActiveTab }: Props) => {
         </div>
       )}
       <div
-        className={`text-[15px] text-[#4D4E55] ${children ? "" : "font-bold"}`}
+        className={`w-max text-[15px] text-[#4D4E55] ${
+          children ? "" : "font-bold"
+        }`}
       >
         {tab}
       </div>

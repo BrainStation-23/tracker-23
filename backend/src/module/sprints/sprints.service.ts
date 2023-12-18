@@ -1,7 +1,6 @@
 import { TasksDatabase } from 'src/database/tasks';
-import axios from 'axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { User, UserWorkspaceStatus, Session } from '@prisma/client';
 import { GetSprintListQueryDto } from './dto';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { IntegrationsService } from '../integrations/integrations.service';
@@ -11,10 +10,15 @@ import { SprintDatabase } from 'src/database/sprints';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
 import { JiraClientService } from '../helper/client';
+import { SprintViewReqBodyDto } from './dto/sprintView.dto';
+import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import * as _ from 'lodash';
+import * as dayjs from 'dayjs';
 @Injectable()
 export class SprintsService {
   constructor(
     private integrationsService: IntegrationsService,
+    private userIntegrationDatabase: UserIntegrationDatabase,
     private workspacesService: WorkspacesService,
     private projectDatabase: ProjectDatabase,
     private sprintDatabase: SprintDatabase,
@@ -97,12 +101,27 @@ export class SprintsService {
 
     for (let index = 0, len = localDbSprints.length; index < len; index++) {
       const jiraSprintId = localDbSprints[index].jiraSprintId;
+      const jiraSprint = mappedSprintWithJiraId.get(jiraSprintId);
+      if (
+        (jiraSprint?.startDate &&
+          new Date(jiraSprint.startDate).getTime() !==
+            localDbSprints[index]?.startDate?.getTime()) ||
+        (jiraSprint?.completeDate &&
+          new Date(jiraSprint.completeDate).getTime() !==
+            localDbSprints[index]?.completeDate?.getTime())
+      ) {
+        await this.sprintDatabase.updateSprints(localDbSprints[index].id, {
+          state: jiraSprint.state,
+          ...(jiraSprint.startDate && { startDate: jiraSprint.startDate }),
+          ...(jiraSprint.completeDate && {
+            completeDate: jiraSprint.completeDate,
+          }),
+        });
+      }
       jiraSprintId && mappedSprintWithJiraId.delete(jiraSprintId);
     }
 
-    // for (let index = 0, len = sprintResponses.length; index < len; index++) {
     for (const [jiraSprintId, val] of mappedSprintWithJiraId) {
-      // const val = sprintResponses[index];
       sprint_list.push({
         jiraSprintId: jiraSprintId,
         projectId: projectId,
@@ -324,5 +343,140 @@ export class SprintsService {
     }
 
     return projectIds;
+  }
+
+  async sprintView(user: User, query: SprintViewReqBodyDto) {
+    const mappedUserWithWorkspaceId = new Map<number, any>();
+
+    const sprint = await this.sprintDatabase.getSprintById({
+      id: Number(query.sprintId),
+    });
+    if (!sprint) {
+      throw new APIException('Sprint not found!', HttpStatus.BAD_REQUEST);
+    }
+
+    const taskIds: number[] = [];
+    for (let index = 0, len = sprint?.sprintTask.length; index < len; index++) {
+      taskIds.push(sprint?.sprintTask[index].taskId);
+    }
+    const tasks = await this.tasksDatabase.getTasks({
+      id: { in: taskIds },
+    });
+
+    const getUserWorkspaceList =
+      await this.sprintTaskDatabase.getUserWorkspaces({
+        workspaceId: user.activeWorkspaceId,
+        status: UserWorkspaceStatus.ACTIVE,
+      });
+    for (
+      let index = 0, len = getUserWorkspaceList.length;
+      index < len;
+      index++
+    ) {
+      const userIntegration =
+        await this.userIntegrationDatabase.getUserIntegration({
+          UserIntegrationIdentifier: {
+            integrationId: sprint.project.integrationId,
+            userWorkspaceId: getUserWorkspaceList[index].id,
+          },
+        });
+      const user = getUserWorkspaceList[index].user;
+      if (userIntegration) {
+        mappedUserWithWorkspaceId.set(getUserWorkspaceList[index].id, {
+          userId: user.id,
+          name: user.lastName
+            ? user.firstName + ' ' + user.lastName
+            : user.firstName,
+          picture: user.picture,
+          devProgress: { total: 0, done: 0 },
+          assignedTasks: [],
+          yesterdayTasks: [],
+          todayTasks: [],
+        });
+      }
+    }
+
+    const data: any[] = [];
+    let done = 0;
+    let flag = true;
+
+    for (
+      let idx = new Date(query.startDate).getTime();
+      idx <= new Date(query.endDate).getTime();
+      idx += 3600 * 1000 * 24
+    ) {
+      for (const task of tasks) {
+        if (
+          task.userWorkspaceId &&
+          mappedUserWithWorkspaceId.has(task.userWorkspaceId)
+        ) {
+          const existingUser = mappedUserWithWorkspaceId.get(
+            task.userWorkspaceId,
+          );
+
+          //can not how "new Date(task.createdAt).getTime()" works
+          if (new Date(task.createdAt).getTime() - 3600 * 1000 * 24 <= idx) {
+            if (task.status === 'Done') existingUser.devProgress.done += 1;
+            existingUser.devProgress.total += 1;
+            const assignTask = {
+              title: task.title,
+              key: task.key,
+              status: task.status,
+              statusCategoryName: task.statusCategoryName,
+            };
+            existingUser.assignedTasks.push(assignTask);
+
+            const doesTodayTask = this.doesTodayTask(idx, task.sessions);
+            const doesYesterDayTask = this.doesTodayTask(
+              idx - 3600 * 1000 * 24,
+              task.sessions,
+            );
+            if (doesTodayTask) existingUser.todayTasks.push(assignTask);
+            if (doesYesterDayTask) existingUser.yesterdayTasks.push(assignTask);
+            mappedUserWithWorkspaceId.set(task.userWorkspaceId, existingUser);
+          }
+        }
+        if (task.status === 'Done' && flag) {
+          done += 1;
+        }
+      }
+      flag = false;
+      const formattedData = {
+        date: new Date(idx),
+        users: _.cloneDeep([...mappedUserWithWorkspaceId.values()]),
+      };
+
+      [...mappedUserWithWorkspaceId.values()].forEach((user: any) => {
+        user.assignedTasks = [];
+        user.todayTasks = [];
+        user.yesterdayTasks = [];
+        user.devProgress = { total: 0, done: 0 };
+      });
+      data.push(formattedData);
+    }
+
+    const sprintInfo = {
+      name: sprint.name,
+      projectName: sprint.project.projectName,
+      total: sprint.sprintTask.length,
+      done,
+    };
+    return { data, sprintInfo };
+  }
+
+  private doesTodayTask(time: number, sessions: Session[]) {
+    const parsedTime = dayjs(new Date(time));
+    const startTime = parsedTime.startOf('day').valueOf();
+    const endTime = parsedTime.endOf('day').valueOf();
+    for (let index = 0, len = sessions.length; index < len; index++) {
+      const session = sessions[index];
+      if (
+        new Date(session.startTime).getTime() >= startTime &&
+        new Date(session.startTime).getTime() <= endTime
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 }

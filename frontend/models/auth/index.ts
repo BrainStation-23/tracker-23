@@ -11,6 +11,7 @@ export type LoginResponseDto = {
   email: string;
   picture: string;
   access_token: string;
+  status?: "ACTIVE" | "ONBOARD";
 };
 
 export type RegisterDto = {

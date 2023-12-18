@@ -17,7 +17,7 @@ import {
   RegisterDto,
   userDto,
 } from './dto';
-import { User, UserWorkspaceStatus } from '@prisma/client';
+import { User, UserStatus, UserWorkspaceStatus } from '@prisma/client';
 import { Request } from 'express';
 import * as crypto from 'crypto';
 import { WorkspacesService } from '../workspaces/workspaces.service';
@@ -38,6 +38,23 @@ export class AuthService {
     private userWorkspaceDatabase: UserWorkspaceDatabase,
   ) {}
 
+  private onboadingSteps: any[] = [
+    {
+      step: 'ACCESS_SELECTION',
+      index: 1,
+      completed: false,
+      finalStep: false,
+      optional: false,
+    },
+    {
+      step: 'INVITATION',
+      index: 2,
+      completed: false,
+      finalStep: true,
+      optional: false,
+    },
+  ];
+
   async createUser(dto: RegisterDto) {
     try {
       const user = await this.usersDatabase.createUser({
@@ -45,6 +62,8 @@ export class AuthService {
         firstName: dto?.firstName,
         lastName: dto?.lastName,
         hash: await argon.hash(dto?.password),
+        status: UserStatus.ONBOARD,
+        onboadingSteps: [...this.onboadingSteps],
       });
 
       const workspace =
@@ -83,7 +102,16 @@ export class AuthService {
     const doesExistUser = await this.getUser(dto);
 
     if (doesExistUser) {
-      throw new APIException('Email already in Use!', HttpStatus.BAD_REQUEST);
+      const userWorkspace =
+        await this.userWorkspaceDatabase.getSingleUserWorkspace({
+          userId: doesExistUser.id,
+          status: UserWorkspaceStatus.INVITED,
+        });
+      if (userWorkspace) {
+        return await this.createInvitedUserRegularFlow(dto);
+      } else {
+        throw new APIException('Email already in Use!', HttpStatus.BAD_REQUEST);
+      }
       // const token = await this.createToken(doesExistUser);
       // return { ...doesExistUser, ...token };
     }
@@ -113,6 +141,7 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       approved: user.approved,
+      status: user.status,
       ...token,
     };
   }
@@ -225,7 +254,6 @@ export class AuthService {
       : await this.usersDatabase.updateUser(user, {
           activeWorkspaceId: workspace.id,
         });
-
     if (!updateUser)
       throw new APIException(
         'Could not update user',
@@ -245,6 +273,7 @@ export class AuthService {
       picture,
       activeWorkspaceId,
       approved,
+      status,
     } = user;
     return {
       id,
@@ -254,6 +283,7 @@ export class AuthService {
       picture,
       activeWorkspaceId,
       approved,
+      status,
       ...token,
     };
   }
@@ -395,6 +425,8 @@ export class AuthService {
       {
         hash: await argon.hash(data?.password),
         firstName: data?.firstName,
+        onboadingSteps: [...this.onboadingSteps],
+        status: UserStatus.ACTIVE,
         ...(data?.lastName && { lastName: data?.lastName }),
       },
     );
@@ -447,6 +479,7 @@ export class AuthService {
       email: updatedUser.email,
       firstName: updatedUser.firstName,
       approved: updatedUser.approved,
+      status: updatedUser.status,
       ...(updatedUser?.lastName && { lastName: updatedUser?.lastName }),
       ...token,
     };
@@ -522,6 +555,7 @@ export class AuthService {
       email: user.email,
       firstName: user.firstName,
       approved: user.approved,
+      status: user.status,
       ...(user?.lastName && { lastName: user?.lastName }),
       ...token,
     };
@@ -568,5 +602,92 @@ export class AuthService {
       'Try to login with the same email!',
       HttpStatus.BAD_REQUEST,
     );
+  }
+
+  async createInvitedUserRegularFlow(data: RegisterDto) {
+    //check if email is valid
+    const isValidUser = await this.usersDatabase.findUserByEmail(data?.email);
+    if (!isValidUser)
+      throw new APIException('Email is not registered', HttpStatus.BAD_REQUEST);
+
+    //check if requested email matches the email stored earlier in db
+    const isEmailStored =
+      await this.userWorkspaceDatabase.getSingleUserWorkspace({
+        userId: isValidUser.id,
+        status: UserWorkspaceStatus.INVITED,
+      });
+
+    if (!isEmailStored)
+      throw new APIException(
+        'Current email does not match with the invited email',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    const reqBody = {
+      email: data?.email,
+      firstName: data?.firstName,
+      ...(data?.lastName && { lastName: data?.lastName }),
+      hash: await argon.hash(data?.password),
+      status: UserStatus.ACTIVE,
+      onboadingSteps: [...this.onboadingSteps],
+    };
+
+    const updatedUser = await this.usersDatabase.updateUser(
+      { id: isValidUser?.id },
+      reqBody,
+    );
+
+    if (!updatedUser)
+      throw new APIException(
+        'Could not create user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    const workspace =
+      updatedUser &&
+      updatedUser.firstName &&
+      (await this.workspacesService.createWorkspace(
+        updatedUser,
+        `${updatedUser.firstName}'s Workspace`,
+        false,
+      ));
+
+    if (!workspace) {
+      throw new APIException(
+        'Can not create user!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    //update invited userworkspace
+    const updatedUserWorkspace =
+      await this.userWorkspaceDatabase.updateUserWorkspace(
+        Number(isEmailStored.id),
+        {
+          status: UserWorkspaceStatus.ACTIVE,
+          respondedAt: new Date(Date.now()),
+        },
+      );
+
+    if (!updatedUserWorkspace)
+      throw new APIException(
+        'Could not update userWorkspace. Invalid ID',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    const token = await this.createToken({
+      id: isValidUser.id,
+      email: isValidUser.email,
+      firstName: data.firstName,
+      ...(data?.lastName && { lastName: data?.lastName }),
+    });
+
+    return {
+      email: updatedUser.email,
+      firstName: updatedUser.firstName,
+      approved: updatedUser.approved,
+      status: updatedUser.status,
+      ...(updatedUser?.lastName && { lastName: updatedUser?.lastName }),
+      ...token,
+    };
   }
 }

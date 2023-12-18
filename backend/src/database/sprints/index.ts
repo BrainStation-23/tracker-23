@@ -30,6 +30,18 @@ export class SprintDatabase {
     }
   }
 
+  async updateSprints(id: number, updateReqBody: any) {
+    try {
+      return await this.prisma.sprint.update({
+        where: { id },
+        data: updateReqBody,
+      });
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  }
+
   async findSprintListByProjectId(projectId: number) {
     try {
       return await this.prisma.sprint.findMany({
@@ -89,6 +101,26 @@ export class SprintDatabase {
       return this.prisma.userIntegration.findUnique({
         where: {
           id,
+        },
+      });
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async getSprintById(query: Record<string, any>) {
+    try {
+      return this.prisma.sprint.findUnique({
+        where: query,
+        include: {
+          project: {
+            select: {
+              id: true,
+              projectName: true,
+              integrationId: true,
+            },
+          },
+          sprintTask: true,
         },
       });
     } catch (err) {

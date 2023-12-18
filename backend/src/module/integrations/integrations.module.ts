@@ -26,6 +26,6 @@ import { EmailService } from '../email/email.service';
     ProjectDatabase,
     EmailService,
   ],
-  exports: [IntegrationsService],
+  exports: [IntegrationsService, UserIntegrationDatabase],
 })
 export class IntegrationsModule {}
