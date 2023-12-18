@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Task, UserWorkspace } from '@prisma/client';
+import { Task, UserStatus, UserWorkspace } from '@prisma/client';
 import { PrismaService2 } from 'src/module/prisma2/prisma.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
@@ -234,5 +234,29 @@ export class DataMigrationService {
       );
       throw err; // Rethrow the error to handle it at a higher level if needed
     }
+  }
+
+  async updateUserStatus() {
+    const onboadingSteps = [
+      {
+        step: 'ACCESS_SELECTION',
+        index: 1,
+        completed: true,
+        finalStep: false,
+        optional: false,
+      },
+      {
+        step: 'INVITATION',
+        index: 2,
+        completed: true,
+        finalStep: true,
+        optional: false,
+      },
+    ];
+    const users = await this.prisma.user.updateMany({
+      where: { status: null },
+      data: { status: UserStatus.ACTIVE, onboadingSteps: onboadingSteps },
+    });
+    return users.count;
   }
 }

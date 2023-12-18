@@ -1,4 +1,10 @@
-import { IsBoolean, IsNotEmpty, IsNumber } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class UpdateApprovalUserRequest {
   @IsNotEmpty()
@@ -15,7 +21,7 @@ export class UpdateUserOnboardingStepReqBody {
   @IsBoolean()
   completed: boolean;
 
-  @IsNotEmpty()
-  @IsBoolean()
-  finalStep: boolean;
+  @IsString()
+  @IsOptional()
+  emails: string;
 }

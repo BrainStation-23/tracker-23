@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Role, User, UserWorkspaceStatus } from '@prisma/client';
+import { Role, User, UserStatus, UserWorkspaceStatus } from '@prisma/client';
 
 import { WorkspaceDatabase } from 'src/database/workspaces/index';
 import { UsersDatabase } from 'src/database/users';
@@ -14,12 +14,14 @@ import { UserListByProjectIdReqDto } from './dto/getUserListByProjectId.dto';
 import { ProjectDatabase } from 'src/database/projects';
 import { SessionDatabase } from 'src/database/sessions';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import { SendInvitationReqBody } from '../workspaces/dto';
+import { WorkspacesService } from '../workspaces/workspaces.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private usersDatabase: UsersDatabase,
-    private workspaceDatabase: WorkspaceDatabase,
+    private workspacesService: WorkspacesService,
     private tasksDatabase: TasksDatabase,
     private projectDatabase: ProjectDatabase,
     private sessionDatabase: SessionDatabase,
@@ -164,6 +166,25 @@ export class UsersService {
     if (!user) {
       throw new APIException('User not found!', HttpStatus.BAD_REQUEST);
     }
+    const emailIds = reqBody?.emails as unknown as string;
+    const arrayOfEmailIds = emailIds?.split(',');
+    for (let index = 0, len = arrayOfEmailIds.length; index < len; index++) {
+      const email = arrayOfEmailIds[index];
+      const reqBody: SendInvitationReqBody = {
+        email,
+        role: Role.USER,
+      };
+      const invitedUser = await this.workspacesService.sendInvitation(
+        user,
+        reqBody,
+      );
+      if (!invitedUser) {
+        throw new APIException(
+          'Could not send invitation',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
 
     // Find the index of the onboarding step to update
     const indexToUpdate = user.onboadingSteps.findIndex(
@@ -189,12 +210,16 @@ export class UsersService {
       index: onboardingStep.index,
       optional: onboardingStep.optional,
       completed: reqBody.completed,
-      finalStep: reqBody.finalStep,
+      finalStep: onboardingStep.finalStep,
     };
 
     const updatedUser = await this.usersDatabase.updateUserById(
       { id: userId },
-      { onboadingSteps: user.onboadingSteps },
+      {
+        onboadingSteps: user.onboadingSteps,
+        ...(onboardingStep.finalStep &&
+          reqBody.completed && { status: UserStatus.ACTIVE }),
+      },
     );
     if (!updatedUser) {
       throw new APIException(
