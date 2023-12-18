@@ -292,6 +292,15 @@ export class UsersDatabase {
       return await this.prisma.user.update({
         where: filter,
         data: reqBody,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          approved: true,
+          status: true,
+          picture: true,
+          onboadingSteps: true,
+        },
       });
     } catch (err) {
       return null;
