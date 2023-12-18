@@ -1,7 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserStatus, UserWorkspaceStatus } from '@prisma/client';
-
-import { WorkspaceDatabase } from 'src/database/workspaces/index';
 import { UsersDatabase } from 'src/database/users';
 import { APIException } from '../exception/api.exception';
 import { UpdateSettingsReqDto } from './dto/create.settings.dto';

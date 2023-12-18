@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Role, User } from '@prisma/client';
+import { Role, User, UserStatus } from '@prisma/client';
 import {
   CreateUserData,
   GoogleLoginCreateUser,
@@ -196,8 +196,29 @@ export class UsersDatabase {
 
   async createGoogleLoginUser(data: GoogleLoginCreateUser) {
     try {
+      const onboadingSteps = [
+        {
+          step: 'ACCESS_SELECTION',
+          index: 1,
+          completed: false,
+          finalStep: false,
+          optional: false,
+        },
+        {
+          step: 'INVITATION',
+          index: 2,
+          completed: false,
+          finalStep: true,
+          optional: false,
+        },
+      ];
+      const newModifiedData = {
+        ...data,
+        onboadingSteps: [...onboadingSteps],
+        status: UserStatus.ONBOARD,
+      };
       return await this.prisma.user.create({
-        data,
+        data: newModifiedData,
         select: {
           id: true,
           email: true,
