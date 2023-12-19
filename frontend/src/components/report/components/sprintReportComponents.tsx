@@ -58,13 +58,15 @@ const SprintReportComponent = ({ data }: any) => {
   });
   return (
     <div className="flex w-full flex-col gap-5">
-      <div className="flex items-center gap-1 py-2">
-        <div className="w-[110px] font-semibold"> Sprint Progress </div>
-        <ProgressComponent
-          done={data?.sprintInfo?.done}
-          total={data?.sprintInfo?.total}
-        />
-      </div>
+      {typeof data?.sprintInfo?.total === "number" && (
+        <div className="flex items-center gap-1 py-2">
+          <div className="w-[110px] font-semibold"> Sprint Progress </div>
+          <ProgressComponent
+            done={data?.sprintInfo?.done}
+            total={data?.sprintInfo?.total}
+          />
+        </div>
+      )}
       <SprintReportTabel data={modifiedData} />
     </div>
   );

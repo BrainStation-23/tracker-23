@@ -105,25 +105,18 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
       align: "center",
     });
   });
-  // columns.push({
-  //     title: "Total",
-  //     dataIndex: "totalTime",
-  //     key: "totalTime",
-  //     align: "center",
-  //     fixed: "right",
-  //     render: (_: any, { totalTime }: any) => {
-  //         return (
-  //             <div className="w-full rounded px-2 text-center text-black">
-  //                 <FormatTimeForSettings time={totalTime} />
-  //             </div>
-  //         );
-  //     },
-  //     sorter: (a: any, b: any) => {
-  //         if (a.totalTime < b.totalTime) return -1;
-  //         if (a.totalTime > b.totalTime) return 1;
-  //         return 0;
-  //     },
-  // });
+  if (column.length < 6)
+    columns.push({
+      title: "-",
+      dataIndex: "totalTime",
+      key: "totalTime",
+      align: "center",
+      render: (_: any, { totalTime }: any) => {
+        return (
+          <div className="w-full rounded px-2 text-center text-black">-</div>
+        );
+      },
+    });
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {
       current: 1,
@@ -153,7 +146,7 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
       rowKey={(d) => d.user}
       pagination={tableParams.pagination}
       onChange={handleTableChange}
-      className="w-fit"
+      className="w-full"
       bordered
     />
   );

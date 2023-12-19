@@ -130,22 +130,19 @@ const TaskListReportComponent = ({ tasks }: any) => {
     },
   ];
   return (
-    <>
-      {" "}
+    <div className="flex w-full flex-col justify-center gap-4">
       {tasks.length ? (
-        <div className="flex flex-col gap-4">
-          <Table
-            columns={columns}
-            dataSource={tasks}
-            // onChange={onChange}
-            rowKey={"id"}
-            pagination={{ position: ["bottomCenter"] }}
-          />
-        </div>
+        <Table
+          columns={columns}
+          dataSource={tasks}
+          // onChange={onChange}
+          rowKey={"id"}
+          pagination={{ position: ["bottomCenter"] }}
+        />
       ) : (
-        <Empty description="No tasks" />
-      )}{" "}
-    </>
+        <Empty className="mt-12" description="No tasks" />
+      )}
+    </div>
   );
 };
 
