@@ -5,16 +5,16 @@ import { DataMigrationService } from './data_migration.service';
 export class DataMigrationController {
   constructor(private dataMigrationService: DataMigrationService) {}
 
-  @Get('user')
-  // @UseGuards(JwtAuthGuard)
-  async getAndCreateUser() {
-    return this.dataMigrationService.getAndCreateUsers();
-  }
-  @Get('task')
-  // @UseGuards(JwtAuthGuard)
-  async getAndCreateTask() {
-    return this.dataMigrationService.getAndCreateTasks();
-  }
+  // @Get('user')
+  // // @UseGuards(JwtAuthGuard)
+  // async getAndCreateUser() {
+  //   return this.dataMigrationService.getAndCreateUsers();
+  // }
+  // @Get('task')
+  // // @UseGuards(JwtAuthGuard)
+  // async getAndCreateTask() {
+  //   return this.dataMigrationService.getAndCreateTasks();
+  // }
 
   @Get('user/update-status')
   // @UseGuards(JwtAuthGuard)
