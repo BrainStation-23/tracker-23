@@ -179,7 +179,10 @@ const SprintReportTabel = ({ data }: any) => {
           />
         </div>
       ) : (
-        <Empty description="Select Project And Sprint to View Data" />
+        <Empty
+          className="mt-12"
+          description="Select Project And Sprint to View Data"
+        />
       )}
     </>
   );
