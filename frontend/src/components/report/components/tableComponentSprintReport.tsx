@@ -82,7 +82,7 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
         },
         {
           title: (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-max">
               <LuTimer />
               Spent Time
             </div>
