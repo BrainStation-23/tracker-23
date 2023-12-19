@@ -54,8 +54,8 @@ const ReportComponent = () => {
   const [status, setStatus] = useState([]);
   const [priority, setPriority] = useState([]);
   const [activeTab, setActiveTab] = useState<ReportPageTabs>(
-    // "Time Sheet"
-    "Sprint Report"
+    "Time Sheet"
+    // "Sprint Report"
   );
   const getReport = async () => {
     setIsLoading(true);

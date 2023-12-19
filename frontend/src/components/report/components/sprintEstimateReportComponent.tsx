@@ -1,3 +1,4 @@
+import { Empty } from "antd";
 import TableComponentSprintReport from "./tableComponentSprintReport";
 type Props = {
   data: any;
@@ -11,7 +12,11 @@ const SpritEstimateReportComponent = ({ data }: Props) => {
   });
   return (
     <div className="flex w-full justify-center">
-      <TableComponentSprintReport data={tableData} column={data?.columns} />;
+      {tableData?.length > 0 ? (
+        <TableComponentSprintReport data={tableData} column={data?.columns} />
+      ) : (
+        <Empty className="mt-12" description="No Data" />
+      )}
     </div>
   );
 };
