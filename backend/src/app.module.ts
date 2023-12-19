@@ -18,6 +18,7 @@ import { UsersModule } from './module/user/users.module';
 import { CronService } from './module/cron/cron.service';
 import { HelperModule } from './module/helper/helper.module';
 import { ScriptsModule } from './module/scripts/scripts.module';
+import { DataMigrationModule } from './module/data_migration/data_migration.module';
 
 @Module({
   imports: [
@@ -38,7 +39,7 @@ import { ScriptsModule } from './module/scripts/scripts.module';
     NotificationModule,
     SprintsModule,
     JiraModule,
-    // DataMigrationModule,
+    DataMigrationModule,
     EmailModule,
     ProjectsModule,
     UsersModule,
