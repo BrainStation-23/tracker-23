@@ -9,7 +9,11 @@ const SpritEstimateReportComponent = ({ data }: Props) => {
       td[ud.userId] = ud;
     });
   });
-  return <TableComponentSprintReport data={tableData} column={data?.columns} />;
+  return (
+    <div className="flex w-full justify-center">
+      <TableComponentSprintReport data={tableData} column={data?.columns} />;
+    </div>
+  );
 };
 
 export default SpritEstimateReportComponent;
