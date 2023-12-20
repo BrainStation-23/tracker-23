@@ -33,4 +33,10 @@ export class SprintsController {
   ) {
     return this.sprintsService.sprintView(user, query);
   }
+
+  @Get('report-page')
+  @UseGuards(JwtAuthGuard)
+  async getReportPageSprints(@GetUser() user: User) {
+    return this.sprintsService.getReportPageSprints(user);
+  }
 }

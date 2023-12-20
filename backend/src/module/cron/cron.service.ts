@@ -21,29 +21,20 @@ export class CronService {
     cron.schedule('0 0 * * *', async () => {
       try {
         // Add your cron job logic here
-        const integrations = await this.prisma.integration.findMany({
+        const users: any[] = await this.prisma.user.findMany({
           select: {
-            Projects: {
-              where: {
-                integrated: true,
-              },
-            },
-            userIntegrations: {
-              select: {
-                userWorkspace: {
-                  select: {
-                    user: true,
-                  },
-                },
-              },
-            },
+            id: true,
+            firstName: true,
+            lastName: true,
+            picture: true,
+            approved: true,
+            status: true,
+            activeWorkspaceId: true,
+            onboadingSteps: true,
           },
         });
-        for (const integration of integrations) {
-          const user = integration.userIntegrations[0].userWorkspace.user;
-          integration.Projects.map(async (project) => {
-            await this.tasksService.syncTasks(user, project.id);
-          });
+        for (const user of users) {
+          await this.tasksService.syncAll(user);
         }
       } catch (error) {
         throw new APIException(
