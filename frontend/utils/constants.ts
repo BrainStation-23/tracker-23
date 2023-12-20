@@ -1,4 +1,5 @@
 import SecondaryButton from "../src/components/common/buttons/secondaryButton";
+
 export const publicRoutes = [
   "/login",
   "/registration",
@@ -148,4 +149,65 @@ export const whiteListEmails = [
   "dumyshala420@gmail.com",
   "tracker23.team@gmail.com",
   "dipankar47@student.sust.edu",
+];
+
+export const colorPairs = [
+  // Visually appealing colors
+  // { background: "#82e0aa", color: "#333333" }, // Mint Green
+  { background: "#a2c4c9", color: "#333333" }, // Silver Blue
+  { background: "#e59866", color: "#333333" }, // Dark Salmon
+  { background: "#f5cba7", color: "#333333" }, // Light Apricot
+  { background: "#a9dfbf", color: "#333333" }, // Pastel Green
+  { background: "#d4a5a5", color: "#333333" }, // Misty Rose
+  { background: "#b3b6b7", color: "#333333" }, // Silver
+  { background: "#f0b27a", color: "#333333" }, // Pumpkin
+  { background: "#48c9b0", color: "#333333" }, // Medium Turquoise
+  { background: "#d6dbdf", color: "#333333" }, // Iron
+
+  // Additional colors
+  { background: "#2ecc71", color: "#333333" }, // Emerald Green
+  { background: "#3498db", color: "#333333" }, // Dodger Blue
+  { background: "#e74c3c", color: "#333333" }, // Alizarin Red
+  { background: "#f39c12", color: "#333333" }, // Orange
+  { background: "#1abc9c", color: "#333333" }, // Turquoise
+  { background: "#9b59b6", color: "#333333" }, // Amethyst Purple
+  { background: "#34495e", color: "#333333" }, // Wet Asphalt
+  { background: "#e67e22", color: "#333333" }, // Carrot Orange
+  { background: "#16a085", color: "#333333" }, // Green Sea
+  { background: "#95a5a6", color: "#333333" }, // Concrete Gray
+
+  // ... (continue adding more pairs)
+
+  // Earthy tones
+  { background: "#d2b4a9", color: "#333333" }, // Dusty Rose
+  { background: "#bedbbb", color: "#333333" }, // Pale Aqua
+  { background: "#b0a99d", color: "#333333" }, // Rosy Brown
+  { background: "#d0ccd0", color: "#333333" }, // Languid Lavender
+  { background: "#a0b3c5", color: "#333333" }, // Light Slate Gray
+  { background: "#8dd2c2", color: "#333333" }, // Opal
+  { background: "#9fc5e8", color: "#333333" }, // Periwinkle
+  { background: "#c98576", color: "#333333" }, // Antique Ruby
+  { background: "#82c3b2", color: "#333333" }, // Ocean Mist
+  { background: "#93b5e1", color: "#333333" }, // Cornflower Blue
+
+  // ... (continue adding more pairs)
+
+  // Neutral tones
+  { background: "#f0f8ff", color: "#333333" }, // Alice Blue
+  { background: "#f5f5f5", color: "#333333" }, // White Smoke
+  { background: "#f8f8ff", color: "#333333" }, // Ghost White
+  { background: "#f0f8ff", color: "#333333" }, // Alice Blue
+  { background: "#f5f5f5", color: "#333333" }, // White Smoke
+  { background: "#f8f8ff", color: "#333333" }, // Ghost White
+  { background: "#f5f5dc", color: "#333333" }, // Beige
+  { background: "#f0e68c", color: "#333333" }, // Khaki
+  { background: "#dcdcdc", color: "#333333" }, // Gainsboro
+  { background: "#d3d3d3", color: "#333333" }, // Light Gray
+
+  // ... (continue adding more pairs)
+];
+
+export const rowColors = [
+  { background: "#6ba9ff", text: "#333333" }, // Amethyst Purple
+  { background: "#3498db", color: "#333333" }, // Dodger Blue
 ];
