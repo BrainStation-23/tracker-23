@@ -12,7 +12,11 @@ import {
   ResetPasswordDto,
 } from "models/auth";
 import { SendWorkspaceInviteDto } from "models/invitation";
-import { SprintUserReportDto, getTimeSheetReportDto } from "models/reports";
+import {
+  SprintReportDto,
+  SprintUserReportDto,
+  getTimeSheetReportDto,
+} from "models/reports";
 import {
   AddWorkLogParams,
   CreateTaskDto,
@@ -98,7 +102,7 @@ export interface apiFunction {
   getSprintUserReport: (
     data?: SprintUserReportParamsModel
   ) => Promise<SprintUserReportDto>;
-  getSprintReport: (data?: any) => Promise<SprintUserReportDto>;
+  getSprintReport: (data?: any) => Promise<SprintReportDto>;
   getInvitedUserInfo: (token: string) => Promise<any>;
   getAllUsers: () => Promise<any>;
   updateApprovalUser: (

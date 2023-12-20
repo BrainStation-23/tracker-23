@@ -1,15 +1,27 @@
-import { formatDate, getFormattedTime } from "@/services/timeActions";
 import { Avatar, Empty, Table, Typography } from "antd";
+import { ColumnsType } from "antd/es/table";
+import { ModifiesSprintReportUser, SprintReportTask } from "models/reports";
+
+import { formatDate, getFormattedTime } from "@/services/timeActions";
+
 import ProgressComponent from "./progressComponent";
 
 const { Text } = Typography;
-const SprintReportTabel = ({ data }: any) => {
-  const columns: any = [
+type Props = {
+  data: ModifiesSprintReportUser[];
+};
+
+const SprintReportTabel = ({ data }: Props) => {
+  const columns: ColumnsType<ModifiesSprintReportUser> = [
     {
       title: "Date",
       dataIndex: "date",
       key: "date",
-      render: (text: string, record: any, index: number) => ({
+      render: (
+        text: string,
+        record: ModifiesSprintReportUser,
+        index: number
+      ) => ({
         children: (
           <Text
             className="w-[200px] cursor-pointer font-semibold"
@@ -20,6 +32,7 @@ const SprintReportTabel = ({ data }: any) => {
         ),
         props: {
           rowSpan: record.dateColSpan,
+          style: record.dateCellStyle,
         },
       }),
       width: 200,
@@ -29,7 +42,11 @@ const SprintReportTabel = ({ data }: any) => {
       title: "Developer Name",
       dataIndex: "name",
       key: "name",
-      render: (text: any, record: any, index: number) => {
+      render: (
+        text: string,
+        record: ModifiesSprintReportUser,
+        index: number
+      ) => {
         return {
           children: (
             <div className="mx-auto flex w-fit items-center justify-center gap-2 ">
@@ -53,6 +70,7 @@ const SprintReportTabel = ({ data }: any) => {
           ),
           props: {
             rowSpan: record.userSpan,
+            style: record.style,
           },
         };
       },
@@ -62,7 +80,11 @@ const SprintReportTabel = ({ data }: any) => {
       title: "Sprint Assigned Task",
       dataIndex: "assignedTask",
       key: "assignedTask",
-      render: (assignedTask: any, record: any, index: number) => {
+      render: (
+        assignedTask: SprintReportTask,
+        record: ModifiesSprintReportUser,
+        index: number
+      ) => {
         if (assignedTask)
           return {
             children: (
@@ -75,7 +97,10 @@ const SprintReportTabel = ({ data }: any) => {
                 </Text>
               </div>
             ),
-            props: { rowSpan: 1 },
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
           };
         else
           return {
@@ -87,6 +112,7 @@ const SprintReportTabel = ({ data }: any) => {
             ),
             props: {
               rowSpan: 1,
+              style: record.style,
             },
           };
       },
@@ -96,7 +122,11 @@ const SprintReportTabel = ({ data }: any) => {
       title: "Yesterday Task",
       dataIndex: "yesterdayTasks",
       key: "yesterdayTask",
-      render: (task: any, record: any, index: number) => {
+      render: (
+        task: SprintReportTask,
+        record: ModifiesSprintReportUser,
+        index: number
+      ) => {
         if (record.yesterdayTask)
           return {
             children: (
@@ -111,6 +141,7 @@ const SprintReportTabel = ({ data }: any) => {
             ),
             props: {
               rowSpan: 1,
+              style: record.style,
             },
           };
         else
@@ -118,6 +149,7 @@ const SprintReportTabel = ({ data }: any) => {
             children: <></>,
             props: {
               rowSpan: 1,
+              style: record.style,
             },
           };
       },
@@ -127,7 +159,11 @@ const SprintReportTabel = ({ data }: any) => {
       title: "Today's Task",
       dataIndex: "todayTasks",
       key: "todaysTask",
-      render: (task: any, record: any, index: number) => {
+      render: (
+        task: SprintReportTask,
+        record: ModifiesSprintReportUser,
+        index: number
+      ) => {
         if (record.todayTask)
           return {
             children: (
@@ -142,6 +178,7 @@ const SprintReportTabel = ({ data }: any) => {
             ),
             props: {
               rowSpan: 1,
+              style: record.style,
             },
           };
         else
@@ -149,6 +186,7 @@ const SprintReportTabel = ({ data }: any) => {
             children: <></>,
             props: {
               rowSpan: 1,
+              style: record.style,
             },
           };
       },
