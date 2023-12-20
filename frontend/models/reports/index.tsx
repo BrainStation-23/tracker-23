@@ -29,3 +29,75 @@ export type ReportPageTabs =
   | "Sprint Estimate"
   | "Sprint Report"
   | "Task List";
+
+// Define models for tasks
+export interface SprintReportTask {
+  title: string;
+  key: string;
+  status: string;
+  statusCategoryName: string;
+}
+
+// Define models for user details
+export interface SprintReporUser {
+  userId: number;
+  name: string;
+  picture: string | null;
+  devProgress: DevProgress;
+  assignedTasks: SprintReportTask[];
+  yesterdayTasks: SprintReportTask[];
+  todayTasks: SprintReportTask[];
+}
+
+// Define models for date-wise user data
+export interface SprintReporDateData {
+  date: string;
+  users: SprintReporUser[];
+}
+
+// Define models for sprint information
+export interface SprintReporSprintInfo {
+  name: string;
+  projectName: string;
+  total: number;
+  done: number;
+}
+
+export interface SprintReportDto {
+  data: SprintReporDateData[];
+  sprintInfo: SprintReporSprintInfo;
+}
+
+interface DevProgress {
+  total: number;
+  done: number;
+}
+
+interface Style {
+  background: string;
+  color: string;
+}
+
+interface DateCellStyle {
+  background: string;
+  text: string;
+}
+
+export interface ModifiesSprintReportUser {
+  userId: number;
+  name: string;
+  picture: string;
+  devProgress: DevProgress;
+  assignedTasks: SprintReportTask[];
+  yesterdayTasks: SprintReportTask[]; // You may want to define a proper interface for tasks
+  todayTasks: SprintReportTask[]; // You may want to define a proper interface for tasks
+  date: string;
+  sprintAssignedTasks: SprintReportTask[];
+  dateColSpan: number;
+  style: Style;
+  dateCellStyle: DateCellStyle;
+  userSpan: number;
+  assignedTask: SprintReportTask | null;
+  todayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
+  yesterdayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
+}

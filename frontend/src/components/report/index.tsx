@@ -2,8 +2,9 @@ import { message } from "antd";
 import { userAPI } from "APIs";
 import {
   ReportPageTabs,
-  SprintUserReportDto,
+  SprintReportDto,
   SprintUser,
+  SprintUserReportDto,
 } from "models/reports";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
@@ -24,8 +25,8 @@ import SpritEstimateReportComponent from "./components/sprintEstimateReportCompo
 import SprintReportComponent from "./components/sprintReportComponents";
 import TableComponent from "./components/tableComponentReport";
 import TaskListReportComponent from "./components/taskListReportComponent";
-import TopPanelTaskListComponents from "./components/topPanelTaskListComponents";
 import TopPanelSprintReportComponents from "./components/topPanelSprintReportComponents";
+import TopPanelTaskListComponents from "./components/topPanelTaskListComponents";
 
 const ReportComponent = () => {
   const dispatch = useDispatch();
@@ -36,7 +37,7 @@ const ReportComponent = () => {
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [sprintUserReportData, setSprintUserReportData] =
     useState<SprintUserReportDto>();
-  const [sprintReportData, setSprintReportData] = useState<any>();
+  const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
   const [sprints, setSprints] = useState<number[]>([]);
   const [sprintReportSprintId, setSprintReportSprintId] = useState<number>();
   const [users, setUsers] = useState<SprintUser[]>([]);
@@ -191,22 +192,15 @@ const ReportComponent = () => {
         dateRangeSprintReport[0]
       )
     ) {
-      console.log(
-        "🚀 ~ file: index.tsx:200 ~ getSprintReport ~ sprintReportSprintId , dateRangeSprintReport[0] , dateRangeSprintReport[0]:",
-        sprintReportSprintId,
-        dateRangeSprintReport[0],
-        dateRangeSprintReport[0]
-      );
       setSprintReportData(null);
       return;
     }
     setIsLoading(true);
-    const res: SprintUserReportDto = await userAPI.getSprintReport({
+    const res = await userAPI.getSprintReport({
       sprintId: sprintReportSprintId,
       startDate: dateRangeSprintReport[0],
       endDate: dateRangeSprintReport[1],
     });
-    console.log("🚀 ~ file: index.tsx:193 ~ getSprintReport ~ res:", res);
     res && setSprintReportData(res);
     res && setSprintReportFecthedOnce(true);
     setIsLoading(false);
@@ -215,7 +209,6 @@ const ReportComponent = () => {
   const getUserListByProject = async () => {
     const res = await userAPI.userListByProject(projects);
     res && setUsers(res);
-    console.log("🚀 ~ file: index.tsx:58 ~ getUserListByProject ~ res:", res);
   };
   const getTaskListReport = async () => {
     setIsLoading(true);
