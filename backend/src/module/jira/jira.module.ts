@@ -11,18 +11,22 @@ import { WorkspacesService } from 'src/module/workspaces/workspaces.service';
 import { EmailService } from 'src/module/email/email.service';
 import { WorkspaceDatabase } from 'src/database/workspaces';
 import { TasksDatabase } from 'src/database/tasks';
-import { ProjectDatabase } from 'src/database/projects';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { NotificationModule } from '../notifications/notifications.module';
 import { UsersDatabase } from 'src/database/users';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
-import { JiraClient } from 'src/utils/jira';
 import { JiraClientService } from '../helper/client';
+import { ProjectsModule } from '../projects/projects.module';
 
 @Module({
-  imports: [HttpModule.register({}), SprintsModule, NotificationModule],
+  imports: [
+    HttpModule.register({}),
+    SprintsModule,
+    NotificationModule,
+    ProjectsModule,
+  ],
   controllers: [JiraController],
   providers: [
     JiraService,
@@ -34,7 +38,6 @@ import { JiraClientService } from '../helper/client';
     EmailService,
     WorkspaceDatabase,
     TasksDatabase,
-    ProjectDatabase,
     IntegrationDatabase,
     UserIntegrationDatabase,
     UsersDatabase,

@@ -124,12 +124,13 @@ export class UsersService {
       ) {
         const userWorkspace = getUserWorkspaceList[index];
         const userIntegration =
-          await this.userIntegrationDatabase.getUserIntegration({
+          project.integrationId &&
+          (await this.userIntegrationDatabase.getUserIntegration({
             UserIntegrationIdentifier: {
               integrationId: project.integrationId,
               userWorkspaceId: userWorkspace.id,
             },
-          });
+          }));
 
         if (userIntegration && !userMap.has(userWorkspace.id)) {
           userMap.set(userWorkspace.id, {

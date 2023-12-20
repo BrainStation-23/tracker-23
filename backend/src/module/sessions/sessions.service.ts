@@ -874,12 +874,13 @@ export class SessionsService {
         user,
       ] of mappedUserWithWorkspaceId.entries()) {
         const userIntegration =
-          await this.userIntegrationDatabase.getUserIntegration({
+          project.integrationId &&
+          (await this.userIntegrationDatabase.getUserIntegration({
             UserIntegrationIdentifier: {
               integrationId: project.integrationId,
               userWorkspaceId,
             },
-          });
+          }));
         if (userIntegration && !existUserWorkspaceId.has(userWorkspaceId)) {
           existUserWorkspaceId.set(userWorkspaceId, user);
         }
@@ -1521,12 +1522,13 @@ export class SessionsService {
             }
           } else if (user.timeSpent === 0 && user.estimation === 0) {
             const userIntegration =
-              await this.userIntegrationDatabase.getUserIntegration({
+              project.integrationId &&
+              (await this.userIntegrationDatabase.getUserIntegration({
                 UserIntegrationIdentifier: {
                   integrationId: project.integrationId,
                   userWorkspaceId,
                 },
-              });
+              }));
             if (!userIntegration) {
               userMap.set(userWorkspaceId, {
                 ...user,

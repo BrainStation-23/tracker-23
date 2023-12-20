@@ -25,6 +25,11 @@ export class ProjectsController {
     return await this.projectsService.getProjectList(user);
   }
 
+  @Get('report-page')
+  async getProjectsByRole(@GetUser() user: User) {
+    return await this.projectsService.getProjectsByRole(user);
+  }
+
   @Get('/:id')
   async importProject(
     @GetUser() user: User,

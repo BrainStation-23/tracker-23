@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import { Response } from 'express';
 
 import { UpdateProjectRequest } from './dto/update.project.dto';
@@ -15,6 +15,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { WebhooksService } from '../webhooks/webhooks.service';
 import { ConfigService } from '@nestjs/config';
 import { RegisterWebhookDto } from '../webhooks/dto';
+import { JiraService } from '../jira/jira.service';
 
 @Injectable()
 export class ProjectsService {
@@ -28,6 +29,7 @@ export class ProjectsService {
     private prisma: PrismaService,
     private readonly webhooksService: WebhooksService,
     private readonly config: ConfigService,
+    private readonly jiraService: JiraService,
   ) {}
 
   async importProject(user: User, projId: number, res?: Response) {
@@ -307,5 +309,25 @@ export class ProjectsService {
       );
 
     return updatedProject;
+  }
+
+  async getProjectsByRole(user: User) {
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (userWorkspace.role === Role.ADMIN) {
+      const projects =
+        user.activeWorkspaceId &&
+        (await this.projectDatabase.getProjectsWithStatusAndPriorities({
+          workspaceId: user.activeWorkspaceId,
+          integrated: true,
+        }));
+      if (!projects) {
+        return [];
+      }
+      return projects;
+    } else if (userWorkspace.role === Role.USER) {
+      return await this.jiraService.getIntegratedProjectStatusesAndPriorities(
+        user,
+      );
+    }
   }
 }
