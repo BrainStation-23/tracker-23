@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { ignoreRoutes, publicRoutes } from "utils/constants";
 
-export default async function middleware(req: NextRequest) {
+export default function middleware(req: NextRequest) {
   const loginUrl = getUrl(req, "/login");
   const baseUrl = getUrl(req, "/");
   const url = req.url;
@@ -9,11 +9,14 @@ export default async function middleware(req: NextRequest) {
 
   if (!ignoreRoutes.some((route) => url.includes(route))) {
     if (publicRoutes.some((route) => url.includes(route))) {
-      if (accessToken) return NextResponse.redirect(baseUrl);
+      if (accessToken && accessToken.value) {
+        return NextResponse.redirect(baseUrl);
+      }
       return NextResponse.next();
     } else {
-      if (!accessToken) return NextResponse.redirect(loginUrl);
-      else return NextResponse.next();
+      if (!accessToken || !accessToken?.value) {
+        return NextResponse.redirect(loginUrl);
+      } else return NextResponse.next();
     }
   }
   return NextResponse.next();
