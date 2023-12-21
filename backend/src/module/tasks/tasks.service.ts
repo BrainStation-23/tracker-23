@@ -8,7 +8,6 @@ import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
 
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   Integration,
   IntegrationType,
@@ -43,7 +42,6 @@ export class TasksService {
   constructor(
     private prisma: PrismaService,
     private httpService: HttpService,
-    private readonly config: ConfigService,
     private integrationsService: IntegrationsService,
     private myGateway: MyGateway,
     private workspacesService: WorkspacesService,
