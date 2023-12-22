@@ -6,6 +6,7 @@ import { GiSprint } from "react-icons/gi";
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
+import { useRouter } from "next/router";
 
 type Props = {
   sprints: any[];
@@ -29,9 +30,13 @@ const SprintSelectorComponent = ({
 }: Props) => {
   const { Text } = Typography;
   const defaultValues: any = [];
-  const sprintList = useAppSelector(
-    (state: RootState) => state.tasksSlice.sprintList
-  );
+  const router = useRouter();
+  const path = router.asPath;
+
+  const sprintList = path.includes("report")
+    ? useAppSelector((state: RootState) => state.projectList.reportSprintList)
+    : useAppSelector((state: RootState) => state.tasksSlice.sprintList);
+
   const Options: { value: number; label: string; key: number }[] = [];
   if (projectIds) {
     const filteredSprintList = sprintList.filter((sprint) =>

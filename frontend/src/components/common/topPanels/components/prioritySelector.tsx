@@ -4,6 +4,7 @@ import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import SortPriorityIconSvg from "@/assets/svg/sortIcons/SortPriorityIconSvg";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
+import { useRouter } from "next/router";
 
 type TagProps = {
   label: any;
@@ -17,12 +18,22 @@ const PrioritySelectorComponent = ({
   setPriority,
   className,
 }: Props) => {
-  const priorityNames = useAppSelector(
-    (state: RootState) => state.prioritySlice.priorityNames
-  );
-  const priorities = useAppSelector(
-    (state: RootState) => state.prioritySlice.priorities
-  );
+  const router = useRouter();
+  const path = router.asPath;
+
+  const priorityNames = path.includes("report")
+    ? useAppSelector(
+        (state: RootState) => state.projectList.reportProjectPriorityNames
+      )
+    : useAppSelector((state: RootState) => state.prioritySlice.priorityNames);
+
+  useAppSelector((state: RootState) => state.prioritySlice.priorityNames);
+
+  const priorities = path.includes("report")
+    ? useAppSelector(
+        (state: RootState) => state.projectList.reportProjectPriorities
+      )
+    : useAppSelector((state: RootState) => state.prioritySlice.priorities);
 
   const tagRender = (props: TagProps) => {
     const { Text } = Typography;

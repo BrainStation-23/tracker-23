@@ -19,6 +19,7 @@ import { WebhooksModule } from '../webhooks/webhooks.module';
 import { SessionsModule } from '../sessions/sessions.module';
 import { UsersModule } from '../user/users.module';
 import { EmailModule } from '../email/email.module';
+import { JiraService } from '../jira/jira.service';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { EmailModule } from '../email/email.module';
     SprintDatabase,
     SprintTaskDatabase,
     JiraApiCalls,
+    JiraService,
   ],
   controllers: [ProjectsController],
   exports: [ProjectsService, ProjectDatabase],

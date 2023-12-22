@@ -793,7 +793,7 @@ export class TasksService {
   }
 
   async getUserIntegration(userWorkspaceId: number, integrationId: number) {
-    return this.prisma.userIntegration.findUnique({
+    return await this.prisma.userIntegration.findUnique({
       where: {
         UserIntegrationIdentifier: {
           integrationId,
@@ -1516,10 +1516,6 @@ export class TasksService {
     try {
       for (const projectId of projectIds) {
         const synced = await this.syncTasks(user, projectId);
-        // console.log(
-        //   '🚀 ~ file: tasks.service.ts:1436 ~ TasksService ~ syncAll ~ synced:',
-        //   synced,
-        // );
         if (synced) syncedProjects++;
       }
       try {

@@ -28,6 +28,6 @@ import { HelperModule } from '../helper/helper.module';
     JiraApiCalls,
   ],
   controllers: [SprintsController],
-  exports: [SprintsService],
+  exports: [SprintsService, SprintDatabase, SprintTaskDatabase],
 })
 export class SprintsModule {}

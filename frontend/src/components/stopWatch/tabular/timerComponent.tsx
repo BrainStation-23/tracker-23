@@ -49,7 +49,7 @@ function Stopwatch({ milliseconds, task }: Props) {
     hours > 0 && formattedTime.push(hours + "h");
     minutes >= 1.0
       ? formattedTime.push(`${minutes}m`)
-      : formattedTime.push(`${sm}m`);
+      : formattedTime.push(`${sm.toFixed(1)}m`);
     return formattedTime.join(" ");
   };
 

@@ -53,6 +53,8 @@ export class JiraController {
   @UseGuards(JwtAuthGuard)
   @Get('projects')
   async getProjects(@GetUser() user: User) {
-    return await this.jiraService.getIntegratedProjectStatusesAndPriorities(user);
+    return await this.jiraService.getIntegratedProjectStatusesAndPriorities(
+      user,
+    );
   }
 }
