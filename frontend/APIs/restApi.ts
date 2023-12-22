@@ -578,6 +578,15 @@ export async function getJiraSprintsRest() {
   }
 }
 
+export async function getReportSprintsRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.reportSprints}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
 export async function getJiraActiveSprintTasksRest(
   searchParams: SearchParamsModel
 ) {
@@ -604,6 +613,14 @@ export async function getJiraActiveSprintTasksRest(
 export async function getAllProjectsRest() {
   try {
     const res = await axios.get(`${apiEndPoints.projects}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+export async function getAllReportProjectsRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.reportProjects}`);
     return res.data;
   } catch (error: any) {
     return false;

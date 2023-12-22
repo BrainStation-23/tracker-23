@@ -6,37 +6,39 @@ import SprintSelectorComponent from "@/components/common/topPanels/components/sp
 import DateRangePicker from "@/components/datePicker";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
+import { useRouter } from "next/router";
 
 type Props = {
-  sprint: any;
+  sprint: number;
   setSprint: Function;
-  dateRange: any;
-  setDateRange: Function;
-  activeTab: ReportPageTabs;
   project: number;
   setProject: Function;
 };
 const TopPanelSprintReportComponents = ({
   sprint,
   setSprint,
-  dateRange,
-  setDateRange,
-  activeTab,
   project,
   setProject,
 }: Props) => {
-  const sprintList = useAppSelector(
-    (state: RootState) => state.tasksSlice.sprintList
-  );
+  console.log("---------------------------:", sprint, project);
+  const router = useRouter();
+  const path = router.asPath;
+
+  const sprintList = path.includes("report")
+    ? useAppSelector((state: RootState) => state.projectList.reportSprintList)
+    : useAppSelector((state: RootState) => state.tasksSlice.sprintList);
+
+  const checkSprint = () => {
+    const selectedSprint = sprintList.filter(
+      (sp) => sp.id === sprint && sp.projectId === project
+    );
+    return selectedSprint.length !== 1;
+  };
   useEffect(() => {
-    setSprint && setSprint();
+    checkSprint() && setSprint();
   }, [project]);
   return (
     <>
-      <DateRangePicker
-        selectedDate={dateRange}
-        setSelectedDate={setDateRange}
-      />
       <ProjectSelectorComponent
         projectIds={[project]}
         setProjectIds={setProject}

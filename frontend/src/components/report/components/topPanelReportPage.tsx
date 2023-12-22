@@ -1,5 +1,6 @@
 import { MenuProps } from "antd";
 import { ReportPageTabs, SprintUser } from "models/reports";
+import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import MyActiveTab from "@/components/common/tabs/MyActiveTab";
@@ -41,14 +42,12 @@ const TopPanelReportPage = ({
   setSelectedUser,
   datePicker,
 }: Props) => {
-  //   const [selectedDate, setSelectedDate] = useState(dateRange);
-  //   console.log(
-  //     "🚀 ~ file: topPanelReportPage.tsx:33 ~ selectedDate:",
-  //     selectedDate
-  //   );
-  const sprintList = useAppSelector(
-    (state: RootState) => state.tasksSlice.sprintList
-  );
+  const router = useRouter();
+  const path = router.asPath;
+
+  const sprintList = path.includes("report")
+    ? useAppSelector((state: RootState) => state.projectList.reportSprintList)
+    : useAppSelector((state: RootState) => state.tasksSlice.sprintList);
   const options = [
     // { label: "Search", value: "Search" },
     // { label: "Priority", value: "Priority" },
@@ -90,8 +89,7 @@ const TopPanelReportPage = ({
       </div>
       <div className="mt-[3px] flex h-auto max-w-[950px] gap-2">
         <div className="flex h-auto w-full flex-wrap items-center justify-end gap-6">
-          {!["Sprint Estimate", "Sprint Report"].includes(activeTab) &&
-            datePicker}
+          {!["Sprint Estimate"].includes(activeTab) && datePicker}
           {topPanelComponent}
           {!["Sprint Report"].includes(activeTab) && (
             <>
