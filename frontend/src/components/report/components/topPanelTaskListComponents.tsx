@@ -14,8 +14,6 @@ type Props = {
   setStatus: Function;
   priority: any;
   setPriority: Function;
-  sprints: any;
-  setSprints: Function;
 };
 const TopPanelTaskListComponents = ({
   searchText,
@@ -24,8 +22,6 @@ const TopPanelTaskListComponents = ({
   setStatus,
   priority,
   setPriority,
-  sprints,
-  setSprints,
 }: Props) => {
   const sprintList = useAppSelector(
     (state: RootState) => state.tasksSlice.sprintList
@@ -58,18 +54,6 @@ const TopPanelTaskListComponents = ({
         {...{ status, setStatus }}
         className="w-[210px]"
       />
-      {/* <ProjectSelectorComponent
-        key={Math.random()}
-        {...{ projectIds, setProjectIds }}
-        className="w-[210px]"
-      /> */}
-      {/* {sprintList?.length > 0 && (
-          <SprintSelectorComponent
-            {...{ sprints, setSprints }}
-            key={Math.random()}
-            className="w-[210px]"
-          />
-        )} */}
     </>
   );
 };

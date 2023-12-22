@@ -97,6 +97,10 @@ export class IntegrationsService {
         await lastValueFrom(this.httpService.post(url, data, headers))
       ).data;
     } catch (err) {
+      console.log(
+        '🚀 ~ file: integrations.service.ts:100 ~ IntegrationsService ~ getUpdatedUserIntegration ~ err:',
+        err,
+      );
       throw new APIException(
         'Can not update user integration',
         HttpStatus.INTERNAL_SERVER_ERROR,

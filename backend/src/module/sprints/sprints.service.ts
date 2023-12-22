@@ -1,6 +1,6 @@
 import { TasksDatabase } from 'src/database/tasks';
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { User, UserWorkspaceStatus, Session } from '@prisma/client';
+import { User, UserWorkspaceStatus, Session, Role } from '@prisma/client';
 import { GetSprintListQueryDto } from './dto';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { IntegrationsService } from '../integrations/integrations.service';
@@ -374,12 +374,13 @@ export class SprintsService {
       index++
     ) {
       const userIntegration =
-        await this.userIntegrationDatabase.getUserIntegration({
+        sprint.project.integrationId &&
+        (await this.userIntegrationDatabase.getUserIntegration({
           UserIntegrationIdentifier: {
             integrationId: sprint.project.integrationId,
             userWorkspaceId: getUserWorkspaceList[index].id,
           },
-        });
+        }));
       const user = getUserWorkspaceList[index].user;
       if (userIntegration) {
         mappedUserWithWorkspaceId.set(getUserWorkspaceList[index].id, {
@@ -478,5 +479,26 @@ export class SprintsService {
       }
     }
     return false;
+  }
+
+  async getReportPageSprints(user: User) {
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (userWorkspace.role === Role.ADMIN) {
+      const projectIds: number[] = [];
+      const projectList = await this.projectDatabase.getProjects({
+        integrated: true,
+        workspaceId: user.activeWorkspaceId,
+      });
+
+      for (let i = 0, len = projectList.length; i < len; i++) {
+        projectIds.push(projectList[i].id);
+      }
+
+      return await this.sprintDatabase.findSprintListByProjectIdList(
+        projectIds,
+      );
+    } else if (userWorkspace.role === Role.USER) {
+      return await this.getSprintList(user);
+    }
   }
 }
