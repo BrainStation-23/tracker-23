@@ -2,11 +2,11 @@ import { NextResponse, NextRequest } from "next/server";
 import { ignoreRoutes, publicRoutes } from "utils/constants";
 
 export default function middleware(req: NextRequest) {
+  return NextResponse.redirect("/forgotPassword");
   const loginUrl = getUrl(req, "/login");
   const baseUrl = getUrl(req, "/");
   const url = req.url;
   const accessToken = req.cookies.get("access_token");
-
   if (!ignoreRoutes.some((route) => url.includes(route))) {
     if (publicRoutes.some((route) => url.includes(route))) {
       if (accessToken && accessToken.value) {
