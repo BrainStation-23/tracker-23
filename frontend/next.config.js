@@ -14,6 +14,7 @@ module.exports = withTM({
   images: {
     unoptimized: true, // Disable Image Optimization API for next export
   },
+  pageExtensions: ["ts", "tsx"],
 });
 
 // module.exports = {

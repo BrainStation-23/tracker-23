@@ -17,7 +17,10 @@ import {
   getFormattedTotalTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
-import { setSprintListReducer } from "@/storage/redux/tasksSlice";
+import {
+  setReportProjectsSlice,
+  setReportSprintListReducer,
+} from "@/storage/redux/projectsSlice";
 
 import DateRangePicker, { getDateRangeArray } from "../datePicker";
 import ReportWrapper from "./components/reportWrapper";
@@ -46,9 +49,7 @@ const ReportComponent = () => {
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [selectedUser, setSelectedUser] = useState<number>();
   const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
-  const [dateRangeSprintReport, setDateRangeSprintReport] = useState(
-    getDateRangeArray("this-week")
-  );
+
   const [dateRangeArray, setDateRangeArray] = useState([]);
   const [column, setColumns] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -72,6 +73,12 @@ const ReportComponent = () => {
     setDateRangeArray(res.dateRange);
     // setData(formatUserData(res));
     setIsLoading(false);
+  };
+  const getProjectWiseStatues = async () => {
+    {
+      const res = await userAPI.getAllReportProjects();
+      res && dispatch(setReportProjectsSlice(res));
+    }
   };
 
   const conponentToRender = () => {
@@ -130,10 +137,6 @@ const ReportComponent = () => {
           selectedUsers,
           projectIds: projects,
         });
-        console.log(
-          "🚀 ~ file: topPanelExportPage.tsx:54 ~ excelExport ~ res:",
-          res
-        );
         if (!res) {
           message.error(
             res?.error?.message ? res?.error?.message : "Export Failed"
@@ -171,8 +174,8 @@ const ReportComponent = () => {
     setDownloading(false);
   };
   const getSprintList = async () => {
-    const res = await userAPI.getJiraSprints();
-    if (res?.length > 0) dispatch(setSprintListReducer(res));
+    const res = await userAPI.getReportSprints();
+    if (res?.length > 0) dispatch(setReportSprintListReducer(res));
   };
   const getSprintUserReport = async () => {
     setIsLoading(true);
@@ -185,21 +188,15 @@ const ReportComponent = () => {
     setIsLoading(false);
   };
   const getSprintReport = async () => {
-    if (
-      !(
-        sprintReportSprintId &&
-        dateRangeSprintReport[0] &&
-        dateRangeSprintReport[0]
-      )
-    ) {
+    if (!(sprintReportSprintId && dateRange[0] && dateRange[0])) {
       setSprintReportData(null);
       return;
     }
     setIsLoading(true);
     const res = await userAPI.getSprintReport({
       sprintId: sprintReportSprintId,
-      startDate: dateRangeSprintReport[0],
-      endDate: dateRangeSprintReport[1],
+      startDate: dateRange[0],
+      endDate: dateRange[1],
     });
     res && setSprintReportData(res);
     res && setSprintReportFecthedOnce(true);
@@ -265,6 +262,7 @@ const ReportComponent = () => {
   useEffect(() => {
     getSprintUserReport();
     getSprintList();
+    getProjectWiseStatues();
   }, []);
   useEffect(() => {
     getTaskListReport();
@@ -280,7 +278,7 @@ const ReportComponent = () => {
 
   useEffect(() => {
     activeTab === "Sprint Report" && getSprintReport();
-  }, [sprintReportSprintId, dateRangeSprintReport]);
+  }, [sprintReportSprintId, dateRange]);
   useEffect(() => {
     activeTab === "Sprint Report" &&
       !SprintReportFecthedOnce &&
@@ -326,8 +324,6 @@ const ReportComponent = () => {
                   setStatus,
                   priority,
                   setPriority,
-                  sprints,
-                  setSprints,
                 }}
               />
             )}
@@ -336,9 +332,6 @@ const ReportComponent = () => {
                 {...{
                   sprint: sprintReportSprintId,
                   setSprint: setSprintReportSprintId,
-                  dateRange: dateRangeSprintReport,
-                  setDateRange: setDateRangeSprintReport,
-                  activeTab,
                   project: projectSprintReport,
                   setProject: setProjectSprintReport,
                 }}

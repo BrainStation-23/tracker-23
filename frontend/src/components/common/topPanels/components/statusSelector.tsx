@@ -8,6 +8,7 @@ import SortStatusIconSvg from "@/assets/svg/sortIcons/SortStatusIconSvg";
 import { useAppSelector } from "@/storage/redux";
 import { StatusType } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
+import { useRouter } from "next/router";
 
 type Props = {
   status: string[];
@@ -25,9 +26,14 @@ const StatusSelectorComponent = ({ status, setStatus, className }: Props) => {
     // { name: "To Do", statusCategoryName: "TO_DO" },
     // { name: "In Progress", statusCategoryName: "IN_PROGRESS" },
   ];
-  const statuses = useAppSelector(
-    (state: RootState) => state.projectList.statuses
-  );
+
+  const router = useRouter();
+  const path = router.asPath;
+
+  const statuses = path.includes("report")
+    ? useAppSelector((state: RootState) => state.projectList.reportStatuses)
+    : useAppSelector((state: RootState) => state.projectList.statuses);
+
   const Options = statuses
     ? statuses?.map((st) => {
         return {
