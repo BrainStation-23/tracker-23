@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
 import { JiraClientService } from './client';
-import { ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
-import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import { IntegrationsModule } from '../integrations/integrations.module';
 
 @Module({
-  imports: [HttpModule.register({})],
+  imports: [HttpModule.register({}), IntegrationsModule],
   controllers: [],
-  providers: [JiraClientService, ConfigService, UserIntegrationDatabase],
+  providers: [JiraClientService],
   exports: [JiraClientService],
 })
 export class HelperModule {}

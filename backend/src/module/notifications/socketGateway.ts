@@ -8,6 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { AuthService } from 'src/module/auth/auth.service';
+import { tokenParse } from 'src/utils/socket';
 
 const corsOption = {
   origin: `${
@@ -27,28 +28,20 @@ export class MyGateway implements OnModuleInit {
 
   onModuleInit() {
     let user;
-    this.server.use(async (socket: any, next) => {
-      const token = socket.handshake.headers.cookie?.slice(13);
-
-      // const token = socket.handshake.query.token;
-      // console.log(
-      //   '🚀 ~ file: socketGateway.ts:33 ~ MyGateway ~ this.server.use ~ token:',
-      //   socket.handshake.query,
-      // );
-      if (token === 'undefined' || !token)
-        return next(new Error('Invalid token'));
+    this.server.use(async (socket, next) => {
+      const cookieString = socket.handshake.headers.cookie;
+      const token = cookieString && tokenParse(cookieString);
+      if (!token) return next(new Error('Invalid token'));
       else {
         user = await this.authService.getUserFromAccessToken(`${token}`);
         if (!user) {
           return next(new Error('Invalid token'));
         }
-
-        socket.user = user;
         return next();
       }
     });
-    this.server.on('connection', async (socket: any) => {
-      console.log('Connected to', socket.user.firstName, 'id', socket.id);
+    this.server.on('connection', async (socket) => {
+      console.log('Connected', socket.id);
     });
     this.server.on('disconnect', (socket) => {
       console.log('disconnect', socket.id);
