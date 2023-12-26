@@ -12,7 +12,6 @@ import { HttpModule } from '@nestjs/axios';
 import { EmailModule } from '../email/email.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { UsersModule } from '../user/users.module';
-import { ProjectsModule } from '../projects/projects.module';
 
 @Module({
   imports: [
@@ -22,7 +21,6 @@ import { ProjectsModule } from '../projects/projects.module';
     EmailModule,
     WorkspacesModule,
     UsersModule,
-    ProjectsModule,
   ],
   controllers: [AuthController, GoogleOAuth2Controller],
   providers: [
@@ -34,5 +32,6 @@ import { ProjectsModule } from '../projects/projects.module';
       useClass: TokenErrorFilter,
     },
   ],
+  exports: [AuthService],
 })
 export class AuthModule {}

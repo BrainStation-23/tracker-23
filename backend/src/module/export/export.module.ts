@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ExportService } from './export.service';
 import { ExportController } from './export.controller';
 import { HttpModule } from '@nestjs/axios';
-import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { ExportDatabase } from 'src/database/exports';
 import { SessionsModule } from '../sessions/sessions.module';
 import { SprintsModule } from '../sprints/sprints.module';
