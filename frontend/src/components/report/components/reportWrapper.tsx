@@ -11,6 +11,7 @@ type Props = {
   activeTab: ReportPageTabs;
   setActiveTab: Function;
   topPanelComponent: any;
+  typeSelector: any;
   datePicker: any;
   sprints: number[];
   setSprints: Function;
@@ -31,6 +32,7 @@ const ReportWrapper = ({
   activeTab,
   setActiveTab,
   topPanelComponent,
+  typeSelector,
   sprints,
   setSprints,
   projects,
@@ -73,6 +75,7 @@ const ReportWrapper = ({
             datePicker,
             selectedUser,
             setSelectedUser,
+            typeSelector,
           }}
           userList={users}
         />

@@ -5,6 +5,7 @@ import { useEffect } from "react";
 
 import MyActiveTab from "@/components/common/tabs/MyActiveTab";
 import MyInactiveTab from "@/components/common/tabs/MyInactiveTab";
+import SourceSelectorComponent from "@/components/common/topPanels/components/dataSouceSelector";
 import ProjectSelectorComponent from "@/components/common/topPanels/components/projectSelector";
 import SprintSelectorComponent from "@/components/common/topPanels/components/sprintSelector";
 import UserSelectorComponent from "@/components/common/topPanels/components/userSelector";
@@ -19,6 +20,7 @@ type Props = {
   setProjects?: any;
   datePicker: any;
   topPanelComponent: any;
+  typeSelector: any;
   sprints: number[];
   setSprints: Function;
   userList: SprintUser[];
@@ -41,6 +43,7 @@ const TopPanelReportPage = ({
   selectedUser,
   setSelectedUser,
   datePicker,
+  typeSelector,
 }: Props) => {
   const router = useRouter();
   const path = router.asPath;
@@ -91,6 +94,8 @@ const TopPanelReportPage = ({
         <div className="flex h-auto w-full flex-wrap items-center justify-end gap-6">
           {!["Sprint Estimate"].includes(activeTab) && datePicker}
           {topPanelComponent}
+          {!["Sprint Estimate", "Sprint Report"].includes(activeTab) &&
+            typeSelector}
           {!["Sprint Report"].includes(activeTab) && (
             <>
               {activeTab === "Task List" ? (

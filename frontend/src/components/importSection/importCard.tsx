@@ -109,7 +109,7 @@ const ImportCard = ({
 
 export default ImportCard;
 
-const integrationIcons: any = {
+export const integrationIcons: any = {
   JIRA: <JiraIconSvg />,
   TRELLO: <TrelloLogoSvg />,
   OUTLOOK: <OutlookLogoSvg />,
