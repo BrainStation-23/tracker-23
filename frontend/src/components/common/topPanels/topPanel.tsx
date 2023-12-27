@@ -11,6 +11,7 @@ import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
+import SourceSelectorComponent from "./components/dataSouceSelector";
 import MoreButtonTopPanel from "./components/moreButtonTopPanel";
 import PrioritySelectorComponent from "./components/prioritySelector";
 import ProjectSelectorComponent from "./components/projectSelector";
@@ -27,6 +28,8 @@ type Props = {
   searchParams: SearchParamsModel;
   checkedOptionList: string[];
   setCheckedOptionList: Function;
+  selectedSource: string[];
+  setSelectedSource: Function;
 };
 const TopPanel = ({
   tasks,
@@ -37,6 +40,8 @@ const TopPanel = ({
   searchParams,
   checkedOptionList,
   setCheckedOptionList,
+  selectedSource,
+  setSelectedSource,
 }: Props) => {
   const [searchText, setSearchText] = useState(searchParams.searchText);
   const [status, setStatus] = useState<string[]>(searchParams.status);
@@ -181,6 +186,11 @@ const TopPanel = ({
               />
             </div>
           )}
+          {
+            <SourceSelectorComponent
+              {...{ selectedSource, setSelectedSource }}
+            />
+          }
           {checkedOptionList.includes("Priority") && (
             <div>
               <PrioritySelectorComponent

@@ -41,7 +41,7 @@ const ReportComponent = () => {
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [sprintUserReportData, setSprintUserReportData] =
     useState<SprintUserReportDto>();
-  const [selectedSource, setSelectedSource] = useState();
+  const [selectedSource, setSelectedSource] = useState<string[]>();
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
   const [sprints, setSprints] = useState<number[]>([]);
   const [sprintReportSprintId, setSprintReportSprintId] = useState<number>();

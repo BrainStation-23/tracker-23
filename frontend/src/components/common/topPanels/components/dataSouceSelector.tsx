@@ -7,7 +7,7 @@ import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import { integrationIcons } from "@/components/importSection/importCard";
 
 type Props = {
-  selectedSource?: string;
+  selectedSource?: string[];
   setSelectedSource?: Function;
   className?: string;
   allSouce?: string[];

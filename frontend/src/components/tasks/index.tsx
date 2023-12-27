@@ -61,6 +61,7 @@ const TasksPage = () => {
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [activeSprintTasks, setActiveSprintTasks] = useState<TaskDto[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedSource, setSelectedSource] = useState<string[]>();
   const [activeTab, setActiveTab] = useState(
     router.query.tab === "pin" ? "Pin" : "All"
   );
@@ -628,6 +629,8 @@ const TasksPage = () => {
               setSearchParams,
               checkedOptionList,
               setCheckedOptionList,
+              selectedSource,
+              setSelectedSource,
             }}
           />
         )}
