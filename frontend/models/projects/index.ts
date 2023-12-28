@@ -36,3 +36,5 @@ export type PriorityDto = {
   color: string;
   projectId: number | null;
 };
+
+export interface GroupProjects extends Record<IntegrationType, ProjectDto[]> {}
