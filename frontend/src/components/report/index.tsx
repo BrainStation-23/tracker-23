@@ -30,6 +30,7 @@ import TableComponent from "./components/tableComponentReport";
 import TaskListReportComponent from "./components/taskListReportComponent";
 import TopPanelSprintReportComponents from "./components/topPanelSprintReportComponents";
 import TopPanelTaskListComponents from "./components/topPanelTaskListComponents";
+import SourceSelectorComponent from "../common/topPanels/components/dataSouceSelector";
 
 const ReportComponent = () => {
   const dispatch = useDispatch();
@@ -40,6 +41,7 @@ const ReportComponent = () => {
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [sprintUserReportData, setSprintUserReportData] =
     useState<SprintUserReportDto>();
+  const [selectedSource, setSelectedSource] = useState<string[]>();
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
   const [sprints, setSprints] = useState<number[]>([]);
   const [sprintReportSprintId, setSprintReportSprintId] = useState<number>();
@@ -232,17 +234,12 @@ const ReportComponent = () => {
       const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
       return {
         ...task,
-        id: task.id,
-        title: task?.title,
-        description: task.description,
-        estimation: task.estimation,
         startTime: formatDate(task.sessions[0]?.startTime),
         endTime: formatDate(task.sessions[task.sessions.length - 1]?.endTime),
         started: started,
         ended: ended,
         total: total,
         totalSpent: getTotalSpentTime(task.sessions),
-        priority: task.priority,
       };
     });
     setTasks(tmpTasks || []);
@@ -260,7 +257,6 @@ const ReportComponent = () => {
     getUserListByProject();
   }, [projects]);
   useEffect(() => {
-    getSprintUserReport();
     getSprintList();
     getProjectWiseStatues();
   }, []);
@@ -312,6 +308,9 @@ const ReportComponent = () => {
             selectedDate={dateRange}
             setSelectedDate={setDateRange}
           />
+        }
+        typeSelector={
+          <SourceSelectorComponent {...{ selectedSource, setSelectedSource }} />
         }
         topPanelComponent={
           <>
