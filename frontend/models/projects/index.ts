@@ -1,3 +1,5 @@
+import { IntegrationType } from "models/integration";
+
 export type ProjectDto = {
   id: number;
   source: string;
@@ -11,6 +13,7 @@ export type ProjectDto = {
   workspaceId: number;
   statuses: StatusDto[];
   priorities: PriorityDto[];
+  integrationType: IntegrationType;
 };
 
 export type StatusDto = {
