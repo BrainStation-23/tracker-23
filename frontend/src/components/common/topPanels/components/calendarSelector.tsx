@@ -10,8 +10,8 @@ import { Project, StatusType } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
 
 type Props = {
-  projectIds: number[];
-  setProjectIds: Function;
+  calendarIds: number[];
+  setCalendarIds: Function;
   className?: string;
   mode?: "multi" | "single";
 };
@@ -22,8 +22,8 @@ type TagProps = {
   onClose: any;
 };
 const CalendarSelectorComponent = ({
-  projectIds,
-  setProjectIds,
+  calendarIds,
+  setCalendarIds,
   className,
   mode = "multi",
 }: Props) => {
@@ -66,7 +66,7 @@ const CalendarSelectorComponent = ({
         onClick={onClose}
         className="m-1 flex w-max cursor-pointer items-center gap-1 rounded border-[1px] border-secondary px-2 py-0.5 text-xs font-medium text-black"
       >
-        {projectIds.length > 1 ? (
+        {calendarIds.length > 1 ? (
           <div className="flex w-max max-w-[30px] items-center text-sm">
             <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
               {label}
@@ -85,12 +85,12 @@ const CalendarSelectorComponent = ({
   };
   useEffect(() => {
     const tmpArray: any[] = [];
-    projectIds?.map((projectId) => {
+    calendarIds?.map((projectId) => {
       Options?.map((option) => {
         if (option.value === projectId) tmpArray.push(option.value);
       });
     });
-  }, [projectIds]);
+  }, [calendarIds]);
   return (
     <div
       className={`flex w-full items-center gap-2 text-sm font-normal text-black ${
@@ -102,13 +102,13 @@ const CalendarSelectorComponent = ({
         <Select
           placeholder="Select Calendar"
           tagRender={(props) => tagRender(props)}
-          value={projectIds[0] ? projectIds : null}
+          value={calendarIds[0] ? calendarIds : null}
           className="w-full"
           showArrow
           maxTagCount={1}
           options={Options}
           onChange={(value) => {
-            setProjectIds(value);
+            setCalendarIds(value);
           }}
         />
       ) : (
@@ -116,13 +116,13 @@ const CalendarSelectorComponent = ({
           placeholder="Select Calendars"
           mode="multiple"
           tagRender={(props) => tagRender(props)}
-          value={projectIds}
+          value={calendarIds}
           className="w-full"
           showArrow
           maxTagCount={1}
           options={Options}
           onChange={(value) => {
-            setProjectIds(value);
+            setCalendarIds(value);
           }}
         />
       )}

@@ -1,5 +1,6 @@
 import { Empty, message, Spin } from "antd";
 import { userAPI } from "APIs";
+import { SearchParamsModel } from "models/apiParams";
 import { CreateTaskDto, TaskDto } from "models/tasks";
 import { useRouter } from "next/router";
 import { createContext, useEffect, useState } from "react";
@@ -8,10 +9,7 @@ import { publicRoutes } from "utils/constants";
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 import { checkIfRunningTask } from "@/services/taskActions";
 import {
-  formatDate,
-  getFormattedTime,
-  getFormattedTotalTime,
-  getTotalSpentTime,
+    formatDate, getFormattedTime, getFormattedTotalTime, getTotalSpentTime
 } from "@/services/timeActions";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { setPriorities } from "@/storage/redux/prioritySlice";
@@ -66,7 +64,7 @@ const TasksPage = () => {
     router.query.tab === "pin" ? "Pin" : "All"
   );
   const [checkedOptionList, setCheckedOptionList] = useState(["Search"]);
-  const [searchParams, setSearchParams] = useState({
+  const [searchParams, setSearchParams] = useState<SearchParamsModel>({
     searchText: "",
     selectedDate: getDateRangeArray("this-week"),
     priority: [],
@@ -75,6 +73,7 @@ const TasksPage = () => {
       // '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
     ],
     sprints: [],
+    types: [],
   });
   const [searchParamsActiveSprint, setSearchParamsActiveSprint] = useState({
     searchText: "",

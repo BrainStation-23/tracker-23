@@ -98,11 +98,11 @@ export const sideMenuOptions = [
     title: "Projects",
     icon: <LuFolder />,
   },
-  {
-    link: "/exports",
-    title: "Exports",
-    icon: <LuDownload />,
-  },
+  // {
+  //   link: "/exports",
+  //   title: "Exports",
+  //   icon: <LuDownload />,
+  // },
   {
     link: "/invitations",
     title: "Invitations",
