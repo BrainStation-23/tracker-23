@@ -1,15 +1,25 @@
 import { Button } from "antd";
 import { userAPI } from "APIs";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 import AddLocalProject from "./addLocalProject";
 import AddProjectList from "./addProjectList";
+import { GroupProjects } from "models/projects";
 
-const AddNewProject = ({ allProjects, setSpinning, setIsModalOpen }: any) => {
+const AddNewProject = ({
+  groupProjects,
+  setSpinning,
+  setIsModalOpen,
+}: {
+  groupProjects: GroupProjects;
+  setSpinning: Dispatch<SetStateAction<boolean>>;
+  setIsModalOpen: Dispatch<SetStateAction<boolean>>;
+}) => {
   const [fromExistingSite, setFromExistingSite] = useState(false);
   const [localProject, setLocalProject] = useState(false);
 
-  const importableProjects = allProjects.filter(
+  // TODO: We have to implement logic for all group (Integration) projects
+  const importableProjects = groupProjects.JIRA.filter(
     (project: any) => !project.integrated
   );
   const closeDropdowns = () => {
@@ -20,7 +30,7 @@ const AddNewProject = ({ allProjects, setSpinning, setIsModalOpen }: any) => {
     "🚀 ~ file: addNewProject.tsx:12 ~ importableProjects:",
     importableProjects
   );
-  useEffect(() => {}, [allProjects]);
+  useEffect(() => {}, [groupProjects]);
   return (
     <div className="flex flex-col gap-3">
       <Button
