@@ -51,14 +51,39 @@ const SourceSelectorComponent = ({
         onClick={onClose}
         className="m-1 flex cursor-pointer items-center gap-1 rounded border-[1px] border-secondary px-2 py-0.5 text-xs font-medium text-black"
       >
-        <div className="flex items-center gap-2 text-sm">
-          {integrationIcons[value as IntegrationType]}
-          <div>{integrationName[value as IntegrationType]}</div>
-        </div>
-
+        {selectedSource.length > 1 ? (
+          <div className="flex w-max max-w-[50px] items-center text-sm">
+            <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
+              <div className="flex items-center gap-2 text-sm">
+                <div>{integrationIcons[value as IntegrationType]}</div>
+                {integrationName[value as IntegrationType]}
+              </div>
+            </Text>
+          </div>
+        ) : (
+          <div className="flex w-max max-w-[90px] items-center text-sm">
+            <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
+              <div className="flex items-center gap-2 text-sm">
+                {integrationIcons[value as IntegrationType]}
+                <div>{integrationName[value as IntegrationType]}</div>
+              </div>
+            </Text>
+          </div>
+        )}
         <CrossIconSvg />
       </div>
     );
+    <div
+      onClick={onClose}
+      className="m-1 flex cursor-pointer items-center gap-1 rounded border-[1px] border-secondary px-2 py-0.5 text-xs font-medium text-black"
+    >
+      <div className="flex items-center gap-2 text-sm">
+        {integrationIcons[value as IntegrationType]}
+        <div>{integrationName[value as IntegrationType]}</div>
+      </div>
+
+      <CrossIconSvg />
+    </div>;
   };
 
   return (

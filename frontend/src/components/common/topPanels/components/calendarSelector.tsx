@@ -2,7 +2,7 @@ import { Select, Typography } from "antd";
 import { StatusDto } from "models/tasks";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { LuFolderOpen } from "react-icons/lu";
+import { LuCalendarDays } from "react-icons/lu";
 
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import { useAppSelector } from "@/storage/redux";
@@ -21,7 +21,7 @@ type TagProps = {
   closable: any;
   onClose: any;
 };
-const ProjectSelectorComponent = ({
+const CalendarSelectorComponent = ({
   projectIds,
   setProjectIds,
   className,
@@ -55,6 +55,7 @@ const ProjectSelectorComponent = ({
   }
   const tagRender = (props: TagProps) => {
     const { label, value, closable, onClose } = props;
+    const statusObj: StatusType = value && JSON.parse(value);
 
     const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
       event.preventDefault();
@@ -96,10 +97,10 @@ const ProjectSelectorComponent = ({
         className ? className : ""
       }`}
     >
-      <LuFolderOpen size={20} />
+      <LuCalendarDays size={20} />
       {mode == "single" ? (
         <Select
-          placeholder="Select Project"
+          placeholder="Select Calendar"
           tagRender={(props) => tagRender(props)}
           value={projectIds[0] ? projectIds : null}
           className="w-full"
@@ -112,7 +113,7 @@ const ProjectSelectorComponent = ({
         />
       ) : (
         <Select
-          placeholder="Select Project"
+          placeholder="Select Calendars"
           mode="multiple"
           tagRender={(props) => tagRender(props)}
           value={projectIds}
@@ -129,4 +130,4 @@ const ProjectSelectorComponent = ({
   );
 };
 
-export default ProjectSelectorComponent;
+export default CalendarSelectorComponent;

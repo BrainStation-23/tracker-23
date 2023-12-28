@@ -18,6 +18,7 @@ import ProjectSelectorComponent from "./components/projectSelector";
 import SprintSelectorComponent from "./components/sprintSelector";
 import StatusSelectorComponent from "./components/statusSelector";
 import TopBarMoreComponent from "./components/topBarMoreComponent";
+import CalendarSelectorComponent from "./components/calendarSelector";
 
 type Props = {
   tasks: TaskDto[];
@@ -62,6 +63,7 @@ const TopPanel = ({
     { label: "Priority", value: "Priority" },
     { label: "Status", value: "Status" },
     { label: "Project", value: "Project" },
+    { label: "Calendar", value: "Calendar" },
   ];
   if (sprintList.length > 0) options.push({ label: "Sprint", value: "Sprint" });
 
@@ -209,15 +211,16 @@ const TopPanel = ({
               />
             </div>
           )}
-          {checkedOptionList.includes("Project") && (
-            <div>
-              <ProjectSelectorComponent
-                key={Math.random()}
-                {...{ projectIds, setProjectIds }}
-                className="w-[210px]"
-              />
-            </div>
-          )}
+          {checkedOptionList.includes("Project") &&
+            selectedSource?.includes("JIRA") && (
+              <div>
+                <ProjectSelectorComponent
+                  key={Math.random()}
+                  {...{ projectIds, setProjectIds }}
+                  className="w-[210px]"
+                />
+              </div>
+            )}
           {checkedOptionList.includes("Sprint") && (
             <div>
               {sprintList.length > 0 && (
@@ -228,6 +231,16 @@ const TopPanel = ({
               )}
             </div>
           )}
+          {checkedOptionList.includes("Calendar") &&
+            selectedSource?.includes("OUTLOOK") && (
+              <div>
+                <CalendarSelectorComponent
+                  key={Math.random()}
+                  {...{ projectIds, setProjectIds }}
+                  className="w-[210px]"
+                />
+              </div>
+            )}
         </div>
         <MoreButtonTopPanel {...{ menuProps, dropdownOpen, setDropdownOpen }} />
       </div>
