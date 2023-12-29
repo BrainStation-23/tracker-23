@@ -263,6 +263,7 @@ model Session {
   updatedAt        DateTime       @updatedAt
   authorId         String?
   integratedTaskId Int?
+  integratedEventId String?
   worklogId        Int?
   userWorkspace    UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
   userWorkspaceId  Int?

@@ -133,7 +133,12 @@ export class OutlookService {
       const calendarList = await this.projectDatabase.getProjects({
         integrationId: integration.id,
       });
-      return calendarList;
+      return calendarList.map((calendar) => {
+        return {
+          ...calendar,
+          integrationType: IntegrationType.OUTLOOK,
+        };
+      });
     } catch (error) {
       console.log(
         '🚀 ~ file: outlook..service.ts:139 ~ OutlookService ~ createIntegration ~ error:',
