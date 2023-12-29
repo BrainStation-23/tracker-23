@@ -57,13 +57,19 @@ export class TasksService {
         return [];
       }
       const { priority, status, text } = query;
-      const sprintIds = query.sprintId as unknown as string;
-      const projectIds = query.projectIds as unknown as string;
       let { startDate, endDate } = query as unknown as GetTaskQuery;
+
+      const sprintIds = query.sprintId as unknown as string;
       const sprintIdArray =
         sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
+
+      const projectIds = query.projectIds as unknown as string;
       const projectIdArray =
         projectIds && projectIds.split(',').map((item) => Number(item.trim()));
+
+      const types = query.types as unknown as string;
+      const typeArray = types && types.split(',');
+
       const userWorkspace = await this.workspacesService.getUserWorkspace(user);
       if (!userWorkspace) {
         return [];
@@ -157,12 +163,9 @@ export class TasksService {
             }),
           ...(priority1 && { priority: { in: priority1 } }),
           ...(status1 && { status: { in: status1 } }),
+          ...(query.types && { source: { in: typeArray } }),
           ...queryFilter,
         };
-        // console.log(
-        //   '🚀 ~ file: tasks.service.ts:126 ~ TasksService ~ getTasks ~ databaseQuery:',
-        //   databaseQuery,
-        // );
         try {
           tasks = await this.prisma.task.findMany({
             where: databaseQuery,
