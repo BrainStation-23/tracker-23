@@ -19,7 +19,7 @@ import { CronService } from './module/cron/cron.service';
 import { HelperModule } from './module/helper/helper.module';
 import { ScriptsModule } from './module/scripts/scripts.module';
 import { DataMigrationModule } from './module/data_migration/data_migration.module';
-import { OutlookModule } from './module/outlook./outlook..module';
+import { OutlookModule } from './module/outlook/outlook.module';
 
 @Module({
   imports: [

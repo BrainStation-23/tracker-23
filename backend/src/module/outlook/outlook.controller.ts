@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
-import { OutlookService } from './outlook..service';
+import { OutlookService } from './outlook.service';
 import { JwtAuthGuard } from 'src/guard';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/decorator';
