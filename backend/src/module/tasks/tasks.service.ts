@@ -841,6 +841,10 @@ export class TasksService {
       'Importing Project',
       'Importing Project',
     );
+    console.log(
+      '🚀 ~ file: tasks.service.ts:844 ~ TasksService ~ sendImportingNotification ~ notification:',
+      notification,
+    );
     this.myGateway.sendNotification(`${user.id}`, notification);
   }
 
