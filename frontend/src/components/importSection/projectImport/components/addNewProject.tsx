@@ -1,10 +1,11 @@
-import { Button } from "antd";
+import { Button, Collapse } from "antd";
 import { userAPI } from "APIs";
+import { GroupProjects } from "models/projects";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 import AddLocalProject from "./addLocalProject";
 import AddProjectList from "./addProjectList";
-import { GroupProjects } from "models/projects";
+import { integrationName, IntegrationType } from "models/integration";
 
 const AddNewProject = ({
   groupProjects,
@@ -15,57 +16,87 @@ const AddNewProject = ({
   setSpinning: Dispatch<SetStateAction<boolean>>;
   setIsModalOpen: Dispatch<SetStateAction<boolean>>;
 }) => {
-  const [fromExistingSite, setFromExistingSite] = useState(false);
   const [localProject, setLocalProject] = useState(false);
 
-  // TODO: We have to implement logic for all group (Integration) projects
-  const importableProjects = groupProjects.JIRA.filter(
-    (project: any) => !project.integrated
-  );
-  const closeDropdowns = () => {
-    setLocalProject(false);
-    setFromExistingSite(false);
-  };
-  console.log(
-    "🚀 ~ file: addNewProject.tsx:12 ~ importableProjects:",
-    importableProjects
-  );
-  useEffect(() => {}, [groupProjects]);
   return (
-    <div className="flex flex-col gap-3">
-      <Button
-        onClick={async () => {
-          try {
-            setSpinning(true);
-            const response = await userAPI.getJiraLink();
-
-            window.open(response, "_self");
-          } catch (error) {
-            console.log(
-              "🚀 ~ file: addNewProject.tsx:22 ~ onClick={ ~ error:",
-              error
-            );
-            setSpinning(false);
-          }
-        }}
-      >
-        Import from new Site
-      </Button>
-      <Button onClick={() => setFromExistingSite(!fromExistingSite)}>
-        Import from Existing Site
-      </Button>
-      {fromExistingSite && (
-        <AddProjectList
-          importableProjects={importableProjects}
-          {...{ setSpinning }}
-        />
-      )}
-      <Button onClick={() => setLocalProject(!localProject)}>
-        Add Local Project
-      </Button>
+    <div className="flex w-full flex-col gap-3">
+      <Collapse defaultActiveKey={["existing-integration"]} accordion={true}>
+        <Collapse.Panel
+          header="Import from new Integration"
+          key="new-integration"
+        >
+          <div className="flex gap-4">
+            {Object.keys(integrationName).map((type) => (
+              <Button
+                key={`new-integration-${type}`}
+                disabled={
+                  integrationName[type as IntegrationType] ===
+                  integrationName.TRELLO
+                }
+                onClick={async () => {
+                  try {
+                    setSpinning(true);
+                    if (
+                      integrationName[type as IntegrationType] ===
+                      integrationName.JIRA
+                    ) {
+                      const response = await userAPI.getJiraLink();
+                      window.open(response, "_self");
+                    } else if (
+                      integrationName[type as IntegrationType] ===
+                      integrationName.OUTLOOK
+                    ) {
+                      const response = await userAPI.getJiraLink();
+                      window.open(response, "_self");
+                    } else if (
+                      integrationName[type as IntegrationType] ===
+                      integrationName.TRACKER23
+                    ) {
+                      setLocalProject(!localProject);
+                    }
+                    setSpinning(false);
+                  } catch (error) {
+                    console.log(
+                      "🚀 ~ file: addNewProject.tsx:22 ~ onClick={ ~ error:",
+                      error
+                    );
+                    setSpinning(false);
+                  }
+                }}
+              >
+                {integrationName[type as IntegrationType]}
+              </Button>
+            ))}
+          </div>
+        </Collapse.Panel>
+        <Collapse.Panel
+          header="Import from existing Integration"
+          key="existing-integration"
+        >
+          <Collapse accordion={true}>
+            {Object.keys(integrationName).map((type) => (
+              <Collapse.Panel
+                header={integrationName[type as IntegrationType]}
+                key={`existing-integration-${type}`}
+              >
+                <AddProjectList
+                  importableProjects={groupProjects[
+                    type as IntegrationType
+                  ].filter((project) => !project.integrated)}
+                  setSpinning={setSpinning}
+                />
+              </Collapse.Panel>
+            ))}
+          </Collapse>
+        </Collapse.Panel>
+      </Collapse>
 
       {localProject && (
-        <AddLocalProject {...{ setSpinning, setIsModalOpen, closeDropdowns }} />
+        <AddLocalProject
+          closeDropdowns={() => setLocalProject(false)}
+          setSpinning={setSpinning}
+          setIsModalOpen={setIsModalOpen}
+        />
       )}
     </div>
   );
