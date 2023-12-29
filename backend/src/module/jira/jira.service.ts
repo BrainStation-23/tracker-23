@@ -121,7 +121,12 @@ export class JiraService {
         integrationProjects.push(tmpIntegrationProjects);
     }
 
-    return integrationProjects;
+    return integrationProjects.map((project) => {
+      return {
+        ...project,
+        integrationType: IntegrationType.JIRA,
+      };
+    });
   }
 
   async createIntegrationAndGetProjects(user: User, siteId: string) {
@@ -290,7 +295,14 @@ export class JiraService {
 
       localProjects && projects.push(...localProjects);
 
-      return projects;
+      return projects.map((project) => {
+        return {
+          ...project,
+          integrationType: project.integration?.type
+            ? project.integration?.type
+            : IntegrationType.TRACKER23,
+        };
+      });
     } catch (error) {
       throw new APIException('Can not get Projects', HttpStatus.BAD_REQUEST);
     }
