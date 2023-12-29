@@ -148,3 +148,50 @@ export const getFormattedTasks = (tasks: TaskDto[]) => {
   return tmpTasks;
 };
 
+export const getFormattedTaskPageTasks = (tasks: TaskDto[]) => {
+  let runningTask: TaskDto;
+  const formattedTasks = tasks.map((task: TaskDto) => {
+    task.sessions = task.sessions.sort(function compareFn(a, b) {
+      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+    });
+    const started =
+      task.sessions && task.sessions[0]
+        ? getFormattedTime(formatDate(task.sessions[0].startTime))
+        : "Not Started";
+    task.sessions = task.sessions.sort((a: any, b: any) =>
+      a.endTime
+        ? new Date(a.endTime).getTime()
+        : 0 - b.endTime
+        ? new Date(b.endTime).getTime()
+        : 0
+    );
+    const ended = task.sessions[task.sessions.length - 1]?.endTime
+      ? getFormattedTime(
+          formatDate(task.sessions[task.sessions.length - 1].endTime)
+        )
+      : task.sessions[0]
+      ? "Running"
+      : "Not Started";
+    if (ended === "Running") runningTask = task;
+    const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
+    return {
+      ...task,
+      startTime: formatDate(task.sessions[0]?.startTime),
+      endTime: formatDate(task.sessions[task.sessions?.length - 1]?.endTime),
+      started: started,
+      created: getFormattedTime(formatDate(task.createdAt)),
+      ended: ended,
+      total: total,
+      percentage: task.estimation
+        ? Math.round(
+            getTotalSpentTime(task.sessions) / (task.estimation * 36000)
+          )
+        : -1,
+      totalSpent: getTotalSpentTime(task.sessions),
+    };
+  });
+  return {
+    formattedTasks,
+    runningTask,
+  };
+};
