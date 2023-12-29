@@ -1,8 +1,12 @@
+import { IntegrationType } from "models/integration";
+
 export type getTimeSheetReportDto = {
   startDate?: any;
   endDate?: any;
   userIds?: any;
   projectIds?: number[];
+  calendarIds?: number[];
+  types?: IntegrationType[];
 };
 
 export interface SprintUser {

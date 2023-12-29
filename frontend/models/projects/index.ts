@@ -1,3 +1,5 @@
+import { IntegrationType } from "models/integration";
+
 export type ProjectDto = {
   id: number;
   source: string;
@@ -11,6 +13,7 @@ export type ProjectDto = {
   workspaceId: number;
   statuses: StatusDto[];
   priorities: PriorityDto[];
+  integrationType: IntegrationType;
 };
 
 export type StatusDto = {
@@ -33,3 +36,5 @@ export type PriorityDto = {
   color: string;
   projectId: number | null;
 };
+
+export interface GroupProjects extends Record<IntegrationType, ProjectDto[]> {}

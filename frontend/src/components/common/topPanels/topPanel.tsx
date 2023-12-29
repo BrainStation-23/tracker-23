@@ -11,12 +11,14 @@ import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
+import SourceSelectorComponent from "./components/dataSouceSelector";
 import MoreButtonTopPanel from "./components/moreButtonTopPanel";
 import PrioritySelectorComponent from "./components/prioritySelector";
 import ProjectSelectorComponent from "./components/projectSelector";
 import SprintSelectorComponent from "./components/sprintSelector";
 import StatusSelectorComponent from "./components/statusSelector";
 import TopBarMoreComponent from "./components/topBarMoreComponent";
+import CalendarSelectorComponent from "./components/calendarSelector";
 
 type Props = {
   tasks: TaskDto[];
@@ -39,9 +41,13 @@ const TopPanel = ({
   setCheckedOptionList,
 }: Props) => {
   const [searchText, setSearchText] = useState(searchParams.searchText);
+  const [selectedSource, setSelectedSource] = useState(searchParams.types);
   const [status, setStatus] = useState<string[]>(searchParams.status);
   const [projectIds, setProjectIds] = useState<number[]>(
     searchParams.projectIds
+  );
+  const [calendarIds, setCalendarIds] = useState<number[]>(
+    searchParams.calendarIds
   );
   const [priority, setPriority] = useState(searchParams.priority);
   const [sprints, setSprints] = useState(searchParams.sprints);
@@ -57,6 +63,7 @@ const TopPanel = ({
     { label: "Priority", value: "Priority" },
     { label: "Status", value: "Status" },
     { label: "Project", value: "Project" },
+    { label: "Calendar", value: "Calendar" },
   ];
   if (sprintList.length > 0) options.push({ label: "Sprint", value: "Sprint" });
 
@@ -78,6 +85,8 @@ const TopPanel = ({
         status: status,
         sprints: sprints,
         projectIds: projectIds,
+        calendarIds: calendarIds,
+        types: selectedSource,
       })
     ) {
       setSearchParams({
@@ -87,6 +96,8 @@ const TopPanel = ({
         status: status,
         sprints: sprints,
         projectIds: projectIds,
+        calendarIds: calendarIds,
+        types: selectedSource,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,7 +108,9 @@ const TopPanel = ({
       JSON.stringify(searchParams.selectedDate) !=
         JSON.stringify(selectedDate) ||
       JSON.stringify(searchParams.status) != JSON.stringify(status) ||
-      JSON.stringify(searchParams.projectIds) != JSON.stringify(projectIds)
+      JSON.stringify(searchParams.projectIds) != JSON.stringify(projectIds) ||
+      JSON.stringify(searchParams.calendarIds) != JSON.stringify(calendarIds) ||
+      JSON.stringify(searchParams.types) != JSON.stringify(selectedSource)
     ) {
       setSearchParams({
         searchText: searchText,
@@ -106,6 +119,8 @@ const TopPanel = ({
         status: status,
         sprints: sprints,
         projectIds: projectIds,
+        calendarIds: calendarIds,
+        types: selectedSource,
       });
     } else if (
       JSON.stringify(sprints) != JSON.stringify(searchParams.sprints)
@@ -117,11 +132,21 @@ const TopPanel = ({
         status: status,
         sprints: sprints,
         projectIds: projectIds,
+        calendarIds: calendarIds,
+        types: selectedSource,
       });
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate, priority, status, sprints, projectIds]);
+  }, [
+    selectedDate,
+    priority,
+    status,
+    sprints,
+    projectIds,
+    calendarIds,
+    selectedSource,
+  ]);
 
   const filterOptions = [
     <TopBarMoreComponent
@@ -181,6 +206,11 @@ const TopPanel = ({
               />
             </div>
           )}
+          {
+            <SourceSelectorComponent
+              {...{ selectedSource, setSelectedSource }}
+            />
+          }
           {checkedOptionList.includes("Priority") && (
             <div>
               <PrioritySelectorComponent
@@ -199,15 +229,16 @@ const TopPanel = ({
               />
             </div>
           )}
-          {checkedOptionList.includes("Project") && (
-            <div>
-              <ProjectSelectorComponent
-                key={Math.random()}
-                {...{ projectIds, setProjectIds }}
-                className="w-[210px]"
-              />
-            </div>
-          )}
+          {checkedOptionList.includes("Project") &&
+            selectedSource?.includes("JIRA") && (
+              <div>
+                <ProjectSelectorComponent
+                  key={Math.random()}
+                  {...{ projectIds, setProjectIds }}
+                  className="w-[210px]"
+                />
+              </div>
+            )}
           {checkedOptionList.includes("Sprint") && (
             <div>
               {sprintList.length > 0 && (
@@ -218,6 +249,16 @@ const TopPanel = ({
               )}
             </div>
           )}
+          {checkedOptionList.includes("Calendar") &&
+            selectedSource?.includes("OUTLOOK") && (
+              <div>
+                <CalendarSelectorComponent
+                  key={Math.random()}
+                  {...{ calendarIds, setCalendarIds }}
+                  className="w-[210px]"
+                />
+              </div>
+            )}
         </div>
         <MoreButtonTopPanel {...{ menuProps, dropdownOpen, setDropdownOpen }} />
       </div>

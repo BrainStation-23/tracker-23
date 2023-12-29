@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { IntegrationType } from "models/integration";
 import { PriorityDto } from "models/projects";
 import { SprintDto, StatusDto } from "models/tasks";
 
@@ -23,6 +24,7 @@ export interface Project {
   priorities?: PriorityDto[];
   workspaceId: number;
   statuses: ProjectStatus[];
+  integrationType: IntegrationType;
 }
 export interface StatusType {
   name: string;

@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { ignoreRoutes, publicRoutes } from "utils/constants";
 
-export default function middleware(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const loginUrl = getUrl(req, "/login");
   const baseUrl = getUrl(req, "/");
   const url = req.url;

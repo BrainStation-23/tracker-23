@@ -1,13 +1,18 @@
 import { Button } from "antd";
 import { userAPI } from "APIs";
-import { Integration } from "models/integration";
+import {
+  Integration,
+  integrationName,
+  IntegrationType,
+} from "models/integration";
 import { useEffect } from "react";
 import {
   IntegrationDescriptionsEnum,
   supportedIntegrations,
 } from "utils/constants";
 
-import JiraLogoFullSvg from "@/assets/svg/JiraFullLogoSvg";
+import JiraIconSvg from "@/assets/svg/JiraIconSvg";
+import OutlookLogoSvg from "@/assets/svg/OutlookLogoSvg";
 import TrelloLogoSvg from "@/assets/svg/TrelloLogoSvg";
 
 import DeleteButton from "../common/buttons/deleteButton";
@@ -15,8 +20,6 @@ import OpenLinkInNewTab from "../common/link/OpenLinkInNewTab";
 
 type Props = {
   data: Integration;
-  selected: string;
-  setSelected: Function;
   handleUninstallIntegration?: Function;
   handleDeleteIntegration?: Function;
   installed?: boolean;
@@ -25,8 +28,6 @@ type Props = {
 
 const ImportCard = ({
   data,
-  selected,
-  setSelected,
   handleUninstallIntegration,
   handleDeleteIntegration,
   installed = false,
@@ -36,7 +37,7 @@ const ImportCard = ({
 
   return (
     <div
-      className={`relative flex w-60 flex-col justify-between rounded-xl border-2 border-[#ECECED] p-4 hover:cursor-pointer`}
+      className={`relative flex w-60 flex-col justify-between rounded-xl border-2 border-[#ECECED] p-4`}
     >
       <div>
         {data.site && adminMode && (
@@ -49,6 +50,7 @@ const ImportCard = ({
         )}
         <div className="flex h-10 items-center gap-2">
           {integrationIcons[data.type]}
+          <div className="text-xl font-bold">{integrationName[data.type]}</div>
         </div>
         {data.site ? (
           <div className="text-sm font-normal">
@@ -63,7 +65,7 @@ const ImportCard = ({
           </div>
         ) : (
           <div className="text-sm font-normal">
-            {IntegrationDescriptionsEnum[data.type as "JIRA"]}
+            {IntegrationDescriptionsEnum[data.type as IntegrationType]}
           </div>
         )}
       </div>
@@ -107,7 +109,8 @@ const ImportCard = ({
 
 export default ImportCard;
 
-const integrationIcons: any = {
-  JIRA: <JiraLogoFullSvg />,
+export const integrationIcons: any = {
+  JIRA: <JiraIconSvg />,
   TRELLO: <TrelloLogoSvg />,
+  OUTLOOK: <OutlookLogoSvg />,
 };

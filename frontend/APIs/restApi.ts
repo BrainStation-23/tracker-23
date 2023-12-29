@@ -177,10 +177,19 @@ export async function deleteTaskRest(taskId: any) {
 
 export async function getTasksRest(searchParams: SearchParamsModel) {
   const sprints = searchParams?.sprints;
+  const types = searchParams?.types;
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
   const projectIds = searchParams?.projectIds;
-  const { userIds } = searchParams;
+  const calendarIds = searchParams?.calendarIds;
+  let tmp: number[] = [];
+  if (types?.length > 0) {
+    if (types.includes("JIRA") && projectIds?.length > 0)
+      tmp = tmp.concat(projectIds);
+    if (types.includes("OUTLOOK") && calendarIds?.length > 0)
+      tmp = tmp.concat(calendarIds);
+  }
+  const userIds = searchParams?.userIds;
   try {
     const res = await axios.get(
       apiEndPoints.tasks +
@@ -194,7 +203,8 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
-        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
+        (types?.length > 0 ? `&types=${types}` : "") +
+        (tmp?.length > 0 ? `&projectIds=${tmp}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (status && status.length > 0 ? `&status=${status}` : "")
     );
@@ -216,7 +226,16 @@ export async function getTaskListReportRest(searchParams: SearchParamsModel) {
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
   const projectIds = searchParams?.projectIds;
-  const { userIds } = searchParams;
+  const userIds = searchParams?.userIds;
+  const types = searchParams?.types;
+  const calendarIds = searchParams?.calendarIds;
+  let tmp: number[] = [];
+  if (types?.length > 0) {
+    if (types.includes("JIRA") && projectIds?.length > 0)
+      tmp = tmp.concat(projectIds);
+    if (types.includes("OUTLOOK") && calendarIds?.length > 0)
+      tmp = tmp.concat(calendarIds);
+  }
   try {
     const res = await axios.get(
       apiEndPoints.taskListReport +
@@ -226,11 +245,12 @@ export async function getTaskListReportRest(searchParams: SearchParamsModel) {
           : searchParams?.selectedDate?.length === 2
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
-        (userIds ? `&userIds=${userIds}` : "") +
+        (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
-        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
+        (types?.length > 0 ? `&types=${types}` : "") +
+        (tmp?.length > 0 ? `&projectIds=${tmp}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (status && status.length > 0 ? `&status=${status}` : "")
     );
@@ -252,7 +272,16 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
   const sprints = searchParams?.sprints;
   const priority = getStringFromArray(searchParams?.priority);
   const projectIds = searchParams?.projectIds;
-  const { userIds } = searchParams;
+  const userIds = searchParams?.userIds;
+  const types = searchParams?.types;
+  const calendarIds = searchParams?.calendarIds;
+  let tmp: number[] = [];
+  if (types?.length > 0) {
+    if (types.includes("JIRA") && projectIds?.length > 0)
+      tmp = tmp.concat(projectIds);
+    if (types.includes("OUTLOOK") && calendarIds?.length > 0)
+      tmp = tmp.concat(calendarIds);
+  }
   try {
     const res = await axios.get(
       apiEndPoints.export +
@@ -265,8 +294,9 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
+        (types?.length > 0 ? `&types=${types}` : "") +
         (userIds ? `&userIds=${userIds}` : "") +
-        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
+        (tmp?.length > 0 ? `&projectIds=${tmp}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (status && status.length > 0 ? `&status=${status}` : ""),
       {
@@ -787,13 +817,23 @@ export async function exportTimeSheetReportRest({
   endDate,
   userIds,
   projectIds,
+  types,
+  calendarIds,
 }: getTimeSheetReportDto) {
+  let tmp: number[] = [];
+  if (types?.length > 0) {
+    if (types.includes("JIRA") && projectIds?.length > 0)
+      tmp = tmp.concat(projectIds);
+    if (types.includes("OUTLOOK") && calendarIds?.length > 0)
+      tmp = tmp.concat(calendarIds);
+  }
   try {
     const res = await axios.get(
       `${apiEndPoints.exportTimeSheetReport}` +
         `?startDate=${startDate}&endDate=${endDate}` +
         (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
-        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : ""),
+        (types?.length > 0 ? `&types=${types}` : "") +
+        (tmp?.length > 0 ? `&projectIds=${tmp}` : ""),
       {
         responseType: "blob", // Set responseType to 'blob' to receive binary data
       }
@@ -809,13 +849,23 @@ export async function getTimeSheetReportRest({
   endDate,
   userIds,
   projectIds,
+  types,
+  calendarIds,
 }: getTimeSheetReportDto) {
+  let tmp: number[] = [];
+  if (types?.length > 0) {
+    if (types.includes("JIRA") && projectIds?.length > 0)
+      tmp = tmp.concat(projectIds);
+    if (types.includes("OUTLOOK") && calendarIds?.length > 0)
+      tmp = tmp.concat(calendarIds);
+  }
   try {
     const res = await axios.get(
       `${apiEndPoints.timeSheetReport}/` +
         `?startDate=${startDate}&endDate=${endDate}` +
         (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
-        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "")
+        (types?.length > 0 ? `&types=${types}` : "") +
+        (tmp?.length > 0 ? `&projectIds=${tmp}` : "")
     );
     return res.data;
   } catch (error: any) {

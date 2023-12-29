@@ -1,9 +1,13 @@
+import { IntegrationType } from "models/integration";
+
 export interface SearchParamsModel {
   searchText?: string;
   selectedDate?: any;
   priority?: string[];
   status?: string[];
+  types?: IntegrationType[];
   projectIds?: number[];
+  calendarIds?: number[];
   userIds?: number[];
   sprints?: number[];
 }
