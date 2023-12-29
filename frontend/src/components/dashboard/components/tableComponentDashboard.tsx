@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
+import { integrationIcons } from "@/components/importSection/importCard";
 import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
 import TimeDisplayComponent from "@/components/tasks/components/timeDisplayComponent";
 import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";
@@ -32,8 +33,7 @@ const DashboardTableComponent = ({
       render: (_: any, task: TaskDto) => {
         return (
           <div className=" flex items-center gap-2">
-            {
-              // task.status !== "DONE" &&
+            {task.source === "JIRA" ? (
               <>
                 {runningTask?.id != task.id ? (
                   <div
@@ -53,28 +53,50 @@ const DashboardTableComponent = ({
                   </div>
                 )}
               </>
-            }
+            ) : (
+              <div className="h-1 p-4"></div>
+            )}
             {/* {task.status === "DONE" && <div className="w-[34px]"></div>} */}
             <div className="flex flex-col gap-2">
               <Text className="w-[200px] " ellipsis={{ tooltip: task?.title }}>
                 {/* <div>{task?.title}</div> */}
                 {task?.title}
               </Text>
-              {task.projectName && (
-                <div
-                  className="w-max bg-[#4D4E55] px-2 py-0.5 text-xs font-medium"
-                  style={{
-                    background: "#ECECED",
-                    borderRadius: "4px",
-                  }}
-                >
-                  {task.projectName}
-                </div>
-              )}
+              <div className="flex cursor-pointer gap-2">
+                {task.projectName && (
+                  <div
+                    className="w-max bg-[#4D4E55] px-2 py-0.5 text-xs font-medium"
+                    style={{
+                      background: "#ECECED",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {task.projectName}
+                  </div>
+                )}
+                {integrationIcons[task.source]}
+              </div>
             </div>
           </div>
         );
       },
+    },
+    {
+      title: "Source",
+      dataIndex: "dataSource",
+      key: "dataSource",
+      // align: "center",
+      render: (dataSource: any, task: TaskDto) => (
+        <div className="flex max-w-[150px] items-center gap-2 ">
+          <div>{integrationIcons[task.source]} </div>
+          <Text
+            className="w-min cursor-pointer"
+            ellipsis={{ tooltip: dataSource }}
+          >
+            {dataSource}
+          </Text>
+        </div>
+      ),
     },
     // {
     //   title: "Status",

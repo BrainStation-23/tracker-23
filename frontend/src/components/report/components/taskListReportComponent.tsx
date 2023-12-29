@@ -11,6 +11,7 @@ import {
   getFormattedTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
+import { integrationIcons } from "@/components/importSection/importCard";
 
 const { Text } = Typography;
 const TaskListReportComponent = ({ tasks }: any) => {
@@ -45,7 +46,7 @@ const TaskListReportComponent = ({ tasks }: any) => {
       // render: (text) => <a>{text}</a>,
     },
     {
-      title: "Project Name",
+      title: "Project / Calendar",
       dataIndex: "projectName",
       key: "projectName",
       render: (_: any, { projectName }: TaskDto) => (
@@ -55,6 +56,23 @@ const TaskListReportComponent = ({ tasks }: any) => {
       ),
       align: "center",
       // render: (text) => <a>{text}</a>,
+    },
+    {
+      title: "Source",
+      dataIndex: "dataSource",
+      key: "dataSource",
+      // align: "center",
+      render: (dataSource: any, task: TaskDto) => (
+        <div className="flex max-w-[150px] items-center gap-2 ">
+          <div>{integrationIcons[task.source]} </div>
+          <Text
+            className="w-min cursor-pointer"
+            ellipsis={{ tooltip: dataSource }}
+          >
+            {dataSource}
+          </Text>
+        </div>
+      ),
     },
     {
       title: "Status",

@@ -111,8 +111,10 @@ const ReportComponent = () => {
           priority,
           status,
           sprints,
+          types: selectedSource,
           projectIds: projects,
           userIds: [selectedUser],
+          calendarIds,
         });
         console.log(
           "🚀 ~ file: topPanelExportPage.tsx:54 ~ excelExport ~ res:",
@@ -153,7 +155,9 @@ const ReportComponent = () => {
           startDate: dateRange[0],
           endDate: dateRange[1],
           userIds: selectedUsers,
+          types: selectedSource,
           projectIds: projects,
+          calendarIds,
         });
         console.log(
           "🚀 ~ file: topPanelExportPage.tsx:54 ~ excelExport ~ res:",
@@ -215,7 +219,8 @@ const ReportComponent = () => {
       status,
       sprints,
       projectIds: projects,
-      userIds: [selectedUser],
+      userIds: selectedUser ? [selectedUser] : [],
+      types: selectedSource,
     });
     if (res) {
       const { formattedTasks } = getFormattedTasks(res);
@@ -248,6 +253,7 @@ const ReportComponent = () => {
     sprints,
     projects,
     selectedUser,
+    selectedSource,
   ]);
 
   useEffect(() => {
