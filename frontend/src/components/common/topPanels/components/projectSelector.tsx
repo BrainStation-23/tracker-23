@@ -34,9 +34,11 @@ const ProjectSelectorComponent = ({
   const router = useRouter();
   const path = router.asPath;
 
-  const projects = path.includes("report")
-    ? useAppSelector((state: RootState) => state.projectList.reportProjects)
-    : useAppSelector((state: RootState) => state.projectList.projects);
+  const projects = (
+    path.includes("report")
+      ? useAppSelector((state: RootState) => state.projectList.reportProjects)
+      : useAppSelector((state: RootState) => state.projectList.projects)
+  )?.filter((project) => project.integrationType !== "OUTLOOK");
   const Options = projects
     ? projects?.map((project) => {
         return {

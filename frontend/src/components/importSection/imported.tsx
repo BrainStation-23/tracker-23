@@ -9,8 +9,6 @@ const IntegratedServices = ({ data }: any) => {
           <ImportCard
             key={Math.random()}
             data={d}
-            selected={d.title}
-            setSelected={() => {}}
           />
         ))}
       </div>
