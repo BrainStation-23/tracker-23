@@ -33,6 +33,12 @@ const AddNewProject = ({
                   integrationName[type as IntegrationType] ===
                   integrationName.TRELLO
                 }
+                className={
+                  integrationName[type as IntegrationType] ===
+                    integrationName.TRACKER23 && localProject
+                    ? "bg-blue-300"
+                    : ""
+                }
                 onClick={async () => {
                   try {
                     setSpinning(true);
