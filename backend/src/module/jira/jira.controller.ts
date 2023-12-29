@@ -20,6 +20,10 @@ export class JiraController {
 
   @Get('callback')
   callback(@Req() req: Request) {
+    console.log(
+      '🚀 ~ file: jira.controller.ts:23 ~ JiraController ~ callback ~ req:',
+      req,
+    );
     //console.log(req.headers);
     //console.log(req.query);
   }

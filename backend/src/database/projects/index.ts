@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Project } from '@prisma/client';
+import { Project, Task } from '@prisma/client';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 
 @Injectable()
@@ -306,6 +306,17 @@ export class ProjectDatabase {
           },
           priorities: true,
         },
+      });
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  }
+
+  async createProjects(filter: Project[]) {
+    try {
+      return await this.prisma.project.createMany({
+        data: filter,
       });
     } catch (error) {
       console.log(error);

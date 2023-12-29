@@ -59,6 +59,11 @@ export class MyGateway implements OnModuleInit {
 
   sendNotification(eventName: string, data: any) {
     //console.log(eventName, data);
-    this.server.emit(eventName, data);
+    const not = this.server.emit(eventName, data);
+    console.log(
+      '🚀 ~ file: socketGateway.ts:63 ~ MyGateway ~ sendNotification ~ not:',
+      not,
+    );
+    return not;
   }
 }

@@ -1,8 +1,14 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Role, User } from '@prisma/client';
+import {
+  IntegrationType,
+  Project,
+  Role,
+  SessionStatus,
+  User,
+  UserIntegration,
+  UserWorkspace,
+} from '@prisma/client';
 import { Response } from 'express';
-
-import { UpdateProjectRequest } from './dto/update.project.dto';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { TasksService } from '../tasks/tasks.service';
@@ -16,6 +22,10 @@ import { WebhooksService } from '../webhooks/webhooks.service';
 import { ConfigService } from '@nestjs/config';
 import { RegisterWebhookDto } from '../webhooks/dto';
 import { JiraService } from '../jira/jira.service';
+import { ImportCalendarProjectQueryDto, UpdateProjectRequest } from './dto';
+import { TasksDatabase } from 'src/database/tasks';
+import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
+import { JiraClientService } from '../helper/client';
 
 @Injectable()
 export class ProjectsService {
@@ -30,6 +40,9 @@ export class ProjectsService {
     private readonly webhooksService: WebhooksService,
     private readonly config: ConfigService,
     private readonly jiraService: JiraService,
+    private readonly tasksDatabase: TasksDatabase,
+    private jiraApiCalls: JiraApiCalls,
+    private jiraClient: JiraClientService,
   ) {}
 
   async importProject(user: User, projId: number, res?: Response) {
@@ -133,6 +146,76 @@ export class ProjectsService {
       );
       throw new APIException(
         'Can not import project tasks',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async importCalendarProject(
+    user: User,
+    query: ImportCalendarProjectQueryDto,
+    res?: Response,
+  ) {
+    const projectIds = query.projectIds as unknown as string;
+    const projectIdArray =
+      projectIds && projectIds.split(',').map((item) => Number(item.trim()));
+    const projects = await this.projectDatabase.getProjects({
+      id: { in: projectIdArray },
+    });
+
+    if (!projects.length)
+      throw new APIException('Invalid Calender Id!', HttpStatus.BAD_REQUEST);
+
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      throw new APIException(
+        'User workspace not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const userIntegration =
+      projects[0]?.integrationId &&
+      (await this.userIntegrationDatabase.getUserIntegration({
+        UserIntegrationIdentifier: {
+          integrationId: projects[0]?.integrationId,
+          userWorkspaceId: userWorkspace.id,
+        },
+      }));
+
+    if (!userIntegration) {
+      await this.tasksService.handleIntegrationFailure(user);
+      return [];
+    }
+    try {
+      await this.tasksService.sendImportingNotification(user);
+
+      for (let index = 0, len = projects.length; index < len; index++) {
+        const project = projects[index];
+        await this.fetchCalendarEvents(
+          user,
+          userWorkspace,
+          project,
+          userIntegration,
+        );
+      }
+      res && (await this.tasksService.syncCall(StatusEnum.DONE, user));
+      await this.tasksService.sendImportedNotification(
+        user,
+        'Calender Imported',
+        res,
+      );
+    } catch (error) {
+      await this.tasksService.handleImportFailure(
+        user,
+        'Importing Events Failed',
+      );
+      console.log(
+        '🚀 ~ file: tasks.service.ts:752 ~ TasksService ~ importProjectTasks ~ error:',
+        error,
+      );
+      throw new APIException(
+        'Could not import Calendar Events',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -327,6 +410,118 @@ export class ProjectsService {
     } else if (userWorkspace.role === Role.USER) {
       return await this.jiraService.getIntegratedProjectStatusesAndPriorities(
         user,
+      );
+    }
+  }
+
+  async fetchCalendarEvents(
+    user: User,
+    userWorkspace: UserWorkspace,
+    project: Project,
+    userIntegration: UserIntegration,
+  ) {
+    const settings = await this.tasksDatabase.getSettings(user);
+    // const syncTime: number = settings ? settings.syncTime : 6;
+    const url = `https://graph.microsoft.com/v1.0/me/calendars/${project.calendarId}/events`;
+    const taskList: any[] = [],
+      sessionArray: any[] = [];
+    const mappedIssues = new Map<string, any>();
+    const events = await this.jiraClient.CallOutlook(
+      userIntegration,
+      this.jiraApiCalls.getCalendarEvents,
+      url,
+    );
+
+    events.value.map((event: any) => {
+      mappedIssues.set(event.id, event);
+    });
+    const integratedEvents = await this.prisma.task.findMany({
+      where: {
+        workspaceId: user.activeWorkspaceId,
+        integratedEventId: { in: [...mappedIssues.keys()] },
+        source: IntegrationType.OUTLOOK,
+      },
+      select: {
+        integratedEventId: true,
+      },
+    });
+    // keep the task list that doesn't exist in the database
+    for (let j = 0, len = integratedEvents.length; j < len; j++) {
+      const key = integratedEvents[j]?.integratedEventId;
+      key && mappedIssues.delete(key);
+    }
+
+    for (const [integratedEventId, integratedEvent] of mappedIssues) {
+      taskList.push({
+        userWorkspaceId: userWorkspace.id,
+        workspaceId: project.workspaceId,
+        title: integratedEvent.subject,
+        projectName: project.projectName,
+        projectId: project.id,
+        integratedEventId,
+        createdAt: new Date(integratedEvent.createdDateTime),
+        updatedAt: new Date(integratedEvent.lastModifiedDateTime),
+        jiraUpdatedAt: new Date(integratedEvent.lastModifiedDateTime),
+        source: IntegrationType.OUTLOOK,
+        url: integratedEvent.webLink,
+      });
+    }
+    const mappedEventId = new Map<string, number>();
+    try {
+      const [t, events] = await Promise.all([
+        await this.prisma.task.createMany({
+          data: taskList,
+        }),
+        await this.prisma.task.findMany({
+          where: {
+            projectId: project.id,
+            source: IntegrationType.OUTLOOK,
+          },
+          select: {
+            id: true,
+            integratedEventId: true,
+          },
+        }),
+      ]);
+
+      for (let idx = 0; idx < events.length; idx++) {
+        const event = events[idx];
+        event.integratedEventId &&
+          mappedEventId.set(event.integratedEventId, event.id);
+      }
+    } catch (err) {
+      console.log('🚀 ~ file: tasks.service.ts:924 ~ TasksService ~ err:', err);
+      throw new APIException(
+        'Could not import Calender Events',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    for (const [integratedEventId, integratedEvent] of mappedIssues) {
+      const taskId = mappedEventId.get(integratedEventId);
+
+      taskId &&
+        sessionArray.push({
+          startTime: new Date(integratedEvent.start.dateTime),
+          endTime: new Date(integratedEvent.end.dateTime),
+          taskId,
+          status: SessionStatus.STOPPED,
+          integratedEventId: integratedEvent.id,
+          userWorkspaceId: userWorkspace.id,
+        });
+    }
+    try {
+      await this.prisma.session.createMany({
+        data: sessionArray,
+      });
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: tasks.service.ts:986 ~ TasksService ~ error:',
+        error,
+      );
+      throw new APIException(
+        'Could not import Calender Events',
+        HttpStatus.BAD_REQUEST,
       );
     }
   }
