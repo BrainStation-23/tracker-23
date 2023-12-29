@@ -7,7 +7,7 @@ import { createContext, useEffect, useState } from "react";
 import { publicRoutes } from "utils/constants";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
-import { getFormattedTaskPageTasks } from "@/services/taskActions";
+import { getFormattedTasks } from "@/services/taskActions";
 import { getTotalSpentTime } from "@/services/timeActions";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { setPriorities } from "@/storage/redux/prioritySlice";
@@ -150,7 +150,7 @@ const TasksPage = () => {
     try {
       const res = await userAPI.getTasks(searchParams);
       if (res) {
-        const { formattedTasks, runningTask } = getFormattedTaskPageTasks(res);
+        const { formattedTasks, runningTask } = getFormattedTasks(res);
         if (runningTask) setRunningTask(runningTask);
         setTasks(formattedTasks || []);
       }
@@ -166,7 +166,7 @@ const TasksPage = () => {
     try {
       const res = await userAPI.getTasks(searchParams);
       if (res) {
-        const { formattedTasks, runningTask } = getFormattedTaskPageTasks(res);
+        const { formattedTasks, runningTask } = getFormattedTasks(res);
         if (runningTask) setRunningTask(runningTask);
         setTasks(formattedTasks || []);
       }
@@ -330,7 +330,7 @@ const TasksPage = () => {
         searchParamsActiveSprint
       );
       if (res) {
-        const { formattedTasks, runningTask } = getFormattedTaskPageTasks(res);
+        const { formattedTasks, runningTask } = getFormattedTasks(res);
         if (runningTask) setRunningTask(runningTask);
         setActiveSprintTasks(formattedTasks || []);
       }

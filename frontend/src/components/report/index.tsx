@@ -12,12 +12,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { ExcelExport } from "@/services/exportHelpers";
-import {
-  formatDate,
-  getFormattedTime,
-  getFormattedTotalTime,
-  getTotalSpentTime,
-} from "@/services/timeActions";
+import { getFormattedTasks } from "@/services/taskActions";
 import {
   setReportProjectsSlice,
   setReportSprintListReducer,
@@ -222,29 +217,10 @@ const ReportComponent = () => {
       projectIds: projects,
       userIds: [selectedUser],
     });
-    const tmpTasks = res?.map((task: TaskDto) => {
-      const started = task.sessions[0]
-        ? getFormattedTime(formatDate(task.sessions[0].startTime))
-        : "Not Started";
-      const ended = task.sessions[task.sessions.length - 1]?.endTime
-        ? getFormattedTime(
-            formatDate(task.sessions[task.sessions.length - 1].endTime)
-          )
-        : task.sessions[0]
-        ? "Running"
-        : "Not Started";
-      const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
-      return {
-        ...task,
-        startTime: formatDate(task.sessions[0]?.startTime),
-        endTime: formatDate(task.sessions[task.sessions.length - 1]?.endTime),
-        started: started,
-        ended: ended,
-        total: total,
-        totalSpent: getTotalSpentTime(task.sessions),
-      };
-    });
-    setTasks(tmpTasks || []);
+    if (res) {
+      const { formattedTasks } = getFormattedTasks(res);
+      setTasks(formattedTasks || []);
+    }
     setIsLoading(false);
   };
 

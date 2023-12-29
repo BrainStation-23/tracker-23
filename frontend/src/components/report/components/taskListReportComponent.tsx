@@ -5,7 +5,12 @@ import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 import TablePriorityComponent from "@/components/common/tableComponents/tablePriorityComponent";
 import FormatTimeForSettings from "@/components/common/time/formatTimeForSettings";
 import TimeDisplayComponent from "@/components/tasks/components/timeDisplayComponent";
-import { getTotalSpentTime } from "@/services/timeActions";
+import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";
+import {
+  formatDate,
+  getFormattedTime,
+  getTotalSpentTime,
+} from "@/services/timeActions";
 
 const { Text } = Typography;
 const TaskListReportComponent = ({ tasks }: any) => {
@@ -102,19 +107,33 @@ const TaskListReportComponent = ({ tasks }: any) => {
       title: "Started",
       dataIndex: "started",
       key: "started",
+      render: (started: any, task: TaskDto) => (
+        <>
+          {task.sessions?.length > 0
+            ? getFormattedTime(formatDate(task.sessions[0].startTime))
+            : "Not Started"}
+        </>
+      ),
       align: "center",
-      sorter: (a: any, b: any) => {
-        if (a.startTime !== null && b.startTime !== null)
-          return a.startTime - b.startTime;
-        else if (b.startTime === null && a.startTime === null) return true;
-        else if (a.startTime === null) return false;
-        else return false;
+      sorter: (a: TaskDto, b: TaskDto) => {
+        return startTimeSorter(a, b);
       },
     },
     {
       title: "Ended",
       dataIndex: "ended",
       key: "ended",
+      render: (ended: any, task: TaskDto) => (
+        <>
+          {task.sessions?.length > 0 && !checkIfRunningTask(task.sessions)
+            ? getFormattedTime(
+                formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
+              )
+            : task.sessions[0]
+            ? "Running"
+            : "Not Started"}
+        </>
+      ),
       align: "center",
     },
 

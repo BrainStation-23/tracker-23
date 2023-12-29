@@ -6,13 +6,8 @@ import { createContext, useEffect, useState } from "react";
 import { publicRoutes } from "utils/constants";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
-import { checkIfRunningTask } from "@/services/taskActions";
-import {
-  formatDate,
-  getFormattedTime,
-  getFormattedTotalTime,
-  getTotalSpentTime,
-} from "@/services/timeActions";
+import { getFormattedTasks } from "@/services/taskActions";
+import { getTotalSpentTime } from "@/services/timeActions";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { setPriorities } from "@/storage/redux/prioritySlice";
 import { setProjectsSlice, StatusType } from "@/storage/redux/projectsSlice";
@@ -151,55 +146,11 @@ const TasksPage = () => {
     setLoading(true);
     try {
       const res = await userAPI.getTasks(searchParams);
-      const tmpTasks = res.map((task: TaskDto) => {
-        task.sessions = task.sessions.sort(function compareFn(a: any, b: any) {
-          return a.id - b.id;
-        });
-        const started =
-          task.sessions && task.sessions[0]
-            ? getFormattedTime(formatDate(task.sessions[0].startTime))
-            : "Not Started";
-        task.sessions = task.sessions.sort((a: any, b: any) =>
-          a.endTime
-            ? new Date(a.endTime).getTime()
-            : 0 - b.endTime
-            ? new Date(b.endTime).getTime()
-            : 0
-        );
-        const ended =
-          task.sessions && !checkIfRunningTask(task.sessions)
-            ? getFormattedTime(
-                formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
-              )
-            : task.sessions[0]
-            ? "Running"
-            : "Not Started";
-        if (ended === "Running") setRunningTask(task);
-        const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
-        return {
-          ...task,
-          id: task.id,
-          title: task?.title,
-          description: task.description,
-          estimation: task.estimation,
-          startTime: formatDate(task.sessions[0]?.startTime),
-          endTime: formatDate(
-            task.sessions[task.sessions?.length - 1]?.endTime
-          ),
-          started: started,
-          created: getFormattedTime(formatDate(task.createdAt)),
-          ended: ended,
-          total: total,
-          percentage: task.estimation
-            ? Math.round(
-                getTotalSpentTime(task.sessions) / (task.estimation * 36000)
-              )
-            : -1,
-          totalSpent: getTotalSpentTime(task.sessions),
-          priority: task.priority,
-        };
-      });
-      setTasks(tmpTasks || []);
+      if (res) {
+        const { formattedTasks, runningTask } = getFormattedTasks(res);
+        if (runningTask) setRunningTask(runningTask);
+        setTasks(formattedTasks || []);
+      }
     } catch (error) {
       console.log("🚀 ~ file: index.tsx:176 ~ getTasks ~ error:", error);
       message.error("Error getting tasks");
@@ -211,55 +162,11 @@ const TasksPage = () => {
   const getSyncingTasks = async () => {
     try {
       const res = await userAPI.getTasks(searchParams);
-      const tmpTasks = res.map((task: TaskDto) => {
-        task.sessions = task.sessions.sort(function compareFn(a: any, b: any) {
-          return a.id - b.id;
-        });
-        const started =
-          task.sessions && task.sessions[0]
-            ? getFormattedTime(formatDate(task.sessions[0].startTime))
-            : "Not Started";
-        task.sessions = task.sessions.sort((a: any, b: any) =>
-          a.endTime
-            ? new Date(a.endTime).getTime()
-            : 0 - b.endTime
-            ? new Date(b.endTime).getTime()
-            : 0
-        );
-        const ended =
-          task.sessions && !checkIfRunningTask(task.sessions)
-            ? getFormattedTime(
-                formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
-              )
-            : task.sessions[0]
-            ? "Running"
-            : "Not Started";
-        if (ended === "Running") setRunningTask(task);
-        const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
-        return {
-          ...task,
-          id: task.id,
-          title: task?.title,
-          description: task.description,
-          estimation: task.estimation,
-          startTime: formatDate(task.sessions[0]?.startTime),
-          endTime: formatDate(
-            task.sessions[task.sessions?.length - 1]?.endTime
-          ),
-          started: started,
-          created: getFormattedTime(formatDate(task.createdAt)),
-          ended: ended,
-          total: total,
-          percentage: task.estimation
-            ? Math.round(
-                getTotalSpentTime(task.sessions) / (task.estimation * 36000)
-              )
-            : -1,
-          totalSpent: getTotalSpentTime(task.sessions),
-          priority: task.priority,
-        };
-      });
-      setTasks(tmpTasks || []);
+      if (res) {
+        const { formattedTasks, runningTask } = getFormattedTasks(res);
+        if (runningTask) setRunningTask(runningTask);
+        setTasks(formattedTasks || []);
+      }
       message.success(
         "We're retrieving your data and have obtained a portion already. More is on the way. Thank you for your patience."
       );
@@ -419,55 +326,11 @@ const TasksPage = () => {
       const res = await userAPI.getJiraActiveSprintTasks(
         searchParamsActiveSprint
       );
-      const tmpTasks = res.map((task: TaskDto) => {
-        task.sessions = task.sessions.sort(function compareFn(a: any, b: any) {
-          return a.id - b.id;
-        });
-        const started =
-          task.sessions && task.sessions[0]
-            ? getFormattedTime(formatDate(task.sessions[0].startTime))
-            : "Not Started";
-        task.sessions = task.sessions.sort((a: any, b: any) =>
-          a.endTime
-            ? new Date(a.endTime).getTime()
-            : 0 - b.endTime
-            ? new Date(b.endTime).getTime()
-            : 0
-        );
-        const ended =
-          task.sessions && !checkIfRunningTask(task.sessions)
-            ? getFormattedTime(
-                formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
-              )
-            : task.sessions[0]
-            ? "Running"
-            : "Not Started";
-        if (ended === "Running") setRunningTask(task);
-        const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
-        return {
-          ...task,
-          id: task.id,
-          title: task?.title,
-          description: task.description,
-          estimation: task.estimation,
-          startTime: formatDate(task.sessions[0]?.startTime),
-          endTime: formatDate(
-            task.sessions[task.sessions?.length - 1]?.endTime
-          ),
-          started: started,
-          created: getFormattedTime(formatDate(task.createdAt)),
-          ended: ended,
-          total: total,
-          percentage: task.estimation
-            ? Math.round(
-                getTotalSpentTime(task.sessions) / (task.estimation * 36000)
-              )
-            : -1,
-          totalSpent: getTotalSpentTime(task.sessions),
-          priority: task.priority,
-        };
-      });
-      setActiveSprintTasks(tmpTasks || []);
+      if (res) {
+        const { formattedTasks, runningTask } = getFormattedTasks(res);
+        if (runningTask) setRunningTask(runningTask);
+        setActiveSprintTasks(formattedTasks || []);
+      }
     } catch (error) {
       console.log(
         "🚀 ~ file: index.tsx:468 ~ getActiveSprintTasks ~ error:",

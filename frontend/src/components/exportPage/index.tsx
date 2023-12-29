@@ -6,10 +6,11 @@ import React, { useEffect, useState } from "react";
 import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 
 import {
-  formatDate,
-  getFormattedTotalTime,
-  getTotalSpentTime,
-} from "@/services/timeActions";
+  checkIfRunningTask,
+  getFormattedTasks,
+  startTimeSorter,
+} from "@/services/taskActions";
+import { formatDate, getTotalSpentTime } from "@/services/timeActions";
 import { useAppDispatch } from "@/storage/redux";
 import { setSprintListReducer } from "@/storage/redux/tasksSlice";
 
@@ -123,19 +124,33 @@ const columns: any = [
     title: "Started",
     dataIndex: "started",
     key: "started",
+    render: (started: any, task: TaskDto) => (
+      <>
+        {task.sessions?.length > 0
+          ? getFormattedTime(formatDate(task.sessions[0].startTime))
+          : "Not Started"}
+      </>
+    ),
     align: "center",
-    sorter: (a: any, b: any) => {
-      if (a.startTime !== null && b.startTime !== null)
-        return a.startTime - b.startTime;
-      else if (b.startTime === null && a.startTime === null) return true;
-      else if (a.startTime === null) return false;
-      else return false;
+    sorter: (a: TaskDto, b: TaskDto) => {
+      return startTimeSorter(a, b);
     },
   },
   {
     title: "Ended",
     dataIndex: "ended",
     key: "ended",
+    render: (ended: any, task: TaskDto) => (
+      <>
+        {task.sessions?.length > 0 && !checkIfRunningTask(task.sessions)
+          ? getFormattedTime(
+              formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
+            )
+          : task.sessions[0]
+          ? "Running"
+          : "Not Started"}
+      </>
+    ),
     align: "center",
   },
 
@@ -165,34 +180,10 @@ const ExportPageComponent = () => {
     setLoading(true);
     try {
       const res = await userAPI.getTasks(searchParams);
-      const tmpTasks = res?.map((task: TaskDto) => {
-        const started = task.sessions[0]
-          ? getFormattedTime(formatDate(task.sessions[0].startTime))
-          : "Not Started";
-        const ended = task.sessions[task.sessions.length - 1]?.endTime
-          ? getFormattedTime(
-              formatDate(task.sessions[task.sessions.length - 1].endTime)
-            )
-          : task.sessions[0]
-          ? "Running"
-          : "Not Started";
-        const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
-        return {
-          ...task,
-          id: task.id,
-          title: task?.title,
-          description: task.description,
-          estimation: task.estimation,
-          startTime: formatDate(task.sessions[0]?.startTime),
-          endTime: formatDate(task.sessions[task.sessions.length - 1]?.endTime),
-          started: started,
-          ended: ended,
-          total: total,
-          totalSpent: getTotalSpentTime(task.sessions),
-          priority: task.priority,
-        };
-      });
-      setTasks(tmpTasks || []);
+      if (res) {
+        const { formattedTasks } = getFormattedTasks(res);
+        setTasks(formattedTasks || []);
+      }
     } catch (error) {
       console.log("🚀 ~ file: index.tsx:236 ~ getTasks ~ error:", error);
       message.error("Error getting tasks");

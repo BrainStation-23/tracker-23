@@ -2,26 +2,20 @@ import { Table, TablePaginationConfig, Tooltip, Typography } from "antd";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { TableParams, TaskDto } from "models/tasks";
 import { useState } from "react";
-import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 
 import JiraIconSvg from "@/assets/svg/JiraIconSvg";
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
-import TablePriorityComponent from "@/components/common/tableComponents/tablePriorityComponent";
 import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
+import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";
 import {
   formatDate,
   getFormattedTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
 
-import EstimationComponent from "./estimationComponent";
 import MoreFunctionComponent from "./moreFunction";
-import ProgressComponent from "./progressComponent";
-import StaticProgressComponent from "./progressComponentStatic";
-import StatusDropdownComponent from "./statusDropdown";
 import TimeDisplayComponent from "./timeDisplayComponent";
-import { checkIfRunningTask } from "@/services/taskActions";
 
 const { Text } = Typography;
 const TableComponent = ({
@@ -200,12 +194,15 @@ const TableComponent = ({
       dataIndex: "started",
       key: "started",
       align: "center",
-      sorter: (a: any, b: any) => {
-        if (a.startTime !== null && b.startTime !== null)
-          return a.startTime - b.startTime;
-        else if (b.startTime === null && a.startTime === null) return true;
-        else if (a.startTime === null) return false;
-        else return false;
+      render: (started: any, task: TaskDto) => (
+        <>
+          {task.sessions?.length > 0
+            ? getFormattedTime(formatDate(task.sessions[0].startTime))
+            : "Not Started"}
+        </>
+      ),
+      sorter: (a: TaskDto, b: TaskDto) => {
+        return startTimeSorter(a, b);
       },
     },
     {
