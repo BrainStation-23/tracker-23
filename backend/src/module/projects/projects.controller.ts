@@ -7,13 +7,17 @@ import {
   Response,
   Patch,
   Body,
+  Query,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/decorator';
 import { JwtAuthGuard } from 'src/guard';
-import { UpdateProjectRequest } from './dto/update.project.dto';
-import { CreateProjectRequest } from './dto/create.project.dto';
+import {
+  CreateProjectRequest,
+  ImportCalendarProjectQueryDto,
+  UpdateProjectRequest,
+} from './dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('projects')
@@ -28,6 +32,15 @@ export class ProjectsController {
   @Get('report-page')
   async getProjectsByRole(@GetUser() user: User) {
     return await this.projectsService.getProjectsByRole(user);
+  }
+
+  @Get('outlook')
+  async importCalendarProject(
+    @GetUser() user: User,
+    @Query() query: ImportCalendarProjectQueryDto,
+    @Response() res: any,
+  ) {
+    return this.projectsService.importCalendarProject(user, query, res);
   }
 
   @Get('/:id')

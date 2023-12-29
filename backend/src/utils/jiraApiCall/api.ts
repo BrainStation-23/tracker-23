@@ -235,4 +235,24 @@ export class JiraApiCalls {
       return null;
     }
   }
+
+  async getCalendarEvents(userIntegration: UserIntegration, url: string) {
+    try {
+      const headers: any = {
+        Authorization: `Bearer ${userIntegration.accessToken}`,
+      };
+      const config = {
+        method: 'GET',
+        url,
+        headers,
+      };
+      return (await axios(config)).data;
+    } catch (err) {
+      console.log(
+        '🚀 ~ file: api.ts:17 ~ JiraApiCalls ~ getTransitions ~ err:',
+        err,
+      );
+      return null;
+    }
+  }
 }

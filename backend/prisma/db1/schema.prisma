@@ -181,6 +181,7 @@ model TempIntegration {
 model Project {
   id          Int              @id @default(autoincrement())
   projectId   Int?
+  calendarId  String?
   projectName String?
   projectKey  String?
   source      String
@@ -228,6 +229,7 @@ model Task {
   labels               Labels[]        @default([])
   source               IntegrationType @default(TRACKER23)
   integratedTaskId     Int?
+  integratedEventId    String?
   url                  String?
   key                  String?
   pinned               Boolean?        @default(false)
@@ -261,6 +263,7 @@ model Session {
   updatedAt        DateTime       @updatedAt
   authorId         String?
   integratedTaskId Int?
+  integratedEventId String?
   worklogId        Int?
   userWorkspace    UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
   userWorkspaceId  Int?
@@ -360,6 +363,7 @@ enum SessionStatus {
 enum IntegrationType {
   JIRA
   TRACKER23
+  OUTLOOK
 }
 
 enum Role {

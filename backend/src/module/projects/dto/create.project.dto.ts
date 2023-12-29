@@ -5,3 +5,9 @@ export class CreateProjectRequest {
   @IsNotEmpty()
   projectName: string;
 }
+
+export class ImportCalendarProjectQueryDto {
+  @IsString()
+  @IsNotEmpty()
+  projectIds: string;
+}
