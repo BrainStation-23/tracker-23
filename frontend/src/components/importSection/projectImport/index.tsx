@@ -27,24 +27,13 @@ const ProjectImport = () => {
     const res = await userAPI.getAllProjects();
     console.log("🚀 ~ file: index.tsx:15 ~ getAllProjects ~ res:", res);
     if (res) {
-      // TODO: This section will be updated or removed when the api will be ready
-      const rawProjects = res.map((item: any) => {
-        return {
-          integrationType:
-            Object.keys(integrationName)[
-              Math.floor(Object.keys(integrationName).length * Math.random())
-            ],
-          ...item,
-        };
-      });
-
       const groupProjects: GroupProjects = {
         JIRA: [],
         TRELLO: [],
         OUTLOOK: [],
         TRACKER23: [],
       };
-      rawProjects.forEach((project: ProjectDto) => {
+      res.forEach((project: ProjectDto) => {
         groupProjects[project.integrationType].push(project);
       });
 

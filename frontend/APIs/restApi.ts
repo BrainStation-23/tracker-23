@@ -381,9 +381,29 @@ export async function getJiraLinkRest() {
   }
 }
 
+export async function getOutlookLinkRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.outlook}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
 export async function sendJiraCodeRest(code: string) {
   try {
     const res = await axios.post(`${apiEndPoints.authJira}`, {
+      code: code,
+    });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function sendOutlookCodeRest(code: string) {
+  try {
+    const res = await axios.post(`${apiEndPoints.authOutlook}`, {
       code: code,
     });
     return res.data;

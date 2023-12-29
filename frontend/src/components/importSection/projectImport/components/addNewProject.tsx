@@ -1,7 +1,7 @@
 import { Button, Collapse } from "antd";
 import { userAPI } from "APIs";
 import { GroupProjects } from "models/projects";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 import AddLocalProject from "./addLocalProject";
 import AddProjectList from "./addProjectList";
@@ -46,7 +46,7 @@ const AddNewProject = ({
                       integrationName[type as IntegrationType] ===
                       integrationName.OUTLOOK
                     ) {
-                      const response = await userAPI.getJiraLink();
+                      const response = await userAPI.getOutlookLink();
                       window.open(response, "_self");
                     } else if (
                       integrationName[type as IntegrationType] ===

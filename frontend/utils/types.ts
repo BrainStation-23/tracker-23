@@ -59,7 +59,9 @@ export interface apiFunction {
   stopSession: (taskID: string) => Promise<any>;
   authJira: () => Promise<any>;
   getJiraLink: () => Promise<any>;
+  getOutlookLink: () => Promise<any>;
   sendJiraCode: (code: string) => Promise<any>;
+  sendOutlookCode: (code: string) => Promise<any>;
   getProjectWiseHour: (dates?: any) => Promise<any>;
   getSpentTimePerDay: (dates?: any) => Promise<any>;
   addManualWorkLog: (data: AddWorkLogParams) => Promise<any>;
