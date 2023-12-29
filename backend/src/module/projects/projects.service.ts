@@ -198,6 +198,7 @@ export class ProjectsService {
           project,
           userIntegration,
         );
+        await this.tasksService.updateProjectIntegrationStatus(project.id);
       }
       res && (await this.tasksService.syncCall(StatusEnum.DONE, user));
       await this.tasksService.sendImportedNotification(
