@@ -4,6 +4,8 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import { outLookConfig } from 'config/outlook';
+import axios from 'axios';
 
 @Injectable()
 export class JiraClientService {
@@ -61,6 +63,51 @@ export class JiraClientService {
       //   '🚀 ~ file: client.ts:62 ~ JiraClient ~ newUserIntegration:',
       //   newUserIntegration,
       // );
+      return await apiCaller(newUserIntegration, ...rest);
+    }
+  }
+
+  async CallOutlook(
+    userIntegration: UserIntegration,
+    apiCaller: (userIntegration: UserIntegration, ...rest: any) => Promise<any>,
+    ...rest: any
+  ) {
+    if (userIntegration.expiration_time.getTime() > Date.now()) {
+      return await apiCaller(userIntegration, ...rest);
+    } else {
+      const url = 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
+      const data = {
+        client_id: outLookConfig.clientId,
+        grant_type: 'refresh_token',
+        scope: outLookConfig.scope,
+        refresh_token: userIntegration?.refreshToken,
+        redirect_uri: outLookConfig.callback,
+        client_secret: outLookConfig.client_secret,
+      };
+      let tokenResp;
+      try {
+        tokenResp = await (
+          await axios.post(url, data, {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+          })
+        ).data;
+      } catch (err) {
+        console.log('🚀 ~ file: client.ts:106 ~ JiraClientService ~ err:', err);
+      }
+
+      const issuedTime = Date.now();
+      const newUserIntegration: any =
+        userIntegration &&
+        (await this.userIntegrationDatabase.updateUserIntegrationById(
+          userIntegration?.id,
+          {
+            accessToken: tokenResp.access_token,
+            refreshToken: tokenResp.refresh_token,
+            expiration_time: new Date(issuedTime + tokenResp.expires_in * 1000),
+          },
+        ));
       return await apiCaller(newUserIntegration, ...rest);
     }
   }
