@@ -44,7 +44,7 @@ const TopPanelTaskListComponents = ({
         allowClear
         className="w-[210px]"
       />
-      <PrioritySelectorComponent
+      {/* <PrioritySelectorComponent
         key={Math.random()}
         {...{ priority, setPriority }}
         className="w-[210px]"
@@ -53,7 +53,7 @@ const TopPanelTaskListComponents = ({
         key={Math.random()}
         {...{ status, setStatus }}
         className="w-[210px]"
-      />
+      /> */}
     </>
   );
 };

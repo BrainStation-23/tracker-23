@@ -1,5 +1,6 @@
 import { message } from "antd";
 import { userAPI } from "APIs";
+import { IntegrationType } from "models/integration";
 import {
   ReportPageTabs,
   SprintReportDto,
@@ -30,7 +31,7 @@ import TableComponent from "./components/tableComponentReport";
 import TaskListReportComponent from "./components/taskListReportComponent";
 import TopPanelSprintReportComponents from "./components/topPanelSprintReportComponents";
 import TopPanelTaskListComponents from "./components/topPanelTaskListComponents";
-import SourceSelectorComponent from "../common/topPanels/components/dataSouceSelector";
+import TypeDependentSection from "./components/typeDependentSection";
 
 const ReportComponent = () => {
   const dispatch = useDispatch();
@@ -41,12 +42,13 @@ const ReportComponent = () => {
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [sprintUserReportData, setSprintUserReportData] =
     useState<SprintUserReportDto>();
-  const [selectedSource, setSelectedSource] = useState<string[]>();
+  const [selectedSource, setSelectedSource] = useState<IntegrationType[]>();
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
   const [sprints, setSprints] = useState<number[]>([]);
   const [sprintReportSprintId, setSprintReportSprintId] = useState<number>();
   const [users, setUsers] = useState<SprintUser[]>([]);
   const [projects, setProjects] = useState<number[]>([]);
+  const [calendarIds, setCalendarIds] = useState<number[]>([]);
   const [projectSprintReport, setProjectSprintReport] = useState<number>();
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [selectedUser, setSelectedUser] = useState<number>();
@@ -310,7 +312,19 @@ const ReportComponent = () => {
           />
         }
         typeSelector={
-          <SourceSelectorComponent {...{ selectedSource, setSelectedSource }} />
+          <TypeDependentSection
+            {...{
+              activeTab,
+              selectedSource,
+              setSelectedSource,
+              projects,
+              setProjects,
+              sprints,
+              setSprints,
+              calendarIds,
+              setCalendarIds,
+            }}
+          />
         }
         topPanelComponent={
           <>

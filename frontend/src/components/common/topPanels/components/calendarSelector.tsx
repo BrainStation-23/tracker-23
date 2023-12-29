@@ -34,14 +34,16 @@ const CalendarSelectorComponent = ({
   const router = useRouter();
   const path = router.asPath;
 
-  const projects = path.includes("report")
-    ? useAppSelector((state: RootState) => state.projectList.reportProjects)
-    : useAppSelector((state: RootState) => state.projectList.projects);
-  const Options = projects
-    ? projects?.map((project) => {
+  const calendars = (
+    path.includes("report")
+      ? useAppSelector((state: RootState) => state.projectList.reportProjects)
+      : useAppSelector((state: RootState) => state.projectList.projects)
+  )?.filter((project) => project.integrationType === "OUTLOOK");
+  const Options = calendars
+    ? calendars?.map((calendars) => {
         return {
-          value: project.id,
-          label: project.projectName,
+          value: calendars.id,
+          label: calendars.projectName,
         };
       })
     : [];
@@ -55,7 +57,6 @@ const CalendarSelectorComponent = ({
   }
   const tagRender = (props: TagProps) => {
     const { label, value, closable, onClose } = props;
-    const statusObj: StatusType = value && JSON.parse(value);
 
     const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
       event.preventDefault();
