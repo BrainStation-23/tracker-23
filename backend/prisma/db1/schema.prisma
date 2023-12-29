@@ -228,6 +228,7 @@ model Task {
   priorityCategoryName String?         @default("MEDIUM")
   labels               Labels[]        @default([])
   source               IntegrationType @default(TRACKER23)
+  dataSource           String @default("Tracker 23")
   integratedTaskId     Int?
   integratedEventId    String?
   url                  String?

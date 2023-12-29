@@ -22,6 +22,9 @@ export class ProjectDatabase {
     try {
       return await this.prisma.project.findMany({
         where: filter,
+        include: {
+          integration: true,
+        },
       });
     } catch (error) {
       console.log(error);
@@ -36,6 +39,7 @@ export class ProjectDatabase {
         include: {
           statuses: true,
           priorities: true,
+          integration: true,
         },
       });
     } catch (error) {
@@ -63,6 +67,7 @@ export class ProjectDatabase {
         where: filter,
         include: {
           priorities: true,
+          integration: true,
         },
       });
     } catch (error) {

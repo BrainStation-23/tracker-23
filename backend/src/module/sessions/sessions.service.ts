@@ -836,12 +836,20 @@ export class SessionsService {
     const arrayOfUserIds = userIds?.split(',');
     const userIdsArray = arrayOfUserIds?.map(Number);
 
+    const types = query.types as unknown as string;
+    const typeArray = types && types.split(',');
+
     const projects = await this.projectDatabase.getProjects({
       ...(query?.projectIds && {
         id: {
           in: projectIdsArray.map((id: any) => {
             return id;
           }),
+        },
+      }),
+      ...(query.types && {
+        integration: {
+          type: { in: typeArray },
         },
       }),
       workspaceId: loggedInUser.activeWorkspaceId,
