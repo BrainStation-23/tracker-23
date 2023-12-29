@@ -1,27 +1,27 @@
-import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 import ImportedProject from "./importedProject";
-import { useEffect } from "react";
 import { ProjectDto } from "models/projects";
 import { Empty } from "antd";
 
 type Props = {
-  allProjects: ProjectDto[];
+  projects: ProjectDto[];
   deleteProject: Function;
+  title: string;
 };
-const ImportedProjectsSection = ({ allProjects, deleteProject }: Props) => {
-  const importedProtects = allProjects?.filter(
-    (project: any) => project.integrated
-  );
 
+const ImportedProjectsSection = ({ projects, deleteProject, title }: Props) => {
+  if (!(projects?.length > 0)) return null;
   return (
-    <div className="flex max-w-[1100px] flex-wrap gap-3">
-      {importedProtects?.length > 0 ? (
-        importedProtects?.map((project) => (
-          <ImportedProject {...{ project, deleteProject }} key={project.id} />
-        ))
-      ) : (
-        <Empty description="No Imported Projects" className="w-full py-2" />
-      )}
+    <div className="flex w-full flex-col gap-4">
+      <div className="text-xl font-bold">{title}</div>
+      <div className="flex max-w-[1100px] flex-wrap gap-4">
+        {projects.length > 0 ? (
+          projects.map((project) => (
+            <ImportedProject {...{ project, deleteProject }} key={project.id} />
+          ))
+        ) : (
+          <Empty description="No Imported Projects" className="w-full py-2" />
+        )}
+      </div>
     </div>
   );
 };
