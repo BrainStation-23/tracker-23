@@ -144,6 +144,7 @@ export class ExportDatabase {
             }),
           ...(filter?.priority1 && { priority: { in: filter?.priority1 } }),
           ...(filter?.status1 && { status: { in: filter?.status1 } }),
+          ...(filter.typeArray.length && { source: { in: filter.typeArray } }),
           ...queryFilter,
         },
         select: {
@@ -321,6 +322,7 @@ export class ExportDatabase {
             }),
           ...(filter?.priority1 && { priority: { in: filter?.priority1 } }),
           ...(filter?.status1 && { status: { in: filter?.status1 } }),
+          ...(filter.typeArray.length && { source: { in: filter.typeArray } }),
           ...queryFilter,
         },
         include: {
