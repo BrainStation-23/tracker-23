@@ -177,10 +177,19 @@ export async function deleteTaskRest(taskId: any) {
 
 export async function getTasksRest(searchParams: SearchParamsModel) {
   const sprints = searchParams?.sprints;
+  const types = searchParams?.types;
   const status = getStringFromArray(getLabels(searchParams?.status));
   const priority = getStringFromArray(searchParams?.priority);
   const projectIds = searchParams?.projectIds;
-  const { userIds } = searchParams;
+  const calendarIds = searchParams?.calendarIds;
+  let tmp: number[] = [];
+  if (types?.length > 0) {
+    if (types.includes("JIRA") && projectIds?.length > 0)
+      tmp = tmp.concat(projectIds);
+    if (types.includes("OUTLOOK") && calendarIds?.length > 0)
+      tmp = tmp.concat(calendarIds);
+  }
+  const userIds = searchParams?.userIds;
   try {
     const res = await axios.get(
       apiEndPoints.tasks +
@@ -194,7 +203,8 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${encodeURIComponent(searchParams.searchText)}`
           : "") +
-        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
+        (tmp?.length > 0 ? `&projectIds=${tmp}` : "") +
+        (types?.length > 0 ? `&types=${types}` : "") +
         (priority && priority.length > 0 ? `&priority=${priority}` : "") +
         (status && status.length > 0 ? `&status=${status}` : "")
     );
@@ -371,9 +381,29 @@ export async function getJiraLinkRest() {
   }
 }
 
+export async function getOutlookLinkRest() {
+  try {
+    const res = await axios.get(`${apiEndPoints.outlook}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
 export async function sendJiraCodeRest(code: string) {
   try {
     const res = await axios.post(`${apiEndPoints.authJira}`, {
+      code: code,
+    });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function sendOutlookCodeRest(code: string) {
+  try {
+    const res = await axios.post(`${apiEndPoints.authOutlook}`, {
       code: code,
     });
     return res.data;

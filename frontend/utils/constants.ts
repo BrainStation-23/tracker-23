@@ -87,8 +87,8 @@ export const monthsList = [
   "December",
 ];
 
-export const supportedIntegrations = ["JIRA"];
-export const allIntegrations = ["JIRA", "TRELLO"];
+export const supportedIntegrations = ["JIRA", "OUTLOOK"];
+export const allIntegrations = ["JIRA", "OUTLOOK", "TRELLO"];
 
 export enum IntegrationTitlesEnum {
   JIRA = "Jira Software",
@@ -96,8 +96,10 @@ export enum IntegrationTitlesEnum {
 }
 
 export enum IntegrationDescriptionsEnum {
-  JIRA = "Connect JIRA tickets to your Project",
-  TRELLO = "Connect Trello to your Project",
+  JIRA = "Connect JIRA tickets to your WorkSpace",
+  TRELLO = "Connect Trello to your WorkSpace",
+  OUTLOOK = "Connect Outlook to your WorkSpace",
+  TRACKER23 = "Connect Tracker 23 to your WorkSpace",
 }
 
 export enum Roles {

@@ -8,22 +8,41 @@ import GlobalModal from "@/components/modals/globalModal";
 
 import AddNewProject from "./components/addNewProject";
 import ImportedProjectsSection from "./components/importedProjectsSections";
+import { GroupProjects, ProjectDto } from "models/projects";
+import { IntegrationType, integrationName } from "models/integration";
 
 const ProjectImport = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [rootSpinning, setRootSpinning] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
-  const [allProjects, setAllProjects] = useState([]);
+  const [groupProjects, setAllProjects] = useState<GroupProjects>({
+    JIRA: [],
+    TRELLO: [],
+    OUTLOOK: [],
+    TRACKER23: [],
+  });
 
   const getAllProjects = async () => {
     const res = await userAPI.getAllProjects();
     console.log("🚀 ~ file: index.tsx:15 ~ getAllProjects ~ res:", res);
-    if (res) setAllProjects(res);
-    setInitialLoadDone(true);
+    if (res) {
+      const groupProjects: GroupProjects = {
+        JIRA: [],
+        TRELLO: [],
+        OUTLOOK: [],
+        TRACKER23: [],
+      };
+      res.forEach((project: ProjectDto) => {
+        groupProjects[project.integrationType].push(project);
+      });
+
+      setAllProjects(groupProjects);
+      setInitialLoadDone(true);
+    }
   };
 
-  const deleteProject = async (project: any) => {
+  const deleteProject = async (project: ProjectDto) => {
     setRootSpinning(true);
     const res = await userAPI.deleteProjectTasks(project.id);
     console.log(
@@ -32,12 +51,17 @@ const ProjectImport = () => {
     );
     if (res) {
       message.success(res.message);
-      const tmp =
-        project.source === "T23"
-          ? allProjects?.filter((p: any) => p.id != project.id)
-          : allProjects?.map((p: any) =>
-              p.id != project.id ? p : { ...p, integrated: false }
-            );
+      const tmp = {
+        ...groupProjects,
+        [project.integrationType]:
+          project.integrationType === "TRACKER23"
+            ? groupProjects[project.integrationType].filter(
+                (p: ProjectDto) => p.id != project.id
+              )
+            : groupProjects[project.integrationType].map((p: ProjectDto) =>
+                p.id != project.id ? p : { ...p, integrated: false }
+              ),
+      };
       console.log("🚀 ~ file: index.tsx:35 ~ deleteProject ~ tmp:", tmp);
       setAllProjects(tmp);
     }
@@ -48,30 +72,46 @@ const ProjectImport = () => {
   useEffect(() => {
     getAllProjects();
   }, [spinning]);
-  useEffect(() => {}, [allProjects, initialLoadDone]);
+  useEffect(() => {}, [groupProjects, initialLoadDone]);
 
   return (
     <Spin spinning={rootSpinning}>
-      <div className="flex w-full flex-col gap-2">
+      <div className="mb-12 flex w-full flex-col gap-4">
         <div className="mb-4 flex justify-between">
-          <h2 className="text-2xl font-bold">Your Projects</h2>
+          <h2 className="text-2xl font-bold">Your Projects and Calenders</h2>
           <PrimaryButton onClick={() => setIsModalOpen(true)}>
-            <PlusIconSvg /> Add Project
+            <PlusIconSvg /> Add New
           </PrimaryButton>
         </div>
         {initialLoadDone ? (
-          <ImportedProjectsSection {...{ allProjects, deleteProject }} />
+          <div className="flex w-full flex-col gap-12">
+            {Object.keys(integrationName).map((type) => (
+              <ImportedProjectsSection
+                key={type}
+                title={integrationName[type as IntegrationType]}
+                deleteProject={deleteProject}
+                projects={groupProjects[type as IntegrationType].filter(
+                  (project) => project.integrated
+                )}
+              />
+            ))}
+          </div>
         ) : (
           <Spin spinning={true}></Spin>
         )}
         <GlobalModal
-          width={600}
-          {...{ isModalOpen, setIsModalOpen, title: "Add a New Project" }}
+          width={720}
+          {...{
+            isModalOpen,
+            setIsModalOpen,
+            title: "Add a new Project or Calender",
+          }}
         >
           <Spin spinning={spinning} tip="Processing">
             <AddNewProject
-              allProjects={allProjects}
-              {...{ setSpinning, setIsModalOpen }}
+              groupProjects={groupProjects}
+              setSpinning={setSpinning}
+              setIsModalOpen={setIsModalOpen}
             />
           </Spin>
         </GlobalModal>

@@ -1,5 +1,6 @@
 import { message } from "antd";
 import { userAPI } from "APIs";
+import { IntegrationType } from "models/integration";
 import {
   ReportPageTabs,
   SprintReportDto,
@@ -11,12 +12,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { ExcelExport } from "@/services/exportHelpers";
-import {
-  formatDate,
-  getFormattedTime,
-  getFormattedTotalTime,
-  getTotalSpentTime,
-} from "@/services/timeActions";
+import { getFormattedTasks } from "@/services/taskActions";
 import {
   setReportProjectsSlice,
   setReportSprintListReducer,
@@ -30,6 +26,7 @@ import TableComponent from "./components/tableComponentReport";
 import TaskListReportComponent from "./components/taskListReportComponent";
 import TopPanelSprintReportComponents from "./components/topPanelSprintReportComponents";
 import TopPanelTaskListComponents from "./components/topPanelTaskListComponents";
+import TypeDependentSection from "./components/typeDependentSection";
 
 const ReportComponent = () => {
   const dispatch = useDispatch();
@@ -40,11 +37,13 @@ const ReportComponent = () => {
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [sprintUserReportData, setSprintUserReportData] =
     useState<SprintUserReportDto>();
+  const [selectedSource, setSelectedSource] = useState<IntegrationType[]>();
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
   const [sprints, setSprints] = useState<number[]>([]);
   const [sprintReportSprintId, setSprintReportSprintId] = useState<number>();
   const [users, setUsers] = useState<SprintUser[]>([]);
   const [projects, setProjects] = useState<number[]>([]);
+  const [calendarIds, setCalendarIds] = useState<number[]>([]);
   const [projectSprintReport, setProjectSprintReport] = useState<number>();
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [selectedUser, setSelectedUser] = useState<number>();
@@ -218,34 +217,10 @@ const ReportComponent = () => {
       projectIds: projects,
       userIds: [selectedUser],
     });
-    const tmpTasks = res?.map((task: TaskDto) => {
-      const started = task.sessions[0]
-        ? getFormattedTime(formatDate(task.sessions[0].startTime))
-        : "Not Started";
-      const ended = task.sessions[task.sessions.length - 1]?.endTime
-        ? getFormattedTime(
-            formatDate(task.sessions[task.sessions.length - 1].endTime)
-          )
-        : task.sessions[0]
-        ? "Running"
-        : "Not Started";
-      const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
-      return {
-        ...task,
-        id: task.id,
-        title: task?.title,
-        description: task.description,
-        estimation: task.estimation,
-        startTime: formatDate(task.sessions[0]?.startTime),
-        endTime: formatDate(task.sessions[task.sessions.length - 1]?.endTime),
-        started: started,
-        ended: ended,
-        total: total,
-        totalSpent: getTotalSpentTime(task.sessions),
-        priority: task.priority,
-      };
-    });
-    setTasks(tmpTasks || []);
+    if (res) {
+      const { formattedTasks } = getFormattedTasks(res);
+      setTasks(formattedTasks || []);
+    }
     setIsLoading(false);
   };
 
@@ -260,7 +235,6 @@ const ReportComponent = () => {
     getUserListByProject();
   }, [projects]);
   useEffect(() => {
-    getSprintUserReport();
     getSprintList();
     getProjectWiseStatues();
   }, []);
@@ -311,6 +285,21 @@ const ReportComponent = () => {
           <DateRangePicker
             selectedDate={dateRange}
             setSelectedDate={setDateRange}
+          />
+        }
+        typeSelector={
+          <TypeDependentSection
+            {...{
+              activeTab,
+              selectedSource,
+              setSelectedSource,
+              projects,
+              setProjects,
+              sprints,
+              setSprints,
+              calendarIds,
+              setCalendarIds,
+            }}
           />
         }
         topPanelComponent={

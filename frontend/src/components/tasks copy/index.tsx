@@ -1,6 +1,5 @@
 import { Empty, message, Spin } from "antd";
 import { userAPI } from "APIs";
-import { SearchParamsModel } from "models/apiParams";
 import { CreateTaskDto, TaskDto } from "models/tasks";
 import { useRouter } from "next/router";
 import { createContext, useEffect, useState } from "react";
@@ -57,12 +56,11 @@ const TasksPage = () => {
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [activeSprintTasks, setActiveSprintTasks] = useState<TaskDto[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedSource, setSelectedSource] = useState<string[]>();
   const [activeTab, setActiveTab] = useState(
     router.query.tab === "pin" ? "Pin" : "All"
   );
   const [checkedOptionList, setCheckedOptionList] = useState(["Search"]);
-  const [searchParams, setSearchParams] = useState<SearchParamsModel>({
+  const [searchParams, setSearchParams] = useState({
     searchText: "",
     selectedDate: getDateRangeArray("this-week"),
     priority: [],
@@ -71,7 +69,6 @@ const TasksPage = () => {
       // '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
     ],
     sprints: [],
-    types: [],
   });
   const [searchParamsActiveSprint, setSearchParamsActiveSprint] = useState({
     searchText: "",
@@ -359,6 +356,7 @@ const TasksPage = () => {
     }
     getSprintList();
     getActiveSprintTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {}, [reload, runningTask]);
@@ -369,9 +367,12 @@ const TasksPage = () => {
 
   useEffect(() => {
     !loading && getTasks();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
   useEffect(() => {
     !loading && getActiveSprintTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParamsActiveSprint]);
   useEffect(() => {
     if (!loading && !syncRunning) {
@@ -380,6 +381,7 @@ const TasksPage = () => {
       getSprintList();
       getActiveSprintTasks();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncRunning]);
   useEffect(() => {
     const getSyncStatus = async () => {
@@ -489,8 +491,6 @@ const TasksPage = () => {
               setSearchParams,
               checkedOptionList,
               setCheckedOptionList,
-              selectedSource,
-              setSelectedSource,
             }}
           />
         )}

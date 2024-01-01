@@ -2,26 +2,23 @@ import { Table, TablePaginationConfig, Typography } from "antd";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { TableParams, TaskDto } from "models/tasks";
 import { useState } from "react";
-import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
-import TablePriorityComponent from "@/components/common/tableComponents/tablePriorityComponent";
-import FormatTimeForSettings from "@/components/common/time/formatTimeForSettings";
 import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
-import ProgressComponent from "@/components/tasks/components/progressComponent";
-import StaticProgressComponent from "@/components/tasks/components/progressComponentStatic";
 import TimeDisplayComponent from "@/components/tasks/components/timeDisplayComponent";
-import { getTotalSpentTime } from "@/services/timeActions";
+import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";
+import {
+  formatDate,
+  getFormattedTime,
+  getTotalSpentTime,
+} from "@/services/timeActions";
 import { getLocalStorage, setLocalStorage } from "@/storage/storage";
 
 const { Text } = Typography;
 const DashboardTableComponent = ({
   tasks,
   runningTask,
-  setSelectedTask,
-  setTaskViewModalOpen,
-  deleteTask,
   startSession,
   stopSession,
   setReload,
@@ -79,58 +76,91 @@ const DashboardTableComponent = ({
         );
       },
     },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      // align: "center",
-      render: (_: any, task: TaskDto) => (
-        <div
-          style={{
-            backgroundColor: statusBGColorEnum[task.statusCategoryName],
-            border: `1px solid ${
-              statusBorderColorEnum[task.statusCategoryName]
-            }`,
-            borderRadius: "36px",
-          }}
-          className="relative flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
-        >
-          <div
-            className="h-2 w-2 rounded-full"
-            style={{
-              backgroundColor: statusBorderColorEnum[task.statusCategoryName],
-            }}
-          />
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   // align: "center",
+    //   render: (_: any, task: TaskDto) => (
+    //     <div
+    //       style={{
+    //         backgroundColor: statusBGColorEnum[task.statusCategoryName],
+    //         border: `1px solid ${
+    //           statusBorderColorEnum[task.statusCategoryName]
+    //         }`,
+    //         borderRadius: "36px",
+    //       }}
+    //       className="relative flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
+    //     >
+    //       <div
+    //         className="h-2 w-2 rounded-full"
+    //         style={{
+    //           backgroundColor: statusBorderColorEnum[task.statusCategoryName],
+    //         }}
+    //       />
 
-          <div>{task.status}</div>
-        </div>
-      ),
-    },
+    //       <div>{task.status}</div>
+    //     </div>
+    //   ),
+    // },
     {
-      title: "Date",
+      title: "Created",
       dataIndex: "created",
       key: "created",
       // align: "center",
     },
+    // {
+    //   title: "Priority",
+    //   dataIndex: "priority",
+    //   key: "priority",
+    //   render: (_: any, task: TaskDto) => <TablePriorityComponent task={task} />,
+    // },
+
+    // {
+    //   title: "Progress",
+    //   dataIndex: "percentage",
+    //   key: "percentage",
+
+    //   // align: "center",
+    //   render: (_: any, task: TaskDto) =>
+    //     runningTask?.id != task.id ? (
+    //       <StaticProgressComponent task={task} />
+    //     ) : (
+    //       <ProgressComponent task={task} />
+    //     ),
+    // },
     {
-      title: "Priority",
-      dataIndex: "priority",
-      key: "priority",
-      render: (_: any, task: TaskDto) => <TablePriorityComponent task={task} />,
+      title: "Started",
+      dataIndex: "started",
+      key: "started",
+      render: (started: any, task: TaskDto) => (
+        <>
+          {task.sessions?.length > 0
+            ? getFormattedTime(formatDate(task.sessions[0].startTime))
+            : "Not Started"}
+        </>
+      ),
+      align: "center",
+      sorter: (a: TaskDto, b: TaskDto) => {
+        return startTimeSorter(a, b);
+      },
     },
-
     {
-      title: "Progress",
-      dataIndex: "percentage",
-      key: "percentage",
-
-      // align: "center",
-      render: (_: any, task: TaskDto) =>
-        runningTask?.id != task.id ? (
-          <StaticProgressComponent task={task} />
-        ) : (
-          <ProgressComponent task={task} />
-        ),
+      title: "Ended",
+      dataIndex: "ended",
+      key: "ended",
+      render: (ended: any, task: TaskDto) => (
+        <>
+          {task.sessions?.length > 0 && !checkIfRunningTask(task.sessions)
+            ? getFormattedTime(
+                formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
+              )
+            : task.sessions[0]
+            ? "Running"
+            : "Not Started"}
+        </>
+      ),
+      align: "center",
     },
     {
       title: "Total Spent",
@@ -144,19 +174,19 @@ const DashboardTableComponent = ({
           <Stopwatch milliseconds={getTotalSpentTime(task.sessions)} />
         ),
     },
-    {
-      title: "Estimation",
-      dataIndex: "estimation",
-      key: "estimation",
-      render: (_: any, task: TaskDto) =>
-        task.estimation ? (
-          <div className="text-center">
-            <FormatTimeForSettings time={task.estimation} />
-          </div>
-        ) : (
-          <div className="text-center">---</div>
-        ),
-    },
+    // {
+    //   title: "Estimation",
+    //   dataIndex: "estimation",
+    //   key: "estimation",
+    //   render: (_: any, task: TaskDto) =>
+    //     task.estimation ? (
+    //       <div className="text-center">
+    //         <FormatTimeForSettings time={task.estimation} />
+    //       </div>
+    //     ) : (
+    //       <div className="text-center">---</div>
+    //     ),
+    // },
   ];
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {

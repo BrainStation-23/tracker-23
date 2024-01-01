@@ -4,26 +4,13 @@ import { userAPI } from "APIs";
 import { TableParams, TaskDto } from "models/tasks";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 
-import PauseIconSvg from "@/assets/svg/pauseIconSvg";
-import PlayIconSvg from "@/assets/svg/playIconSvg";
 import XYChart from "@/components/dashboard/charts/xyChart";
-import {
-  formatDate,
-  getDayWithMonth,
-  getFormattedTime,
-  getFormattedTotalTime,
-  getTotalSpentTime,
-} from "@/services/timeActions";
+import { getFormattedTasks } from "@/services/taskActions";
+import { getDayWithMonth, getTotalSpentTime } from "@/services/timeActions";
 
-import TablePriorityComponent from "../common/tableComponents/tablePriorityComponent";
 import { getDateRangeArray } from "../datePicker";
 import GlobalModal from "../modals/globalModal";
-import Stopwatch from "../stopWatch/tabular/timerComponent";
-import ProgressComponent from "../tasks/components/progressComponent";
-import StaticProgressComponent from "../tasks/components/progressComponentStatic";
-import TimeDisplayComponent from "../tasks/components/timeDisplayComponent";
 import SessionStartWarning from "../tasks/components/warning";
 import DonutChart from "./charts/donutChart";
 import DashboardSection from "./components/sections";
@@ -83,42 +70,12 @@ const Dashboard = () => {
   };
   const getTasks = async () => {
     setLoading(true);
-    let pinnedTasks = [];
     try {
       const res = await userAPI.getTasks();
       if (res) {
-        const tmpTasks = res.map((task: TaskDto) => {
-          task.sessions = task.sessions.sort(function compareFn(
-            a: any,
-            b: any
-          ) {
-            return a.id - b.id;
-          });
-
-          const started =
-            task.sessions && task.sessions[0]
-              ? getFormattedTime(formatDate(task.sessions[0].startTime))
-              : "Not Started";
-          const ended =
-            task.sessions && task.sessions[task.sessions?.length - 1]?.endTime
-              ? getFormattedTime(
-                  formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
-                )
-              : task.sessions[0]
-              ? "Running"
-              : "Not Started";
-
-          if (ended === "Running") setRunningTask(task);
-          const total = getFormattedTotalTime(getTotalSpentTime(task.sessions));
-          return {
-            ...task,
-            started: started,
-            ended: ended,
-            total: total,
-            created: getFormattedTime(formatDate(task.createdAt)),
-          };
-        });
-        const tmpPinnedTaskList = tmpTasks?.filter(
+        const { formattedTasks, runningTask } = getFormattedTasks(res);
+        if (runningTask) setRunningTask(runningTask);
+        const tmpPinnedTaskList = formattedTasks?.filter(
           (task: TaskDto) => task?.pinned
         );
         if (tmpPinnedTaskList?.length > 5) setMorePin(true);
@@ -182,8 +139,6 @@ const Dashboard = () => {
         if (_session.id === session.id) return session;
         else return _session;
       });
-      const st: any = formatDate(session.endTime);
-      const en: any = formatDate(session.startTime);
 
       (task.percentage = task.estimation
         ? Math.round(
@@ -206,185 +161,6 @@ const Dashboard = () => {
       );
     }
   };
-  const columns: any = [
-    {
-      title: "Task Name",
-      dataIndex: "title",
-      key: "title",
-      render: (_: any, task: TaskDto) => {
-        return (
-          <div className=" flex items-center gap-2">
-            {runningTask?.id != task.id ? (
-              <div
-                onClick={() => {
-                  startSession(task);
-                }}
-              >
-                <PlayIconSvg />
-              </div>
-            ) : (
-              <div
-                onClick={() => {
-                  stopSession(task);
-                }}
-              >
-                <PauseIconSvg />
-              </div>
-            )}
-            <div className="flex flex-col gap-2">
-              <Text className="w-[200px] " ellipsis={{ tooltip: task?.title }}>
-                {/* <div>{task?.title}</div> */}
-                {task?.title}
-              </Text>
-              {task.projectName && (
-                <div
-                  className="w-max bg-[#4D4E55] px-2 py-0.5 text-xs font-medium"
-                  style={{
-                    background: "#ECECED",
-                    borderRadius: "4px",
-                  }}
-                >
-                  {task.projectName}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      // align: "center",
-      render: (_: any, task: TaskDto) => (
-        <div
-          style={{
-            backgroundColor: statusBGColorEnum[task.statusCategoryName],
-            border: `1px solid ${
-              statusBorderColorEnum[task.statusCategoryName]
-            }`,
-            borderRadius: "36px",
-          }}
-          className="relative flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
-        >
-          <div
-            className="h-2 w-2 rounded-full"
-            style={{
-              backgroundColor: statusBorderColorEnum[task.statusCategoryName],
-            }}
-          />
-
-          <div>{task.status}</div>
-        </div>
-      ),
-    },
-    // {
-    //   title: "Date",
-    //   dataIndex: "started",
-    //   key: "started",
-    // },
-    {
-      title: "Priority",
-      dataIndex: "priority",
-      key: "priority",
-      render: (_: any, task: TaskDto) => <TablePriorityComponent task={task} />,
-    },
-
-    {
-      title: "Progress",
-      dataIndex: "percentage",
-      key: "percentage",
-
-      // align: "center",
-      render: (_: any, task: TaskDto) =>
-        runningTask?.id != task.id ? (
-          <StaticProgressComponent task={task} />
-        ) : (
-          <ProgressComponent task={task} />
-        ),
-    },
-    {
-      title: "Total Spent",
-      dataIndex: "total",
-      key: "total",
-      // align: "center",
-      render: (_: any, task: TaskDto) =>
-        runningTask?.id !== task.id ? (
-          <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
-        ) : (
-          <Stopwatch milliseconds={getTotalSpentTime(task.sessions)} />
-          // <StopWatchTabular
-          //   task={task}
-          //   // sessions={task.sessions}
-          //   // runningTask={runningTask}
-          //   addSession={() => {}}
-          //   addEndTime={() => {}}
-          // />
-        ),
-    },
-    {
-      title: "Estimation",
-      dataIndex: "estimation",
-      key: "estimation",
-      render: (_: any, task: TaskDto) =>
-        task.estimation ? (
-          <div className="text-center">{task.estimation}hrs</div>
-        ) : (
-          <div className="text-center">---</div>
-        ),
-    },
-    // {
-    //   title: "",
-    //   dataIndex: "",
-    //   key: "",
-
-    //   render: (_: any, task: TaskDto) => (
-    //     <div className="flex justify-end gap-2">
-    //       <Button
-    //         className="h-10 text-sm font-semibold"
-    //         onClick={() => {
-    //           // setSelectedTask(task);
-    //           // setTaskViewModalOpen(true);
-    //         }}
-    //       >
-    //         View
-    //       </Button>
-    //       {/* <MoreFunctionComponent {...{ task, deleteTask, handlePin }} /> */}
-    //     </div>
-    //   ),
-    // },
-    // {
-    //   title: "Tags",
-    //   key: "tags",
-    //   dataIndex: "tags",
-    //   render: (_, { tags }) => (
-    //     <>
-    //       {tags.map((tag) => {
-    //         let color = tag.length > 5 ? "geekblue" : "green";
-    //         if (tag === "loser") {
-    //           color = "volcano";
-    //         }
-    //         return (
-    //           <Tag color={color} key={tag}>
-    //             {tag.toUpperCase()}
-    //           </Tag>
-    //         );
-    //       })}
-    //     </>
-    //   ),
-    // },
-    // {
-    //   title: "Action",
-    //   key: "action",
-    //   render: (_, record) => (
-    //     <Space size="middle">
-    //       <a>Invite {record.name}</a>
-    //       <a>Delete</a>
-    //     </Space>
-    //   ),
-    // },
-  ];
 
   const getProjectWiseHour = async () => {
     const res = await userAPI.getProjectWiseHour(
@@ -442,38 +218,7 @@ const Dashboard = () => {
                 <Empty className="pt-20" description="No Data" />
               )}
             </DashboardSection>
-            {/* <DashboardSection title="Actual VS Estimate">
-          <Line data={lineChartData} />
-        </DashboardSection> */}
           </div>
-          {/* <DashboardSection title="Pinned tasks">
-        <Table
-          columns={columns}
-          dataSource={getPinnedTasks()}
-          // onChange={onChange}
-          size="small"
-          rowKey={(record) => record.id}
-          pagination={null}
-          // pagination={tableParamsPinned.pagination}
-          rowClassName={getRowClassName}
-          onChange={handleTableChange}
-          scroll={{
-            scrollToFirstRowOnChange: true,
-            x: true,
-          }}
-        />
-        {morePin && (
-          <div
-            className="absolute bottom-0 right-1/2 left-1/2 w-max cursor-pointer "
-            onClick={() => {
-              router.push("/taskList?tab=pin");
-            }}
-          >
-            {" "}
-            Click to View More
-          </div>
-        )}
-      </DashboardSection> */}
           <DashboardSection title="Pinned tasks">
             <DashboardTableComponent
               tasks={getPinnedTasks()}

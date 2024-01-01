@@ -154,3 +154,8 @@ export function formatHoursToDay(decimalHours: number, hoursPerDay = 8) {
 
   return formattedParts.join(" ");
 }
+
+export function getTimeFromDate(date: string | null) {
+  if (!date) return 0;
+  return new Date(date).getTime();
+}
