@@ -69,7 +69,6 @@ export class ExportService {
       projectIds && projectIds.split(',').map((item) => Number(item.trim()));
 
     const types = query.types as unknown as string;
-    const typeArray = types && types.split(',');
 
     const currentUserWorkspace =
       user.activeWorkspaceId &&
@@ -132,7 +131,7 @@ export class ExportService {
       priority1,
       status1,
       text,
-      typeArray,
+      types,
     });
   }
 
@@ -440,7 +439,6 @@ export class ExportService {
     const projectIdArray =
       projectIds && projectIds.split(',').map((item) => Number(item.trim()));
     const types = query.types as unknown as string;
-    const typeArray = types && types.split(',');
 
     const currentUserWorkspace =
       user.activeWorkspaceId &&
@@ -503,7 +501,7 @@ export class ExportService {
       priority1,
       status1,
       text,
-      typeArray,
+      types,
     });
   }
 }
