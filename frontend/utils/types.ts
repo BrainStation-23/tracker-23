@@ -59,7 +59,9 @@ export interface apiFunction {
   stopSession: (taskID: string) => Promise<any>;
   authJira: () => Promise<any>;
   getJiraLink: () => Promise<any>;
+  getOutlookLink: () => Promise<any>;
   sendJiraCode: (code: string) => Promise<any>;
+  sendOutlookCode: (code: string) => Promise<any>;
   getProjectWiseHour: (dates?: any) => Promise<any>;
   getSpentTimePerDay: (dates?: any) => Promise<any>;
   addManualWorkLog: (data: AddWorkLogParams) => Promise<any>;
@@ -92,6 +94,7 @@ export interface apiFunction {
   acceptWorkspaceInvitation: (id: number) => Promise<any>;
   rejectWorkspaceInvitation: (id: number) => Promise<any>;
   importProject: (id: number) => Promise<any>;
+  importCalendar: (ids: number[]) => Promise<any>;
   createProject: (data: CreateLocalProjectModel) => Promise<any>;
   deleteProjectTasks: (id: number) => Promise<any>;
   getJiraActiveSprintTasks: (searchParams?: SearchParamsModel) => Promise<any>;

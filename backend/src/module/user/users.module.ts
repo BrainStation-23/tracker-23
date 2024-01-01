@@ -3,29 +3,22 @@ import { Module } from '@nestjs/common';
 import { UsersDatabase } from 'src/database/users';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { WorkspacesService } from '../workspaces/workspaces.service';
-import { WorkspaceDatabase } from 'src/database/workspaces';
-import { NotificationModule } from '../notifications/notifications.module';
-import { TasksDatabase } from 'src/database/tasks';
-import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
-import { ProjectDatabase } from 'src/database/projects';
-import { SessionDatabase } from 'src/database/sessions';
-import { UserIntegrationDatabase } from 'src/database/userIntegrations';
-import { EmailModule } from '../email/email.module';
+import { WorkspacesModule } from '../workspaces/workspaces.module';
+import { TasksModule } from '../tasks/tasks.module';
+import { IntegrationsModule } from '../integrations/integrations.module';
+import { SessionsModule } from '../sessions/sessions.module';
+import { ProjectsModule } from '../projects/projects.module';
 @Module({
-  imports: [HttpModule.register({}), NotificationModule, EmailModule],
-  controllers: [UsersController],
-  providers: [
-    UsersService,
-    UsersDatabase,
-    WorkspacesService,
-    WorkspaceDatabase,
-    TasksDatabase,
-    UserWorkspaceDatabase,
-    ProjectDatabase,
-    UserIntegrationDatabase,
-    SessionDatabase,
+  imports: [
+    HttpModule.register({}),
+    WorkspacesModule,
+    TasksModule,
+    IntegrationsModule,
+    SessionsModule,
+    ProjectsModule,
   ],
-  exports: [UsersDatabase, UsersService],
+  controllers: [UsersController],
+  providers: [UsersService, UsersDatabase],
+  exports: [UsersService, UsersDatabase],
 })
 export class UsersModule {}

@@ -31,7 +31,6 @@ import { ProjectDatabase } from 'src/database/projects';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { TasksDatabase } from 'src/database/tasks';
 import * as dayjs from 'dayjs';
-import { EmailService } from '../email/email.service';
 import { SprintReportFilterDto } from './dto/sprint-report.dto';
 
 @Injectable()
@@ -45,7 +44,6 @@ export class SessionsService {
     private projectDatabase: ProjectDatabase,
     private userIntegrationDatabase: UserIntegrationDatabase,
     private tasksDatabase: TasksDatabase,
-    private readonly emailService: EmailService,
   ) {}
 
   async getSessions(user: User, taskId: number) {
@@ -838,12 +836,20 @@ export class SessionsService {
     const arrayOfUserIds = userIds?.split(',');
     const userIdsArray = arrayOfUserIds?.map(Number);
 
+    const types = query.types as unknown as string;
+    const typeArray = types && types.split(',');
+
     const projects = await this.projectDatabase.getProjects({
       ...(query?.projectIds && {
         id: {
           in: projectIdsArray.map((id: any) => {
             return id;
           }),
+        },
+      }),
+      ...(query.types && {
+        integration: {
+          type: { in: typeArray },
         },
       }),
       workspaceId: loggedInUser.activeWorkspaceId,

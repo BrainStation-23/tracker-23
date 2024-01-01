@@ -181,6 +181,7 @@ model TempIntegration {
 model Project {
   id          Int              @id @default(autoincrement())
   projectId   Int?
+  calendarId  String?
   projectName String?
   projectKey  String?
   source      String
@@ -227,7 +228,9 @@ model Task {
   priorityCategoryName String?         @default("MEDIUM")
   labels               Labels[]        @default([])
   source               IntegrationType @default(TRACKER23)
+  dataSource           String          @default("Tracker 23")
   integratedTaskId     Int?
+  integratedEventId    String?
   url                  String?
   key                  String?
   pinned               Boolean?        @default(false)
@@ -253,17 +256,18 @@ model Task {
 }
 
 model Session {
-  id               Int            @id @default(autoincrement())
-  startTime        DateTime       @default(now())
-  endTime          DateTime?
-  status           SessionStatus  @default(STARTED)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  authorId         String?
-  integratedTaskId Int?
-  worklogId        Int?
-  userWorkspace    UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
-  userWorkspaceId  Int?
+  id                Int            @id @default(autoincrement())
+  startTime         DateTime       @default(now())
+  endTime           DateTime?
+  status            SessionStatus  @default(STARTED)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  authorId          String?
+  integratedTaskId  Int?
+  integratedEventId String?
+  worklogId         Int?
+  userWorkspace     UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
+  userWorkspaceId   Int?
 
   task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId Int
@@ -334,6 +338,14 @@ model PriorityScheme {
   @@unique([name, projectId], name: "PrioritySchemeIdentifier")
 }
 
+model Scripts {
+  id          Int     @id @default(autoincrement())
+  title       String?
+  key         String  @unique
+  description String?
+  done        Boolean @default(false)
+}
+
 enum Priority {
   LOW
   MEDIUM
@@ -360,6 +372,7 @@ enum SessionStatus {
 enum IntegrationType {
   JIRA
   TRACKER23
+  OUTLOOK
 }
 
 enum Role {
@@ -395,6 +408,3 @@ enum UserStatus {
   ONBOARD
   ACTIVE
 }
-
-
-

@@ -22,6 +22,9 @@ export class ProjectDatabase {
     try {
       return await this.prisma.project.findMany({
         where: filter,
+        include: {
+          integration: true,
+        },
       });
     } catch (error) {
       console.log(error);
@@ -36,6 +39,7 @@ export class ProjectDatabase {
         include: {
           statuses: true,
           priorities: true,
+          integration: true,
         },
       });
     } catch (error) {
@@ -63,6 +67,7 @@ export class ProjectDatabase {
         where: filter,
         include: {
           priorities: true,
+          integration: true,
         },
       });
     } catch (error) {
@@ -71,9 +76,7 @@ export class ProjectDatabase {
     }
   }
 
-  async getProjectByIdWithIntegration(
-    projectId: number,
-  ): Promise<Project | null> {
+  async getProjectByIdWithIntegration(projectId: number) {
     try {
       return await this.prisma.project.findUnique({
         where: {
@@ -306,6 +309,17 @@ export class ProjectDatabase {
           },
           priorities: true,
         },
+      });
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  }
+
+  async createProjects(filter: Project[]) {
+    try {
+      return await this.prisma.project.createMany({
+        data: filter,
       });
     } catch (error) {
       console.log(error);

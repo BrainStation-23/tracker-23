@@ -15,19 +15,18 @@ import { HelperModule } from '../helper/helper.module';
   imports: [
     HttpModule.register({}),
     IntegrationsModule,
-    IntegrationsModule,
     WorkspacesModule,
     ProjectsModule,
     HelperModule,
   ],
   providers: [
     SprintsService,
+    SprintTaskDatabase,
     SprintDatabase,
     TasksDatabase,
-    SprintTaskDatabase,
     JiraApiCalls,
   ],
   controllers: [SprintsController],
-  exports: [SprintsService, SprintDatabase, SprintTaskDatabase],
+  exports: [SprintsService],
 })
 export class SprintsModule {}

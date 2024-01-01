@@ -1,14 +1,13 @@
 import { Select, Typography } from "antd";
 import { StatusDto } from "models/tasks";
+import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
+import { LuFolderOpen } from "react-icons/lu";
 
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
-import SortStatusIconSvg from "@/assets/svg/sortIcons/SortStatusIconSvg";
 import { useAppSelector } from "@/storage/redux";
 import { Project, StatusType } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
-import { useRouter } from "next/router";
 
 type Props = {
   projectIds: number[];
@@ -30,17 +29,16 @@ const ProjectSelectorComponent = ({
 }: Props) => {
   const { Text } = Typography;
 
-  const defaultValues: any = [
-    // { name: "To Do", statusCategoryName: "TO_DO" },
-    // { name: "In Progress", statusCategoryName: "IN_PROGRESS" },
-  ];
+  const defaultValues: any = [];
 
   const router = useRouter();
   const path = router.asPath;
 
-  const projects = path.includes("report")
-    ? useAppSelector((state: RootState) => state.projectList.reportProjects)
-    : useAppSelector((state: RootState) => state.projectList.projects);
+  const projects = (
+    path.includes("report")
+      ? useAppSelector((state: RootState) => state.projectList.reportProjects)
+      : useAppSelector((state: RootState) => state.projectList.projects)
+  )?.filter((project) => project.integrationType !== "OUTLOOK");
   const Options = projects
     ? projects?.map((project) => {
         return {
@@ -59,7 +57,6 @@ const ProjectSelectorComponent = ({
   }
   const tagRender = (props: TagProps) => {
     const { label, value, closable, onClose } = props;
-    const statusObj: StatusType = value && JSON.parse(value);
 
     const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
       event.preventDefault();
@@ -101,7 +98,7 @@ const ProjectSelectorComponent = ({
         className ? className : ""
       }`}
     >
-      <SortStatusIconSvg />
+      <LuFolderOpen size={20} />
       {mode == "single" ? (
         <Select
           placeholder="Select Project"

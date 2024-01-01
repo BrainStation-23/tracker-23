@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import GlobalModal from "@/components/modals/globalModal";
 
 import NewIntegrationProjectImportComponent from "./components/newIntegrationProjectImport";
+import { IntegrationType } from "models/integration";
 
 const JiraCallBack = () => {
   const router = useRouter();
@@ -20,7 +21,20 @@ const JiraCallBack = () => {
 
     if (res && res[0]) {
       setIsModalOpen(true);
-      setNewIntegrationProjects(res);
+      // TODO: We should do this step in Backend API to keep consistent response for all kinds of integrations responses
+      const jiraProjects = res
+        .map(
+          (tmp: {
+            projects: ProjectDto[];
+            integrationType: IntegrationType;
+          }) => {
+            return tmp.projects.map((project: ProjectDto) => {
+              return { ...project, integrationType: res.integrationType };
+            });
+          }
+        )
+        .flat();
+      setNewIntegrationProjects(jiraProjects);
     } else router.push("/projects");
   };
 
