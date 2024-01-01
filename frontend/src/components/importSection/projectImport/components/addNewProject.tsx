@@ -6,6 +6,7 @@ import { Dispatch, SetStateAction, useState } from "react";
 import AddLocalProject from "./addLocalProject";
 import AddProjectList from "./addProjectList";
 import { integrationName, IntegrationType } from "models/integration";
+import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 
 const AddNewProject = ({
   groupProjects,
@@ -20,81 +21,75 @@ const AddNewProject = ({
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <Collapse defaultActiveKey={["existing-integration"]} accordion={true}>
-        <Collapse.Panel
-          header="Import from new Integration"
-          key="new-integration"
-        >
-          <div className="flex gap-4">
-            {Object.keys(integrationName).map((type) => (
-              <Button
-                key={`new-integration-${type}`}
-                disabled={
-                  integrationName[type as IntegrationType] ===
-                  integrationName.TRELLO
-                }
-                className={
-                  integrationName[type as IntegrationType] ===
-                    integrationName.TRACKER23 && localProject
-                    ? "bg-blue-300"
-                    : ""
-                }
-                onClick={async () => {
-                  try {
-                    setSpinning(true);
-                    if (
-                      integrationName[type as IntegrationType] ===
-                      integrationName.JIRA
-                    ) {
-                      const response = await userAPI.getJiraLink();
-                      window.open(response, "_self");
-                    } else if (
-                      integrationName[type as IntegrationType] ===
-                      integrationName.OUTLOOK
-                    ) {
-                      const response = await userAPI.getOutlookLink();
-                      window.open(response, "_self");
-                    } else if (
-                      integrationName[type as IntegrationType] ===
-                      integrationName.TRACKER23
-                    ) {
-                      setLocalProject(!localProject);
-                    }
-                    setSpinning(false);
-                  } catch (error) {
-                    console.log(
-                      "🚀 ~ file: addNewProject.tsx:22 ~ onClick={ ~ error:",
-                      error
-                    );
-                    setSpinning(false);
+      <Collapse accordion={true}>
+        {Object.keys(integrationName).map((type) => (
+          <Collapse.Panel
+            header={integrationName[type as IntegrationType]}
+            key={`existing-integration-${type}`}
+          >
+            <div className="flex flex-col gap-4">
+              <div className="flex justify-end">
+                <Button
+                  key={`new-integration-${type}`}
+                  disabled={
+                    integrationName[type as IntegrationType] ===
+                    integrationName.TRELLO
                   }
-                }}
-              >
-                {integrationName[type as IntegrationType]}
-              </Button>
-            ))}
-          </div>
-        </Collapse.Panel>
-        <Collapse.Panel
-          header="Import from existing Integration"
-          key="existing-integration"
-        >
-          <Collapse accordion={true}>
-            {Object.keys(integrationName).map((type) => (
-              <Collapse.Panel
-                header={integrationName[type as IntegrationType]}
-                key={`existing-integration-${type}`}
-              >
-                <AddProjectList
-                  importableProjects={groupProjects[
-                    type as IntegrationType
-                  ].filter((project) => !project.integrated)}
-                  setSpinning={setSpinning}
-                />
-              </Collapse.Panel>
-            ))}
-          </Collapse>
-        </Collapse.Panel>
+                  className={
+                    integrationName[type as IntegrationType] ===
+                      integrationName.TRACKER23 && localProject
+                      ? "bg-blue-300"
+                      : ""
+                  }
+                  onClick={async () => {
+                    try {
+                      setSpinning(true);
+                      if (
+                        integrationName[type as IntegrationType] ===
+                        integrationName.JIRA
+                      ) {
+                        const response = await userAPI.getJiraLink();
+                        window.open(response, "_self");
+                      } else if (
+                        integrationName[type as IntegrationType] ===
+                        integrationName.OUTLOOK
+                      ) {
+                        const response = await userAPI.getOutlookLink();
+                        window.open(response, "_self");
+                      } else if (
+                        integrationName[type as IntegrationType] ===
+                        integrationName.TRACKER23
+                      ) {
+                        setLocalProject(!localProject);
+                      }
+                      setSpinning(false);
+                    } catch (error) {
+                      console.log(
+                        "🚀 ~ file: addNewProject.tsx:22 ~ onClick={ ~ error:",
+                        error
+                      );
+                      setSpinning(false);
+                    }
+                  }}
+                >
+                  <div className="flex flex-shrink-0 gap-2 font-bold">
+                    <PlusIconSvg stroke="#000000" />
+                    {`Integrate new ${
+                      integrationName[type as IntegrationType]
+                    }`}
+                  </div>
+                </Button>
+              </div>
+
+              <AddProjectList
+                importableProjects={groupProjects[
+                  type as IntegrationType
+                ].filter((project) => !project.integrated)}
+                setSpinning={setSpinning}
+              />
+            </div>
+          </Collapse.Panel>
+        ))}
       </Collapse>
 
       {localProject && (
