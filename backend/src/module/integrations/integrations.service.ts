@@ -2,7 +2,7 @@ import { lastValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Role, User } from '@prisma/client';
+import { IntegrationType, Role, User } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
@@ -148,45 +148,89 @@ export class IntegrationsService {
         throw new APIException('Can not delete integration');
       }
 
-      const transactionRes = await this.prisma.$transaction([
-        this.prisma.userIntegration.delete({
-          where: {
-            UserIntegrationIdentifier: {
-              integrationId: id,
+      const integration = await this.integrationDatabase.findUniqueIntegration({
+        id,
+      });
+
+      if (integration?.type === IntegrationType.OUTLOOK) {
+        const transactionRes = await this.prisma.$transaction([
+          this.prisma.userIntegration.delete({
+            where: {
+              UserIntegrationIdentifier: {
+                integrationId: id,
+                userWorkspaceId: userWorkspace.id,
+              },
+            },
+          }),
+
+          this.prisma.integration.delete({
+            where: { id },
+          }),
+
+          this.prisma.task.deleteMany({
+            where: {
               userWorkspaceId: userWorkspace.id,
-            },
-          },
-        }),
-
-        this.prisma.task.updateMany({
-          where: {
-            userWorkspaceId: userWorkspace.id,
-            project: {
-              integrationId: id,
-            },
-          },
-          data: {
-            userWorkspaceId: null,
-          },
-        }),
-
-        this.prisma.session.updateMany({
-          where: {
-            userWorkspaceId: userWorkspace.id,
-            task: {
               project: {
                 integrationId: id,
               },
             },
-          },
-          data: {
-            userWorkspaceId: null,
-          },
-        }),
-      ]);
+          }),
 
-      if (transactionRes) {
-        return { message: 'Successfully user integration deleted' };
+          this.prisma.session.deleteMany({
+            where: {
+              userWorkspaceId: userWorkspace.id,
+              task: {
+                project: {
+                  integrationId: id,
+                },
+              },
+            },
+          }),
+        ]);
+
+        if (transactionRes) {
+          return { message: 'Successfully user integration deleted' };
+        }
+      } else {
+        const transactionRes = await this.prisma.$transaction([
+          this.prisma.userIntegration.delete({
+            where: {
+              UserIntegrationIdentifier: {
+                integrationId: id,
+                userWorkspaceId: userWorkspace.id,
+              },
+            },
+          }),
+
+          this.prisma.task.updateMany({
+            where: {
+              userWorkspaceId: userWorkspace.id,
+              project: {
+                integrationId: id,
+              },
+            },
+            data: {
+              userWorkspaceId: null,
+            },
+          }),
+
+          this.prisma.session.updateMany({
+            where: {
+              userWorkspaceId: userWorkspace.id,
+              task: {
+                project: {
+                  integrationId: id,
+                },
+              },
+            },
+            data: {
+              userWorkspaceId: null,
+            },
+          }),
+        ]);
+        if (transactionRes) {
+          return { message: 'Successfully user integration deleted' };
+        }
       }
 
       throw new APIException(

@@ -103,6 +103,7 @@ export class ExportDatabase {
   async getTasksWithinTimeRange(filter: any) {
     try {
       const queryFilter: any = {};
+      const typeArray = filter.types && filter.types.split(',');
 
       if (filter.text) {
         queryFilter.OR = [
@@ -144,7 +145,7 @@ export class ExportDatabase {
             }),
           ...(filter?.priority1 && { priority: { in: filter?.priority1 } }),
           ...(filter?.status1 && { status: { in: filter?.status1 } }),
-          ...(filter.typeArray.length && { source: { in: filter.typeArray } }),
+          ...(filter.types && { source: { in: typeArray } }),
           ...queryFilter,
         },
         select: {
@@ -281,6 +282,7 @@ export class ExportDatabase {
   async getTasksWithinTimeRangeWithDetails(filter: any) {
     try {
       const queryFilter: any = {};
+      const typeArray = filter.types && filter.types.split(',');
 
       if (filter.text) {
         queryFilter.OR = [
@@ -322,7 +324,7 @@ export class ExportDatabase {
             }),
           ...(filter?.priority1 && { priority: { in: filter?.priority1 } }),
           ...(filter?.status1 && { status: { in: filter?.status1 } }),
-          ...(filter.typeArray.length && { source: { in: filter.typeArray } }),
+          ...(filter.types && { source: { in: typeArray } }),
           ...queryFilter,
         },
         include: {

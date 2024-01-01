@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Project, Task } from '@prisma/client';
+import { Project } from '@prisma/client';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 
 @Injectable()
@@ -76,9 +76,7 @@ export class ProjectDatabase {
     }
   }
 
-  async getProjectByIdWithIntegration(
-    projectId: number,
-  ): Promise<Project | null> {
+  async getProjectByIdWithIntegration(projectId: number) {
     try {
       return await this.prisma.project.findUnique({
         where: {
