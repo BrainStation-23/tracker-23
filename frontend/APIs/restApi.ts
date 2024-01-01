@@ -686,6 +686,15 @@ export async function importProjectRest(id: number) {
   }
 }
 
+export async function importCalendarRest(ids: number[]) {
+  try {
+    const res = await axios.get(`${apiEndPoints.calendar}?projectIds=${ids}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
 export async function createProjectRest(data: CreateLocalProjectModel) {
   try {
     const res = await axios.post(`${apiEndPoints.projects}/create`, data);

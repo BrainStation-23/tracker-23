@@ -94,6 +94,7 @@ export interface apiFunction {
   acceptWorkspaceInvitation: (id: number) => Promise<any>;
   rejectWorkspaceInvitation: (id: number) => Promise<any>;
   importProject: (id: number) => Promise<any>;
+  importCalendar: (ids: number[]) => Promise<any>;
   createProject: (data: CreateLocalProjectModel) => Promise<any>;
   deleteProjectTasks: (id: number) => Promise<any>;
   getJiraActiveSprintTasks: (searchParams?: SearchParamsModel) => Promise<any>;

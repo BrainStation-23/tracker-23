@@ -28,7 +28,7 @@ const OutlookCallBack = () => {
 
   const importIntegrationTasks = async (project: ProjectDto) => {
     setSpinning(true);
-    const res = await userAPI.importProject(project.id);
+    const res = await userAPI.importCalendar([project.id]);
     console.log("importProject", res);
 
     if (res) {
