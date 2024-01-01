@@ -952,6 +952,7 @@ export class TasksService {
           updatedAt: new Date(integratedTask.updated),
           jiraUpdatedAt: new Date(integratedTask.updated),
           source: IntegrationType.JIRA,
+          dataSource: project.source,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           url: `${userIntegration?.integration?.site}/browse/${integratedTask?.key}`,
@@ -1291,6 +1292,7 @@ export class TasksService {
           updatedAt: new Date(integratedTask.updated),
           jiraUpdatedAt: new Date(integratedTask.updated),
           source: IntegrationType.JIRA,
+          dataSource: project.source,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           url: `${userIntegration?.integration?.site}/browse/${integratedTask?.key}`,
