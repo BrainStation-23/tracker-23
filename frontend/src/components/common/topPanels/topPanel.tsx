@@ -68,7 +68,8 @@ const TopPanel = ({
   if (sprintList.length > 0) options.push({ label: "Sprint", value: "Sprint" });
 
   const totalPinned = tasks?.filter((task) => task.pinned)?.length;
-  const tabs = ["All", "Pin", "ActiveSprint"];
+  // const tabs = ["All", "Pin", "ActiveSprint"];
+  const tabs = ["All", "Pin"];
 
   const handleInputChange = (event: any) => {
     setSearchText(event.target.value);
