@@ -249,7 +249,7 @@ export class JiraApiCalls {
       return (await axios(config)).data;
     } catch (err) {
       console.log(
-        '🚀 ~ file: api.ts:17 ~ JiraApiCalls ~ getTransitions ~ err:',
+        '🚀 ~ file: api.ts:255 ~ JiraApiCalls ~ getCalendarEvents ~ err:',
         err,
       );
       return null;
