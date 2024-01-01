@@ -11,6 +11,8 @@ import {
 import { userAPI } from "APIs";
 import { message } from "antd";
 import OpenLinkInNewTab from "@/components/common/link/OpenLinkInNewTab";
+import { integrationName } from "models/integration";
+import { outlookSourceUrl } from "utils/constants";
 
 type Props = {
   project: ProjectDto;
@@ -40,7 +42,10 @@ const ImportedProject = ({ project, deleteProject }: Props) => {
           <div> Source :</div>
           <OpenLinkInNewTab
             onClick={() => {
-              project.source !== "T23" && window.open(project.source);
+              integrationName[project.integrationType] ===
+                integrationName.JIRA && window.open(project.source);
+              integrationName[project.integrationType] ===
+                integrationName.OUTLOOK && window.open(outlookSourceUrl);
             }}
           >
             {project.source}

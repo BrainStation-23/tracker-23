@@ -102,6 +102,8 @@ export enum IntegrationDescriptionsEnum {
   TRACKER23 = "Connect Tracker 23 to your WorkSpace",
 }
 
+export const outlookSourceUrl = "https://outlook.office.com/calendar/view";
+
 export enum Roles {
   USER = "USER",
   ADMIN = "ADMIN",
