@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 import PrimaryButton from "@/components/common/buttons/primaryButton";
 import OpenLinkInNewTab from "@/components/common/link/OpenLinkInNewTab";
+import { integrationName } from "models/integration";
 
 type Props = {
   project: ProjectDto;
@@ -15,7 +16,11 @@ const ImportProject = ({ project, setSpinning }: Props) => {
   const router = useRouter();
   const importProjectTasks = async () => {
     setSpinning(true);
-    const res = await userAPI.importProject(project.id);
+
+    const res =
+      integrationName[project.integrationType] === integrationName.OUTLOOK
+        ? await userAPI.importCalendar([project.id])
+        : await userAPI.importProject(project.id);
     if (res) {
       message.success(res.message);
       router.push("/projects");
