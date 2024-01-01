@@ -65,6 +65,7 @@ const ReportComponent = () => {
       endDate: dateRange[1],
       userIds: selectedUsers,
       projectIds: projects,
+      types: selectedSource,
     });
     res.columns && setColumns(res.columns);
 
@@ -231,7 +232,7 @@ const ReportComponent = () => {
 
   useEffect(() => {
     getReport();
-  }, [dateRange, selectedUsers, projects]);
+  }, [dateRange, selectedUsers, projects, selectedSource]);
 
   useEffect(() => {
     getSprintUserReport();
