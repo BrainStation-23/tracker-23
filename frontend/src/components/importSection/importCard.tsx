@@ -82,6 +82,22 @@ const ImportCard = ({
                   window.open(response, "_self");
                 } catch (error) {}
               }
+            } else if (data.type === "OUTLOOK") {
+              // TODO: Refactor needed later
+              if (installed) {
+                await handleUninstallIntegration(data.id);
+              } else {
+                try {
+                  const response = await userAPI.getOutlookLink();
+
+                  window.open(response, "_self");
+                  console.log("response", response);
+
+                  // https://login.microsoftonline.com/common/oauth2/v2.0/authorize?&scope=offline_access user.read Calendars.ReadWrite Calendars.Read&response_type=code&response_mode=query&state=testing&redirect_uri=http://localhost:3001/integrations/outlook/callback/&client_id=872cd7ddadkasj-430c-bcc3-9ee4d568cdfb&prompt=consent
+                } catch (error) {
+                  console.log("OUTLOOK getOutlookLink error:", error);
+                }
+              }
             }
           }}
           type="default"

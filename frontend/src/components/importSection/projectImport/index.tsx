@@ -27,24 +27,13 @@ const ProjectImport = () => {
     const res = await userAPI.getAllProjects();
     console.log("🚀 ~ file: index.tsx:15 ~ getAllProjects ~ res:", res);
     if (res) {
-      // TODO: This section will be updated or removed when the api will be ready
-      const rawProjects = res.map((item: any) => {
-        return {
-          integrationType:
-            Object.keys(integrationName)[
-              Math.floor(Object.keys(integrationName).length * Math.random())
-            ],
-          ...item,
-        };
-      });
-
       const groupProjects: GroupProjects = {
         JIRA: [],
         TRELLO: [],
         OUTLOOK: [],
         TRACKER23: [],
       };
-      rawProjects.forEach((project: ProjectDto) => {
+      res.forEach((project: ProjectDto) => {
         groupProjects[project.integrationType].push(project);
       });
 
@@ -89,9 +78,9 @@ const ProjectImport = () => {
     <Spin spinning={rootSpinning}>
       <div className="mb-12 flex w-full flex-col gap-4">
         <div className="mb-4 flex justify-between">
-          <h2 className="text-2xl font-bold">Your Projects</h2>
+          <h2 className="text-2xl font-bold">Your Projects and Calenders</h2>
           <PrimaryButton onClick={() => setIsModalOpen(true)}>
-            <PlusIconSvg /> Add Project
+            <PlusIconSvg /> Add New
           </PrimaryButton>
         </div>
         {initialLoadDone ? (
@@ -111,8 +100,12 @@ const ProjectImport = () => {
           <Spin spinning={true}></Spin>
         )}
         <GlobalModal
-          width={600}
-          {...{ isModalOpen, setIsModalOpen, title: "Add a New Project" }}
+          width={720}
+          {...{
+            isModalOpen,
+            setIsModalOpen,
+            title: "Add a new Project or Calender",
+          }}
         >
           <Spin spinning={spinning} tip="Processing">
             <AddNewProject

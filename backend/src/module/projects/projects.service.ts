@@ -287,8 +287,20 @@ export class ProjectsService {
       }));
 
     if (!localProjects) localProjects = [];
-
-    return [...projects, ...localProjects];
+    return [
+      ...projects.map((project) => {
+        return {
+          ...project,
+          integrationType: project.integration?.type,
+        };
+      }),
+      ...localProjects.map((project) => {
+        return {
+          ...project,
+          integrationType: IntegrationType.TRACKER23,
+        };
+      }),
+    ];
   }
 
   async createProject(user: User, projectName: string) {

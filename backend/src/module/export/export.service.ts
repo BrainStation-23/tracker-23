@@ -68,6 +68,9 @@ export class ExportService {
     const projectIdArray =
       projectIds && projectIds.split(',').map((item) => Number(item.trim()));
 
+    const types = query.types as unknown as string;
+    const typeArray = types && types.split(',');
+
     const currentUserWorkspace =
       user.activeWorkspaceId &&
       (await this.userWorkspaceDatabase.getSingleUserWorkspace({
@@ -129,6 +132,7 @@ export class ExportService {
       priority1,
       status1,
       text,
+      typeArray,
     });
   }
 
@@ -435,6 +439,8 @@ export class ExportService {
       sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
     const projectIdArray =
       projectIds && projectIds.split(',').map((item) => Number(item.trim()));
+    const types = query.types as unknown as string;
+    const typeArray = types && types.split(',');
 
     const currentUserWorkspace =
       user.activeWorkspaceId &&
@@ -497,6 +503,7 @@ export class ExportService {
       priority1,
       status1,
       text,
+      typeArray,
     });
   }
 }
