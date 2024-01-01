@@ -43,18 +43,20 @@ const TypeDependentSection = ({
 
   return (
     <>
-      <SourceSelectorComponent {...{ selectedSource, setSelectedSource }} />
+      {!["Sprint Estimate", "Sprint Report"].includes(activeTab) && (
+        <SourceSelectorComponent {...{ selectedSource, setSelectedSource }} />
+      )}
 
-      {showProjectSelector && (
+      {(["Sprint Estimate", "Sprint Report"].includes(activeTab) ||
+        showProjectSelector) && (
         <ProjectSelectorComponent
           projectIds={projects}
           setProjectIds={setProjects}
           className="w-[210px]"
         />
       )}
-      {(activeTab === "Sprint Estimate" || activeTab === "Task List") &&
-        selectedSource?.includes("JIRA") &&
-        showProjectSelector &&
+      {(["Sprint Estimate", "Sprint Report"].includes(activeTab) ||
+        (showProjectSelector && activeTab === "Task List")) &&
         sprintList.length > 0 && (
           <SprintSelectorComponent
             projectIds={projects}
@@ -62,8 +64,9 @@ const TypeDependentSection = ({
             className="w-[210px]"
           />
         )}
-      {(activeTab === "Sprint Estimate" || activeTab === "Task List") &&
-        showCalendarSelector && (
+      {["Sprint Estimate", "Sprint Report"].includes(activeTab) &&
+        showCalendarSelector &&
+        activeTab === "Task List" && (
           <CalendarSelectorComponent
             key={Math.random()}
             {...{ calendarIds, setCalendarIds }}

@@ -6,6 +6,7 @@ import { useState } from "react";
 import JiraIconSvg from "@/assets/svg/JiraIconSvg";
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
+import { integrationIcons } from "@/components/importSection/importCard";
 import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
 import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";
 import {
@@ -41,8 +42,7 @@ const TableComponent = ({
       render: (_: any, task: TaskDto) => {
         return (
           <div className="flex items-center gap-2" aria-disabled="true">
-            {
-              // task.status !== "DONE" &&
+            {task.source === "JIRA" ? (
               <div className="cursor-pointer">
                 {runningTask?.id != task.id ? (
                   <Tooltip title="Click To Start Task">
@@ -66,7 +66,9 @@ const TableComponent = ({
                   </Tooltip>
                 )}
               </div>
-            }
+            ) : (
+              <div className="h-1 p-4"></div>
+            )}
             {/* {task.status === "DONE" && <div className="w-[34px]"></div>} */}
             <div className="flex flex-col gap-2">
               <Text
@@ -92,7 +94,7 @@ const TableComponent = ({
                     {task.projectName}
                   </div>
                 )}
-                {task.integratedTaskId && <JiraIconSvg />}
+                {integrationIcons[task.source]}
               </div>
             </div>
           </div>
@@ -150,6 +152,23 @@ const TableComponent = ({
     //     </StatusDropdownComponent>
     //   ),
     // },
+    {
+      title: "Source",
+      dataIndex: "dataSource",
+      key: "dataSource",
+      // align: "center",
+      render: (dataSource: any, task: TaskDto) => (
+        <div className="flex max-w-[150px] items-center gap-2 ">
+          <div>{integrationIcons[task.source]} </div>
+          <Text
+            className="w-min cursor-pointer"
+            ellipsis={{ tooltip: dataSource }}
+          >
+            {dataSource}
+          </Text>
+        </div>
+      ),
+    },
     {
       title: "Created",
       dataIndex: "created",

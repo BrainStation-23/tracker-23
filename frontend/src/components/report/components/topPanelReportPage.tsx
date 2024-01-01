@@ -51,8 +51,7 @@ const TopPanelReportPage = ({
         <div className="flex h-auto w-full flex-wrap items-center justify-end gap-6">
           {!["Sprint Estimate"].includes(activeTab) && datePicker}
           {topPanelComponent}
-          {!["Sprint Estimate", "Sprint Report"].includes(activeTab) &&
-            typeSelector}
+          {!["Sprint Report"].includes(activeTab) && typeSelector}
           {!["Sprint Report"].includes(activeTab) && (
             <>
               {activeTab === "Task List" ? (

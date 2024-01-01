@@ -1,6 +1,7 @@
 import { StatusType } from "@/storage/redux/projectsSlice";
 import { TablePaginationConfig } from "antd";
 import { FilterValue } from "antd/es/table/interface";
+import { IntegrationType } from "models/integration";
 
 export type CreateTaskDto = {
   title: string;
@@ -40,7 +41,8 @@ export type TaskDto = {
   due: any;
   priority: string;
   labels: string[];
-  source: string;
+  source: IntegrationType;
+  dataSource: string;
   createdAt: string;
   sessions: Session[];
   updatedAt: string;
