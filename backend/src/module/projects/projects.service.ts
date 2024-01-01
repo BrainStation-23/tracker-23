@@ -509,7 +509,10 @@ export class ProjectsService {
           mappedEventId.set(event.integratedEventId, event.id);
       }
     } catch (err) {
-      console.log('🚀 ~ file: tasks.service.ts:924 ~ TasksService ~ err:', err);
+      console.log(
+        '🚀 ~ file: projects.service.ts:512 ~ ProjectsService ~ err:',
+        err,
+      );
       throw new APIException(
         'Could not import Calender Events',
         HttpStatus.BAD_REQUEST,
