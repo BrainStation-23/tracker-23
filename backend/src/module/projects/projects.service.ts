@@ -26,6 +26,7 @@ import { ImportCalendarProjectQueryDto, UpdateProjectRequest } from './dto';
 import { TasksDatabase } from 'src/database/tasks';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
 import { JiraClientService } from '../helper/client';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class ProjectsService {
@@ -434,8 +435,12 @@ export class ProjectsService {
     userIntegration: UserIntegration,
   ) {
     const settings = await this.tasksDatabase.getSettings(user);
-    // const syncTime: number = settings ? settings.syncTime : 6;
-    const url = `https://graph.microsoft.com/v1.0/me/calendars/${project.calendarId}/events`;
+    const givenTime: number = settings ? settings.syncTime : 6;
+    const currentTime = dayjs();
+    const syncTime = currentTime.subtract(givenTime, 'month');
+    const iso8601SyncTime = syncTime.toISOString();
+    const iso861CurrentTime = currentTime.toISOString();
+    const url = `https://graph.microsoft.com/v1.0//me/calendars/${project.calendarId}/calendarView?startDateTime=${iso8601SyncTime}&endDateTime=${iso861CurrentTime}`;
     const taskList: any[] = [],
       sessionArray: any[] = [];
     const mappedIssues = new Map<string, any>();
@@ -476,6 +481,7 @@ export class ProjectsService {
         updatedAt: new Date(integratedEvent.lastModifiedDateTime),
         jiraUpdatedAt: new Date(integratedEvent.lastModifiedDateTime),
         source: IntegrationType.OUTLOOK,
+        dataSource: project.source,
         url: integratedEvent.webLink,
       });
     }
