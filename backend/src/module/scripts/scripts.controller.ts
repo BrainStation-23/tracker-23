@@ -1,4 +1,4 @@
-import { Controller, Patch } from '@nestjs/common';
+import { Controller, Get, Patch } from '@nestjs/common';
 import { ScriptsService } from './scripts.service';
 
 @Controller('scripts')
@@ -8,5 +8,9 @@ export class ScriptsController {
   @Patch('/priority')
   async updateApprovalUser() {
     return await this.scriptsService.migratePrioritySchema();
+  }
+  @Get('/outlook')
+  async migrateOutlookSchema() {
+    return await this.scriptsService.migrateOutlookSchema();
   }
 }
