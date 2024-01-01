@@ -30,12 +30,13 @@ import TypeDependentSection from "./components/typeDependentSection";
 
 const ReportComponent = () => {
   const dispatch = useDispatch();
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
+  const [Loaded, setLoaded]: any = useState({});
   const [SprintReportFecthedOnce, setSprintReportFecthedOnce] = useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
   const [data, setData] = useState([]);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
-  const [sprintUserReportData, setSprintUserReportData] =
+  const [sprintEstimateReportData, setSprintEstimateReportData] =
     useState<SprintUserReportDto>();
   const [selectedSource, setSelectedSource] = useState<IntegrationType[]>();
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
@@ -58,20 +59,23 @@ const ReportComponent = () => {
     "Time Sheet"
     // "Sprint Report"
   );
-  const getReport = async () => {
-    setIsLoading(true);
+  const getTimeSheetReport = async () => {
+    // setIsLoading(true);
+    Loaded["Time Sheet"] = false;
     const res = await userAPI.getTimeSheetReport({
       startDate: dateRange[0],
       endDate: dateRange[1],
       userIds: selectedUsers,
       projectIds: projects,
+      types: selectedSource,
     });
     res.columns && setColumns(res.columns);
 
     res.rows && setData(res.rows);
     setDateRangeArray(res.dateRange);
     // setData(formatUserData(res));
-    setIsLoading(false);
+    // setIsLoading(false);
+    Loaded["Time Sheet"] = true;
   };
   const getProjectWiseStatues = async () => {
     {
@@ -91,7 +95,7 @@ const ReportComponent = () => {
           />
         );
       case "Sprint Estimate":
-        return <SpritEstimateReportComponent data={sprintUserReportData} />;
+        return <SpritEstimateReportComponent data={sprintEstimateReportData} />;
       case "Task List":
         return <TaskListReportComponent {...{ tasks }} />;
       case "Sprint Report":
@@ -181,21 +185,25 @@ const ReportComponent = () => {
     if (res?.length > 0) dispatch(setReportSprintListReducer(res));
   };
   const getSprintUserReport = async () => {
-    setIsLoading(true);
+    // setIsLoading(true);
+    Loaded["Sprint Estimate"] = false;
     const res: SprintUserReportDto = await userAPI.getSprintUserReport({
       sprints,
       selectedUsers,
       projectIds: projects,
     });
-    res && setSprintUserReportData(res);
-    setIsLoading(false);
+    res && setSprintEstimateReportData(res);
+    // setIsLoading(false);
+    Loaded["Sprint Estimate"] = true;
   };
   const getSprintReport = async () => {
     if (!(sprintReportSprintId && dateRange[0] && dateRange[0])) {
       setSprintReportData(null);
+      Loaded["Sprint Report"] = true;
       return;
     }
-    setIsLoading(true);
+    Loaded["Sprint Report"] = false;
+    // setIsLoading(true);
     const res = await userAPI.getSprintReport({
       sprintId: sprintReportSprintId,
       startDate: dateRange[0],
@@ -203,7 +211,8 @@ const ReportComponent = () => {
     });
     res && setSprintReportData(res);
     res && setSprintReportFecthedOnce(true);
-    setIsLoading(false);
+    // setIsLoading(false);
+    Loaded["Sprint Report"] = true;
   };
 
   const getUserListByProject = async () => {
@@ -211,7 +220,8 @@ const ReportComponent = () => {
     res && setUsers(res);
   };
   const getTaskListReport = async () => {
-    setIsLoading(true);
+    // setIsLoading(true);
+    Loaded["Task List"] = false;
     const res = await userAPI.getTaskListReport({
       searchText,
       selectedDate: dateRange,
@@ -226,12 +236,13 @@ const ReportComponent = () => {
       const { formattedTasks } = getFormattedTasks(res);
       setTasks(formattedTasks || []);
     }
-    setIsLoading(false);
+    // setIsLoading(false);
+    Loaded["Task List"] = true;
   };
 
   useEffect(() => {
-    getReport();
-  }, [dateRange, selectedUsers, projects]);
+    getTimeSheetReport();
+  }, [dateRange, selectedUsers, projects, selectedSource]);
 
   useEffect(() => {
     getSprintUserReport();
@@ -268,17 +279,18 @@ const ReportComponent = () => {
     <div>
       <ReportWrapper
         title="Time Reports"
+        isLoading={!Loaded[activeTab]}
         {...{
           setDateRange,
           dateRange,
-          isLoading,
+
           activeTab,
           setActiveTab,
           sprints,
           setSprints,
           projects,
           setProjects,
-          sprintUserReportData,
+          sprintEstimateReportData,
           selectedUsers,
           setSelectedUsers,
           users,
