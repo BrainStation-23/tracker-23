@@ -42,7 +42,7 @@ const TableComponent = ({
       render: (_: any, task: TaskDto) => {
         return (
           <div className="flex items-center gap-2" aria-disabled="true">
-            {task.source === "JIRA" ? (
+            {task.source !== "OUTLOOK" ? (
               <div className="cursor-pointer">
                 {runningTask?.id != task.id ? (
                   <Tooltip title="Click To Start Task">

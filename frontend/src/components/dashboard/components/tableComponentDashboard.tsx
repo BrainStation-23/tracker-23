@@ -33,7 +33,7 @@ const DashboardTableComponent = ({
       render: (_: any, task: TaskDto) => {
         return (
           <div className=" flex items-center gap-2">
-            {task.source === "JIRA" ? (
+            {task.source !== "OUTLOOK" ? (
               <>
                 {runningTask?.id != task.id ? (
                   <div
