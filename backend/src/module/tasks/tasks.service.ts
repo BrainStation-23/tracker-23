@@ -807,13 +807,13 @@ export class TasksService {
   async handleIntegrationFailure(user: User) {
     const notification = await this.createNotification(
       user,
-      'Project Import Failed',
-      'Project Import Failed',
+      'Import Failed',
+      'Import Failed',
     );
     this.myGateway.sendNotification(`${user.id}`, notification);
     await this.syncCall(StatusEnum.FAILED, user);
     throw new APIException(
-      'Can not import project tasks',
+      'Could not import project tasks',
       HttpStatus.BAD_REQUEST,
     );
   }
@@ -1454,11 +1454,13 @@ export class TasksService {
       include: { integration: true },
     });
     if (!project) {
+      await this.handleIntegrationFailure(user);
       throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
     }
 
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
+      await this.handleIntegrationFailure(user);
       throw new APIException(
         'Can not import project tasks, userWorkspace not found!',
         HttpStatus.BAD_REQUEST,

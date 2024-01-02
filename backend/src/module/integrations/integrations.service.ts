@@ -101,10 +101,11 @@ export class IntegrationsService {
         '🚀 ~ file: integrations.service.ts:100 ~ IntegrationsService ~ getUpdatedUserIntegration ~ err:',
         err,
       );
-      throw new APIException(
-        'Can not update user integration',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      // throw new APIException(
+      //   'Can not update user integration',
+      //   HttpStatus.INTERNAL_SERVER_ERROR,
+      // );
+      return null;
     }
 
     const updatedUserIntegration =
@@ -117,11 +118,13 @@ export class IntegrationsService {
         },
       ));
 
-    if (!updatedUserIntegration)
-      throw new APIException(
-        'Can not update user integration',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    if (!updatedUserIntegration) {
+      // throw new APIException(
+      //   'Can not update user integration',
+      //   HttpStatus.INTERNAL_SERVER_ERROR,
+      // );
+      return null;
+    }
 
     return updatedUserIntegration;
   }
