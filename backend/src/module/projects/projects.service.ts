@@ -440,19 +440,25 @@ export class ProjectsService {
     const syncTime = currentTime.subtract(givenTime, 'month');
     const iso8601SyncTime = syncTime.toISOString();
     const iso861CurrentTime = currentTime.toISOString();
-    const url = `https://graph.microsoft.com/v1.0//me/calendars/${project.calendarId}/calendarView?startDateTime=${iso8601SyncTime}&endDateTime=${iso861CurrentTime}`;
+    let url = `https://graph.microsoft.com/v1.0//me/calendars/${project.calendarId}/calendarView?startDateTime=${iso8601SyncTime}&endDateTime=${iso861CurrentTime}`;
+    const mappedIssues = new Map<string, any>();
     const taskList: any[] = [],
       sessionArray: any[] = [];
-    const mappedIssues = new Map<string, any>();
-    const events = await this.jiraClient.CallOutlook(
-      userIntegration,
-      this.jiraApiCalls.getCalendarEvents,
-      url,
-    );
+    let events;
 
-    events.value.map((event: any) => {
-      mappedIssues.set(event.id, event);
-    });
+    do {
+      events = null;
+      events = await this.jiraClient.CallOutlook(
+        userIntegration,
+        this.jiraApiCalls.getCalendarEvents,
+        url,
+      );
+      events.value.map((event: any) => {
+        mappedIssues.set(event.id, event);
+      });
+      url = events['@odata.nextLink'];
+    } while (url);
+
     const integratedEvents = await this.prisma.task.findMany({
       where: {
         workspaceId: user.activeWorkspaceId,
@@ -478,7 +484,7 @@ export class ProjectsService {
         projectId: project.id,
         integratedEventId,
         createdAt: new Date(integratedEvent.createdDateTime),
-        updatedAt: new Date(integratedEvent.lastModifiedDateTime),
+        updatedAt: new Date(integratedEvent.end.dateTime),
         jiraUpdatedAt: new Date(integratedEvent.lastModifiedDateTime),
         source: IntegrationType.OUTLOOK,
         dataSource: project.source,
