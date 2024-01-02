@@ -9,7 +9,11 @@ import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
 import TablePriorityComponent from "@/components/common/tableComponents/tablePriorityComponent";
 import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
-import { getTotalSpentTime } from "@/services/timeActions";
+import {
+  formatDate,
+  getFormattedTime,
+  getTotalSpentTime,
+} from "@/services/timeActions";
 
 import EstimationComponent from "./estimationComponent";
 import MoreFunctionComponent from "./moreFunction";
@@ -153,9 +157,12 @@ const TableComponent = ({
     },
     {
       title: "Created",
-      dataIndex: "created",
-      key: "created",
-      // align: "center",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (createdAt: string, task: TaskDto) => {
+        return <>{getFormattedTime(formatDate(createdAt))}</>;
+      },
+
       sorter: (a: any, b: any) => {
         const aCreated = new Date(a.created);
         const bCreated = new Date(b.created);

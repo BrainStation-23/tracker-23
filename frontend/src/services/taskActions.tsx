@@ -112,7 +112,7 @@ export const getFormattedTasks = (tasks: TaskDto[]) => {
       ...task,
       startTime: formatDate(task.sessions[0]?.startTime),
       endTime: formatDate(task.sessions[task.sessions?.length - 1]?.endTime),
-      created: getFormattedTime(formatDate(task.createdAt)),
+      // created: getFormattedTime(formatDate(task.createdAt)),
       total: total,
       percentage: task.estimation
         ? Math.round(

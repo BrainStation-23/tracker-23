@@ -127,9 +127,13 @@ const DashboardTableComponent = ({
     // },
     {
       title: "Created",
-      dataIndex: "created",
-      key: "created",
+      dataIndex: "createdAt",
+      key: "createdAt",
       // align: "center",
+      render: (createdAt: any, task: TaskDto) => {
+        console.log("****", createdAt, task);
+        return <>{getFormattedTime(formatDate(task.createdAt))}</>;
+      },
     },
     // {
     //   title: "Priority",

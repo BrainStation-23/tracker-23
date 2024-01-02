@@ -171,9 +171,12 @@ const TableComponent = ({
     },
     {
       title: "Created",
-      dataIndex: "created",
-      key: "created",
-      // align: "center",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (createdAt: string, task: TaskDto) => {
+        return <>{getFormattedTime(formatDate(createdAt))}</>;
+      },
+
       sorter: (a: any, b: any) => {
         const aCreated = new Date(a.created);
         const bCreated = new Date(b.created);
