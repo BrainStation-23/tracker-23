@@ -1,4 +1,5 @@
 export type LoginDto = {
+  id: number;
   name: string;
   password: string;
   remember: boolean;

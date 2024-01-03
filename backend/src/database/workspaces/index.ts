@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Role, Settings, User, UserWorkspaceStatus } from '@prisma/client';
+import {
+  Role,
+  Settings,
+  User,
+  UserWorkspace,
+  UserWorkspaceStatus,
+} from '@prisma/client';
 import {
   SendInvitationReqBody,
   WorkspaceReqBody,
@@ -188,7 +194,7 @@ export class WorkspaceDatabase {
     userId: number,
     workspaceId: number,
     status?: UserWorkspaceStatus[],
-  ) {
+  ): Promise<UserWorkspace | null> {
     try {
       return await this.prisma.userWorkspace.findFirst({
         where: {

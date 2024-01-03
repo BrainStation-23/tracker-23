@@ -1,6 +1,12 @@
 import { TasksDatabase } from 'src/database/tasks';
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { User, UserWorkspaceStatus, Session, Role } from '@prisma/client';
+import {
+  User,
+  UserWorkspaceStatus,
+  Session,
+  Role,
+  IntegrationType,
+} from '@prisma/client';
 import { GetSprintListQueryDto } from './dto';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { IntegrationsService } from '../integrations/integrations.service';
@@ -315,7 +321,7 @@ export class SprintsService {
     return taskIds;
   }
 
-  async getProjectIds(user: User): Promise<number[]> {
+  async getProjectIds(user: User): Promise<number[] | []> {
     if (!user.activeWorkspaceId) {
       throw new APIException(
         'user workspace not found',
@@ -323,23 +329,27 @@ export class SprintsService {
       );
     }
 
-    const getUserIntegrationList =
-      await this.integrationsService.getUserIntegrations(user);
+    const userIntegrations = await this.integrationsService.getUserIntegrations(
+      user,
+    );
     const integrationIds: any[] = [];
     const projectIds: any[] = [];
 
-    for (let i = 0, len = getUserIntegrationList.length; i < len; i++) {
-      integrationIds.push(getUserIntegrationList[i].integrationId);
+    for (let i = 0, len = userIntegrations.length; i < len; i++) {
+      integrationIds.push(userIntegrations[i].integrationId);
     }
 
-    const projectList = await this.projectDatabase.getProjects({
+    const projects = await this.projectDatabase.getProjects({
       integrated: true,
       workspaceId: user.activeWorkspaceId,
+      integration: {
+        type: IntegrationType.JIRA,
+      },
       integrationId: { in: integrationIds },
     });
 
-    for (let i = 0, len = projectList.length; i < len; i++) {
-      projectIds.push(projectList[i].id);
+    for (let i = 0, len = projects.length; i < len; i++) {
+      projectIds.push(projects[i].id);
     }
 
     return projectIds;

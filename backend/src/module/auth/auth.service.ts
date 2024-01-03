@@ -137,6 +137,7 @@ export class AuthService {
 
     const token = await this.createToken(user, dto.remember);
     return {
+      id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -476,6 +477,7 @@ export class AuthService {
     });
 
     return {
+      id: updatedUser.id,
       email: updatedUser.email,
       firstName: updatedUser.firstName,
       approved: updatedUser.approved,
@@ -552,6 +554,7 @@ export class AuthService {
     });
 
     return {
+      id: user.id,
       email: user.email,
       firstName: user.firstName,
       approved: user.approved,
