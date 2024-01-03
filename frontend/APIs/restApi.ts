@@ -38,7 +38,7 @@ export async function loginRest(
 ): Promise<LoginResponseDto | undefined> {
   try {
     const res = await axios.post(`${apiEndPoints.login}`, data);
-    if (res?.data?.access_token) {
+        if (res?.data?.access_token) {
       SetCookie("access_token", res?.data?.access_token);
       setLocalStorage("access_token", res?.data?.access_token);
       setLocalStorage("userDetails", res.data);

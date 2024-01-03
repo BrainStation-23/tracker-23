@@ -50,11 +50,19 @@ export class ProjectsService {
     const project = await this.projectDatabase.getProjectByIdWithIntegration(
       projId,
     );
-    if (!project)
+    if (!project) {
+      await this.tasksService.sendImportedNotification(
+        user,
+        'Failed to import the project!',
+      );
       throw new APIException('Invalid Project Id', HttpStatus.BAD_REQUEST);
-
+    }
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
+      await this.tasksService.sendImportedNotification(
+        user,
+        'Failed to import the project!',
+      );
       throw new APIException(
         'User workspace not found',
         HttpStatus.BAD_REQUEST,
@@ -104,40 +112,53 @@ export class ProjectsService {
       ));
 
     if (!updatedUserIntegration) {
-      await this.tasksService.handleIntegrationFailure(user);
-      return [];
-    }
-
-    res && (await this.tasksService.syncCall(StatusEnum.IN_PROGRESS, user));
-
-    await this.tasksService.setProjectStatuses(project, updatedUserIntegration);
-    await this.tasksService.importPriorities(project, updatedUserIntegration);
-
-    try {
-      await this.tasksService.sendImportingNotification(user);
-      // const transaction = await this.prisma.$transaction(
-      //   async (prisma: any) => {
-      await this.tasksService.fetchAndProcessTasksAndWorklog(
-        user,
-        project,
-        updatedUserIntegration,
-      );
-      await this.sprintService.createSprintAndTask(
-        user,
-        projId,
-        updatedUserIntegration.id,
-      );
-      await this.tasksService.updateProjectIntegrationStatus(projId);
-      //   },
-      // );
-      res && (await this.tasksService.syncCall(StatusEnum.DONE, user));
       await this.tasksService.sendImportedNotification(
         user,
-        'Project Imported',
-        res,
+        'Failed to import the project!',
       );
+      throw new APIException(
+        'Updated User Integration not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    try {
+      Promise.allSettled([
+        res && (await this.tasksService.syncCall(StatusEnum.IN_PROGRESS, user)),
+
+        await this.tasksService.setProjectStatuses(
+          project,
+          updatedUserIntegration,
+        ),
+        await this.tasksService.importPriorities(
+          project,
+          updatedUserIntegration,
+        ),
+        await this.tasksService.sendImportedNotification(
+          user,
+          'Importing Project in progress!',
+        ),
+        await this.tasksService.fetchAndProcessTasksAndWorklog(
+          user,
+          project,
+          updatedUserIntegration,
+        ),
+        await this.sprintService.createSprintAndTask(
+          user,
+          projId,
+          updatedUserIntegration.id,
+        ),
+        await this.tasksService.updateProjectIntegrationStatus(projId),
+        res && (await this.tasksService.syncCall(StatusEnum.DONE, user)),
+        await this.tasksService.sendImportedNotification(
+          user,
+          'Project Imported Successfully!',
+          res,
+        ),
+      ]),
+        res?.json({ message: 'Project Imported Successfully' });
     } catch (error) {
-      await this.tasksService.handleImportFailure(
+      await this.tasksService.sendImportedNotification(
         user,
         'Importing Tasks Failed',
       );
@@ -146,7 +167,7 @@ export class ProjectsService {
         error,
       );
       throw new APIException(
-        'Can not import project tasks',
+        'Could not import project tasks',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -164,11 +185,20 @@ export class ProjectsService {
       id: { in: projectIdArray },
     });
 
-    if (!projects.length)
+    if (!projects.length) {
+      await this.tasksService.sendImportedNotification(
+        user,
+        'Failed to import the Calender!',
+      );
       throw new APIException('Invalid Calender Id!', HttpStatus.BAD_REQUEST);
+    }
 
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
+      await this.tasksService.sendImportedNotification(
+        user,
+        'Failed to import the Calender!',
+      );
       throw new APIException(
         'User workspace not found',
         HttpStatus.BAD_REQUEST,
@@ -185,36 +215,50 @@ export class ProjectsService {
       }));
 
     if (!userIntegration) {
-      await this.tasksService.handleIntegrationFailure(user);
-      return [];
+      await this.tasksService.sendImportedNotification(
+        user,
+        'Failed to import the Calender!',
+      );
+      throw new APIException(
+        'User Integration not found',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     try {
-      await this.tasksService.sendImportingNotification(user);
+      await this.tasksService.sendImportedNotification(
+        user,
+        'Importing Calendar in progress!',
+      );
 
       for (let index = 0, len = projects.length; index < len; index++) {
         const project = projects[index];
-        await this.fetchCalendarEvents(
-          user,
-          userWorkspace,
-          project,
-          userIntegration,
-        );
-        await this.tasksService.updateProjectIntegrationStatus(project.id);
+        Promise.allSettled([
+          await this.fetchCalendarEvents(
+            user,
+            userWorkspace,
+            project,
+            userIntegration,
+          ),
+          await this.tasksService.updateProjectIntegrationStatus(project.id),
+        ]);
       }
-      res && (await this.tasksService.syncCall(StatusEnum.DONE, user));
-      await this.tasksService.sendImportedNotification(
-        user,
-        'Calender Imported',
-        res,
-      );
+      Promise.allSettled([
+        res && (await this.tasksService.syncCall(StatusEnum.DONE, user)),
+        await this.tasksService.sendImportedNotification(
+          user,
+          'Calender Imported Successfully!',
+          res,
+        ),
+      ]);
+      res?.json({ message: 'Calender Imported Successfully!' });
     } catch (error) {
-      await this.tasksService.handleImportFailure(
-        user,
-        'Importing Events Failed',
-      );
       console.log(
         '🚀 ~ file: tasks.service.ts:752 ~ TasksService ~ importProjectTasks ~ error:',
         error,
+      );
+      await this.tasksService.sendImportedNotification(
+        user,
+        'Failed to import the Calender!',
       );
       throw new APIException(
         'Could not import Calendar Events',

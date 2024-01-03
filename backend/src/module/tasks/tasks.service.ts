@@ -737,49 +737,6 @@ export class TasksService {
     return { message: 'Recurrent Tasks created' };
   }
 
-  // for future use
-  // recurrentSession = async (user: User, dto: CreateTaskDto, task: Task) => {
-  //   const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-  //   if (!userWorkspace) {
-  //     throw new APIException(
-  //       'UserWorkspace not found!',
-  //       HttpStatus.BAD_REQUEST,
-  //     );
-  //   }
-  //   if (dto.isRecurrent) {
-  //     const endDate = new Date(dto.endDate);
-  //     const timeMultiplier =
-  //       dto.frequency === 'DAILY' ? 1 : dto.frequency === 'WEEKLY' ? 7 : 14;
-  //     const timeInterval = timeMultiplier * 3600 * 24 * 1000;
-  //     const oneDay = 3600 * 24 * 1000;
-  //     const sessions: any = [];
-  //     try {
-  //       for (
-  //         let startTime = new Date(dto.startTime).getTime(),
-  //           endTime = new Date(dto.endTime).getTime();
-  //         endTime <= endDate.getTime() + oneDay;
-  //         startTime += timeInterval, endTime += timeInterval
-  //       ) {
-  //         const session = await this.prisma.session.create({
-  //           data: {
-  //             startTime: new Date(startTime),
-  //             endTime: new Date(endTime),
-  //             status: SessionStatus.STOPPED,
-  //             taskId: task.id,
-  //             userWorkspaceId: userWorkspace.id,
-  //           },
-  //         });
-  //         if (session) sessions.push(session);
-  //       }
-  //     } catch (error) {
-  //       throw new APIException(
-  //         'Session creation Failed',
-  //         HttpStatus.INTERNAL_SERVER_ERROR,
-  //       );
-  //     }
-  //   }
-  // };
-
   async updatePin(id: number, dto: UpdatePinDto): Promise<Task> {
     return await this.prisma.task.update({
       where: { id },
@@ -804,20 +761,6 @@ export class TasksService {
     });
   }
 
-  async handleIntegrationFailure(user: User) {
-    const notification = await this.createNotification(
-      user,
-      'Import Failed',
-      'Import Failed',
-    );
-    this.myGateway.sendNotification(`${user.id}`, notification);
-    await this.syncCall(StatusEnum.FAILED, user);
-    throw new APIException(
-      'Could not import project tasks',
-      HttpStatus.BAD_REQUEST,
-    );
-  }
-
   private async createNotification(
     user: User,
     title: string,
@@ -825,7 +768,7 @@ export class TasksService {
   ) {
     return (
       user.activeWorkspaceId &&
-      this.prisma.notification.create({
+      (await this.prisma.notification.create({
         data: {
           seen: false,
           author: 'SYSTEM',
@@ -834,21 +777,8 @@ export class TasksService {
           userId: user.id,
           workspaceId: user.activeWorkspaceId,
         },
-      })
+      }))
     );
-  }
-
-  async sendImportingNotification(user: User) {
-    const notification = await this.createNotification(
-      user,
-      'Importing Project',
-      'Importing Project',
-    );
-    console.log(
-      '🚀 ~ file: tasks.service.ts:844 ~ TasksService ~ sendImportingNotification ~ notification:',
-      notification,
-    );
-    this.myGateway.sendNotification(`${user.id}`, notification);
   }
 
   async fetchAndProcessTasksAndWorklog(
@@ -1440,12 +1370,6 @@ export class TasksService {
   async sendImportedNotification(user: User, msg: string, res?: Response) {
     const notification = await this.createNotification(user, msg, msg);
     this.myGateway.sendNotification(`${user.id}`, notification);
-    res?.json({ message: msg });
-  }
-
-  async handleImportFailure(user: User, message: string) {
-    const notification = await this.createNotification(user, message, message);
-    this.myGateway.sendNotification(`${user.id}`, notification);
   }
 
   async syncTasks(user: User, projId: number, res?: Response) {
@@ -1454,13 +1378,19 @@ export class TasksService {
       include: { integration: true },
     });
     if (!project) {
-      await this.handleIntegrationFailure(user);
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user),
+      ]);
       throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
     }
 
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
-      await this.handleIntegrationFailure(user);
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user),
+      ]);
       throw new APIException(
         'Can not import project tasks, userWorkspace not found!',
         HttpStatus.BAD_REQUEST,
@@ -1478,85 +1408,88 @@ export class TasksService {
       ));
 
     if (!updatedUserIntegration) {
-      await this.handleIntegrationFailure(user);
-      return [];
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user),
+      ]);
+      throw new APIException(
+        'Could not sync project tasks, userWorkspace not found!',
+        HttpStatus.BAD_REQUEST,
+      );
     }
-    res && (await this.syncCall(StatusEnum.IN_PROGRESS, user));
     try {
-      await this.sendImportingNotification(user);
-      // const transaction = await this.prisma.$transaction(
-      //   async (prisma: any) => {
-      await this.syncTasksFetchAndProcessTasksAndWorklog(
-        user,
-        project,
-        updatedUserIntegration,
-      );
-      await this.sprintService.createSprintAndTask(
-        user,
-        projId,
-        updatedUserIntegration.id,
-      );
-      await this.updateProjectIntegrationStatus(projId);
-      //   },
-      // );
-      res && (await this.syncCall(StatusEnum.DONE, user));
-      // if (done) {
-      //   await this.createSprintAndTask(user, updated_userIntegration.id);
-      // }
-      await this.sendImportedNotification(user, 'Project Synced', res);
+      Promise.allSettled([
+        res && (await this.syncCall(StatusEnum.IN_PROGRESS, user)),
+        res &&
+          (await this.sendImportedNotification(
+            user,
+            'Syncing in progress!',
+            res,
+          )),
+        await this.syncTasksFetchAndProcessTasksAndWorklog(
+          user,
+          project,
+          updatedUserIntegration,
+        ),
+        await this.sprintService.createSprintAndTask(
+          user,
+          projId,
+          updatedUserIntegration.id,
+        ),
+        await this.updateProjectIntegrationStatus(projId),
+        res && (await this.syncCall(StatusEnum.DONE, user)),
+        res &&
+          (await this.sendImportedNotification(
+            user,
+            'Project Synced Successfully!',
+            res,
+          )),
+      ]);
+      return { Message: 'Project Synced Successfully!' };
     } catch (err) {
-      await this.handleImportFailure(user, 'Sync Tasks Failed');
       console.log(
-        '🚀 ~ file: tasks.service.ts:1164 ~ TasksService ~ syncTasks ~ err:',
+        '🚀 ~ file: tasks.service.ts:1511 ~ TasksService ~ syncTasks ~ err:',
         err,
       );
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user),
+      ]);
       throw new APIException(
-        'Can not Sync project tasks',
+        'Could not Sync project tasks!',
         HttpStatus.BAD_REQUEST,
       );
     }
   }
 
   async syncAll(user: User) {
-    // async syncTasks(user: User, id: number, res?: Response)
-    await this.syncCall(StatusEnum.IN_PROGRESS, user);
-    const projectIds = await this.sprintService.getProjectIds(user);
+    const [jiraProjectIds] = await Promise.all([
+      await this.sprintService.getProjectIds(user),
+      await this.syncCall(StatusEnum.IN_PROGRESS, user),
+      await this.sendImportedNotification(user, 'Syncing in progress!'),
+    ]);
     let syncedProjects = 0;
     try {
-      for (const projectId of projectIds) {
+      for (const projectId of jiraProjectIds) {
         const synced = await this.syncTasks(user, projectId);
         if (synced) syncedProjects++;
       }
-      try {
-        const notification =
-          user.activeWorkspaceId &&
-          (await this.prisma.notification.create({
-            data: {
-              seen: false,
-              author: 'SYSTEM',
-              title: 'Synced all projects',
-              description: 'Synced all projects',
-              userId: user.id,
-              workspaceId: user.activeWorkspaceId,
-            },
-          }));
-        this.myGateway.sendNotification(`${user.id}`, notification);
-      } catch (error) {
-        console.log(
-          '🚀 ~ file: tasks.service.ts:233 ~ TasksService ~ syncTasks ~ error:',
-          error.message,
-        );
-      }
-      await this.syncCall(StatusEnum.DONE, user);
-      return { message: syncedProjects + ' Projects Imported' };
+      Promise.allSettled([
+        await this.sendImportedNotification(
+          user,
+          ' Project Synced Successfully!',
+        ),
+        await this.syncCall(StatusEnum.DONE, user),
+      ]);
+      return { message: syncedProjects + ' Projects Imported Successfully!' };
     } catch (error) {
       console.log(
         '🚀 ~ file: tasks.service.ts:1437 ~ TasksService ~ syncAll ~ error:',
         error,
       );
       throw new APIException(
-        'Can not sync All projects : ' +
-          `${syncedProjects} synced out of ${projectIds?.length} projects`,
+        'Could not sync all of you project : ' +
+          `${syncedProjects} synced out of ${jiraProjectIds?.length} projects`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
