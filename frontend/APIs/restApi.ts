@@ -240,7 +240,7 @@ export async function getTaskListReportRest(searchParams: SearchParamsModel) {
     const res = await axios.get(
       apiEndPoints.taskListReport +
         "?" +
-        (sprints?.length > 0
+        (sprints?.length > 0 && (types.length === 0 || types.includes("JIRA"))
           ? `sprintId=${sprints}`
           : searchParams?.selectedDate?.length === 2
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
