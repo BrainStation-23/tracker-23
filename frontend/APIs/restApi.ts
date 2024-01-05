@@ -29,7 +29,7 @@ import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
-import { getTimeSheetReportDto } from "models/reports";
+import { SprintViewReportDto, getTimeSheetReportDto } from "models/reports";
 import { disconnectSocket } from "@/services/socket.service";
 import { updateApprovalUserDto, updateOnboardingUserDto } from "models/user";
 
@@ -38,7 +38,7 @@ export async function loginRest(
 ): Promise<LoginResponseDto | undefined> {
   try {
     const res = await axios.post(`${apiEndPoints.login}`, data);
-        if (res?.data?.access_token) {
+    if (res?.data?.access_token) {
       SetCookie("access_token", res?.data?.access_token);
       setLocalStorage("access_token", res?.data?.access_token);
       setLocalStorage("userDetails", res.data);
@@ -941,6 +941,305 @@ export async function getSprintReportRest({
     return false;
   }
 }
+
+export async function getSprintViewReportRest({
+  sprintId,
+  startDate,
+  endDate,
+}: SprintReportParamsModel) {
+  try {
+    // TODO: Replace with original implementation when API ready
+    const data: SprintViewReportDto = {
+      columns: [
+        "Name",
+        "AssignTasks",
+        "Dec 31, 2023",
+        "Jan 01, 2024",
+        "Jan 02, 2024",
+        "Jan 03, 2024",
+        "Jan 04, 2024",
+        "Jan 05, 2024",
+        "Jan 06, 2024",
+        "Yesterday",
+        "Today",
+      ],
+      rows: [
+        {
+          userId: 25,
+          name: "Dipu Bala",
+          picture: null,
+          email: "dipubala466@gmail.com",
+          AssignTasks: {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+              {
+                title: "task2",
+                key: "T23-1342",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+              {
+                title: "task3",
+                key: "T23-1343",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Dec 31, 2023": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Jan 01, 2024": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Jan 02, 2024": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Jan 03, 2024": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Jan 04, 2024": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Jan 05, 2024": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Jan 06, 2024": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          Yesterday: {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          Today: {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+        },
+        {
+          userId: 26,
+          name: "Belal Hossain",
+          picture: null,
+          email: "belal.cseai@gmail.com",
+          AssignTasks: {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Dec 31, 2023": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Jan 01, 2024": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Jan 02, 2024": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Jan 03, 2024": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Jan 04, 2024": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Jan 05, 2024": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          "Jan 06, 2024": {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          Yesterday: {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+          Today: {
+            devProgress: { total: 8, done: 5 },
+            tasks: [
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+            ],
+          },
+        },
+      ],
+    };
+    const res = await fakeAxiosRequest(
+      `${apiEndPoints.sprintReport}?` +
+        (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
+        (sprintId ? `&sprintId=${sprintId}` : ""),
+      data
+    );
+    // For now, just return the dummy response data
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+// TODO: Remove this when we do not need it
+// Define a function to mock the axios request
+function fakeAxiosRequest(
+  url: string,
+  data: any,
+  status: number = 200
+): Promise<any> {
+  // Check the URL to determine the mock response
+  if (url) {
+    // Simulate a successful response
+    return Promise.resolve({ data: data, status });
+  } else {
+    // Simulate an error response for unknown URLs
+    return Promise.reject({ response: { data: "Not Found", status: 404 } });
+  }
+}
+
 export async function getInvitedUserInfoRest(token: string) {
   try {
     const res = await axios.get(`${apiEndPoints.invitedUserInfo}` + token);
