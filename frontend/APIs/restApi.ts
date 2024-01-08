@@ -1099,6 +1099,18 @@ export async function getSprintViewReportRest({
                 status: "Done",
                 statusCategoryName: "statusCategoryName",
               },
+              {
+                title: "task5",
+                key: "T23-1345",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+              {
+                title: "task5",
+                key: "T23-1345",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
             ],
           },
           Yesterday: {
@@ -1118,6 +1130,36 @@ export async function getSprintViewReportRest({
               {
                 title: "task1",
                 key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+              {
+                title: "task1",
+                key: "T23-134",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+              {
+                title: "task2",
+                key: "T23-1342",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+              {
+                title: "task3",
+                key: "T23-1343",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+              {
+                title: "task4",
+                key: "T23-1344",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+              {
+                title: "task5",
+                key: "T23-1345",
                 status: "Done",
                 statusCategoryName: "statusCategoryName",
               },

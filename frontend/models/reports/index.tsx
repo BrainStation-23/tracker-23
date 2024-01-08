@@ -94,6 +94,17 @@ export interface SprintViewReportRow {
   [date: string]: AssignTasks | any;
 }
 
+export interface SprintViewReportTableRow {
+  userId: number;
+  name: string;
+  picture: string | null;
+  email: string;
+  AssignTasks: AssignTasks;
+  [date: string]: AssignTasks | any;
+  userSpan: number;
+  tasksSpan: number;
+}
+
 export interface SprintViewReportColumn {
   id: string;
   value: {

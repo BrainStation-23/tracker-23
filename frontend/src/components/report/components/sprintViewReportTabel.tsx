@@ -1,8 +1,8 @@
 import { Avatar, Empty, Table, Typography } from "antd";
 import { ColumnsType } from "antd/es/table";
 import {
-  SprintViewReportDto,
-  SprintViewReportRow,
+  SprintViewReportColumn,
+  SprintViewReportTableRow,
   SprintViewReportTask,
 } from "models/reports";
 import dayjs from "dayjs";
@@ -11,17 +11,80 @@ import ProgressComponent from "./progressComponent";
 
 const { Text } = Typography;
 type Props = {
-  data: SprintViewReportDto;
+  data: {
+    columns: SprintViewReportColumn[];
+    rows: SprintViewReportTableRow[];
+  };
 };
 
 const SprintViewReportTabel = ({ data }: Props) => {
-  const columns: ColumnsType<SprintViewReportRow> = [
+  const renderTableTaskCell = (
+    record: SprintViewReportTableRow,
+    column: SprintViewReportColumn
+  ) => {
+    if (column.id in record && record[column.id]) {
+      return {
+        children: (
+          <div className="flex w-full flex-col justify-start">
+            {record.userSpan > 0 ? (
+              <ProgressComponent
+                done={record[column.id].devProgress?.done}
+                total={record[column.id].devProgress?.total}
+              />
+            ) : record[column.id].tasks.length > 0 ? (
+              <Text
+                key={record[column.id].tasks[0].key}
+                className={`w-[200px] cursor-pointer ${
+                  record[column.id].tasks[0].status === "Done"
+                    ? "line-through"
+                    : ""
+                }`}
+                ellipsis={{ tooltip: record[column.id].tasks[0].title }}
+              >
+                {record[column.id].tasks[0].title}
+              </Text>
+            ) : (
+              <Text
+                className="w-[200px] cursor-pointer"
+                ellipsis={{ tooltip: "No assigned tasks" }}
+              >
+                {"--"}
+              </Text>
+            )}
+          </div>
+        ),
+        props: {
+          rowSpan: record.tasksSpan,
+        },
+      };
+    } else {
+      return {
+        children: (
+          <Text
+            className="w-[200px] cursor-pointer"
+            ellipsis={{ tooltip: "No data" }}
+          >
+            {"--"}
+          </Text>
+        ),
+        props: {
+          rowSpan: record.tasksSpan,
+        },
+      };
+    }
+  };
+
+  const columns: ColumnsType<SprintViewReportTableRow> = [
     {
       title: "Developer Name",
       dataIndex: "name",
       key: "name",
       fixed: "left",
-      render: (text: string, record: SprintViewReportRow, index: number) => {
+      render: (
+        text: string,
+        record: SprintViewReportTableRow,
+        index: number
+      ) => {
         return {
           children: (
             <div className="justify-left mx-auto flex w-[200px] items-center gap-2 ">
@@ -44,8 +107,7 @@ const SprintViewReportTabel = ({ data }: Props) => {
             </div>
           ),
           props: {
-            rowSpan: 1, // record.AssignTasks.tasks.length,
-            // style: record.style,
+            rowSpan: record.userSpan,
           },
         };
       },
@@ -73,55 +135,10 @@ const SprintViewReportTabel = ({ data }: Props) => {
         key: "AssignTasks",
         fixed: "left",
         render: (
-          assignedTask: SprintViewReportTask,
-          record: SprintViewReportRow,
+          value: SprintViewReportTask,
+          record: SprintViewReportTableRow,
           _: number
-        ) => {
-          if (record?.AssignTasks && record.AssignTasks.tasks.length > 0) {
-            return {
-              children: (
-                <div className="flex flex-col justify-center gap-4">
-                  <div className="w-full">
-                    <ProgressComponent
-                      done={record?.AssignTasks.devProgress?.done}
-                      total={record?.AssignTasks.devProgress?.total}
-                    />
-                  </div>
-                  <div className="flex flex-col justify-start gap-1">
-                    {record.AssignTasks.tasks.map(
-                      (task: SprintViewReportTask) => (
-                        <Text
-                          key={task.key}
-                          className="w-[200px] cursor-pointer"
-                          ellipsis={{ tooltip: assignedTask?.title }}
-                        >
-                          {task.title}
-                        </Text>
-                      )
-                    )}
-                  </div>
-                </div>
-              ),
-              props: {
-                rowSpan: 1,
-              },
-            };
-          } else {
-            return {
-              children: (
-                <Text
-                  className="w-[200px] cursor-pointer"
-                  ellipsis={{ tooltip: "No assigned tasks" }}
-                >
-                  {"--"}
-                </Text>
-              ),
-              props: {
-                rowSpan: 1,
-              },
-            };
-          }
-        },
+        ) => renderTableTaskCell(record, column),
         align: "center",
       });
     } else if (column.id === "Yesterday" || column.id === "Today") {
@@ -143,59 +160,10 @@ const SprintViewReportTabel = ({ data }: Props) => {
         dataIndex: column.id,
         key: column.id,
         render: (
-          assignedTask: SprintViewReportTask,
-          record: SprintViewReportRow,
+          value: SprintViewReportTask,
+          record: SprintViewReportTableRow,
           _: number
-        ) => {
-          if (
-            column.id in record &&
-            record[column.id] &&
-            record[column.id].tasks.length > 0
-          ) {
-            return {
-              children: (
-                <div className="flex flex-col justify-start gap-4">
-                  <div className="w-full">
-                    <ProgressComponent
-                      done={record[column.id].devProgress?.done}
-                      total={record[column.id].devProgress?.total}
-                    />
-                  </div>
-                  <div className="flex flex-col justify-start gap-1">
-                    {record[column.id].tasks.map(
-                      (task: SprintViewReportTask) => (
-                        <Text
-                          key={task.key}
-                          className="w-[200px] cursor-pointer"
-                          ellipsis={{ tooltip: task.title }}
-                        >
-                          {task.title}
-                        </Text>
-                      )
-                    )}
-                  </div>
-                </div>
-              ),
-              props: {
-                rowSpan: 1,
-              },
-            };
-          } else {
-            return {
-              children: (
-                <Text
-                  className="w-[200px] cursor-pointer"
-                  ellipsis={{ tooltip: "No assigned tasks" }}
-                >
-                  {"--"}
-                </Text>
-              ),
-              props: {
-                rowSpan: 1,
-              },
-            };
-          }
-        },
+        ) => renderTableTaskCell(record, column),
         align: "center",
       });
     } else {
@@ -219,60 +187,10 @@ const SprintViewReportTabel = ({ data }: Props) => {
         dataIndex: column.id,
         key: column.id,
         render: (
-          assignedTask: SprintViewReportTask,
-          record: SprintViewReportRow,
+          value: SprintViewReportTask,
+          record: SprintViewReportTableRow,
           _: number
-        ) => {
-          if (
-            column.id in record &&
-            record[column.id] &&
-            record[column.id].tasks.length > 0
-          ) {
-            return {
-              children: (
-                <div className="flex flex-col gap-4">
-                  <div className="w-full">
-                    <ProgressComponent
-                      done={record[column.id].devProgress?.done}
-                      total={record[column.id].devProgress?.total}
-                    />
-                  </div>
-                  <div className="flex flex-col  gap-1">
-                    {record[column.id].tasks.map(
-                      (task: SprintViewReportTask) => (
-                        <Text
-                          key={task.key}
-                          className="w-[200px] cursor-pointer"
-                          ellipsis={{ tooltip: task.title }}
-                        >
-                          {task.title}
-                        </Text>
-                      )
-                    )}
-                  </div>
-                </div>
-              ),
-              props: {
-                rowSpan: 1,
-                align: "top",
-              },
-            };
-          } else {
-            return {
-              children: (
-                <Text
-                  className="w-[200px] cursor-pointer"
-                  ellipsis={{ tooltip: "No assigned tasks" }}
-                >
-                  {"--"}
-                </Text>
-              ),
-              props: {
-                rowSpan: 1,
-              },
-            };
-          }
-        },
+        ) => renderTableTaskCell(record, column),
         align: "center",
       });
     }
