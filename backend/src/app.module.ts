@@ -20,6 +20,8 @@ import { HelperModule } from './module/helper/helper.module';
 import { ScriptsModule } from './module/scripts/scripts.module';
 import { DataMigrationModule } from './module/data_migration/data_migration.module';
 import { OutlookModule } from './module/outlook/outlook.module';
+import { PagesModule } from './module/pages/pages.module';
+import { ReportsModule } from './module/reports/reports.module';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { OutlookModule } from './module/outlook/outlook.module';
     UsersModule,
     ScriptsModule,
     OutlookModule,
+    PagesModule,
+    ReportsModule,
   ],
   providers: [CronService],
 })
