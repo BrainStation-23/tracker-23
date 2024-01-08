@@ -951,17 +951,37 @@ export async function getSprintViewReportRest({
     // TODO: Replace with original implementation when API ready
     const data: SprintViewReportDto = {
       columns: [
-        "Name",
-        "AssignTasks",
-        "Dec 31, 2023",
-        "Jan 01, 2024",
-        "Jan 02, 2024",
-        "Jan 03, 2024",
-        "Jan 04, 2024",
-        "Jan 05, 2024",
-        "Jan 06, 2024",
-        "Yesterday",
-        "Today",
+        { id: "AssignTasks", value: { devProgress: { total: 8, done: 5 } } },
+        {
+          id: "2024-01-01T06:13:56.397Z",
+          value: { devProgress: { total: 8, done: 5 } },
+        },
+        {
+          id: "2024-01-02T06:13:56.397Z",
+          value: { devProgress: { total: 8, done: 5 } },
+        },
+        {
+          id: "2024-01-03T06:13:56.397Z",
+          value: { devProgress: { total: 8, done: 5 } },
+        },
+        {
+          id: "2024-01-04T06:13:56.397Z",
+          value: { devProgress: { total: 8, done: 5 } },
+        },
+        {
+          id: "2024-01-05T06:13:56.397Z",
+          value: { devProgress: { total: 8, done: 5 } },
+        },
+        {
+          id: "2024-01-06T06:13:56.397Z",
+          value: { devProgress: { total: 8, done: 5 } },
+        },
+        {
+          id: "2024-01-07T06:13:56.397Z",
+          value: { devProgress: { total: 8, done: 5 } },
+        },
+        { id: "Yesterday", value: { devProgress: { total: 8, done: 5 } } },
+        { id: "Today", value: { devProgress: { total: 8, done: 5 } } },
       ],
       rows: [
         {
@@ -990,9 +1010,21 @@ export async function getSprintViewReportRest({
                 status: "Done",
                 statusCategoryName: "statusCategoryName",
               },
+              {
+                title: "task4",
+                key: "T23-1344",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
+              {
+                title: "task5",
+                key: "T23-1345",
+                status: "Done",
+                statusCategoryName: "statusCategoryName",
+              },
             ],
           },
-          "Dec 31, 2023": {
+          "2024-01-01T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {
@@ -1003,7 +1035,7 @@ export async function getSprintViewReportRest({
               },
             ],
           },
-          "Jan 01, 2024": {
+          "2024-01-02T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {
@@ -1014,7 +1046,7 @@ export async function getSprintViewReportRest({
               },
             ],
           },
-          "Jan 02, 2024": {
+          "2024-01-03T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {
@@ -1025,7 +1057,7 @@ export async function getSprintViewReportRest({
               },
             ],
           },
-          "Jan 03, 2024": {
+          "2024-01-04T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {
@@ -1036,7 +1068,7 @@ export async function getSprintViewReportRest({
               },
             ],
           },
-          "Jan 04, 2024": {
+          "2024-01-05T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {
@@ -1047,7 +1079,7 @@ export async function getSprintViewReportRest({
               },
             ],
           },
-          "Jan 05, 2024": {
+          "2024-01-06T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {
@@ -1058,7 +1090,7 @@ export async function getSprintViewReportRest({
               },
             ],
           },
-          "Jan 06, 2024": {
+          "2024-01-07T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {
@@ -1108,7 +1140,7 @@ export async function getSprintViewReportRest({
               },
             ],
           },
-          "Dec 31, 2023": {
+          "2024-01-01T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {
@@ -1119,7 +1151,7 @@ export async function getSprintViewReportRest({
               },
             ],
           },
-          "Jan 01, 2024": {
+          "2024-01-02T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {
@@ -1130,7 +1162,7 @@ export async function getSprintViewReportRest({
               },
             ],
           },
-          "Jan 02, 2024": {
+          "2024-01-03T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {
@@ -1141,7 +1173,7 @@ export async function getSprintViewReportRest({
               },
             ],
           },
-          "Jan 03, 2024": {
+          "2024-01-04T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {
@@ -1152,7 +1184,7 @@ export async function getSprintViewReportRest({
               },
             ],
           },
-          "Jan 04, 2024": {
+          "2024-01-05T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {
@@ -1163,7 +1195,7 @@ export async function getSprintViewReportRest({
               },
             ],
           },
-          "Jan 05, 2024": {
+          "2024-01-06T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {
@@ -1174,7 +1206,7 @@ export async function getSprintViewReportRest({
               },
             ],
           },
-          "Jan 06, 2024": {
+          "2024-01-07T06:13:56.397Z": {
             devProgress: { total: 8, done: 5 },
             tasks: [
               {

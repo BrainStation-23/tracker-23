@@ -94,8 +94,15 @@ export interface SprintViewReportRow {
   [date: string]: AssignTasks | any;
 }
 
+export interface SprintViewReportColumn {
+  id: string;
+  value: {
+    devProgress: DevProgress;
+  };
+}
+
 export interface SprintViewReportDto {
-  columns: string[];
+  columns: SprintViewReportColumn[];
   rows: SprintViewReportRow[];
 }
 
