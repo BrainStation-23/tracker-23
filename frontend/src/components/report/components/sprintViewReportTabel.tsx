@@ -87,7 +87,7 @@ const SprintViewReportTabel = ({ data }: Props) => {
       ) => {
         return {
           children: (
-            <div className="justify-left mx-auto flex w-[200px] items-center gap-2 ">
+            <div className="justify-left mx-auto flex w-[150px] items-center gap-2 ">
               {record?.picture ? (
                 <Avatar
                   src={record.picture}

@@ -951,333 +951,247 @@ export async function getSprintViewReportRest({
     // TODO: Replace with original implementation when API ready
     const data: SprintViewReportDto = {
       columns: [
-        { id: "AssignTasks", value: { devProgress: { total: 8, done: 5 } } },
+        { id: "AssignTasks", value: { devProgress: { total: 10, done: 7 } } },
         {
-          id: "2024-01-01T06:13:56.397Z",
-          value: { devProgress: { total: 8, done: 5 } },
+          id: "2024-01-08T08:24:18.123Z",
+          value: { devProgress: { total: 10, done: 7 } },
         },
         {
-          id: "2024-01-02T06:13:56.397Z",
-          value: { devProgress: { total: 8, done: 5 } },
+          id: "2024-01-09T08:24:18.123Z",
+          value: { devProgress: { total: 10, done: 7 } },
         },
         {
-          id: "2024-01-03T06:13:56.397Z",
-          value: { devProgress: { total: 8, done: 5 } },
+          id: "2024-01-10T08:24:18.123Z",
+          value: { devProgress: { total: 10, done: 7 } },
         },
         {
-          id: "2024-01-04T06:13:56.397Z",
-          value: { devProgress: { total: 8, done: 5 } },
+          id: "2024-01-11T08:24:18.123Z",
+          value: { devProgress: { total: 10, done: 7 } },
         },
         {
-          id: "2024-01-05T06:13:56.397Z",
-          value: { devProgress: { total: 8, done: 5 } },
+          id: "2024-01-12T08:24:18.123Z",
+          value: { devProgress: { total: 10, done: 7 } },
         },
         {
-          id: "2024-01-06T06:13:56.397Z",
-          value: { devProgress: { total: 8, done: 5 } },
+          id: "2024-01-13T08:24:18.123Z",
+          value: { devProgress: { total: 10, done: 7 } },
         },
         {
-          id: "2024-01-07T06:13:56.397Z",
-          value: { devProgress: { total: 8, done: 5 } },
+          id: "2024-01-14T08:24:18.123Z",
+          value: { devProgress: { total: 10, done: 7 } },
         },
-        { id: "Yesterday", value: { devProgress: { total: 8, done: 5 } } },
-        { id: "Today", value: { devProgress: { total: 8, done: 5 } } },
+        { id: "Yesterday", value: { devProgress: { total: 10, done: 7 } } },
+        { id: "Today", value: { devProgress: { total: 10, done: 7 } } },
       ],
       rows: [
         {
-          userId: 25,
-          name: "Dipu Bala",
-          picture: null,
-          email: "dipubala466@gmail.com",
+          userId: 101,
+          name: "John Doe",
+          picture: "https://example.com/johndoe.jpg",
+          email: "john.doe@example.com",
           AssignTasks: {
-            devProgress: { total: 8, done: 5 },
+            devProgress: { total: 10, done: 7 },
             tasks: [
               {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
+                title: "Feature A",
+                key: "PROJ-123",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
               },
               {
-                title: "task2",
-                key: "T23-1342",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
+                title: "Bug Fix B",
+                key: "PROJ-124",
+                status: "To Do",
+                statusCategoryName: "ToDo",
               },
               {
-                title: "task3",
-                key: "T23-1343",
+                title: "Refactor C",
+                key: "PROJ-125",
                 status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-              {
-                title: "task4",
-                key: "T23-1344",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-              {
-                title: "task5",
-                key: "T23-1345",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
+                statusCategoryName: "Done",
               },
             ],
           },
-          "2024-01-01T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
+          "2024-01-08T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
             tasks: [
               {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
+                title: "Feature A",
+                key: "PROJ-123",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
               },
             ],
           },
-          "2024-01-02T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
+          "2024-01-09T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
             tasks: [
               {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
+                title: "Bug Fix B",
+                key: "PROJ-124",
+                status: "In Review",
+                statusCategoryName: "InReview",
               },
             ],
           },
-          "2024-01-03T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
+          "2024-01-10T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
             tasks: [
               {
-                title: "task1",
-                key: "T23-134",
+                title: "Refactor C",
+                key: "PROJ-125",
                 status: "Done",
-                statusCategoryName: "statusCategoryName",
+                statusCategoryName: "Done",
               },
             ],
           },
-          "2024-01-04T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
-            tasks: [
-              {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-            ],
+          "2024-01-11T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
+            tasks: [],
           },
-          "2024-01-05T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
-            tasks: [
-              {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-            ],
+          "2024-01-12T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
+            tasks: [],
           },
-          "2024-01-06T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
-            tasks: [
-              {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-            ],
+          "2024-01-13T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
+            tasks: [],
           },
-          "2024-01-07T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
-            tasks: [
-              {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-              {
-                title: "task5",
-                key: "T23-1345",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-              {
-                title: "task5",
-                key: "T23-1345",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-            ],
+          "2024-01-14T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
+            tasks: [],
           },
           Yesterday: {
-            devProgress: { total: 8, done: 5 },
+            devProgress: { total: 10, done: 7 },
             tasks: [
               {
-                title: "task1",
-                key: "T23-134",
+                title: "Feature A",
+                key: "PROJ-123",
                 status: "Done",
-                statusCategoryName: "statusCategoryName",
+                statusCategoryName: "Done",
               },
             ],
           },
           Today: {
-            devProgress: { total: 8, done: 5 },
+            devProgress: { total: 10, done: 7 },
             tasks: [
               {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
+                title: "Feature A",
+                key: "PROJ-123",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
               },
               {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-              {
-                title: "task2",
-                key: "T23-1342",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-              {
-                title: "task3",
-                key: "T23-1343",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-              {
-                title: "task4",
-                key: "T23-1344",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-              {
-                title: "task5",
-                key: "T23-1345",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
+                title: "Bug Fix B",
+                key: "PROJ-124",
+                status: "In Review",
+                statusCategoryName: "InReview",
               },
             ],
           },
         },
         {
-          userId: 26,
-          name: "Belal Hossain",
-          picture: null,
-          email: "belal.cseai@gmail.com",
+          userId: 102,
+          name: "Jane Smith",
+          picture: "https://example.com/janesmith.jpg",
+          email: "jane.smith@example.com",
           AssignTasks: {
-            devProgress: { total: 8, done: 5 },
+            devProgress: { total: 10, done: 7 },
             tasks: [
               {
-                title: "task1",
-                key: "T23-134",
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "To Do",
+                statusCategoryName: "ToDo",
+              },
+              {
+                title: "Bug Fix Y",
+                key: "PROJ-127",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
+              },
+              {
+                title: "Refactor Z",
+                key: "PROJ-128",
                 status: "Done",
-                statusCategoryName: "statusCategoryName",
+                statusCategoryName: "Done",
               },
             ],
           },
-          "2024-01-01T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
+          "2024-01-08T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
             tasks: [
               {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "To Do",
+                statusCategoryName: "ToDo",
               },
             ],
           },
-          "2024-01-02T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
+          "2024-01-09T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
             tasks: [
               {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
+                title: "Bug Fix Y",
+                key: "PROJ-127",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
               },
             ],
           },
-          "2024-01-03T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
+          "2024-01-10T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
             tasks: [
               {
-                title: "task1",
-                key: "T23-134",
+                title: "Refactor Z",
+                key: "PROJ-128",
                 status: "Done",
-                statusCategoryName: "statusCategoryName",
+                statusCategoryName: "Done",
               },
             ],
           },
-          "2024-01-04T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
-            tasks: [
-              {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-            ],
+          "2024-01-11T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
+            tasks: [],
           },
-          "2024-01-05T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
-            tasks: [
-              {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-            ],
+          "2024-01-12T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
+            tasks: [],
           },
-          "2024-01-06T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
-            tasks: [
-              {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-            ],
+          "2024-01-13T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
+            tasks: [],
           },
-          "2024-01-07T06:13:56.397Z": {
-            devProgress: { total: 8, done: 5 },
-            tasks: [
-              {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
-              },
-            ],
+          "2024-01-14T08:24:18.123Z": {
+            devProgress: { total: 10, done: 7 },
+            tasks: [],
           },
           Yesterday: {
-            devProgress: { total: 8, done: 5 },
+            devProgress: { total: 10, done: 7 },
             tasks: [
               {
-                title: "task1",
-                key: "T23-134",
+                title: "Feature X",
+                key: "PROJ-126",
                 status: "Done",
-                statusCategoryName: "statusCategoryName",
+                statusCategoryName: "Done",
               },
             ],
           },
           Today: {
-            devProgress: { total: 8, done: 5 },
+            devProgress: { total: 10, done: 7 },
             tasks: [
               {
-                title: "task1",
-                key: "T23-134",
-                status: "Done",
-                statusCategoryName: "statusCategoryName",
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "To Do",
+                statusCategoryName: "ToDo",
+              },
+              {
+                title: "Bug Fix Y",
+                key: "PROJ-127",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
               },
             ],
           },
