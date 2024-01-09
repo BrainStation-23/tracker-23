@@ -85,13 +85,18 @@ export interface AssignTasks {
   tasks: SprintViewReportTask[];
 }
 
+export interface SprintViewAssignTasks {
+  devProgress: TimeDevProgress;
+  tasks: SprintViewReportTask[];
+}
+
 export interface SprintViewReportRow {
   userId: number;
   name: string;
   picture: string | null;
   email: string;
-  AssignTasks: AssignTasks;
-  [date: string]: AssignTasks | any;
+  AssignTasks: SprintViewAssignTasks;
+  [date: string]: SprintViewAssignTasks | any;
 }
 
 export interface SprintViewReportTableRow {
@@ -99,8 +104,8 @@ export interface SprintViewReportTableRow {
   name: string;
   picture: string | null;
   email: string;
-  AssignTasks: AssignTasks;
-  [date: string]: AssignTasks | any;
+  AssignTasks: SprintViewAssignTasks;
+  [date: string]: SprintViewAssignTasks | any;
   userSpan: number;
   tasksSpan: number;
 }
@@ -108,7 +113,7 @@ export interface SprintViewReportTableRow {
 export interface SprintViewReportColumn {
   id: string;
   value: {
-    devProgress: DevProgress;
+    devProgress: TimeDevProgress;
   };
 }
 
@@ -120,6 +125,11 @@ export interface SprintViewReportDto {
 interface DevProgress {
   total: number;
   done: number;
+}
+
+interface TimeDevProgress {
+  estimatedTime: number;
+  spentTime: number;
 }
 
 interface Style {

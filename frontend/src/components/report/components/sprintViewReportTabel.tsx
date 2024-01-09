@@ -6,8 +6,7 @@ import {
   SprintViewReportTask,
 } from "models/reports";
 import dayjs from "dayjs";
-
-import ProgressComponent from "./progressComponent";
+import TimeProgressComponent from "./timeProgressComponent";
 
 const { Text } = Typography;
 type Props = {
@@ -27,9 +26,9 @@ const SprintViewReportTabel = ({ data }: Props) => {
         children: (
           <div className="flex w-full flex-col justify-start">
             {record.userSpan > 0 ? (
-              <ProgressComponent
-                done={record[column.id].devProgress?.done}
-                total={record[column.id].devProgress?.total}
+              <TimeProgressComponent
+                spentTime={record[column.id].devProgress?.spentTime}
+                estimatedTime={record[column.id].devProgress?.estimatedTime}
               />
             ) : record[column.id].tasks.length > 0 ? (
               <Text
@@ -122,8 +121,8 @@ const SprintViewReportTabel = ({ data }: Props) => {
             <div>
               Sprint Overall Progress{" "}
               {Math.round(
-                (column.value.devProgress.done /
-                  column.value.devProgress.total) *
+                (column.value.devProgress.spentTime /
+                  column.value.devProgress.estimatedTime) *
                   100
               )}
               %
@@ -148,8 +147,8 @@ const SprintViewReportTabel = ({ data }: Props) => {
             <div>
               {column.id} Progress{" "}
               {Math.round(
-                (column.value.devProgress.done /
-                  column.value.devProgress.total) *
+                (column.value.devProgress.spentTime /
+                  column.value.devProgress.estimatedTime) *
                   100
               )}
               %
@@ -173,8 +172,8 @@ const SprintViewReportTabel = ({ data }: Props) => {
             <div>
               {dayjs(column.id).format("D MMM")} Progress{" "}
               {Math.round(
-                (column.value.devProgress.done /
-                  column.value.devProgress.total) *
+                (column.value.devProgress.spentTime /
+                  column.value.devProgress.estimatedTime) *
                   100
               )}
               %
