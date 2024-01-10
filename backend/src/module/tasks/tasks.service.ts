@@ -1412,10 +1412,11 @@ export class TasksService {
         await this.sendImportedNotification(user, 'Syncing Failed!'),
         await this.syncCall(StatusEnum.FAILED, user),
       ]);
-      throw new APIException(
-        'Could not sync project tasks, userWorkspace not found!',
-        HttpStatus.BAD_REQUEST,
-      );
+      // throw new APIException(
+      //   'Could not sync project tasks, userWorkspace not found!',
+      //   HttpStatus.BAD_REQUEST,
+      // );
+      return [];
     }
     try {
       Promise.allSettled([

@@ -27,6 +27,7 @@ model Workspace {
   projects       Project[]
   integrations   Integration[]
   notifications  Notification[]
+  pages Page[]
   // workspaceInvitations WorkspaceInvitation[]
 
   // Creator          User              @relation(fields: [creatorUserId], references: [id])
@@ -53,6 +54,7 @@ model UserWorkspace {
   task            Task[]
   userIntegration UserIntegration[]
   sessions        Session[]
+  pages Page[]
 
   user          User        @relation("User", fields: [userId], references: [id])
   userId        Int
@@ -346,6 +348,23 @@ model Scripts {
   done        Boolean @default(false)
 }
 
+model Page {
+  id              Int        @id @default(autoincrement())
+  name            String?
+  userWorkspace   UserWorkspace @relation(fields: [userWorkspaceId], references: [id], onDelete: Cascade)
+  userWorkspaceId Int
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId Int
+  reports          Report[]
+}
+model Report {
+  id              Int        @id @default(autoincrement())
+  name            String?
+  config Json[]
+  reportType      ReportType
+  page          Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId        Int
+}
 enum Priority {
   LOW
   MEDIUM
@@ -407,4 +426,11 @@ enum Designation {
 enum UserStatus {
   ONBOARD
   ACTIVE
+}
+
+enum ReportType {
+  TIME_SHEET
+  SPRINT_ESTIMATION
+  TASK_LIST
+  SPRINT_REPORT
 }

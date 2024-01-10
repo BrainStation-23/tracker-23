@@ -38,7 +38,7 @@ export async function loginRest(
 ): Promise<LoginResponseDto | undefined> {
   try {
     const res = await axios.post(`${apiEndPoints.login}`, data);
-        if (res?.data?.access_token) {
+    if (res?.data?.access_token) {
       SetCookie("access_token", res?.data?.access_token);
       setLocalStorage("access_token", res?.data?.access_token);
       setLocalStorage("userDetails", res.data);
@@ -240,7 +240,7 @@ export async function getTaskListReportRest(searchParams: SearchParamsModel) {
     const res = await axios.get(
       apiEndPoints.taskListReport +
         "?" +
-        (sprints?.length > 0
+        (sprints?.length > 0 && (types.length === 0 || types.includes("JIRA"))
           ? `sprintId=${sprints}`
           : searchParams?.selectedDate?.length === 2
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
