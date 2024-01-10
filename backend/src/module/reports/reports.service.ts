@@ -90,7 +90,7 @@ export class ReportsService {
 
     const reqBody = {
       ...(query.name && { name: query.name }),
-      config: [reqConfigBody],
+      config: reqConfigBody,
     };
     const updatedReport = await this.reportDatabase.updateReport(id, reqBody);
     if (!updatedReport) {
@@ -129,29 +129,29 @@ export class ReportsService {
 
       for (let index = 0; index < reports.length; index++) {
         const report = reports[index];
-        const ReportProjectIds: number[] = report.config[0]?.projectIds;
-        const ReportSprintIds: number[] = report.config[0]?.sprintIds;
-        const types: string[] = report.config[0]?.types;
+        const ReportProjectIds: number[] = report.config?.projectIds;
+        const ReportSprintIds: number[] = report.config?.sprintIds;
+        const types: string[] = report.config?.types;
 
         if (ReportProjectIds && query.projectIds) {
           const filteredReportProjectIds = ReportProjectIds.filter(
             (id) => !query.projectIds?.includes(id),
           );
-          report.config[0].projectIds = filteredReportProjectIds;
+          report.config.projectIds = filteredReportProjectIds;
         }
         if (ReportSprintIds) {
           const filteredReportSprintIds = ReportSprintIds.filter(
             (id) => !sprintIdsByProject.includes(id),
           );
-          report.config[0].sprintIds = filteredReportSprintIds;
+          report.config.sprintIds = filteredReportSprintIds;
         }
         if (types && query.type && types.includes(query.type)) {
           types.splice(types.indexOf(query.type), 1);
-          report.config[0].types = types;
+          report.config.types = types;
         }
 
         await this.reportDatabase.updateReport(Number(report.id), {
-          config: [report.config[0]],
+          config: report.config,
         });
       }
     } catch (err) {

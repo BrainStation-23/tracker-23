@@ -360,7 +360,7 @@ model Page {
 model Report {
   id              Int        @id @default(autoincrement())
   name            String?
-  config Json[]
+  config Json?
   reportType      ReportType
   page          Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
   pageId        Int
