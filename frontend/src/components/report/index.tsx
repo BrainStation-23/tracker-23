@@ -29,6 +29,7 @@ import TopPanelSprintReportComponents from "./components/topPanelSprintReportCom
 import TopPanelTaskListComponents from "./components/topPanelTaskListComponents";
 import TypeDependentSection from "./components/typeDependentSection";
 import SprintViewReportComponent from "./components/sprintViewReportComponent";
+import NewSprintViewReportComponent from "./components/newSprintViewReportComponent";
 
 const ReportComponent = () => {
   const dispatch = useDispatch();
@@ -107,7 +108,8 @@ const ReportComponent = () => {
       case "Sprint Report":
         return <SprintReportComponent data={sprintReportData} />;
       case "Sprint View Report":
-        return <SprintViewReportComponent data={sprintViewReportData} />;
+        // return <SprintViewReportComponent data={sprintViewReportData} />;
+        return <NewSprintViewReportComponent data={sprintViewReportData} />;
       default:
         return <></>;
     }

@@ -110,6 +110,24 @@ export interface SprintViewReportTableRow {
   tasksSpan: number;
 }
 
+export interface NewSprintViewReportTableRow {
+  userId: number;
+  name: string;
+  picture: string | null;
+  email: string;
+  userSpan: number;
+  tasksSpan: number;
+  task: {
+    [columnId: string]: SprintViewReportTask;
+  };
+  timeRange?: {
+    [columnId: string]: { start: string; end: string };
+  };
+  devProgress?: {
+    [columnId: string]: TimeDevProgress;
+  };
+}
+
 export interface SprintViewReportColumn {
   id: string;
   value: {
