@@ -15,6 +15,7 @@ import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { HelperModule } from '../helper/helper.module';
 import { WebhooksModule } from '../webhooks/webhooks.module';
 import { JiraService } from '../jira/jira.service';
+import { ReportsModule } from '../reports/reports.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { JiraService } from '../jira/jira.service';
     WorkspacesModule,
     HelperModule,
     WebhooksModule,
+    ReportsModule,
   ],
   providers: [
     ProjectsService,

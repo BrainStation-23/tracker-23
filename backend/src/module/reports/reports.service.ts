@@ -2,15 +2,19 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { ReportDatabase } from 'src/database/reports';
-import { Report } from '@prisma/client';
+import { Report, User } from '@prisma/client';
 import { APIException } from '../exception/api.exception';
 import { PageDatabase } from 'src/database/pages';
+import { PagesService } from '../pages/pages.service';
+import { SprintDatabase } from 'src/database/sprints';
 
 @Injectable()
 export class ReportsService {
   constructor(
     private readonly reportDatabase: ReportDatabase,
     private readonly pageDatabase: PageDatabase,
+    private readonly pageService: PagesService,
+    private readonly sprintDatabase: SprintDatabase,
   ) {}
   async createReport(createReportDto: CreateReportDto) {
     const doesExistPage = await this.pageDatabase.getPageById(
@@ -102,5 +106,103 @@ export class ReportsService {
       throw new APIException('Failed to delete report', HttpStatus.BAD_REQUEST);
     }
     return deletedReport;
+  }
+
+  async updateReportConfig(
+    user: User,
+    query: { projectId?: number; type?: string },
+  ) {
+    try {
+      const pages = await this.pageService.getPages(user);
+      const reports: any[] = [];
+      pages.map((page) => {
+        reports.push(...page.reports);
+      });
+
+      if (query.projectId) {
+        const sprints = await this.reportDatabase.getSprintsByProjectId(
+          Number(query.projectId),
+        );
+        const sprintIdsByProject: number[] = [];
+        sprints.map((sprint) => sprintIdsByProject.push(sprint.id));
+
+        for (let index = 0; index < reports.length; index++) {
+          const report = reports[index];
+          const projectIds: any[] = report.config[0]?.projectIds;
+          const sprintIds: any[] = report.config[0]?.sprintIds;
+          if (!projectIds) {
+            continue;
+          }
+
+          //If there are exist any sprintIds then remove from report configuration
+          if (sprintIds.length) {
+            for (let idx = 0; idx < sprintIds.length; ) {
+              if (sprintIdsByProject.includes(sprintIds[idx])) {
+                sprintIds.splice(idx, 1);
+              } else {
+                idx++;
+              }
+            }
+            report.config[0].sprintIds = sprintIds;
+          }
+
+          if (projectIds.includes(query.projectId)) {
+            projectIds.splice(projectIds.indexOf(query.projectId), 1);
+          }
+
+          report.config[0].projectIds = projectIds;
+          await this.reportDatabase.updateReport(Number(report.id), {
+            config: [report.config[0]],
+          });
+        }
+      } else if (query.type) {
+        for (let index = 0; index < reports.length; index++) {
+          const report = reports[index];
+          const types: any[] = report.config[0]?.types;
+          if (!types) {
+            continue;
+          }
+
+          if (types.includes(query.type)) {
+            types.splice(types.indexOf(query.type), 1);
+          }
+
+          report.config[0].types = types;
+          await this.reportDatabase.updateReport(Number(report.id), {
+            config: [report.config[0]],
+          });
+        }
+      }
+    } catch (err) {
+      return null;
+    }
+  }
+
+  // Have to delete related SprintIds
+  async updateReportConfigForIntegrationDelete(
+    user: User,
+    projectIds: number[],
+  ) {
+    const pages = await this.pageService.getPages(user);
+    const reports: any[] = [];
+    pages.map((page) => {
+      reports.push(...page.reports);
+    });
+
+    for (let index = 0; index < reports.length; index++) {
+      const report = reports[index];
+      const ReportProjectIds: any[] = report.config[0]?.projectIds;
+      if (!ReportProjectIds) {
+        continue;
+      }
+      const filteredReportProjectIds = ReportProjectIds.filter(
+        (id) => !projectIds.includes(id),
+      );
+
+      report.config[0].projectIds = filteredReportProjectIds;
+      await this.reportDatabase.updateReport(Number(report.id), {
+        config: [report.config[0]],
+      });
+    }
   }
 }

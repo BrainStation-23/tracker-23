@@ -27,6 +27,7 @@ import { TasksDatabase } from 'src/database/tasks';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
 import { JiraClientService } from '../helper/client';
 import * as dayjs from 'dayjs';
+import { ReportsService } from '../reports/reports.service';
 
 @Injectable()
 export class ProjectsService {
@@ -44,6 +45,7 @@ export class ProjectsService {
     private readonly tasksDatabase: TasksDatabase,
     private jiraApiCalls: JiraApiCalls,
     private jiraClient: JiraClientService,
+    private reportService: ReportsService,
   ) {}
 
   async importProject(user: User, projId: number, res?: Response) {
@@ -276,10 +278,13 @@ export class ProjectsService {
     if (!project) {
       throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
     }
-    await this.projectDatabase.deleteTasksByProjectId(id);
-    await this.projectDatabase.deleteSprintByProjectId(id);
-    await this.projectDatabase.deleteStatusDetails(id);
-    await this.projectDatabase.deletePriorities(id);
+    await this.reportService.updateReportConfig(user, { projectId: id });
+    Promise.allSettled([
+      await this.projectDatabase.deleteTasksByProjectId(id),
+      await this.projectDatabase.deleteSprintByProjectId(id),
+      await this.projectDatabase.deleteStatusDetails(id),
+      await this.projectDatabase.deletePriorities(id),
+    ]);
 
     const updatedProject =
       project.source === 'T23'

@@ -90,4 +90,17 @@ export class ReportDatabase {
       return null;
     }
   }
+
+  async getSprintsByProjectId(projectId: number) {
+    try {
+      return await this.prisma.sprint.findMany({
+        where: {
+          projectId: projectId,
+        },
+      });
+    } catch (err) {
+      console.log('🚀 ~ ReportDatabase ~ getSprintByProjectId ~ err:', err);
+      return [];
+    }
+  }
 }
