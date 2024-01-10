@@ -160,9 +160,15 @@ export class IntegrationsService {
         throw new APIException('Can not delete integration');
       }
 
-      await this.reportService.updateReportConfig(user, {
-        type: integration.type,
-      });
+      //This code for updating report config start
+      const userIntegrations =
+        await this.userIntegrationDatabase.getUserIntegrations({
+          userWorkspaceId: userWorkspace.id,
+          integration: {
+            type: integration.type,
+          },
+        });
+
       const projects = await this.integrationDatabase.findProjects({
         integrationId: integration.id,
         workspaceId: user.activeWorkspaceId,
@@ -170,10 +176,11 @@ export class IntegrationsService {
       const projectIds = projects.map((project) => {
         return project.id;
       });
-      await this.reportService.updateReportConfigForIntegrationDelete(
-        user,
-        projectIds,
-      );
+      await this.reportService.updateReportConfig(user, {
+        projectIds: projectIds,
+        ...(userIntegrations.length === 1 && { type: integration.type }),
+      });
+      //This code for updating report config end
 
       if (integration?.type === IntegrationType.OUTLOOK) {
         const transactionRes = await this.prisma.$transaction([

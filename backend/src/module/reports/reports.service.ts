@@ -110,7 +110,7 @@ export class ReportsService {
 
   async updateReportConfig(
     user: User,
-    query: { projectId?: number; type?: string },
+    query: { projectIds?: number[]; type?: string },
   ) {
     try {
       const pages = await this.pageService.getPages(user);
@@ -119,90 +119,43 @@ export class ReportsService {
         reports.push(...page.reports);
       });
 
-      if (query.projectId) {
-        const sprints = await this.reportDatabase.getSprintsByProjectId(
-          Number(query.projectId),
-        );
-        const sprintIdsByProject: number[] = [];
+      const sprintIdsByProject: number[] = [];
+      if (query.projectIds) {
+        const sprints = await this.reportDatabase.getSprintsByProjectId({
+          projectId: { in: query.projectIds },
+        });
         sprints.map((sprint) => sprintIdsByProject.push(sprint.id));
+      }
 
-        for (let index = 0; index < reports.length; index++) {
-          const report = reports[index];
-          const projectIds: any[] = report.config[0]?.projectIds;
-          const sprintIds: any[] = report.config[0]?.sprintIds;
-          if (!projectIds) {
-            continue;
-          }
+      for (let index = 0; index < reports.length; index++) {
+        const report = reports[index];
+        const ReportProjectIds: number[] = report.config[0]?.projectIds;
+        const ReportSprintIds: number[] = report.config[0]?.sprintIds;
+        const types: string[] = report.config[0]?.types;
 
-          //If there are exist any sprintIds then remove from report configuration
-          if (sprintIds.length) {
-            for (let idx = 0; idx < sprintIds.length; ) {
-              if (sprintIdsByProject.includes(sprintIds[idx])) {
-                sprintIds.splice(idx, 1);
-              } else {
-                idx++;
-              }
-            }
-            report.config[0].sprintIds = sprintIds;
-          }
-
-          if (projectIds.includes(query.projectId)) {
-            projectIds.splice(projectIds.indexOf(query.projectId), 1);
-          }
-
-          report.config[0].projectIds = projectIds;
-          await this.reportDatabase.updateReport(Number(report.id), {
-            config: [report.config[0]],
-          });
+        if (ReportProjectIds && query.projectIds) {
+          const filteredReportProjectIds = ReportProjectIds.filter(
+            (id) => !query.projectIds?.includes(id),
+          );
+          report.config[0].projectIds = filteredReportProjectIds;
         }
-      } else if (query.type) {
-        for (let index = 0; index < reports.length; index++) {
-          const report = reports[index];
-          const types: any[] = report.config[0]?.types;
-          if (!types) {
-            continue;
-          }
-
-          if (types.includes(query.type)) {
-            types.splice(types.indexOf(query.type), 1);
-          }
-
+        if (ReportSprintIds) {
+          const filteredReportSprintIds = ReportSprintIds.filter(
+            (id) => !sprintIdsByProject.includes(id),
+          );
+          report.config[0].sprintIds = filteredReportSprintIds;
+        }
+        if (types && query.type && types.includes(query.type)) {
+          types.splice(types.indexOf(query.type), 1);
           report.config[0].types = types;
-          await this.reportDatabase.updateReport(Number(report.id), {
-            config: [report.config[0]],
-          });
         }
+
+        await this.reportDatabase.updateReport(Number(report.id), {
+          config: [report.config[0]],
+        });
       }
     } catch (err) {
       return null;
-    }
-  }
-
-  // Have to delete related SprintIds
-  async updateReportConfigForIntegrationDelete(
-    user: User,
-    projectIds: number[],
-  ) {
-    const pages = await this.pageService.getPages(user);
-    const reports: any[] = [];
-    pages.map((page) => {
-      reports.push(...page.reports);
-    });
-
-    for (let index = 0; index < reports.length; index++) {
-      const report = reports[index];
-      const ReportProjectIds: any[] = report.config[0]?.projectIds;
-      if (!ReportProjectIds) {
-        continue;
-      }
-      const filteredReportProjectIds = ReportProjectIds.filter(
-        (id) => !projectIds.includes(id),
-      );
-
-      report.config[0].projectIds = filteredReportProjectIds;
-      await this.reportDatabase.updateReport(Number(report.id), {
-        config: [report.config[0]],
-      });
     }
   }
 }

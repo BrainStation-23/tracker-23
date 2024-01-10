@@ -91,12 +91,10 @@ export class ReportDatabase {
     }
   }
 
-  async getSprintsByProjectId(projectId: number) {
+  async getSprintsByProjectId(query: Record<string, any>) {
     try {
       return await this.prisma.sprint.findMany({
-        where: {
-          projectId: projectId,
-        },
+        where: query,
       });
     } catch (err) {
       console.log('🚀 ~ ReportDatabase ~ getSprintByProjectId ~ err:', err);

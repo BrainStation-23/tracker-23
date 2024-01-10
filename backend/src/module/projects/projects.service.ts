@@ -278,7 +278,7 @@ export class ProjectsService {
     if (!project) {
       throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
     }
-    await this.reportService.updateReportConfig(user, { projectId: id });
+    await this.reportService.updateReportConfig(user, { projectIds: [id] });
     Promise.allSettled([
       await this.projectDatabase.deleteTasksByProjectId(id),
       await this.projectDatabase.deleteSprintByProjectId(id),
