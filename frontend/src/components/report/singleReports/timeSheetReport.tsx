@@ -16,6 +16,7 @@ import TableComponent from "../components/tableComponentReport";
 import { userAPI } from "APIs";
 import { ReportData } from "@/storage/redux/reportsSlice";
 import UsersSelectorComponent from "@/components/common/topPanels/components/usersSelector";
+import ReportHeaderComponent from "../components/reportHeaderComponent";
 type Props = {
   reportData: ReportData;
 };
@@ -77,37 +78,34 @@ const TimeSheetReport = ({ reportData }: Props) => {
   }, [projects]);
   return (
     <>
-      <div className="my-5 flex w-full justify-between">
-        <div className="text-xl font-semibold">{reportData.name}</div>
-        <div className="mt-[3px] flex h-auto max-w-[950px] gap-2">
-          <div className="flex h-auto w-full flex-wrap items-center justify-end gap-6">
-            <DateRangePicker
-              selectedDate={dateRange}
-              setSelectedDate={setDateRange}
-            />
+      <ReportHeaderComponent title={reportData.name}>
+        <>
+          <DateRangePicker
+            selectedDate={dateRange}
+            setSelectedDate={setDateRange}
+          />
 
-            <TypeDependentSection
-              config={reportData?.config}
-              {...{
-                activeTab,
-                selectedSource,
-                setSelectedSource,
-                projects,
-                setProjects,
-                sprints,
-                setSprints,
-                calendarIds,
-                setCalendarIds,
-              }}
-            />
+          <TypeDependentSection
+            config={reportData?.config}
+            {...{
+              activeTab,
+              selectedSource,
+              setSelectedSource,
+              projects,
+              setProjects,
+              sprints,
+              setSprints,
+              calendarIds,
+              setCalendarIds,
+            }}
+          />
 
-            <UsersSelectorComponent
-              {...{ userList: users, selectedUsers, setSelectedUsers }}
-              className="w-[210px]"
-            />
-          </div>
-        </div>
-      </div>
+          <UsersSelectorComponent
+            {...{ userList: users, selectedUsers, setSelectedUsers }}
+            className="w-[210px]"
+          />
+        </>
+      </ReportHeaderComponent>
       <div>
         <TableComponent
           data={data}

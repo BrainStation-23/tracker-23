@@ -9,6 +9,7 @@ import {
   setReportSprintListReducer,
 } from "@/storage/redux/projectsSlice";
 import { useEffect } from "react";
+import TaskListReport from "./singleReports/taskListReport";
 
 const ReportPageComponent = () => {
   const dispatch = useDispatch();
@@ -41,8 +42,18 @@ const ReportPageComponent = () => {
     <div className="flex flex-col gap-4">
       <div> {path}</div> <div>{reportPageData?.name}</div>
       {reportPageData?.reports?.map((report) => {
-        if (report?.reportType === "TIME_SHEET")
-          return <TimeSheetReport reportData={report} />;
+        switch (report.reportType) {
+          case "TIME_SHEET":
+            return <TimeSheetReport reportData={report} />;
+          case "SPRINT_ESTIMATION":
+            return <div>SPRINT_ESTIMATION</div>;
+          case "TASK_LIST":
+            return <TaskListReport reportData={report} />;
+          case "SPRINT_REPORT":
+            return <div>SPRINT_REPORT</div>;
+          default:
+            return <div>No report found</div>;
+        }
       })}
     </div>
   );

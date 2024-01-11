@@ -100,6 +100,38 @@ const initialState: ReportsSliceState = {
         },
       ],
     },
+    {
+      id: 3,
+      name: "Page 3",
+      userWorkspaceId: 23,
+      workspaceId: 5,
+      reports: [
+        {
+          id: 2,
+          name: "report 1",
+          config: {
+            id: 1,
+            projectIds: [138, 139],
+            users: [1, 52],
+            types: ["OUTLOOK", "JIRA"],
+          },
+          reportType: "TASK_LIST",
+          pageId: 1,
+        },
+        {
+          id: 3,
+          name: "report 4",
+          config: {
+            id: 1,
+            projectIds: [138, 139],
+            users: [1, 35],
+            types: ["OUTLOOK", "JIRA"],
+          },
+          reportType: "TASK_LIST",
+          pageId: 1,
+        },
+      ],
+    },
   ],
 };
 
