@@ -8,8 +8,10 @@ import ProjectSelectorComponent from "@/components/common/topPanels/components/p
 import SprintSelectorComponent from "@/components/common/topPanels/components/sprintSelector";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
+import { ReportConfig } from "@/storage/redux/reportsSlice";
 
 const TypeDependentSection = ({
+  config,
   activeTab,
   selectedSource,
   setSelectedSource,
@@ -20,6 +22,7 @@ const TypeDependentSection = ({
   calendarIds,
   setCalendarIds,
 }: {
+  config: ReportConfig;
   activeTab: ReportPageTabs;
   selectedSource?: IntegrationType[];
   setSelectedSource?: Function;
@@ -35,6 +38,7 @@ const TypeDependentSection = ({
   const sprintList = path.includes("report")
     ? useAppSelector((state: RootState) => state.projectList.reportSprintList)
     : useAppSelector((state: RootState) => state.tasksSlice.sprintList);
+  console.log("🚀 ~ ", path.includes("report"));
 
   const showProjectSelector =
     selectedSource?.length > 0 ? selectedSource.includes("JIRA") : true;

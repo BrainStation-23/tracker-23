@@ -1,18 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { IntegrationType } from "models/integration";
 
-interface Config {
+export interface ReportConfig {
   id: number;
-  projectIds: number[];
-  users: number[];
-  types: string[];
+  projectIds?: number[];
+  users?: number[];
+  types?: IntegrationType[];
 }
 
+export type ReportType =
+  | "TIME_SHEET"
+  | "SPRINT_ESTIMATION"
+  | "TASK_LIST"
+  | "SPRINT_REPORT";
 export interface ReportData {
   id: number;
   name: string;
-  config: Config[];
-  reportType: string;
+  config: ReportConfig;
+  reportType: ReportType;
   pageId: number;
 }
 
@@ -39,29 +45,25 @@ const initialState: ReportsSliceState = {
         {
           id: 2,
           name: "report page 1",
-          config: [
-            {
-              id: 1,
-              projectIds: [1, 2, 3, 4, 5],
-              users: [1, 2, 3, 4, 5],
-              types: ["OUTLOOK", "JIRA"],
-            },
-          ],
+          config: {
+            id: 1,
+            projectIds: [138, 139],
+            users: [1, 35, 52],
+            types: ["OUTLOOK", "JIRA"],
+          },
           reportType: "TIME_SHEET",
           pageId: 1,
         },
         {
           id: 3,
           name: "report 2",
-          config: [
-            {
-              id: 1,
-              projectIds: [1, 2, 3, 4, 5],
-              users: [1, 2, 3, 4, 5],
-              types: ["OUTLOOK", "JIRA"],
-            },
-          ],
-          reportType: "TIME_SHEET",
+          config: {
+            id: 1,
+            projectIds: [138, 139],
+            users: [1, 35, 52],
+            types: ["OUTLOOK", "JIRA"],
+          },
+          reportType: "TASK_LIST",
           pageId: 1,
         },
       ],
@@ -75,28 +77,24 @@ const initialState: ReportsSliceState = {
         {
           id: 2,
           name: "report 1",
-          config: [
-            {
-              id: 1,
-              projectIds: [1, 2, 3, 4, 5],
-              users: [1, 2, 3, 4, 5],
-              types: ["OUTLOOK", "JIRA"],
-            },
-          ],
+          config: {
+            id: 1,
+            projectIds: [138, 139],
+            users: [1, 52],
+            types: ["OUTLOOK", "JIRA"],
+          },
           reportType: "TIME_SHEET",
           pageId: 1,
         },
         {
           id: 3,
           name: "report 4",
-          config: [
-            {
-              id: 1,
-              projectIds: [1, 2, 3, 4, 5],
-              users: [1, 2, 3, 4, 5],
-              types: ["OUTLOOK", "JIRA"],
-            },
-          ],
+          config: {
+            id: 1,
+            projectIds: [138, 139],
+            users: [1, 35],
+            types: ["OUTLOOK", "JIRA"],
+          },
           reportType: "TIME_SHEET",
           pageId: 1,
         },
