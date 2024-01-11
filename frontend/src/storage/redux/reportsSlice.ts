@@ -7,6 +7,7 @@ export interface ReportConfig {
   projectIds?: number[];
   users?: number[];
   types?: IntegrationType[];
+  sprints?: number[];
 }
 
 export type ReportType =
@@ -114,6 +115,7 @@ const initialState: ReportsSliceState = {
             projectIds: [138, 139],
             users: [1, 52],
             types: ["OUTLOOK", "JIRA"],
+            sprints: [975, 950],
           },
           reportType: "TASK_LIST",
           pageId: 1,

@@ -23,10 +23,16 @@ export default function TaskListReport({ reportData }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
-  const [selectedSource, setSelectedSource] = useState<IntegrationType[]>();
-  const [sprints, setSprints] = useState<number[]>([]);
+  const [selectedSource, setSelectedSource] = useState<IntegrationType[]>(
+    reportData?.config?.types ?? []
+  );
+  const [sprints, setSprints] = useState<number[]>(
+    reportData?.config?.sprints ?? []
+  );
   const [users, setUsers] = useState<SprintUser[]>([]);
-  const [projects, setProjects] = useState<number[]>([]);
+  const [projects, setProjects] = useState<number[]>(
+    reportData?.config?.projectIds ?? []
+  );
   const [calendarIds, setCalendarIds] = useState<number[]>([]);
   const [selectedUser, setSelectedUser] = useState<number>();
   const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
