@@ -9,6 +9,7 @@ import { WorkspacesService } from '../workspaces/workspaces.service';
 import { APIException } from '../exception/api.exception';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { IntegrationDatabase } from 'src/database/integrations/index';
+import { ReportsService } from '../reports/reports.service';
 
 @Injectable()
 export class IntegrationsService {
@@ -19,6 +20,7 @@ export class IntegrationsService {
     private workspacesService: WorkspacesService,
     private userIntegrationDatabase: UserIntegrationDatabase,
     private integrationDatabase: IntegrationDatabase,
+    private reportService: ReportsService,
   ) {}
 
   async getUserIntegrations(user: User) {
@@ -154,6 +156,31 @@ export class IntegrationsService {
       const integration = await this.integrationDatabase.findUniqueIntegration({
         id,
       });
+      if (!integration) {
+        throw new APIException('Can not delete integration');
+      }
+
+      //This code for updating report config start
+      const userIntegrations =
+        await this.userIntegrationDatabase.getUserIntegrations({
+          userWorkspaceId: userWorkspace.id,
+          integration: {
+            type: integration.type,
+          },
+        });
+
+      const projects = await this.integrationDatabase.findProjects({
+        integrationId: integration.id,
+        workspaceId: user.activeWorkspaceId,
+      });
+      const projectIds = projects.map((project) => {
+        return project.id;
+      });
+      await this.reportService.updateReportConfig(user, {
+        projectIds: projectIds,
+        ...(userIntegrations.length === 1 && { type: integration.type }),
+      });
+      //This code for updating report config end
 
       if (integration?.type === IntegrationType.OUTLOOK) {
         const transactionRes = await this.prisma.$transaction([

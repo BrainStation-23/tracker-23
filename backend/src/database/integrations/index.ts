@@ -108,7 +108,7 @@ export class IntegrationDatabase {
       });
     } catch (error) {
       console.log(error);
-      return null;
+      return [];
     }
   }
 

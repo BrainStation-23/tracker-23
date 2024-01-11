@@ -8,6 +8,6 @@ import { PageDatabase } from 'src/database/pages';
   imports: [WorkspacesModule],
   controllers: [PagesController],
   providers: [PagesService, PageDatabase],
-  exports: [PageDatabase],
+  exports: [PageDatabase, PagesService],
 })
 export class PagesModule {}

@@ -93,7 +93,7 @@ export class UserIntegrationDatabase {
     }
   }
 
-  async getUserIntegration(filter: any) {
+  async getUserIntegration(filter: Record<string, any>) {
     try {
       return await this.prisma.userIntegration.findUnique({
         where: filter,
@@ -101,6 +101,17 @@ export class UserIntegrationDatabase {
     } catch (error) {
       console.log(error);
       return null;
+    }
+  }
+
+  async getUserIntegrations(query: Record<string, any>) {
+    try {
+      return await this.prisma.userIntegration.findMany({
+        where: query,
+      });
+    } catch (error) {
+      console.log(error);
+      return [];
     }
   }
 }
