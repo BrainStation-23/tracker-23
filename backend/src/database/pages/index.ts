@@ -53,10 +53,13 @@ export class PageDatabase {
     }
   }
 
-  async getPages(query: Record<string, any>): Promise<Page[] | []> {
+  async getPages(query: Record<string, any>): Promise<any[] | []> {
     try {
       return await this.prisma.page.findMany({
         where: query,
+        include: {
+          reports: true,
+        },
       });
     } catch (error) {
       console.log(

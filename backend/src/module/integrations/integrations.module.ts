@@ -5,9 +5,10 @@ import { IntegrationsService } from './integrations.service';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
+import { ReportsModule } from '../reports/reports.module';
 
 @Module({
-  imports: [HttpModule.register({}), WorkspacesModule],
+  imports: [HttpModule.register({}), WorkspacesModule, ReportsModule],
   controllers: [IntegrationsController],
   providers: [
     IntegrationsService,
