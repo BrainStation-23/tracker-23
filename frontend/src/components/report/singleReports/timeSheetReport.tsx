@@ -1,22 +1,20 @@
-import SearchIconSvg from "@/assets/svg/searchIconSvg";
-import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
-import { Input } from "antd";
-import { debounce } from "lodash";
-import TypeDependentSection from "../components/typeDependentSection";
-import UserSelectorComponent from "@/components/common/topPanels/components/userSelector";
-import { useEffect, useState } from "react";
-import {
-  ReportPageTabs,
-  SprintUser,
-  SprintUserReportDto,
-} from "models/reports";
-import { TaskDto } from "models/tasks";
-import { IntegrationType } from "models/integration";
-import TableComponent from "../components/tableComponentReport";
+import { Button, message, Spin } from "antd";
 import { userAPI } from "APIs";
-import { ReportData } from "@/storage/redux/reportsSlice";
+import { debounce } from "lodash";
+import { IntegrationType } from "models/integration";
+import { ReportPageTabs, SprintUser } from "models/reports";
+import { useEffect, useState } from "react";
+
 import UsersSelectorComponent from "@/components/common/topPanels/components/usersSelector";
+import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
+import { ReportData } from "@/storage/redux/reportsSlice";
+
 import ReportHeaderComponent from "../components/reportHeaderComponent";
+import TableComponent from "../components/tableComponentReport";
+import TypeDependentSection from "../components/typeDependentSection";
+import { LuDownload } from "react-icons/lu";
+import { ExcelExport } from "@/services/exportHelpers";
+
 type Props = {
   reportData: ReportData;
 };
@@ -38,19 +36,38 @@ const TimeSheetReport = ({ reportData }: Props) => {
   );
   const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
   const [dateRangeArray, setDateRangeArray] = useState([]);
-
-  const [searchText, setSearchText] = useState("");
-  const [activeTab, setActiveTab] = useState<ReportPageTabs>(
-    "Time Sheet"
-    // "Sprint Report"
-  );
-  const handleInputChange = (event: any) => {
-    setSearchText(event.target.value);
+  const [isLoading, setIsLoading] = useState(false);
+  const [downloading, setDownloading] = useState<boolean>(false);
+  const excelExport = async () => {
+    setDownloading(true);
+    try {
+      const res = await userAPI.exportTimeSheetReport({
+        startDate: dateRange[0],
+        endDate: dateRange[1],
+        userIds: selectedUsers,
+        types: selectedSource,
+        projectIds: projects,
+        calendarIds,
+      });
+      console.log(
+        "🚀 ~ file: topPanelExportPage.tsx:54 ~ excelExport ~ res:",
+        res
+      );
+      if (!res) {
+        message.error(
+          res?.error?.message ? res?.error?.message : "Export Failed"
+        );
+      } else {
+        ExcelExport({ file: res, name: "Tracker 23 Time Sheet Report" });
+      }
+    } catch (error) {
+      message.error("Export Failed");
+    }
+    setDownloading(false);
   };
-  const debouncedHandleInputChange = debounce(handleInputChange, 500);
+
   const getTimeSheetReport = async () => {
-    // setIsLoading(true);
-    // Loaded["Time Sheet"] = false;
+    setIsLoading(true);
     const res = await userAPI.getTimeSheetReport({
       startDate: dateRange[0],
       endDate: dateRange[1],
@@ -62,9 +79,7 @@ const TimeSheetReport = ({ reportData }: Props) => {
 
     res.rows && setData(res.rows);
     setDateRangeArray(res.dateRange);
-    // setData(formatUserData(res));
-    // setIsLoading(false);
-    // Loaded["Time Sheet"] = true;
+    setIsLoading(false);
   };
   const getUserListByProject = async () => {
     const res = await userAPI.userListByProject(projects);
@@ -78,7 +93,20 @@ const TimeSheetReport = ({ reportData }: Props) => {
   }, [projects]);
   return (
     <>
-      <ReportHeaderComponent title={reportData.name}>
+      <ReportHeaderComponent
+        title={reportData.name}
+        exportButton={
+          <Button
+            type="ghost"
+            className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
+            icon={<LuDownload className="text-xl" />}
+            loading={downloading}
+            onClick={() => excelExport()}
+          >
+            Export to Excel
+          </Button>
+        }
+      >
         <>
           <DateRangePicker
             selectedDate={dateRange}
@@ -88,7 +116,7 @@ const TimeSheetReport = ({ reportData }: Props) => {
           <TypeDependentSection
             config={reportData?.config}
             {...{
-              activeTab,
+              activeTab: "Time Sheet",
               selectedSource,
               setSelectedSource,
               projects,
@@ -106,13 +134,13 @@ const TimeSheetReport = ({ reportData }: Props) => {
           />
         </>
       </ReportHeaderComponent>
-      <div>
+      <Spin className="custom-spin" spinning={isLoading}>
         <TableComponent
           data={data}
           dateRangeArray={dateRangeArray}
           column={column}
         />
-      </div>
+      </Spin>
     </>
   );
 };
