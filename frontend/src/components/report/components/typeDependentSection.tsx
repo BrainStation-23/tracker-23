@@ -28,8 +28,8 @@ const TypeDependentSection = ({
   setSelectedSource?: Function;
   projects?: any;
   setProjects?: any;
-  calendarIds: any;
-  setCalendarIds: any;
+  calendarIds?: any;
+  setCalendarIds?: any;
   sprints: number[];
   setSprints: Function;
 }) => {

@@ -1,15 +1,18 @@
-import { useAppSelector } from "@/storage/redux";
-import { RootState } from "@/storage/redux/store";
-import { useRouter } from "next/router";
-import TimeSheetReport from "./singleReports/timeSheetReport";
 import { userAPI } from "APIs";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 import { useDispatch } from "react-redux";
+
+import { useAppSelector } from "@/storage/redux";
 import {
   setReportProjectsSlice,
   setReportSprintListReducer,
 } from "@/storage/redux/projectsSlice";
-import { useEffect } from "react";
+import { RootState } from "@/storage/redux/store";
+
+import SprintEstimateReport from "./singleReports/sprintEstimateReport";
 import TaskListReport from "./singleReports/taskListReport";
+import TimeSheetReport from "./singleReports/timeSheetReport";
 
 const ReportPageComponent = () => {
   const dispatch = useDispatch();
@@ -46,7 +49,7 @@ const ReportPageComponent = () => {
           case "TIME_SHEET":
             return <TimeSheetReport reportData={report} />;
           case "SPRINT_ESTIMATION":
-            return <div>SPRINT_ESTIMATION</div>;
+            return <SprintEstimateReport reportData={report} />;
           case "TASK_LIST":
             return <TaskListReport reportData={report} />;
           case "SPRINT_REPORT":
