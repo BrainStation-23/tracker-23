@@ -956,31 +956,7 @@ export async function getSprintViewReportRest({
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-08T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          id: "2024-01-09T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          id: "2024-01-10T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          id: "2024-01-11T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          id: "2024-01-12T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          id: "2024-01-13T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          id: "2024-01-14T08:24:18.123Z",
+          id: "Today",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
@@ -988,7 +964,31 @@ export async function getSprintViewReportRest({
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "Today",
+          id: "2024-01-14T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "2024-01-13T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "2024-01-12T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "2024-01-11T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "2024-01-10T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "2024-01-09T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "2024-01-08T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
       ],
