@@ -80,6 +80,18 @@ const initialState: ReportsSliceState = {
           reportType: "SPRINT_ESTIMATION",
           pageId: 1,
         },
+        {
+          id: 3,
+          name: "report 4",
+          config: {
+            id: 1,
+            projectIds: [138, 139],
+            users: [1, 35],
+            types: ["OUTLOOK", "JIRA"],
+          },
+          reportType: "TASK_LIST",
+          pageId: 1,
+        },
       ],
     },
     {
