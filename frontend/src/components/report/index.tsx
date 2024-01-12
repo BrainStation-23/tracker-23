@@ -108,8 +108,8 @@ const ReportComponent = () => {
       case "Sprint Report":
         return <SprintReportComponent data={sprintReportData} />;
       case "Sprint View Report":
-        // return <SprintViewReportComponent data={sprintViewReportData} />;
-        return <NewSprintViewReportComponent data={sprintViewReportData} />;
+        return <SprintViewReportComponent data={sprintViewReportData} />;
+      // return <NewSprintViewReportComponent data={sprintViewReportData} />;
       default:
         return <></>;
     }
