@@ -29,7 +29,7 @@ import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
-import { getTimeSheetReportDto } from "models/reports";
+import { SprintViewReportDto, getTimeSheetReportDto } from "models/reports";
 import { disconnectSocket } from "@/services/socket.service";
 import { updateApprovalUserDto, updateOnboardingUserDto } from "models/user";
 
@@ -941,6 +941,514 @@ export async function getSprintReportRest({
     return false;
   }
 }
+
+export async function getSprintViewReportRest({
+  sprintId,
+  startDate,
+  endDate,
+}: SprintReportParamsModel) {
+  try {
+    // TODO: Replace with original implementation when API ready
+    const data: SprintViewReportDto = {
+      columns: [
+        {
+          id: "AssignTasks",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "Today",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "Yesterday",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "2024-01-14T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "2024-01-13T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "2024-01-12T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "2024-01-11T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "2024-01-10T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "2024-01-09T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          id: "2024-01-08T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+      ],
+      rows: [
+        {
+          userId: 101,
+          name: "John Doe",
+          picture: "https://example.com/johndoe.jpg",
+          email: "john.doe@example.com",
+          AssignTasks: {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Feature A",
+                key: "PROJ-123",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
+              },
+              {
+                title: "Bug Fix B",
+                key: "PROJ-124",
+                status: "To Do",
+                statusCategoryName: "ToDo",
+              },
+              {
+                title: "Refactor C",
+                key: "PROJ-125",
+                status: "Done",
+                statusCategoryName: "Done",
+              },
+            ],
+          },
+          "2024-01-08T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Feature A",
+                key: "PROJ-123",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
+              },
+            ],
+          },
+          "2024-01-09T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Bug Fix B",
+                key: "PROJ-124",
+                status: "In Review",
+                statusCategoryName: "InReview",
+              },
+            ],
+          },
+          "2024-01-10T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Refactor C",
+                key: "PROJ-125",
+                status: "Done",
+                statusCategoryName: "Done",
+              },
+            ],
+          },
+          "2024-01-11T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          "2024-01-12T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          "2024-01-13T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          "2024-01-14T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          Yesterday: {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Feature A",
+                key: "PROJ-123",
+                status: "Done",
+                statusCategoryName: "Done",
+              },
+            ],
+          },
+          Today: {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Feature A",
+                key: "PROJ-123",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
+              },
+              {
+                title: "Bug Fix B",
+                key: "PROJ-124",
+                status: "In Review",
+                statusCategoryName: "InReview",
+              },
+            ],
+          },
+        },
+        {
+          userId: 102,
+          name: "Jane Smith",
+          picture: "https://example.com/janesmith.jpg",
+          email: "jane.smith@example.com",
+          AssignTasks: {
+            devProgress: { estimatedTime: 10, spentTime: 10 },
+            tasks: [
+              {
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "To Do",
+                statusCategoryName: "ToDo",
+              },
+              {
+                title: "Bug Fix Y",
+                key: "PROJ-127",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
+              },
+              {
+                title: "Refactor Z",
+                key: "PROJ-128",
+                status: "Done",
+                statusCategoryName: "Done",
+              },
+            ],
+          },
+          "2024-01-08T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "To Do",
+                statusCategoryName: "ToDo",
+              },
+            ],
+          },
+          "2024-01-09T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Bug Fix Y",
+                key: "PROJ-127",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
+              },
+            ],
+          },
+          "2024-01-10T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Refactor Z",
+                key: "PROJ-128",
+                status: "Done",
+                statusCategoryName: "Done",
+              },
+            ],
+          },
+          "2024-01-11T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          "2024-01-12T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          "2024-01-13T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          "2024-01-14T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          Yesterday: {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "Done",
+                statusCategoryName: "Done",
+              },
+            ],
+          },
+          Today: {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "To Do",
+                statusCategoryName: "ToDo",
+              },
+              {
+                title: "Bug Fix Y",
+                key: "PROJ-127",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
+              },
+            ],
+          },
+        },
+        {
+          userId: 103,
+          name: "Jane Doe",
+          picture: "https://example.com/janesmith.jpg",
+          email: "jane.doe@example.com",
+          AssignTasks: {
+            devProgress: { estimatedTime: 10, spentTime: 12 },
+            tasks: [
+              {
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "To Do",
+                statusCategoryName: "ToDo",
+              },
+              {
+                title: "Bug Fix Y",
+                key: "PROJ-127",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
+              },
+              {
+                title: "Refactor Z",
+                key: "PROJ-128",
+                status: "Done",
+                statusCategoryName: "Done",
+              },
+            ],
+          },
+          "2024-01-08T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "To Do",
+                statusCategoryName: "ToDo",
+              },
+            ],
+          },
+          "2024-01-09T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Bug Fix Y",
+                key: "PROJ-127",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
+              },
+            ],
+          },
+          "2024-01-10T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Refactor Z",
+                key: "PROJ-128",
+                status: "Done",
+                statusCategoryName: "Done",
+              },
+            ],
+          },
+          "2024-01-11T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          "2024-01-12T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          "2024-01-13T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          "2024-01-14T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          Yesterday: {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "Done",
+                statusCategoryName: "Done",
+              },
+            ],
+          },
+          Today: {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "To Do",
+                statusCategoryName: "ToDo",
+              },
+              {
+                title: "Bug Fix Y",
+                key: "PROJ-127",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
+              },
+            ],
+          },
+        },
+        {
+          userId: 103,
+          name: "Harry Potter",
+          picture: "https://example.com/janesmith.jpg",
+          email: "harry.potter@example.com",
+          AssignTasks: {
+            devProgress: { estimatedTime: 10, spentTime: 18 },
+            tasks: [
+              {
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "To Do",
+                statusCategoryName: "ToDo",
+              },
+              {
+                title: "Bug Fix Y",
+                key: "PROJ-127",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
+              },
+              {
+                title: "Refactor Z",
+                key: "PROJ-128",
+                status: "Done",
+                statusCategoryName: "Done",
+              },
+            ],
+          },
+          "2024-01-08T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "To Do",
+                statusCategoryName: "ToDo",
+              },
+            ],
+          },
+          "2024-01-09T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Bug Fix Y",
+                key: "PROJ-127",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
+              },
+            ],
+          },
+          "2024-01-10T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Refactor Z",
+                key: "PROJ-128",
+                status: "Done",
+                statusCategoryName: "Done",
+              },
+            ],
+          },
+          "2024-01-11T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          "2024-01-12T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          "2024-01-13T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          "2024-01-14T08:24:18.123Z": {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [],
+          },
+          Yesterday: {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "Done",
+                statusCategoryName: "Done",
+              },
+            ],
+          },
+          Today: {
+            devProgress: { estimatedTime: 10, spentTime: 7 },
+            tasks: [
+              {
+                title: "Feature X",
+                key: "PROJ-126",
+                status: "To Do",
+                statusCategoryName: "ToDo",
+              },
+              {
+                title: "Bug Fix Y",
+                key: "PROJ-127",
+                status: "In Progress",
+                statusCategoryName: "InProgress",
+              },
+            ],
+          },
+        },
+      ],
+    };
+    const res = await fakeAxiosRequest(
+      `${apiEndPoints.sprintReport}?` +
+        (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
+        (sprintId ? `&sprintId=${sprintId}` : ""),
+      data
+    );
+    // For now, just return the dummy response data
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+// TODO: Remove this when we do not need it
+// Define a function to mock the axios request
+function fakeAxiosRequest(
+  url: string,
+  data: any,
+  status: number = 200
+): Promise<any> {
+  // Check the URL to determine the mock response
+  if (url) {
+    // Simulate a successful response
+    return Promise.resolve({ data: data, status });
+  } else {
+    // Simulate an error response for unknown URLs
+    return Promise.reject({ response: { data: "Not Found", status: 404 } });
+  }
+}
+
 export async function getInvitedUserInfoRest(token: string) {
   try {
     const res = await axios.get(`${apiEndPoints.invitedUserInfo}` + token);
