@@ -64,7 +64,7 @@ const initialState: ReportsSliceState = {
             users: [1, 35, 52],
             types: ["OUTLOOK", "JIRA"],
           },
-          reportType: "TASK_LIST",
+          reportType: "SPRINT_ESTIMATION",
           pageId: 1,
         },
       ],

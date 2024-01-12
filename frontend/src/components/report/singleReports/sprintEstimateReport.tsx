@@ -1,64 +1,48 @@
 import { Button, message, Spin } from "antd";
 import { userAPI } from "APIs";
-import { debounce } from "lodash";
-import { IntegrationType } from "models/integration";
-import { ReportPageTabs, SprintUser } from "models/reports";
+import { SprintUser, SprintUserReportDto } from "models/reports";
 import { useEffect, useState } from "react";
+import { LuDownload } from "react-icons/lu";
 
 import UsersSelectorComponent from "@/components/common/topPanels/components/usersSelector";
-import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
+import { ExcelExport } from "@/services/exportHelpers";
 import { ReportData } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
-import TableComponent from "../components/tableComponentReport";
+import SpritEstimateReportComponent from "../components/sprintEstimateReportComponent";
 import TypeDependentSection from "../components/typeDependentSection";
-import { LuDownload } from "react-icons/lu";
-import { ExcelExport } from "@/services/exportHelpers";
 
 type Props = {
   reportData: ReportData;
 };
-const TimeSheetReport = ({ reportData }: Props) => {
-  console.log("🚀 ~ TimeSheetReport ~ reportData:", reportData);
-  const [selectedSource, setSelectedSource] = useState<IntegrationType[]>(
-    reportData?.config?.types ?? []
-  );
+const SprintEstimateReport = ({ reportData }: Props) => {
   const [sprints, setSprints] = useState<number[]>([]);
-  const [data, setData] = useState([]);
+  const [sprintEstimateReportData, setSprintEstimateReportData] =
+    useState<SprintUserReportDto>();
   const [projects, setProjects] = useState<number[]>(
     reportData?.config?.projectIds ?? []
   );
-  const [calendarIds, setCalendarIds] = useState<number[]>([]);
-  const [column, setColumns] = useState([]);
+
   const [users, setUsers] = useState<SprintUser[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<number[]>(
     reportData?.config?.users ?? []
   );
-  const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
-  const [dateRangeArray, setDateRangeArray] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
   const excelExport = async () => {
     setDownloading(true);
     try {
-      const res = await userAPI.exportTimeSheetReport({
-        startDate: dateRange[0],
-        endDate: dateRange[1],
-        userIds: selectedUsers,
-        types: selectedSource,
+      const res = await userAPI.exportSprintReport({
+        sprints,
+        selectedUsers,
         projectIds: projects,
-        calendarIds,
       });
-      console.log(
-        "🚀 ~ file: topPanelExportPage.tsx:54 ~ excelExport ~ res:",
-        res
-      );
       if (!res) {
         message.error(
           res?.error?.message ? res?.error?.message : "Export Failed"
         );
       } else {
-        ExcelExport({ file: res, name: "Tracker 23 Time Sheet Report" });
+        ExcelExport({ file: res, name: "Tracker 23 Sprint Report" });
       }
     } catch (error) {
       message.error("Export Failed");
@@ -66,28 +50,25 @@ const TimeSheetReport = ({ reportData }: Props) => {
     setDownloading(false);
   };
 
-  const getTimeSheetReport = async () => {
+  const getSprintUserReport = async () => {
     setIsLoading(true);
-    const res = await userAPI.getTimeSheetReport({
-      startDate: dateRange[0],
-      endDate: dateRange[1],
-      userIds: selectedUsers,
+    const res: SprintUserReportDto = await userAPI.getSprintUserReport({
+      sprints,
+      selectedUsers,
       projectIds: projects,
-      types: selectedSource,
     });
-    res.columns && setColumns(res.columns);
-
-    res.rows && setData(res.rows);
-    setDateRangeArray(res.dateRange);
+    res && setSprintEstimateReportData(res);
     setIsLoading(false);
   };
   const getUserListByProject = async () => {
     const res = await userAPI.userListByProject(projects);
     res && setUsers(res);
   };
+
   useEffect(() => {
-    getTimeSheetReport();
-  }, [dateRange, selectedUsers, projects, selectedSource]);
+    getSprintUserReport();
+  }, [sprints, selectedUsers, projects]);
+
   useEffect(() => {
     getUserListByProject();
   }, [projects]);
@@ -108,23 +89,14 @@ const TimeSheetReport = ({ reportData }: Props) => {
         }
       >
         <>
-          <DateRangePicker
-            selectedDate={dateRange}
-            setSelectedDate={setDateRange}
-          />
-
           <TypeDependentSection
             config={reportData?.config}
             {...{
-              activeTab: "Time Sheet",
-              selectedSource,
-              setSelectedSource,
+              activeTab: "Sprint Estimate",
               projects,
               setProjects,
               sprints,
               setSprints,
-              calendarIds,
-              setCalendarIds,
             }}
           />
 
@@ -135,14 +107,10 @@ const TimeSheetReport = ({ reportData }: Props) => {
         </>
       </ReportHeaderComponent>
       <Spin className="custom-spin" spinning={isLoading}>
-        <TableComponent
-          data={data}
-          dateRangeArray={dateRangeArray}
-          column={column}
-        />
+        <SpritEstimateReportComponent data={sprintEstimateReportData} />
       </Spin>
     </>
   );
 };
 
-export default TimeSheetReport;
+export default SprintEstimateReport;

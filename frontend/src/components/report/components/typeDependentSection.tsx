@@ -23,13 +23,13 @@ const TypeDependentSection = ({
   setCalendarIds,
 }: {
   config?: ReportConfig;
-  activeTab: ReportPageTabs;
+  activeTab?: ReportPageTabs;
   selectedSource?: IntegrationType[];
   setSelectedSource?: Function;
   projects?: any;
   setProjects?: any;
-  calendarIds: any;
-  setCalendarIds: any;
+  calendarIds?: any;
+  setCalendarIds?: any;
   sprints: number[];
   setSprints: Function;
 }) => {
