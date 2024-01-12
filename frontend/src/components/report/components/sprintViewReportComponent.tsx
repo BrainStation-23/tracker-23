@@ -2,6 +2,7 @@ import {
   SprintViewReportColumn,
   SprintViewReportDto,
   SprintViewReportTableRow,
+  SprintViewReportTask,
 } from "models/reports";
 
 import SprintViewReportTabel from "./sprintViewReportTabel";
@@ -23,17 +24,33 @@ const SprintViewReportComponent = ({ data }: Props) => {
       row.Yesterday.tasks.length,
       row.Today.tasks.length
     );
+    if (!maxTasks) maxTasks = 0;
     for (let i = 0; i < maxTasks + 1; i++) {
       const tableRow: SprintViewReportTableRow = {
         ...row,
         userSpan: i === 0 ? maxTasks + 1 : 0,
         tasksSpan: 1,
+        task: {},
+        devProgress: {},
       };
       for (let column of data?.columns) {
-        tableRow[column.id] = {
-          devProgress: row[column.id].devProgress,
-          tasks: i === 0 ? [] : row[column.id].tasks.slice(i - 1, i),
-        };
+        if (i > 0 && column.id !== "AssignTasks") {
+          for (let colTask of row[column.id].tasks) {
+            const taskIndex = row.AssignTasks.tasks?.findIndex(
+              (task: SprintViewReportTask) => task.key === colTask.key
+            );
+            if (taskIndex === i - 1) {
+              tableRow.task[column.id] = colTask;
+              break;
+            }
+          }
+        } else if (i > 0 && column.id === "AssignTasks") {
+          tableRow.task[column.id] =
+            row.AssignTasks.tasks.length > i - 1
+              ? row.AssignTasks.tasks[i - 1]
+              : undefined;
+        }
+        tableRow.devProgress[column.id] = row[column.id].devProgress;
       }
       modifiedRows.push(tableRow);
     }

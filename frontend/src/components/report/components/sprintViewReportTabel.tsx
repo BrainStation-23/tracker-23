@@ -21,27 +21,55 @@ const SprintViewReportTabel = ({ data }: Props) => {
     record: SprintViewReportTableRow,
     column: SprintViewReportColumn
   ) => {
-    if (column.id in record && record[column.id]) {
+    if (column.id in record) {
       return {
         children: (
-          <div className="flex w-full flex-col justify-start">
+          <div className="flex h-full w-full flex-col justify-start">
             {record.userSpan > 0 ? (
               <TimeProgressComponent
-                spentTime={record[column.id].devProgress?.spentTime}
-                estimatedTime={record[column.id].devProgress?.estimatedTime}
+                spentTime={record.devProgress[column.id]?.spentTime}
+                estimatedTime={record.devProgress[column.id]?.estimatedTime}
               />
-            ) : record[column.id].tasks.length > 0 ? (
-              <Text
-                key={record[column.id].tasks[0].key}
-                className={`w-[200px] cursor-pointer ${
-                  record[column.id].tasks[0].status === "Done"
-                    ? "line-through"
-                    : ""
+            ) : column.id !== "AssignTasks" && column.id in record.task ? (
+              <div
+                className={`flex h-full w-full justify-start ${
+                  record.task[column.id].status === "Done"
+                    ? "bg-[#6CAE2B33]"
+                    : "bg-[#E7F4F8]"
                 }`}
-                ellipsis={{ tooltip: record[column.id].tasks[0].title }}
               >
-                {record[column.id].tasks[0].title}
-              </Text>
+                <Text
+                  key={record.task[column.id].key}
+                  className={`h-[24px] w-[200px] cursor-pointer ${
+                    record.task[column.id].status === "Done"
+                      ? "line-through"
+                      : ""
+                  }`}
+                  ellipsis={{ tooltip: record.task[column.id].title }}
+                >
+                  {record.task[column.id].title}
+                </Text>
+              </div>
+            ) : column.id === "AssignTasks" && column.id in record.task ? (
+              <div
+                className={`flex w-full justify-start ${
+                  record.task[column.id].status === "Done"
+                    ? "bg-[#6CAE2B33]"
+                    : "bg-[#E7F4F8]"
+                }`}
+              >
+                <Text
+                  key={record.task[column.id].key}
+                  className={`w-[200px] cursor-pointer ${
+                    record.task[column.id].status === "Done"
+                      ? "line-through"
+                      : ""
+                  }`}
+                  ellipsis={{ tooltip: record.task[column.id].title }}
+                >
+                  {record.task[column.id].title}
+                </Text>
+              </div>
             ) : (
               <Text
                 className="w-[200px] cursor-pointer"

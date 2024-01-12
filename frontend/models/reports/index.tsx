@@ -104,8 +104,12 @@ export interface SprintViewReportTableRow {
   name: string;
   picture: string | null;
   email: string;
-  AssignTasks: SprintViewAssignTasks;
-  [date: string]: SprintViewAssignTasks | any;
+  task: {
+    [columnId: string]: SprintViewReportTask;
+  };
+  devProgress?: {
+    [columnId: string]: TimeDevProgress;
+  };
   userSpan: number;
   tasksSpan: number;
 }
