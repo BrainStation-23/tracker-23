@@ -34,7 +34,7 @@ export class PagesService {
     return createdPage;
   }
 
-  async getPages(user: User): Promise<Page[] | []> {
+  async getPages(user: User): Promise<any[] | []> {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace) {
       throw new APIException(

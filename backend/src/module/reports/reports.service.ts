@@ -2,15 +2,19 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { ReportDatabase } from 'src/database/reports';
-import { Report } from '@prisma/client';
+import { Report, User } from '@prisma/client';
 import { APIException } from '../exception/api.exception';
 import { PageDatabase } from 'src/database/pages';
+import { PagesService } from '../pages/pages.service';
+import { SprintDatabase } from 'src/database/sprints';
 
 @Injectable()
 export class ReportsService {
   constructor(
     private readonly reportDatabase: ReportDatabase,
     private readonly pageDatabase: PageDatabase,
+    private readonly pageService: PagesService,
+    private readonly sprintDatabase: SprintDatabase,
   ) {}
   async createReport(createReportDto: CreateReportDto) {
     const doesExistPage = await this.pageDatabase.getPageById(
@@ -86,7 +90,7 @@ export class ReportsService {
 
     const reqBody = {
       ...(query.name && { name: query.name }),
-      config: [reqConfigBody],
+      config: reqConfigBody,
     };
     const updatedReport = await this.reportDatabase.updateReport(id, reqBody);
     if (!updatedReport) {
@@ -102,5 +106,56 @@ export class ReportsService {
       throw new APIException('Failed to delete report', HttpStatus.BAD_REQUEST);
     }
     return deletedReport;
+  }
+
+  async updateReportConfig(
+    user: User,
+    query: { projectIds?: number[]; type?: string },
+  ) {
+    try {
+      const pages = await this.pageService.getPages(user);
+      const reports: any[] = [];
+      pages.map((page) => {
+        reports.push(...page.reports);
+      });
+
+      const sprintIdsByProject: number[] = [];
+      if (query.projectIds) {
+        const sprints = await this.reportDatabase.getSprintsByProjectId({
+          projectId: { in: query.projectIds },
+        });
+        sprints.map((sprint) => sprintIdsByProject.push(sprint.id));
+      }
+
+      for (let index = 0; index < reports.length; index++) {
+        const report = reports[index];
+        const ReportProjectIds: number[] = report.config?.projectIds;
+        const ReportSprintIds: number[] = report.config?.sprintIds;
+        const types: string[] = report.config?.types;
+
+        if (ReportProjectIds && query.projectIds) {
+          const filteredReportProjectIds = ReportProjectIds.filter(
+            (id) => !query.projectIds?.includes(id),
+          );
+          report.config.projectIds = filteredReportProjectIds;
+        }
+        if (ReportSprintIds) {
+          const filteredReportSprintIds = ReportSprintIds.filter(
+            (id) => !sprintIdsByProject.includes(id),
+          );
+          report.config.sprintIds = filteredReportSprintIds;
+        }
+        if (types && query.type && types.includes(query.type)) {
+          types.splice(types.indexOf(query.type), 1);
+          report.config.types = types;
+        }
+
+        await this.reportDatabase.updateReport(Number(report.id), {
+          config: report.config,
+        });
+      }
+    } catch (err) {
+      return null;
+    }
   }
 }
