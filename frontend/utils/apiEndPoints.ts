@@ -51,4 +51,5 @@ export const apiEndPoints = {
   updateApprovalUser: `/users/userList/`,
   updateOnboardingUser: `/users/update/`,
   userListByProject: `/users/userListByProjectId`,
+  reportPage: "/pages",
 };

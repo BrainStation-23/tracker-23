@@ -201,3 +201,6 @@ export interface ModifiesSprintViewReport {
   // todayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
   // yesterdayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
 }
+export interface CreateReportPageDto {
+  name: string;
+}

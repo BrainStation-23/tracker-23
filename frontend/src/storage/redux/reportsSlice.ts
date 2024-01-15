@@ -23,7 +23,7 @@ export interface ReportData {
   pageId: number;
 }
 
-interface ReportPage {
+export interface ReportPageDto {
   id: number;
   name: string;
   userWorkspaceId: number;
@@ -32,7 +32,7 @@ interface ReportPage {
 }
 
 interface ReportsSliceState {
-  reportPages: ReportPage[];
+  reportPages: ReportPageDto[];
 }
 
 const initialState: ReportsSliceState = {
@@ -141,13 +141,16 @@ const reportsSlice = createSlice({
   name: "reports",
   initialState,
   reducers: {
-    setReportsData: (state, action: PayloadAction<ReportPage[]>) => {
+    setReportsData: (state, action: PayloadAction<ReportPageDto[]>) => {
       state.reportPages = action.payload;
     },
     addReportData: (state, action: PayloadAction<ReportData>) => {
       if (state.reportPages.length > 0) {
         state.reportPages[0].reports.push(action.payload);
       }
+    },
+    addReportPage: (state, action: PayloadAction<ReportPageDto>) => {
+      state.reportPages.push(action.payload);
     },
     updateReportData: (
       state,
@@ -180,6 +183,7 @@ const reportsSlice = createSlice({
 export const {
   setReportsData,
   addReportData,
+  addReportPage,
   deleteReportData,
   resetReportsData,
 } = reportsSlice.actions;

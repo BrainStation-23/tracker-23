@@ -1,4 +1,4 @@
-import { Button } from "antd";
+import { Button, Form, Input, Spin } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import {
@@ -20,6 +20,10 @@ import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
 import WorkspaceNav from "./components/workspaceNav";
+import GlobalModal from "../modals/globalModal";
+import PrimaryButton from "../common/buttons/primaryButton";
+import AddNewReportPage from "../report/components/addNewReportPage";
+import { useState } from "react";
 
 type SideMenuProps = {
   option: { link: any; title: String; icon: any };
@@ -31,6 +35,7 @@ const SideMenu = () => {
   const reportPages = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages
   );
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const SideMenuOption = ({ option, active }: SideMenuProps) => {
     const router = useRouter();
     if (option.title === "Reports") {
@@ -68,7 +73,12 @@ const SideMenu = () => {
                 {option.title}
               </div>
             </div>
-            <Button className="p-1 px-2">
+            <Button
+              className="p-1 px-2"
+              onClick={() => {
+                setIsModalOpen(true);
+              }}
+            >
               <LuPlus />
             </Button>
           </div>
@@ -155,6 +165,7 @@ const SideMenu = () => {
           <WorkspaceNav />
         </div>
       </div>
+      <AddNewReportPage {...{ isModalOpen, setIsModalOpen }} />
     </div>
   );
 };

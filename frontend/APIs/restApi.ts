@@ -15,23 +15,23 @@ import {
   ResetPasswordDto,
 } from "models/auth";
 import { SendWorkspaceInviteDto } from "models/invitation";
+import { CreateReportPageDto, getTimeSheetReportDto, SprintViewReportDto } from "models/reports";
 import {
   AddWorkLogParams,
   CreateTaskDto,
   UpdateTaskEstimationParams,
   UpdateTaskStatusParams,
 } from "models/tasks";
+import { updateApprovalUserDto, updateOnboardingUserDto } from "models/user";
 import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
 import { RemoveCookie, SetCookie } from "@/services/cookie.service";
+import { disconnectSocket } from "@/services/socket.service";
 import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
-import { SprintViewReportDto, getTimeSheetReportDto } from "models/reports";
-import { disconnectSocket } from "@/services/socket.service";
-import { updateApprovalUserDto, updateOnboardingUserDto } from "models/user";
 
 export async function loginRest(
   data: LoginDto
@@ -1499,6 +1499,15 @@ export async function userListByProjectRest(projectIds: number[]) {
       `${apiEndPoints.userListByProject}` +
         (projectIds?.length > 0 ? `?projectIds=${projectIds}` : "")
     );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function createReportPageRest(data: CreateReportPageDto) {
+  try {
+    const res = await axios.post(`${apiEndPoints.reportPage}`, data);
     return res.data;
   } catch (error: any) {
     return false;

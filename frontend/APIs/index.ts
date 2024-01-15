@@ -6,6 +6,7 @@ import {
   authJiraRest,
   changeWorkspaceRest,
   createProjectRest,
+  createReportPageRest,
   createSessionRest,
   createTaskRest,
   createWorkspaceRest,
@@ -150,6 +151,7 @@ const restApi: apiFunction = {
   updateApprovalUser: updateApprovalUserRest,
   updateOnboardingUser: updateOnboardingUserRest,
   userListByProject: userListByProjectRest,
+  createReportPage: createReportPageRest,
 };
 
 export const userAPI: apiFunction = restApi;
