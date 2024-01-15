@@ -11,6 +11,7 @@ import {
 import { RootState } from "@/storage/redux/store";
 
 import SprintEstimateReport from "./singleReports/sprintEstimateReport";
+import SprintReport from "./singleReports/sprintReport";
 import TaskListReport from "./singleReports/taskListReport";
 import TimeSheetReport from "./singleReports/timeSheetReport";
 
@@ -53,7 +54,7 @@ const ReportPageComponent = () => {
           case "TASK_LIST":
             return <TaskListReport reportData={report} />;
           case "SPRINT_REPORT":
-            return <div>SPRINT_REPORT</div>;
+            return <SprintReport reportData={report} />;
           default:
             return <div>No report found</div>;
         }
