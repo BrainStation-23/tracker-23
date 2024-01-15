@@ -361,11 +361,15 @@ export class WorkspacesService {
     const users = filteredWorkspaces.map((userWorkspace) => {
       return {
         role: userWorkspace.role,
+        status: userWorkspace.status,
         designation: userWorkspace.designation,
         firstName: userWorkspace.user.firstName,
         lastName: userWorkspace.user.lastName,
         picture: userWorkspace.user.picture,
         id: userWorkspace.user.id,
+        email: userWorkspace.user.email,
+        approved: userWorkspace.user.approved,
+        activeWorkspaceId: userWorkspace.user.activeWorkspaceId,
       };
     });
 
