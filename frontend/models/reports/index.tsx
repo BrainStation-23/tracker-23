@@ -32,7 +32,8 @@ export type ReportPageTabs =
   | "Time Sheet"
   | "Sprint Estimate"
   | "Sprint Report"
-  | "Task List";
+  | "Task List"
+  | "Sprint View Report";
 
 // Define models for tasks
 export interface SprintReportTask {
@@ -72,9 +73,85 @@ export interface SprintReportDto {
   sprintInfo: SprintReporSprintInfo;
 }
 
+export interface SprintViewReportTask {
+  title: string;
+  key: string;
+  status: string;
+  statusCategoryName: string;
+}
+
+export interface AssignTasks {
+  devProgress: DevProgress;
+  tasks: SprintViewReportTask[];
+}
+
+export interface SprintViewAssignTasks {
+  devProgress: TimeDevProgress;
+  tasks: SprintViewReportTask[];
+}
+
+export interface SprintViewReportRow {
+  userId: number;
+  name: string;
+  picture: string | null;
+  email: string;
+  AssignTasks: SprintViewAssignTasks;
+  [date: string]: SprintViewAssignTasks | any;
+}
+
+export interface SprintViewReportTableRow {
+  userId: number;
+  name: string;
+  picture: string | null;
+  email: string;
+  task: {
+    [columnId: string]: SprintViewReportTask;
+  };
+  devProgress?: {
+    [columnId: string]: TimeDevProgress;
+  };
+  userSpan: number;
+  tasksSpan: number;
+}
+
+export interface NewSprintViewReportTableRow {
+  userId: number;
+  name: string;
+  picture: string | null;
+  email: string;
+  userSpan: number;
+  tasksSpan: number;
+  task: {
+    [columnId: string]: SprintViewReportTask;
+  };
+  timeRange?: {
+    [columnId: string]: { start: string; end: string };
+  };
+  devProgress?: {
+    [columnId: string]: TimeDevProgress;
+  };
+}
+
+export interface SprintViewReportColumn {
+  id: string;
+  value: {
+    devProgress: TimeDevProgress;
+  };
+}
+
+export interface SprintViewReportDto {
+  columns: SprintViewReportColumn[];
+  rows: SprintViewReportRow[];
+}
+
 interface DevProgress {
   total: number;
   done: number;
+}
+
+interface TimeDevProgress {
+  estimatedTime: number;
+  spentTime: number;
 }
 
 interface Style {
@@ -104,4 +181,23 @@ export interface ModifiesSprintReportUser {
   assignedTask: SprintReportTask | null;
   todayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
   yesterdayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
+}
+
+export interface ModifiesSprintViewReport {
+  userId: number;
+  name: string;
+  picture: string | null;
+  // devProgress: DevProgress;
+  assignedTasks: SprintViewReportTask[];
+  yesterdayTasks: SprintViewReportTask[]; // You may want to define a proper interface for tasks
+  todayTasks: SprintViewReportTask[]; // You may want to define a proper interface for tasks
+  date: string;
+  // sprintAssignedTasks: SprintReportTask[];
+  // dateColSpan: number;
+  style: Style;
+  // dateCellStyle: DateCellStyle;
+  // userSpan: number;
+  // assignedTask: SprintReportTask | null;
+  // todayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
+  // yesterdayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
 }
