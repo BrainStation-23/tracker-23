@@ -15,6 +15,7 @@ import { SendWorkspaceInviteDto } from "models/invitation";
 import {
   SprintReportDto,
   SprintUserReportDto,
+  SprintViewReportDto,
   getTimeSheetReportDto,
 } from "models/reports";
 import {
@@ -108,6 +109,7 @@ export interface apiFunction {
     data?: SprintUserReportParamsModel
   ) => Promise<SprintUserReportDto>;
   getSprintReport: (data?: any) => Promise<SprintReportDto>;
+  getSprintViewReport: (data?: any) => Promise<SprintViewReportDto>;
   getInvitedUserInfo: (token: string) => Promise<any>;
   getAllUsers: () => Promise<any>;
   updateApprovalUser: (
