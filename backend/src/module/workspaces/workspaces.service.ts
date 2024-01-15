@@ -95,7 +95,8 @@ export class WorkspacesService {
     const workspaces = await this.workspaceDatabase.getWorkspaceList({
       id: { in: workSpaceIds },
     });
-    return { user, workspaces };
+    const pages = await this.getPagesForWorkspace(user);
+    return { user, workspaces, pages };
   }
   async getOwnedWorkspaceList(userId: number) {
     return await this.workspaceDatabase.getWorkspaceList({
@@ -463,5 +464,19 @@ export class WorkspacesService {
         code: token,
       };
     }
+  }
+
+  async getPagesForWorkspace(user: User): Promise<any[] | []> {
+    const userWorkspace = await this.getUserWorkspace(user);
+    if (!userWorkspace) {
+      throw new APIException(
+        'User Workspace not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return await this.workspaceDatabase.getPagesForWorkspace({
+      workspaceId: user.activeWorkspaceId,
+      userWorkspaceId: userWorkspace.id,
+    });
   }
 }
