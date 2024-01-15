@@ -6,6 +6,7 @@ import {
   SprintReportDto,
   SprintUser,
   SprintUserReportDto,
+  SprintViewReportDto,
 } from "models/reports";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
@@ -27,12 +28,16 @@ import TaskListReportComponent from "./components/taskListReportComponent";
 import TopPanelSprintReportComponents from "./components/topPanelSprintReportComponents";
 import TopPanelTaskListComponents from "./components/topPanelTaskListComponents";
 import TypeDependentSection from "./components/typeDependentSection";
+import SprintViewReportComponent from "./components/sprintViewReportComponent";
+import NewSprintViewReportComponent from "./components/newSprintViewReportComponent";
 
 const ReportComponent = () => {
   const dispatch = useDispatch();
   // const [isLoading, setIsLoading] = useState(false);
   const [Loaded, setLoaded]: any = useState({});
   const [SprintReportFecthedOnce, setSprintReportFecthedOnce] = useState(false);
+  const [SprintViewReportFecthedOnce, setSprintViewReportFecthedOnce] =
+    useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
   const [data, setData] = useState([]);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
@@ -40,6 +45,8 @@ const ReportComponent = () => {
     useState<SprintUserReportDto>();
   const [selectedSource, setSelectedSource] = useState<IntegrationType[]>();
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
+  const [sprintViewReportData, setSprintViewReportData] =
+    useState<SprintViewReportDto>();
   const [sprints, setSprints] = useState<number[]>([]);
   const [sprintReportSprintId, setSprintReportSprintId] = useState<number>();
   const [users, setUsers] = useState<SprintUser[]>([]);
@@ -100,6 +107,9 @@ const ReportComponent = () => {
         return <TaskListReportComponent {...{ tasks }} />;
       case "Sprint Report":
         return <SprintReportComponent data={sprintReportData} />;
+      case "Sprint View Report":
+        return <SprintViewReportComponent data={sprintViewReportData} />;
+      // return <NewSprintViewReportComponent data={sprintViewReportData} />;
       default:
         return <></>;
     }
@@ -215,6 +225,26 @@ const ReportComponent = () => {
     Loaded["Sprint Report"] = true;
   };
 
+  const getSprintViewReport = async () => {
+    if (!(sprintReportSprintId && dateRange[0] && dateRange[0])) {
+      setSprintViewReportData(null);
+      Loaded["Sprint View Report"] = true;
+      return;
+    }
+    Loaded["Sprint View Report"] = false;
+    // setIsLoading(true);
+    const res = await userAPI.getSprintViewReport({
+      sprintId: sprintReportSprintId,
+      startDate: dateRange[0],
+      endDate: dateRange[1],
+    });
+    console.log("res", res);
+    res && setSprintViewReportData(res);
+    res && setSprintViewReportFecthedOnce(true);
+    // setIsLoading(false);
+    Loaded["Sprint View Report"] = true;
+  };
+
   const getUserListByProject = async () => {
     const res = await userAPI.userListByProject(projects);
     res && setUsers(res);
@@ -269,11 +299,17 @@ const ReportComponent = () => {
 
   useEffect(() => {
     activeTab === "Sprint Report" && getSprintReport();
+
+    activeTab === "Sprint View Report" && getSprintViewReport();
   }, [sprintReportSprintId, dateRange]);
   useEffect(() => {
     activeTab === "Sprint Report" &&
       !SprintReportFecthedOnce &&
       getSprintReport();
+
+    activeTab === "Sprint View Report" &&
+      !SprintViewReportFecthedOnce &&
+      getSprintViewReport();
   }, [activeTab]);
   return (
     <div>
@@ -334,7 +370,8 @@ const ReportComponent = () => {
                 }}
               />
             )}
-            {activeTab === "Sprint Report" && (
+            {(activeTab === "Sprint Report" ||
+              activeTab === "Sprint View Report") && (
               <TopPanelSprintReportComponents
                 {...{
                   sprint: sprintReportSprintId,

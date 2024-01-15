@@ -476,4 +476,21 @@ export class WorkspaceDatabase {
       return null;
     }
   }
+
+  async getPagesForWorkspace(query: Record<string, any>): Promise<any[] | []> {
+    try {
+      return await this.prisma.page.findMany({
+        where: query,
+        include: {
+          reports: true,
+        },
+      });
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: index.ts:489 ~ WorkspaceDatabase ~ getPagesForWorkspace ~ error:',
+        error,
+      );
+      return [];
+    }
+  }
 }

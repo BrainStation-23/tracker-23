@@ -18,6 +18,7 @@ import {
   Task,
   User,
   UserIntegration,
+  UserWorkspace,
 } from '@prisma/client';
 
 import { APIException } from '../exception/api.exception';
@@ -1464,8 +1465,9 @@ export class TasksService {
   }
 
   async syncAll(user: User) {
-    const [jiraProjectIds] = await Promise.all([
+    const [jiraProjectIds, outLookCalendarIds] = await Promise.all([
       await this.sprintService.getProjectIds(user),
+      await this.sprintService.getCalenderIds(user),
       await this.syncCall(StatusEnum.IN_PROGRESS, user),
       await this.sendImportedNotification(user, 'Syncing in progress!'),
     ]);
@@ -1473,6 +1475,10 @@ export class TasksService {
     try {
       for (const projectId of jiraProjectIds) {
         const synced = await this.syncTasks(user, projectId);
+        if (synced) syncedProjects++;
+      }
+      for (const calendarId of outLookCalendarIds) {
+        const synced = await this.syncEvents(user, calendarId);
         if (synced) syncedProjects++;
       }
       Promise.allSettled([
@@ -2346,6 +2352,257 @@ export class TasksService {
       console.log(err);
       throw new APIException(
         'Can not update issue status',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async syncEvents(user: User, calenId: number, res?: Response) {
+    const calender = await this.prisma.project.findUnique({
+      where: { id: calenId },
+      include: { integration: true },
+    });
+    if (!calender) {
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user),
+      ]);
+      throw new APIException('Calendar Not Found', HttpStatus.BAD_REQUEST);
+    }
+
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user),
+      ]);
+      throw new APIException(
+        'Can not import calender events, userWorkspace not found!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const userIntegration =
+      calender?.integrationId &&
+      (await this.getUserIntegration(userWorkspace.id, calender.integrationId));
+
+    if (!userIntegration) {
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user),
+      ]);
+      return [];
+    }
+    try {
+      Promise.allSettled([
+        res && (await this.syncCall(StatusEnum.IN_PROGRESS, user)),
+        res &&
+          (await this.sendImportedNotification(
+            user,
+            'Syncing in progress!',
+            res,
+          )),
+        await this.fetchAndProcessCalenderEvents(
+          user,
+          userWorkspace,
+          calender,
+          userIntegration,
+        ),
+        res && (await this.syncCall(StatusEnum.DONE, user)),
+        res &&
+          (await this.sendImportedNotification(
+            user,
+            'Project Synced Successfully!',
+            res,
+          )),
+      ]);
+      return { Message: 'Project Synced Successfully!' };
+    } catch (err) {
+      console.log(
+        '🚀 ~ file: tasks.service.ts:1511 ~ TasksService ~ syncTasks ~ err:',
+        err,
+      );
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user),
+      ]);
+      throw new APIException(
+        'Could not Sync project tasks!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async fetchAndProcessCalenderEvents(
+    user: User,
+    userWorkspace: UserWorkspace,
+    calender: Project,
+    userIntegration: UserIntegration,
+  ) {
+    const settings = await this.tasksDatabase.getSettings(user);
+    const givenTime: number = settings ? settings.syncTime : 6;
+    const currentTime = dayjs();
+    const syncTime = currentTime.subtract(givenTime, 'month');
+    const iso8601SyncTime = syncTime.toISOString();
+    const iso861CurrentTime = currentTime.toISOString();
+    let url = `https://graph.microsoft.com/v1.0//me/calendars/${calender.calendarId}/calendarView?startDateTime=${iso8601SyncTime}&endDateTime=${iso861CurrentTime}`;
+    const mappedIssues = new Map<string, any>();
+    const taskList: any[] = [],
+      sessionArray: any[] = [];
+    let events;
+
+    do {
+      events = null;
+      events = await this.jiraClient.CallOutlook(
+        userIntegration,
+        this.jiraApiCalls.getCalendarEvents,
+        url,
+      );
+      events.value.map((event: any) => {
+        mappedIssues.set(event.id, event);
+      });
+      url = events['@odata.nextLink'];
+    } while (url);
+
+    const integratedEvents = await this.prisma.task.findMany({
+      where: {
+        workspaceId: user.activeWorkspaceId,
+        userWorkspaceId: userWorkspace.id,
+        integratedEventId: { in: [...mappedIssues.keys()] },
+        source: IntegrationType.OUTLOOK,
+      },
+      select: {
+        id: true,
+        integratedEventId: true,
+        jiraUpdatedAt: true,
+        updatedAt: true,
+      },
+    });
+
+    for (let j = 0, len = integratedEvents.length; j < len; j++) {
+      const localEvent = integratedEvents[j];
+      const calendarEvent =
+        localEvent.integratedEventId &&
+        mappedIssues.get(localEvent.integratedEventId);
+
+      if (
+        localEvent &&
+        localEvent.jiraUpdatedAt &&
+        localEvent.jiraUpdatedAt < new Date(calendarEvent.lastModifiedDateTime)
+      ) {
+        localEvent &&
+          localEvent.id &&
+          (await this.prisma.task.update({
+            where: {
+              id: localEvent.id,
+            },
+            data: {
+              userWorkspaceId: userWorkspace.id,
+              workspaceId: user.activeWorkspaceId,
+              title: calendarEvent.subject,
+              updatedAt:
+                localEvent.updatedAt <= new Date(calendarEvent.end.dateTime)
+                  ? new Date(calendarEvent.end.dateTime)
+                  : localEvent.updatedAt,
+              jiraUpdatedAt: new Date(calendarEvent.lastModifiedDateTime),
+            },
+          }));
+        // worklog delete
+        await this.prisma.session.deleteMany({
+          where: {
+            taskId: localEvent.id,
+          },
+        });
+        localEvent?.id &&
+          (await this.prisma.session.create({
+            data: {
+              startTime: new Date(calendarEvent.start.dateTime),
+              endTime: new Date(calendarEvent.end.dateTime),
+              taskId: localEvent.id,
+              status: SessionStatus.STOPPED,
+              integratedEventId: calendarEvent.id,
+              userWorkspaceId: userWorkspace.id,
+            },
+          }));
+      }
+      const key = integratedEvents[j]?.integratedEventId;
+      key && mappedIssues.delete(key);
+    }
+
+    for (const [integratedEventId, integratedEvent] of mappedIssues) {
+      taskList.push({
+        userWorkspaceId: userWorkspace.id,
+        workspaceId: calender.workspaceId,
+        title: integratedEvent.subject,
+        projectName: calender.projectName,
+        projectId: calender.id,
+        integratedEventId,
+        createdAt: new Date(integratedEvent.createdDateTime),
+        updatedAt: new Date(integratedEvent.end.dateTime),
+        jiraUpdatedAt: new Date(integratedEvent.lastModifiedDateTime),
+        source: IntegrationType.OUTLOOK,
+        dataSource: calender.source,
+        url: integratedEvent.webLink,
+      });
+    }
+    const mappedEventId = new Map<string, number>();
+    try {
+      const [t, events] = await Promise.all([
+        await this.prisma.task.createMany({
+          data: taskList,
+        }),
+        await this.prisma.task.findMany({
+          where: {
+            projectId: calender.id,
+            source: IntegrationType.OUTLOOK,
+          },
+          select: {
+            id: true,
+            integratedEventId: true,
+          },
+        }),
+      ]);
+
+      for (let idx = 0; idx < events.length; idx++) {
+        const event = events[idx];
+        event.integratedEventId &&
+          mappedEventId.set(event.integratedEventId, event.id);
+      }
+    } catch (err) {
+      console.log(
+        '🚀 ~ file: projects.service.ts:512 ~ ProjectsService ~ err:',
+        err,
+      );
+      throw new APIException(
+        'Could not import Calender Events',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    for (const [integratedEventId, integratedEvent] of mappedIssues) {
+      const taskId = mappedEventId.get(integratedEventId);
+
+      taskId &&
+        sessionArray.push({
+          startTime: new Date(integratedEvent.start.dateTime),
+          endTime: new Date(integratedEvent.end.dateTime),
+          taskId,
+          status: SessionStatus.STOPPED,
+          integratedEventId: integratedEvent.id,
+          userWorkspaceId: userWorkspace.id,
+        });
+    }
+    try {
+      await this.prisma.session.createMany({
+        data: sessionArray,
+      });
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: tasks.service.ts:986 ~ TasksService ~ error:',
+        error,
+      );
+      throw new APIException(
+        'Could not import Calender Events',
         HttpStatus.BAD_REQUEST,
       );
     }

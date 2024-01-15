@@ -30,7 +30,13 @@ const TopPanelReportPage = ({
   datePicker,
   typeSelector,
 }: Props) => {
-  const tabs = ["Time Sheet", "Sprint Estimate", "Task List", "Sprint Report"];
+  const tabs = [
+    "Time Sheet",
+    "Sprint Estimate",
+    "Task List",
+    "Sprint Report",
+    "Sprint View Report",
+  ];
 
   useEffect(() => {}, [activeTab]);
   return (
@@ -51,8 +57,9 @@ const TopPanelReportPage = ({
         <div className="flex h-auto w-full flex-wrap items-center justify-end gap-6">
           {!["Sprint Estimate"].includes(activeTab) && datePicker}
           {topPanelComponent}
-          {!["Sprint Report"].includes(activeTab) && typeSelector}
-          {!["Sprint Report"].includes(activeTab) && (
+          {!["Sprint Report", "Sprint View Report"].includes(activeTab) &&
+            typeSelector}
+          {!["Sprint Report", "Sprint View Report"].includes(activeTab) && (
             <>
               {activeTab === "Task List" ? (
                 <UserSelectorComponent
