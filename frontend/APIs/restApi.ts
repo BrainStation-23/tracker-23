@@ -29,7 +29,11 @@ import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
-import { SprintViewReportDto, getTimeSheetReportDto } from "models/reports";
+import {
+  SprintViewReportDto,
+  SprintViewTimelineReportDto,
+  getTimeSheetReportDto,
+} from "models/reports";
 import { disconnectSocket } from "@/services/socket.service";
 import { updateApprovalUserDto, updateOnboardingUserDto } from "models/user";
 
@@ -946,49 +950,49 @@ export async function getSprintViewReportRest({
   sprintId,
   startDate,
   endDate,
-}: SprintReportParamsModel) {
+}: SprintReportParamsModel): Promise<SprintViewReportDto | false> {
   try {
     // TODO: Replace with original implementation when API ready
     const data: SprintViewReportDto = {
       columns: [
         {
-          id: "AssignTasks",
+          key: "AssignTasks",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "Today",
+          key: "Today",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "Yesterday",
+          key: "Yesterday",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-14T08:24:18.123Z",
+          key: "2024-01-14T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-13T08:24:18.123Z",
+          key: "2024-01-13T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-12T08:24:18.123Z",
+          key: "2024-01-12T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-11T08:24:18.123Z",
+          key: "2024-01-11T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-10T08:24:18.123Z",
+          key: "2024-01-10T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-09T08:24:18.123Z",
+          key: "2024-01-09T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-08T08:24:18.123Z",
+          key: "2024-01-08T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
       ],
@@ -1416,6 +1420,256 @@ export async function getSprintViewReportRest({
               },
             ],
           },
+        },
+      ],
+    };
+    const res = await fakeAxiosRequest(
+      `${apiEndPoints.sprintReport}?` +
+        (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
+        (sprintId ? `&sprintId=${sprintId}` : ""),
+      data
+    );
+    // For now, just return the dummy response data
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getSprintViewTimelineReportRest({
+  sprintId,
+  startDate,
+  endDate,
+}: SprintReportParamsModel): Promise<SprintViewTimelineReportDto | false> {
+  try {
+    // TODO: Replace with original implementation when API ready
+    const data: SprintViewTimelineReportDto = {
+      columns: [
+        {
+          key: "AssignTasks",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-08T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-09T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-10T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-11T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-12T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-13T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-14T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "Yesterday",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "Today",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+      ],
+      rows: [
+        {
+          userId: 101,
+          name: "John Doe",
+          picture: "https://example.com/johndoe.jpg",
+          email: "john.doe@example.com",
+          data: [
+            {
+              key: "AssignTasks",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Feature A",
+                    key: "PROJ-123",
+                    status: "In Progress",
+                    statusCategoryName: "InProgress",
+                  },
+                  {
+                    title: "Bug Fix B",
+                    key: "PROJ-124",
+                    status: "To Do",
+                    statusCategoryName: "ToDo",
+                  },
+                  {
+                    title: "Refactor C",
+                    key: "PROJ-125",
+                    status: "Done",
+                    statusCategoryName: "Done",
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-08T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Feature A",
+                    key: "PROJ-123",
+                    status: "In Progress",
+                    statusCategoryName: "InProgress",
+                    timeRange: {
+                      start: "2024-01-08T08:24:18.123Z",
+                      end: "2024-01-08T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-09T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Bug Fix B",
+                    key: "PROJ-124",
+                    status: "In Review",
+                    statusCategoryName: "InReview",
+                    timeRange: {
+                      start: "2024-01-09T08:24:18.123Z",
+                      end: "2024-01-09T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-10T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Refactor C",
+                    key: "PROJ-125",
+                    status: "Done",
+                    statusCategoryName: "Done",
+                    timeRange: {
+                      start: "2024-01-10T08:24:18.123Z",
+                      end: "2024-01-12T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-11T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Refactor C",
+                    key: "PROJ-125",
+                    status: "Done",
+                    statusCategoryName: "Done",
+                    timeRange: {
+                      start: "2024-01-10T08:24:18.123Z",
+                      end: "2024-01-12T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-12T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Refactor C",
+                    key: "PROJ-125",
+                    status: "Done",
+                    statusCategoryName: "Done",
+                    timeRange: {
+                      start: "2024-01-10T08:24:18.123Z",
+                      end: "2024-01-12T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-13T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [],
+              },
+            },
+            {
+              key: "2024-01-14T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [],
+              },
+            },
+            {
+              key: "Yesterday",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Feature A",
+                    key: "PROJ-123",
+                    status: "Done",
+                    statusCategoryName: "Done",
+                    timeRange: {
+                      start: "Yesterday",
+                      end: "Yesterday",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "Today",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Feature A",
+                    key: "PROJ-123",
+                    status: "In Progress",
+                    statusCategoryName: "InProgress",
+                    timeRange: {
+                      start: "Today",
+                      end: "Today",
+                    },
+                  },
+                  {
+                    title: "Bug Fix B",
+                    key: "PROJ-124",
+                    status: "In Review",
+                    statusCategoryName: "InReview",
+                    timeRange: {
+                      start: "Today",
+                      end: "Today",
+                    },
+                  },
+                ],
+              },
+            },
+          ],
         },
       ],
     };

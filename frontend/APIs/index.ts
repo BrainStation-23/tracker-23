@@ -74,6 +74,7 @@ import {
   updateTimeFormatRest,
   updateWorkspaceRest,
   userListByProjectRest,
+  getSprintViewTimelineReportRest,
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -145,6 +146,7 @@ const restApi: apiFunction = {
   getSprintUserReport: getSprintUserReportRest,
   getSprintReport: getSprintReportRest,
   getSprintViewReport: getSprintViewReportRest,
+  getSprintViewTimelineReport: getSprintViewTimelineReportRest,
   getInvitedUserInfo: getInvitedUserInfoRest,
   getAllUsers: getAllUsersRest,
   updateApprovalUser: updateApprovalUserRest,

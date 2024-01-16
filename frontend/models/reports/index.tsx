@@ -33,7 +33,8 @@ export type ReportPageTabs =
   | "Sprint Estimate"
   | "Sprint Report"
   | "Task List"
-  | "Sprint View Report";
+  | "Sprint View Report"
+  | "Sprint View Timeline Report";
 
 // Define models for tasks
 export interface SprintReportTask {
@@ -80,6 +81,17 @@ export interface SprintViewReportTask {
   statusCategoryName: string;
 }
 
+export interface SprintViewTimelineReportTask {
+  title: string;
+  key: string;
+  status: string;
+  statusCategoryName: string;
+  timeRange?: {
+    start: string;
+    end: string;
+  };
+}
+
 export interface AssignTasks {
   devProgress: DevProgress;
   tasks: SprintViewReportTask[];
@@ -99,6 +111,21 @@ export interface SprintViewReportRow {
   [date: string]: SprintViewAssignTasks | any;
 }
 
+export interface SprintViewTimelineReportData {
+  key: string;
+  value: {
+    devProgress: TimeDevProgress;
+    tasks: SprintViewTimelineReportTask[];
+  };
+}
+export interface SprintViewTimelineReportRow {
+  userId: number;
+  name: string;
+  picture: string | null;
+  email: string;
+  data: SprintViewTimelineReportData[];
+}
+
 export interface SprintViewReportTableRow {
   userId: number;
   name: string;
@@ -114,7 +141,7 @@ export interface SprintViewReportTableRow {
   tasksSpan: number;
 }
 
-export interface NewSprintViewReportTableRow {
+export interface SprintViewTimelineReportTableRow {
   userId: number;
   name: string;
   picture: string | null;
@@ -133,15 +160,23 @@ export interface NewSprintViewReportTableRow {
 }
 
 export interface SprintViewReportColumn {
-  id: string;
+  key: string;
   value: {
     devProgress: TimeDevProgress;
   };
 }
 
+export interface SprintViewTimelineReportColumn
+  extends SprintViewReportColumn {}
+
 export interface SprintViewReportDto {
   columns: SprintViewReportColumn[];
   rows: SprintViewReportRow[];
+}
+
+export interface SprintViewTimelineReportDto {
+  columns: SprintViewTimelineReportColumn[];
+  rows: SprintViewTimelineReportRow[];
 }
 
 interface DevProgress {

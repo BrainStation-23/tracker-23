@@ -34,23 +34,23 @@ const SprintViewReportComponent = ({ data }: Props) => {
         devProgress: {},
       };
       for (let column of data?.columns) {
-        if (i > 0 && column.id !== "AssignTasks") {
-          for (let colTask of row[column.id].tasks) {
+        if (i > 0 && column.key !== "AssignTasks") {
+          for (let colTask of row[column.key].tasks) {
             const taskIndex = row.AssignTasks.tasks?.findIndex(
               (task: SprintViewReportTask) => task.key === colTask.key
             );
             if (taskIndex === i - 1) {
-              tableRow.task[column.id] = colTask;
+              tableRow.task[column.key] = colTask;
               break;
             }
           }
-        } else if (i > 0 && column.id === "AssignTasks") {
-          tableRow.task[column.id] =
+        } else if (i > 0 && column.key === "AssignTasks") {
+          tableRow.task[column.key] =
             row.AssignTasks.tasks.length > i - 1
               ? row.AssignTasks.tasks[i - 1]
               : undefined;
         }
-        tableRow.devProgress[column.id] = row[column.id].devProgress;
+        tableRow.devProgress[column.key] = row[column.key].devProgress;
       }
       modifiedRows.push(tableRow);
     }
