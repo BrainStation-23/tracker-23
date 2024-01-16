@@ -33,7 +33,7 @@ const MembersComponent = () => {
         </div>
         <PrimaryButton onClick={() => setIsModalOpen(true)}>
           <PlusIconSvg />
-          Invite
+          Invite Member
         </PrimaryButton>
       </div>
 
@@ -50,8 +50,8 @@ const MembersComponent = () => {
       </Spin>
 
       <GlobalModal
-        width={300}
-        {...{ isModalOpen, setIsModalOpen, title: "Invite" }}
+        width={500}
+        {...{ isModalOpen, setIsModalOpen, title: "Invite Member" }}
       >
         <InviteToWorkspace setIsModalOpen={setIsModalOpen} />
       </GlobalModal>
