@@ -44,6 +44,19 @@ const initialState: ReportsSliceState = {
       workspaceId: 5,
       reports: [
         {
+          id: 3,
+          name: "report 2",
+          config: {
+            id: 1,
+            projectIds: [138, 139],
+            sprints: [923, 924],
+            users: [1, 35, 52],
+            types: ["OUTLOOK", "JIRA"],
+          },
+          reportType: "SPRINT_REPORT",
+          pageId: 1,
+        },
+        {
           id: 2,
           name: "report page 1",
           config: {
@@ -65,6 +78,18 @@ const initialState: ReportsSliceState = {
             types: ["OUTLOOK", "JIRA"],
           },
           reportType: "SPRINT_ESTIMATION",
+          pageId: 1,
+        },
+        {
+          id: 3,
+          name: "report 4",
+          config: {
+            id: 1,
+            projectIds: [138, 139],
+            users: [1, 35],
+            types: ["OUTLOOK", "JIRA"],
+          },
+          reportType: "TASK_LIST",
           pageId: 1,
         },
       ],

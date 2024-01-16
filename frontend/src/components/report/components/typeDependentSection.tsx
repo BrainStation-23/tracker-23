@@ -61,13 +61,21 @@ const TypeDependentSection = ({
       )}
       {(["Sprint Estimate", "Sprint Report"].includes(activeTab) ||
         (showProjectSelector && activeTab === "Task List")) &&
-        sprintList.length > 0 && (
+        sprintList.length > 0 &&
+        (activeTab === "Sprint Report" ? (
+          <SprintSelectorComponent
+            mode="single"
+            projectIds={projects}
+            {...{ sprints, setSprints }}
+            className="w-[210px]"
+          />
+        ) : (
           <SprintSelectorComponent
             projectIds={projects}
             {...{ sprints, setSprints }}
             className="w-[210px]"
           />
-        )}
+        ))}
       {["Sprint Estimate", "Sprint Report"].includes(activeTab) &&
         showCalendarSelector &&
         activeTab === "Task List" && (
