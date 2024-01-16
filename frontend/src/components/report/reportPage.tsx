@@ -1,8 +1,9 @@
 import { userAPI } from "APIs";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
+import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 import { useAppSelector } from "@/storage/redux";
 import {
   setReportProjectsSlice,
@@ -10,14 +11,17 @@ import {
 } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
 
+import PrimaryButton from "../common/buttons/primaryButton";
+import GlobalModal from "../modals/globalModal";
+import AddNewReport from "./components/addNewReport";
 import SprintEstimateReport from "./singleReports/sprintEstimateReport";
 import TaskListReport from "./singleReports/taskListReport";
 import TimeSheetReport from "./singleReports/timeSheetReport";
 
 const ReportPageComponent = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const dispatch = useDispatch();
   const router = useRouter();
-  const path = router.asPath;
   const pageId = router.query?.reportPageId
     ? parseInt(router.query?.reportPageId as string)
     : -1;
@@ -43,7 +47,12 @@ const ReportPageComponent = () => {
   }, []);
   return (
     <div className="flex flex-col gap-4">
-      <div> {path}</div> <div>{reportPageData?.name}</div>
+      <div className="flex items-center justify-between">
+        <div className="text-xl font-bold">{reportPageData?.name}</div>{" "}
+        <PrimaryButton onClick={() => setIsModalOpen(true)}>
+          <PlusIconSvg /> Add New Report
+        </PrimaryButton>
+      </div>
       {reportPageData?.reports?.map((report) => {
         switch (report.reportType) {
           case "TIME_SHEET":
@@ -58,6 +67,9 @@ const ReportPageComponent = () => {
             return <div>No report found</div>;
         }
       })}
+      <GlobalModal title="Add New Report" {...{ isModalOpen, setIsModalOpen }}>
+        <AddNewReport />
+      </GlobalModal>
     </div>
   );
 };

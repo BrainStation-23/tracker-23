@@ -35,6 +35,18 @@ export type ReportPageTabs =
   | "Task List"
   | "Sprint View Report";
 
+export type ReportTypesDto =
+  | "TIME_SHEET"
+  | "SPRINT_ESTIMATION"
+  | "TASK_LIST"
+  | "SPRINT_REPORT";
+export enum ReportTypesEnum {
+  "TIME_SHEET" = "Time Sheet",
+  "SPRINT_ESTIMATION" = "Sprint Estimation",
+  "TASK_LIST" = "Task List",
+  "SPRINT_REPORT" = "Sprint Report",
+}
+
 // Define models for tasks
 export interface SprintReportTask {
   title: string;
