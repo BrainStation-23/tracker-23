@@ -69,7 +69,7 @@ const ReportPageComponent = () => {
         }
       })}
       <GlobalModal title="Add New Report" {...{ isModalOpen, setIsModalOpen }}>
-        <AddNewReport />
+        <AddNewReport setIsModalOpen={setIsModalOpen} />
       </GlobalModal>
     </div>
   );

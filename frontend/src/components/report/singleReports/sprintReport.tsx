@@ -16,7 +16,11 @@ type Props = {
 };
 const SprintReport = ({ reportData }: Props) => {
   console.log("🚀 ~ SprintReport ~ reportData:", reportData);
-  const [sprint, setSprint] = useState<number>(reportData?.config?.sprints[0]);
+  const [sprint, setSprint] = useState<number>(
+    reportData?.config?.sprints?.length > 0
+      ? reportData?.config?.sprints[0]
+      : null
+  );
   const [projects, setProjects] = useState<number[]>(
     reportData?.config?.projectIds ?? []
   );
@@ -33,12 +37,14 @@ const SprintReport = ({ reportData }: Props) => {
 
   const getSprintReport = async () => {
     setIsLoading(true);
-    const res = await userAPI.getSprintReport({
-      sprintId: sprint,
-      startDate: dateRange[0],
-      endDate: dateRange[1],
-    });
-    res && setSprintReportData(res);
+    if (sprint) {
+      const res = await userAPI.getSprintReport({
+        sprintId: sprint,
+        startDate: dateRange[0],
+        endDate: dateRange[1],
+      });
+      res && setSprintReportData(res);
+    }
     setIsLoading(false);
   };
   useEffect(() => {

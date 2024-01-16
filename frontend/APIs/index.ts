@@ -75,6 +75,7 @@ import {
   updateTimeFormatRest,
   updateWorkspaceRest,
   userListByProjectRest,
+  createReportRest,
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -152,6 +153,7 @@ const restApi: apiFunction = {
   updateOnboardingUser: updateOnboardingUserRest,
   userListByProject: userListByProjectRest,
   createReportPage: createReportPageRest,
+  createReport: createReportRest,
 };
 
 export const userAPI: apiFunction = restApi;

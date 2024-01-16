@@ -216,3 +216,8 @@ export interface ModifiesSprintViewReport {
 export interface CreateReportPageDto {
   name: string;
 }
+export interface CreateReportDto {
+  name: string;
+  reportType: ReportTypesDto;
+  pageId: number;
+}

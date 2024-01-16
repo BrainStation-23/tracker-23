@@ -15,7 +15,12 @@ import {
   ResetPasswordDto,
 } from "models/auth";
 import { SendWorkspaceInviteDto } from "models/invitation";
-import { CreateReportPageDto, getTimeSheetReportDto, SprintViewReportDto } from "models/reports";
+import {
+  CreateReportDto,
+  CreateReportPageDto,
+  getTimeSheetReportDto,
+  SprintViewReportDto,
+} from "models/reports";
 import {
   AddWorkLogParams,
   CreateTaskDto,
@@ -1508,6 +1513,15 @@ export async function userListByProjectRest(projectIds: number[]) {
 export async function createReportPageRest(data: CreateReportPageDto) {
   try {
     const res = await axios.post(`${apiEndPoints.reportPage}`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function createReportRest(data: CreateReportDto) {
+  try {
+    const res = await axios.post(`${apiEndPoints.reports}`, data);
     return res.data;
   } catch (error: any) {
     return false;

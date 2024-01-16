@@ -166,18 +166,27 @@ const reportsSlice = createSlice({
   name: "reports",
   initialState,
   reducers: {
-    setReportsData: (state, action: PayloadAction<ReportPageDto[]>) => {
+    setReportPages: (state, action: PayloadAction<ReportPageDto[]>) => {
       state.reportPages = action.payload;
     },
-    addReportData: (state, action: PayloadAction<ReportData>) => {
-      if (state.reportPages.length > 0) {
-        state.reportPages[0].reports.push(action.payload);
+    addReport: (state, action: PayloadAction<ReportData>) => {
+      for (let i = 0; i < state.reportPages.length; i++) {
+        if (state.reportPages[i].id === action.payload.pageId)
+          state.reportPages[i].reports.push(action.payload);
+      }
+    },
+    deleteReport: (state, action: PayloadAction<ReportData>) => {
+      for (let i = 0; i < state.reportPages.length; i++) {
+        if (state.reportPages[i].id === action.payload.pageId)
+          state.reportPages[i].reports = state.reportPages[i].reports.filter(
+            (report) => report.id !== action.payload.id
+          );
       }
     },
     addReportPage: (state, action: PayloadAction<ReportPageDto>) => {
       state.reportPages.push(action.payload);
     },
-    updateReportData: (
+    updateReportPage: (
       state,
       action: PayloadAction<{ id: number; data: ReportData }>
     ) => {
@@ -199,18 +208,18 @@ const reportsSlice = createSlice({
         );
       }
     },
-    resetReportsData: (state) => {
+    resetReportPages: (state) => {
       state.reportPages = [];
     },
   },
 });
 
 export const {
-  setReportsData,
-  addReportData,
+  setReportPages,
+  addReport,
   addReportPage,
   deleteReportData,
-  resetReportsData,
+  resetReportPages,
 } = reportsSlice.actions;
 
 export default reportsSlice.reducer;

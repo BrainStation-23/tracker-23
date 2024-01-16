@@ -13,6 +13,7 @@ import {
 } from "models/auth";
 import { SendWorkspaceInviteDto } from "models/invitation";
 import {
+  CreateReportDto,
   CreateReportPageDto,
   SprintReportDto,
   SprintUserReportDto,
@@ -123,4 +124,5 @@ export interface apiFunction {
   ) => Promise<any>;
   userListByProject: (projectIds: number[]) => Promise<any>;
   createReportPage: (data: CreateReportPageDto) => Promise<any>;
+  createReport: (data: CreateReportDto) => Promise<any>;
 }

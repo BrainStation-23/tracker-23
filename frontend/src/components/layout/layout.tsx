@@ -24,7 +24,7 @@ import Navbar from "../navbar";
 import SideMenu from "../sideMenu";
 import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
 import { deleteFromLocalStorage } from "@/storage/storage";
-import { setReportsData } from "@/storage/redux/reportsSlice";
+import { setReportPages } from "@/storage/redux/reportsSlice";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -210,9 +210,8 @@ const CustomLayout = ({ children }: any) => {
       errorRes?.error?.message && message.error(errorRes?.error?.message);
       // logOutFunction();
     }
-    if(res.pages)
-    {
-      dispatch(setReportsData(res.pages));
+    if (res.pages) {
+      dispatch(setReportPages(res.pages));
     }
     setLoading(false);
   };
