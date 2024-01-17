@@ -77,10 +77,10 @@ export class ReportsService {
 
     const reqConfigBody = {
       ...(query.startDate && {
-        startDate: new Date(query.startDate),
+        startDate: query.startDate,
       }),
       ...(query.endDate && {
-        endDate: new Date(query.endDate),
+        endDate: query.endDate,
       }),
       ...(query.projectIds && { projectIds: query.projectIds }),
       ...(query.sprintIds && { sprintIds: query.sprintIds }),
