@@ -90,7 +90,7 @@ export class ReportsService {
 
     const reqBody = {
       ...(query.name && { name: query.name }),
-      config: reqConfigBody,
+      ...(Object.keys(reqConfigBody).length && { config: reqConfigBody }),
     };
     const updatedReport = await this.reportDatabase.updateReport(id, reqBody);
     if (!updatedReport) {
