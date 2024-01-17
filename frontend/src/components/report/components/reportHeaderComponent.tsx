@@ -1,7 +1,11 @@
+import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
+import { userAPI } from "APIs";
 import { Form, Input } from "antd";
 import classNames from "classnames";
+import { UpdateReportDto } from "models/reports";
 import React, { useState } from "react";
 import type { PropsWithChildren } from "react";
+import { useDispatch } from "react-redux";
 
 export default function ReportHeaderComponent({
   title,
@@ -9,21 +13,32 @@ export default function ReportHeaderComponent({
   className,
   innerClassName,
   exportButton,
+  reportData,
 }: PropsWithChildren<{
   title?: string;
   className?: string;
   innerClassName?: string;
   exportButton?: React.ReactNode;
+  reportData: ReportData;
 }>) {
   const [editing, setEditing] = useState(false);
+  const dispatch = useDispatch();
   const [form] = Form.useForm();
 
-  
+  const updateTitle = async (data: UpdateReportDto) => {
+    if (!reportData?.id) return;
+    const res = await userAPI.updateReport(reportData.id, data);
+    if (res) {
+      console.log("🚀 ~ updateTitle ~ res:", res);
+      // dispatch(updateReportSlice(res));
+    }
+  };
 
-  const onFinish = (values) => {
+  const onFinish = (values: { name: string }) => {
     console.log("Submitted:", values);
-    if (values.title !== title) {
+    if (values.name !== title) {
       console.log("<><><>");
+      updateTitle(values);
     }
     setEditing(false);
     // You can perform further actions here, such as submitting the form data.
@@ -38,7 +53,7 @@ export default function ReportHeaderComponent({
             <Form
               name="titleEdit"
               onFinish={onFinish}
-              initialValues={{ title: title }}
+              initialValues={{ name: title }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   form.submit();
@@ -49,7 +64,7 @@ export default function ReportHeaderComponent({
               }}
             >
               <Form.Item
-                name="title"
+                name="name"
                 rules={[{ required: true, message: "Please input something!" }]}
               >
                 <Input

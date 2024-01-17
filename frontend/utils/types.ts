@@ -18,6 +18,7 @@ import {
   SprintReportDto,
   SprintUserReportDto,
   SprintViewReportDto,
+  UpdateReportDto,
   getTimeSheetReportDto,
 } from "models/reports";
 import {
@@ -125,4 +126,5 @@ export interface apiFunction {
   userListByProject: (projectIds: number[]) => Promise<any>;
   createReportPage: (data: CreateReportPageDto) => Promise<any>;
   createReport: (data: CreateReportDto) => Promise<any>;
+  updateReport: (reportId: number, data: UpdateReportDto) => Promise<any>;
 }

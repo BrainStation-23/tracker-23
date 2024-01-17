@@ -76,6 +76,7 @@ import {
   updateWorkspaceRest,
   userListByProjectRest,
   createReportRest,
+  updateReportRest,
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -154,6 +155,7 @@ const restApi: apiFunction = {
   userListByProject: userListByProjectRest,
   createReportPage: createReportPageRest,
   createReport: createReportRest,
+  updateReport: updateReportRest,
 };
 
 export const userAPI: apiFunction = restApi;

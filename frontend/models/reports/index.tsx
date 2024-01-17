@@ -221,3 +221,12 @@ export interface CreateReportDto {
   reportType: ReportTypesDto;
   pageId: number;
 }
+export interface UpdateReportDto {
+  name?: String;
+  startDate?: String;
+  endDate?: String;
+  projectIds?: number[];
+  userIds?: number[];
+  sprintIds?: number[];
+  types?: IntegrationType[];
+}

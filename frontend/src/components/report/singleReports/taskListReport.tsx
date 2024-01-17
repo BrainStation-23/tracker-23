@@ -110,6 +110,7 @@ export default function TaskListReport({ reportData }: Props) {
     <div>
       <ReportHeaderComponent
         title={reportData.name}
+        reportData={reportData}
         exportButton={
           <Button
             type="ghost"

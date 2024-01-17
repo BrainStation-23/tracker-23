@@ -95,6 +95,7 @@ const TimeSheetReport = ({ reportData }: Props) => {
     <>
       <ReportHeaderComponent
         title={reportData.name}
+        reportData={reportData}
         exportButton={
           <Button
             type="ghost"

@@ -208,6 +208,15 @@ const reportsSlice = createSlice({
         );
       }
     },
+    updateReportSlice: (state, action: PayloadAction<ReportData>) => {
+      for (let i = 0; i < state.reportPages.length; i++) {
+        if (state.reportPages[i].id === action.payload.pageId)
+          state.reportPages[i].reports = state.reportPages[i].reports.map(
+            (report) =>
+              report.id === action.payload.id ? action.payload : report
+          );
+      }
+    },
     resetReportPages: (state) => {
       state.reportPages = [];
     },
@@ -219,6 +228,7 @@ export const {
   addReport,
   addReportPage,
   deleteReportData,
+  updateReportSlice,
   resetReportPages,
 } = reportsSlice.actions;
 

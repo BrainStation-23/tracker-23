@@ -20,6 +20,7 @@ import {
   CreateReportPageDto,
   getTimeSheetReportDto,
   SprintViewReportDto,
+  UpdateReportDto,
 } from "models/reports";
 import {
   AddWorkLogParams,
@@ -1522,6 +1523,15 @@ export async function createReportPageRest(data: CreateReportPageDto) {
 export async function createReportRest(data: CreateReportDto) {
   try {
     const res = await axios.post(`${apiEndPoints.reports}`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function updateReportRest(reportId: number, data: UpdateReportDto) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.reports}/${reportId}`, data);
     return res.data;
   } catch (error: any) {
     return false;
