@@ -67,7 +67,7 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
               />
             ) : cell === "task" ? (
               <div
-                className={`flex h-full w-full justify-start ${
+                className={`flex h-full w-full justify-start rounded ${
                   record.task[column.key].status === "Done"
                     ? "bg-[#6CAE2B33]"
                     : "bg-[#E7F4F8]"
@@ -82,20 +82,35 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
                 </Text>
               </div>
             ) : cell === "assignedTask" ? (
-              <div
-                className={`flex w-full justify-start ${
-                  record.task[column.key].status === "Done"
-                    ? "bg-[#6CAE2B33]"
-                    : "bg-[#E7F4F8]"
-                }`}
-              >
-                <Text
-                  key={record.task[column.key].key}
-                  className={`w-[200px] cursor-pointer`}
-                  ellipsis={{ tooltip: record.task[column.key].title }}
+              <div className="flex  w-[300px] justify-start gap-2">
+                <div className={`flex justify-start`}>
+                  <Text
+                    key={record.task[column.key].key}
+                    className={`cursor-pointer ${
+                      record.task[column.key].status === "Done"
+                        ? "text-[#65656C] line-through"
+                        : "text-[#1D1D1D]"
+                    }`}
+                    ellipsis={{ tooltip: record.task[column.key].title }}
+                  >
+                    {record.task[column.key].title}
+                  </Text>
+                </div>
+                <div
+                  className={`flex justify-start rounded-lg px-2 ${
+                    record.task[column.key].status === "Done"
+                      ? "bg-[#6CAE2B33]"
+                      : "bg-[#E7F4F8]"
+                  }`}
                 >
-                  {record.task[column.key].title}
-                </Text>
+                  <Text
+                    key={record.task[column.key].key}
+                    className={`cursor-pointer`}
+                    ellipsis={{ tooltip: record.task[column.key].status }}
+                  >
+                    {record.task[column.key].status}
+                  </Text>
+                </div>
               </div>
             ) : (
               <Text
@@ -113,8 +128,8 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
           style: {
             paddingTop: 16,
             paddingBottom: 16,
-            paddingLeft: 0,
-            paddingRight: 0,
+            // paddingLeft: 0,
+            // paddingRight: 0,
           },
         },
       };
