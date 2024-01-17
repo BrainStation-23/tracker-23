@@ -1478,11 +1478,15 @@ export async function getSprintViewTimelineReportRest({
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          key: "Yesterday",
+          key: "2024-01-15T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          key: "Today",
+          key: "2024-01-16T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-17T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
       ],
@@ -1624,25 +1628,7 @@ export async function getSprintViewTimelineReportRest({
               },
             },
             {
-              key: "Yesterday",
-              value: {
-                devProgress: { estimatedTime: 10, spentTime: 7 },
-                tasks: [
-                  {
-                    title: "Feature A",
-                    key: "PROJ-123",
-                    status: "Done",
-                    statusCategoryName: "Done",
-                    timeRange: {
-                      start: "Yesterday",
-                      end: "Yesterday",
-                    },
-                  },
-                ],
-              },
-            },
-            {
-              key: "Today",
+              key: "2024-01-15T08:24:18.123Z",
               value: {
                 devProgress: { estimatedTime: 10, spentTime: 7 },
                 tasks: [
@@ -1652,8 +1638,44 @@ export async function getSprintViewTimelineReportRest({
                     status: "In Progress",
                     statusCategoryName: "InProgress",
                     timeRange: {
-                      start: "Today",
-                      end: "Today",
+                      start: "2024-01-15T08:24:18.123Z",
+                      end: "2024-01-16T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-16T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Feature A",
+                    key: "PROJ-123",
+                    status: "In Progress",
+                    statusCategoryName: "InProgress",
+                    timeRange: {
+                      start: "2024-01-15T08:24:18.123Z",
+                      end: "2024-01-16T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-17T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Feature A",
+                    key: "PROJ-123",
+                    status: "In Progress",
+                    statusCategoryName: "InProgress",
+                    timeRange: {
+                      start: "2024-01-17T08:24:18.123Z",
+                      end: "2024-01-17T08:24:18.123Z",
                     },
                   },
                   {
@@ -1662,8 +1684,8 @@ export async function getSprintViewTimelineReportRest({
                     status: "In Review",
                     statusCategoryName: "InReview",
                     timeRange: {
-                      start: "Today",
-                      end: "Today",
+                      start: "2024-01-17T08:24:18.123Z",
+                      end: "2024-01-17T08:24:18.123Z",
                     },
                   },
                 ],

@@ -24,15 +24,48 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
     columnIndex: number
   ) => {
     if (column.key in record.task || column.key in record.devProgress) {
+      type cellType = "progress" | "assignedTask" | "task" | "noTask";
+      let colSpan = 1;
+      let cell: cellType =
+        record.userSpan > 0
+          ? "progress"
+          : column.key !== "AssignTasks" && column.key in record.task
+          ? "task"
+          : column.key === "AssignTasks" && column.key in record.task
+          ? "assignedTask"
+          : "noTask";
+      if (cell === "task" && column.key in record.timeRange) {
+        if (column.key === record.timeRange[column.key].start) {
+          const diff = dayjs(record.timeRange[column.key].end).diff(
+            record.timeRange[column.key].start,
+            "day"
+          );
+          if (!isNaN(diff)) {
+            colSpan = Math.abs(diff) + 1;
+          } else {
+            //! This should not happen
+            //! It will be happen when colum key in not a valid date string
+            console.error(
+              "Invalid Column key in timeRange: " +
+                record.timeRange[column.key].start +
+                " " +
+                record.timeRange[column.key].end
+            );
+          }
+        } else {
+          colSpan = 0;
+        }
+      }
+
       return {
         children: (
           <div className="flex h-full w-full flex-col justify-start">
-            {record.userSpan > 0 ? (
+            {cell === "progress" ? (
               <TimeProgressComponent
                 spentTime={record.devProgress[column.key]?.spentTime}
                 estimatedTime={record.devProgress[column.key]?.estimatedTime}
               />
-            ) : column.key !== "AssignTasks" && column.key in record.task ? (
+            ) : cell === "task" ? (
               <div
                 className={`flex h-full w-full justify-start ${
                   record.task[column.key].status === "Done"
@@ -42,27 +75,13 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
               >
                 <Text
                   key={record.task[column.key].key}
-                  className={`h-[24px] w-[200px] cursor-pointer ${
-                    record.task[column.key].status === "Done"
-                      ? "line-through"
-                      : ""
-                  }`}
+                  className={`h-[24px] w-[200px] cursor-pointer`}
                   ellipsis={{ tooltip: record.task[column.key].title }}
                 >
-                  {record?.timeRange ? (
-                    record?.timeRange[column.key].start === column.key ? (
-                      `${record.task[column.key].title}`
-                    ) : record?.timeRange[column.key].end === column.key ? (
-                      <div className="h-2 w-2" />
-                    ) : (
-                      <div className="h-2 w-2" />
-                    )
-                  ) : (
-                    <div className="h-2 w-2" />
-                  )}
+                  {record.task[column.key].title}
                 </Text>
               </div>
-            ) : column.key === "AssignTasks" && column.key in record.task ? (
+            ) : cell === "assignedTask" ? (
               <div
                 className={`flex w-full justify-start ${
                   record.task[column.key].status === "Done"
@@ -72,11 +91,7 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
               >
                 <Text
                   key={record.task[column.key].key}
-                  className={`w-[200px] cursor-pointer ${
-                    record.task[column.key].status === "Done"
-                      ? "line-through"
-                      : ""
-                  }`}
+                  className={`w-[200px] cursor-pointer`}
                   ellipsis={{ tooltip: record.task[column.key].title }}
                 >
                   {record.task[column.key].title}
@@ -94,6 +109,7 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
         ),
         props: {
           rowSpan: record.tasksSpan,
+          colSpan: colSpan,
           style: {
             paddingTop: 16,
             paddingBottom: 16,
@@ -186,37 +202,23 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
         ) => renderTableTaskCell(record, column, index),
         align: "center",
       });
-    } else if (column.key === "Yesterday" || column.key === "Today") {
-      columns.push({
-        title: (
-          <div className="flex flex-col items-center justify-center gap-4">
-            <div>
-              {column.key} Progress{" "}
-              {Math.round(
-                (column.value.devProgress.spentTime /
-                  column.value.devProgress.estimatedTime) *
-                  100
-              )}
-              %
-            </div>
-            <div className="font-bold">{column.key}</div>
-          </div>
-        ),
-        dataIndex: column.key,
-        key: column.key,
-        render: (
-          value: SprintViewTimelineReportTask,
-          record: SprintViewTimelineReportTableRow,
-          _: number
-        ) => renderTableTaskCell(record, column, index),
-        align: "center",
-      });
     } else {
+      const dateType: "Today" | "Yesterday" | "date" = dayjs(column.key).isSame(
+        dayjs().subtract(1, "day"),
+        "day"
+      )
+        ? "Yesterday"
+        : dayjs(column.key).isSame(dayjs(), "day")
+        ? "Today"
+        : "date";
       columns.push({
         title: (
           <div className="flex flex-col items-center justify-center gap-4">
             <div>
-              {dayjs(column.key).format("D MMM")} Progress{" "}
+              {dateType === "date"
+                ? dayjs(column.key).format("D MMM")
+                : dateType}{" "}
+              Progress{" "}
               {Math.round(
                 (column.value.devProgress.spentTime /
                   column.value.devProgress.estimatedTime) *
@@ -225,7 +227,9 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
               %
             </div>
             <div className="font-bold">
-              {dayjs(column.key).format("DD/MM/YYYY")}
+              {dateType === "date"
+                ? dayjs(column.key).format("DD/MM/YYYY")
+                : dateType}
             </div>
           </div>
         ),
