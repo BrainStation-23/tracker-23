@@ -1529,9 +1529,21 @@ export async function createReportRest(data: CreateReportDto) {
   }
 }
 
-export async function updateReportRest(reportId: number, data: UpdateReportDto) {
+export async function updateReportRest(
+  reportId: number,
+  data: UpdateReportDto
+) {
   try {
     const res = await axios.patch(`${apiEndPoints.reports}/${reportId}`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function deleteReportRest(reportId: number) {
+  try {
+    const res = await axios.delete(`${apiEndPoints.reports}/${reportId}`);
     return res.data;
   } catch (error: any) {
     return false;

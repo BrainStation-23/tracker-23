@@ -1,12 +1,18 @@
-import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
+import { Form, Input, message } from "antd";
 import { userAPI } from "APIs";
-import { Form, Input } from "antd";
 import classNames from "classnames";
 import { UpdateReportDto } from "models/reports";
 import React, { useState } from "react";
-import type { PropsWithChildren } from "react";
 import { useDispatch } from "react-redux";
 
+import PrimaryButton from "@/components/common/buttons/primaryButton";
+import {
+  deleteReportSlice,
+  ReportData,
+  updateReportSlice,
+} from "@/storage/redux/reportsSlice";
+
+import type { PropsWithChildren } from "react";
 export default function ReportHeaderComponent({
   title,
   children,
@@ -14,12 +20,16 @@ export default function ReportHeaderComponent({
   innerClassName,
   exportButton,
   reportData,
+  setIsLoading,
+  saveCofigButton,
 }: PropsWithChildren<{
   title?: string;
   className?: string;
   innerClassName?: string;
   exportButton?: React.ReactNode;
+  saveCofigButton?: React.ReactNode;
   reportData: ReportData;
+  setIsLoading: Function;
 }>) {
   const [editing, setEditing] = useState(false);
   const dispatch = useDispatch();
@@ -30,18 +40,25 @@ export default function ReportHeaderComponent({
     const res = await userAPI.updateReport(reportData.id, data);
     if (res) {
       console.log("🚀 ~ updateTitle ~ res:", res);
-      // dispatch(updateReportSlice(res));
+      dispatch(updateReportSlice(res));
     }
+  };
+  const deleteReprot = async () => {
+    setIsLoading(true);
+    if (!reportData?.id) return;
+    const res = await userAPI.deleteReport(reportData.id);
+    if (res) {
+      dispatch(deleteReportSlice(reportData));
+      message.success("Report deleted successfully");
+    }
+    setIsLoading(false);
   };
 
   const onFinish = (values: { name: string }) => {
-    console.log("Submitted:", values);
     if (values.name !== title) {
-      console.log("<><><>");
       updateTitle(values);
     }
     setEditing(false);
-    // You can perform further actions here, such as submitting the form data.
   };
   return (
     <div className={classNames("my-5 flex w-full flex-col  gap-4", className)}>
@@ -69,11 +86,6 @@ export default function ReportHeaderComponent({
               >
                 <Input
                   placeholder="Type something and press Enter"
-                  // onPressEnter={() => {
-                  //   document
-                  //     .getElementsByName("inputField")[0]
-                  //     .dispatchEvent(new Event("submit", { cancelable: true }));
-                  // }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       form.submit();
@@ -87,7 +99,11 @@ export default function ReportHeaderComponent({
             </Form>
           )}
         </div>
-        {exportButton}
+        <div className="flex items-center gap-2">
+          {exportButton}
+          {saveCofigButton}
+          <PrimaryButton onClick={() => deleteReprot()}>Delete</PrimaryButton>
+        </div>
       </div>
       <div className="flex h-auto w-full">
         <div

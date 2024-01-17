@@ -77,6 +77,7 @@ import {
   userListByProjectRest,
   createReportRest,
   updateReportRest,
+  deleteReportRest,
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -156,6 +157,7 @@ const restApi: apiFunction = {
   createReportPage: createReportPageRest,
   createReport: createReportRest,
   updateReport: updateReportRest,
+  deleteReport: deleteReportRest,
 };
 
 export const userAPI: apiFunction = restApi;

@@ -1,13 +1,16 @@
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
 import { IntegrationType } from "models/integration";
 
+import { createSlice } from "@reduxjs/toolkit";
+
+import type { PayloadAction } from "@reduxjs/toolkit";
 export interface ReportConfig {
   id: number;
   projectIds?: number[];
-  users?: number[];
+  userIds?: number[];
   types?: IntegrationType[];
-  sprints?: number[];
+  sprintIds?: number[];
+  endDate?: string;
+  startDate?: string;
 }
 
 export type ReportType =
@@ -36,130 +39,7 @@ interface ReportsSliceState {
 }
 
 const initialState: ReportsSliceState = {
-  reportPages: [
-    {
-      id: 1,
-      name: "Page 1",
-      userWorkspaceId: 23,
-      workspaceId: 5,
-      reports: [
-        {
-          id: 3,
-          name: "report 2",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            sprints: [923, 924],
-            users: [1, 35, 52],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "SPRINT_REPORT",
-          pageId: 1,
-        },
-        {
-          id: 2,
-          name: "report page 1",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 35, 52],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "TIME_SHEET",
-          pageId: 1,
-        },
-        {
-          id: 3,
-          name: "report 2",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 35, 52],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "SPRINT_ESTIMATION",
-          pageId: 1,
-        },
-        {
-          id: 3,
-          name: "report 4",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 35],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "TASK_LIST",
-          pageId: 1,
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Page 2",
-      userWorkspaceId: 23,
-      workspaceId: 5,
-      reports: [
-        {
-          id: 2,
-          name: "report 1",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 52],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "TIME_SHEET",
-          pageId: 1,
-        },
-        {
-          id: 3,
-          name: "report 4",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 35],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "TIME_SHEET",
-          pageId: 1,
-        },
-      ],
-    },
-    {
-      id: 3,
-      name: "Page 3",
-      userWorkspaceId: 23,
-      workspaceId: 5,
-      reports: [
-        {
-          id: 2,
-          name: "report 1",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 52],
-            types: ["OUTLOOK", "JIRA"],
-            sprints: [975, 950],
-          },
-          reportType: "TASK_LIST",
-          pageId: 1,
-        },
-        {
-          id: 3,
-          name: "report 4",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 35],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "TASK_LIST",
-          pageId: 1,
-        },
-      ],
-    },
-  ],
+  reportPages: [],
 };
 
 const reportsSlice = createSlice({
@@ -175,7 +55,7 @@ const reportsSlice = createSlice({
           state.reportPages[i].reports.push(action.payload);
       }
     },
-    deleteReport: (state, action: PayloadAction<ReportData>) => {
+    deleteReportSlice: (state, action: PayloadAction<ReportData>) => {
       for (let i = 0; i < state.reportPages.length; i++) {
         if (state.reportPages[i].id === action.payload.pageId)
           state.reportPages[i].reports = state.reportPages[i].reports.filter(
@@ -229,6 +109,7 @@ export const {
   addReportPage,
   deleteReportData,
   updateReportSlice,
+  deleteReportSlice,
   resetReportPages,
 } = reportsSlice.actions;
 
