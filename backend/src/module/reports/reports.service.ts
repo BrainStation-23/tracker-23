@@ -60,21 +60,6 @@ export class ReportsService {
     id: number,
     query: UpdateReportDto,
   ): Promise<Report | null> {
-    const sprintIds = query.sprintIds as unknown as string;
-    const sprintIdArray =
-      sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
-
-    const projectIds = query.projectIds as unknown as string;
-    const projectIdArray =
-      projectIds && projectIds.split(',').map((item) => Number(item.trim()));
-
-    const types = query.types as unknown as string;
-    const typeArray = types && types.split(',');
-
-    const userIds = query.userIds as unknown as string;
-    const userIdArray =
-      userIds && userIds.split(',').map((item) => Number(item.trim()));
-
     const reqConfigBody = {
       ...(query.startDate && {
         startDate: query.startDate,
@@ -82,15 +67,15 @@ export class ReportsService {
       ...(query.endDate && {
         endDate: query.endDate,
       }),
-      ...(query.projectIds && { projectIds: projectIdArray }),
-      ...(query.sprintIds && { sprintIds: sprintIdArray }),
-      ...(query.types && { types: typeArray }),
-      ...(query.userIds && { userIds: userIdArray }),
+      ...(query.projectIds && { projectIds: query.projectIds }),
+      ...(query.sprintIds && { sprintIds: query.sprintIds }),
+      ...(query.types && { types: query.types }),
+      ...(query.userIds && { userIds: query.userIds }),
     };
 
     const reqBody = {
       ...(query.name && { name: query.name }),
-      config: reqConfigBody,
+      ...(Object.keys(reqConfigBody).length && { config: reqConfigBody }),
     };
     const updatedReport = await this.reportDatabase.updateReport(id, reqBody);
     if (!updatedReport) {
