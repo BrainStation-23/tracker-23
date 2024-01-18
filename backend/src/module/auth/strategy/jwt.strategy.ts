@@ -39,7 +39,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     const activeUserWorkspace =
-      user.activeWorkspaceId &&
+      user?.activeWorkspaceId &&
       (await this.prisma.userWorkspace.findFirst({
         where: {
           userId: user.id,

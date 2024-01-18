@@ -1,4 +1,7 @@
-import { updateOnboardingUserDto } from "./../models/user/index";
+import {
+  WorkspaceMemberDto,
+  updateOnboardingUserDto,
+} from "./../models/user/index";
 import {
   CreateLocalProjectModel,
   CreateWorkspaceModel,
@@ -13,10 +16,13 @@ import {
 } from "models/auth";
 import { SendWorkspaceInviteDto } from "models/invitation";
 import {
+  CreateReportDto,
+  CreateReportPageDto,
   SprintReportDto,
   SprintUserReportDto,
   SprintViewReportDto,
   SprintViewTimelineReportDto,
+  UpdateReportDto,
   getTimeSheetReportDto,
 } from "models/reports";
 import {
@@ -85,7 +91,7 @@ export interface apiFunction {
   getAllProjects: () => Promise<any>;
   getAllReportProjects: () => Promise<any>;
   getWorkspaceList: () => Promise<any>;
-  getWorkspaceMembers: () => Promise<any>;
+  getWorkspaceMembers: () => Promise<WorkspaceMemberDto[] | false>;
   getWorkspaceSettings: () => Promise<any>;
   createWorkspace: (data: CreateWorkspaceModel) => Promise<any>;
   updateWorkspace: (data: CreateWorkspaceModel, id: number) => Promise<any>;
@@ -125,4 +131,8 @@ export interface apiFunction {
     data: updateOnboardingUserDto
   ) => Promise<any>;
   userListByProject: (projectIds: number[]) => Promise<any>;
+  createReportPage: (data: CreateReportPageDto) => Promise<any>;
+  createReport: (data: CreateReportDto) => Promise<any>;
+  updateReport: (reportId: number, data: UpdateReportDto) => Promise<any>;
+  deleteReport: (reportId: number) => Promise<any>;
 }

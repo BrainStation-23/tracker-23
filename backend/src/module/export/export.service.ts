@@ -71,7 +71,7 @@ export class ExportService {
     const types = query.types as unknown as string;
 
     const currentUserWorkspace =
-      user.activeWorkspaceId &&
+      user?.activeWorkspaceId &&
       (await this.userWorkspaceDatabase.getSingleUserWorkspace({
         userId: user.id,
         workspaceId: user.activeWorkspaceId,
@@ -441,7 +441,7 @@ export class ExportService {
     const types = query.types as unknown as string;
 
     const currentUserWorkspace =
-      user.activeWorkspaceId &&
+      user?.activeWorkspaceId &&
       (await this.userWorkspaceDatabase.getSingleUserWorkspace({
         userId: user.id,
         workspaceId: user.activeWorkspaceId,

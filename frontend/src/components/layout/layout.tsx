@@ -24,6 +24,7 @@ import Navbar from "../navbar";
 import SideMenu from "../sideMenu";
 import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
 import { deleteFromLocalStorage } from "@/storage/storage";
+import { setReportPages } from "@/storage/redux/reportsSlice";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -209,6 +210,9 @@ const CustomLayout = ({ children }: any) => {
       errorRes?.error?.message && message.error(errorRes?.error?.message);
       // logOutFunction();
     }
+    if (res.pages) {
+      dispatch(setReportPages(res.pages));
+    }
     setLoading(false);
   };
 
@@ -222,7 +226,7 @@ const CustomLayout = ({ children }: any) => {
         getWorkspaces();
       } else setLoading(false);
     }
-  }, [router, path]);
+  }, [router, path, reloadWorkspace]);
   useEffect(() => {
     if (userInfo?.status === "ONBOARD") {
       !path.includes("onBoarding") && router.push("/onBoarding");
@@ -231,15 +235,15 @@ const CustomLayout = ({ children }: any) => {
     }
   }, [router, path, userInfo]);
 
-  useEffect(() => {
-    if (
-      !publicRoutes.some((route) => path.includes(route)) &&
-      !path.includes("socialLogin")
-    ) {
-      setLoading(true);
-      getWorkspaces();
-    }
-  }, [reloadWorkspace]);
+  // useEffect(() => {
+  //   if (
+  //     !publicRoutes.some((route) => path.includes(route)) &&
+  //     !path.includes("socialLogin")
+  //   ) {
+  //     setLoading(true);
+  //     getWorkspaces();
+  //   }
+  // }, [reloadWorkspace]);
   useEffect(() => {
     !["/inviteLink", "/socialLogin/redirect"].some((route) =>
       path.includes(route)
