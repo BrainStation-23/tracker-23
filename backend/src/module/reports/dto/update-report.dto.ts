@@ -19,6 +19,10 @@ export class UpdateReportDto {
 
   @IsArray()
   @IsOptional()
+  calendarIds?: number[];
+
+  @IsArray()
+  @IsOptional()
   userIds?: number[];
 
   @IsArray()
