@@ -19,6 +19,12 @@ export class IntegrationsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('report-page')
+  async getIntegrationsForReportPage(@GetUser() user: User) {
+    return await this.integrationsService.getIntegrationsForReportPage(user);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Delete('user/:id') //integration id
   async deleteIntegration(@GetUser() user: User, @Param('id') id: number) {
     return await this.integrationsService.deleteIntegration(user, +id);

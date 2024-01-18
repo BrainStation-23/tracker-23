@@ -27,7 +27,7 @@ export class UsersService {
   ) {}
 
   async getUsers(user: User) {
-    if (!user || !user.activeWorkspaceId)
+    if (!user || !user?.activeWorkspaceId)
       throw new APIException(
         'No user workspace detected',
         HttpStatus.BAD_REQUEST,
@@ -58,7 +58,7 @@ export class UsersService {
   }
 
   async updateSettings(user: User, data: UpdateSettingsReqDto) {
-    if (!user.activeWorkspaceId)
+    if (!user?.activeWorkspaceId)
       throw new APIException('No workspace detected', HttpStatus.BAD_REQUEST);
 
     const settingsExists = await this.tasksDatabase.getSettings(user);
