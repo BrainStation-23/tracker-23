@@ -35,6 +35,18 @@ export type ReportPageTabs =
   | "Task List"
   | "Sprint View Report";
 
+export type ReportTypesDto =
+  | "TIME_SHEET"
+  | "SPRINT_ESTIMATION"
+  | "TASK_LIST"
+  | "SPRINT_REPORT";
+export enum ReportTypesEnum {
+  "TIME_SHEET" = "Time Sheet",
+  "SPRINT_ESTIMATION" = "Sprint Estimation",
+  "TASK_LIST" = "Task List",
+  "SPRINT_REPORT" = "Sprint Report",
+}
+
 // Define models for tasks
 export interface SprintReportTask {
   title: string;
@@ -200,4 +212,21 @@ export interface ModifiesSprintViewReport {
   // assignedTask: SprintReportTask | null;
   // todayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
   // yesterdayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
+}
+export interface CreateReportPageDto {
+  name: string;
+}
+export interface CreateReportDto {
+  name: string;
+  reportType: ReportTypesDto;
+  pageId: number;
+}
+export interface UpdateReportDto {
+  name?: String;
+  startDate?: String;
+  endDate?: String;
+  projectIds?: number[];
+  userIds?: number[];
+  sprintIds?: number[];
+  types?: IntegrationType[];
 }
