@@ -28,7 +28,11 @@ import {
   UpdateTaskEstimationParams,
   UpdateTaskStatusParams,
 } from "models/tasks";
-import { updateApprovalUserDto, updateOnboardingUserDto } from "models/user";
+import {
+  updateApprovalUserDto,
+  updateOnboardingUserDto,
+  WorkspaceMemberDto,
+} from "models/user";
 import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
@@ -732,7 +736,9 @@ export async function getWorkspaceListRest() {
   }
 }
 
-export async function getWorkspaceMembersRest() {
+export async function getWorkspaceMembersRest(): Promise<
+  WorkspaceMemberDto[] | false
+> {
   try {
     const res = await axios.get(`${apiEndPoints.members}`);
     return res.data;

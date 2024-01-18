@@ -54,7 +54,7 @@ export class TasksService {
 
   async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
     try {
-      if (!user.activeWorkspaceId) {
+      if (!user?.activeWorkspaceId) {
         return [];
       }
       const { priority, status, text } = query;
@@ -225,7 +225,7 @@ export class TasksService {
         sprintIds && sprintIds.split(',').map((item) => Number(item.trim()));
 
       const userWorkspace =
-        user.activeWorkspaceId &&
+        user?.activeWorkspaceId &&
         (await this.prisma.userWorkspace.findFirst({
           where: {
             userId: user.id,
@@ -768,7 +768,7 @@ export class TasksService {
     description: string,
   ) {
     return (
-      user.activeWorkspaceId &&
+      user?.activeWorkspaceId &&
       (await this.prisma.notification.create({
         data: {
           seen: false,
@@ -1331,7 +1331,7 @@ export class TasksService {
   private async mappingUserWorkspaceAndJiraAccountId(user: User) {
     const mappedUserWorkspaceAndJiraId = new Map<string, number>();
     const workspace =
-      user.activeWorkspaceId &&
+      user?.activeWorkspaceId &&
       (await this.prisma.workspace.findUnique({
         where: {
           id: user.activeWorkspaceId,
@@ -2026,7 +2026,7 @@ export class TasksService {
       );
     }
     const userIntegration =
-      user.activeWorkspaceId &&
+      user?.activeWorkspaceId &&
       (await this.prisma.userIntegration.findUnique({
         where: {
           UserIntegrationIdentifier: {
@@ -2197,7 +2197,7 @@ export class TasksService {
       (userIntegration: any) => userIntegration?.integration?.id,
     );
     try {
-      if (user.activeWorkspaceId) {
+      if (user?.activeWorkspaceId) {
         return await this.prisma.project.findMany({
           where: {
             integrationId: {

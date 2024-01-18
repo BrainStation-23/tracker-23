@@ -34,14 +34,14 @@ const InviteToWorkspace = ({ setIsModalOpen }: Props) => {
             { type: "email", message: "Please enter a valid email" },
           ]}
         >
-          <Input />
+          <Input placeholder="Enter email" />
         </Form.Item>
         <Form.Item
           label="Role"
           name="role"
           rules={[{ required: true, message: "Please select a role" }]}
         >
-          <Select>
+          <Select placeholder="Slect a role">
             <Option value="ADMIN">Admin</Option>
             <Option value="USER">User</Option>
           </Select>

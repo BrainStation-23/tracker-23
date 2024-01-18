@@ -303,7 +303,7 @@ export class ProjectsService {
   }
 
   async getProjectList(user: User) {
-    if (!user || !user.activeWorkspaceId)
+    if (!user || !user?.activeWorkspaceId)
       throw new APIException(
         'User workspaces not detected',
         HttpStatus.BAD_REQUEST,
@@ -329,7 +329,7 @@ export class ProjectsService {
       );
 
     let localProjects =
-      user.activeWorkspaceId &&
+      user?.activeWorkspaceId &&
       (await this.projectDatabase.getLocalProjects({
         source: 'T23',
         workspaceId: user.activeWorkspaceId,
@@ -461,7 +461,7 @@ export class ProjectsService {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (userWorkspace.role === Role.ADMIN) {
       const projects =
-        user.activeWorkspaceId &&
+        user?.activeWorkspaceId &&
         (await this.projectDatabase.getProjectsWithStatusAndPriorities({
           workspaceId: user.activeWorkspaceId,
           integrated: true,
