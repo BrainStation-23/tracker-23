@@ -1,40 +1,45 @@
 import { Button, message, Spin } from "antd";
 import { userAPI } from "APIs";
-import { debounce } from "lodash";
 import { IntegrationType } from "models/integration";
-import { ReportPageTabs, SprintUser } from "models/reports";
+import { SprintUser } from "models/reports";
 import { useEffect, useState } from "react";
+import { LuDownload } from "react-icons/lu";
+import { useDispatch } from "react-redux";
 
+import PrimaryButton from "@/components/common/buttons/primaryButton";
 import UsersSelectorComponent from "@/components/common/topPanels/components/usersSelector";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
-import { ReportData } from "@/storage/redux/reportsSlice";
+import { ExcelExport } from "@/services/exportHelpers";
+import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import TableComponent from "../components/tableComponentReport";
 import TypeDependentSection from "../components/typeDependentSection";
-import { LuDownload } from "react-icons/lu";
-import { ExcelExport } from "@/services/exportHelpers";
 
 type Props = {
   reportData: ReportData;
 };
 const TimeSheetReport = ({ reportData }: Props) => {
-  console.log("🚀 ~ TimeSheetReport ~ reportData:", reportData);
+  const dispatch = useDispatch();
   const [selectedSource, setSelectedSource] = useState<IntegrationType[]>(
     reportData?.config?.types ?? []
   );
   const [sprints, setSprints] = useState<number[]>([]);
   const [data, setData] = useState([]);
   const [projects, setProjects] = useState<number[]>(
-    reportData?.config?.projectIds ?? []
+    reportData?.config?.projectIds ? reportData?.config?.projectIds : []
   );
   const [calendarIds, setCalendarIds] = useState<number[]>([]);
   const [column, setColumns] = useState([]);
   const [users, setUsers] = useState<SprintUser[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<number[]>(
-    reportData?.config?.users ?? []
+    reportData?.config?.userIds ? reportData?.config?.userIds : []
   );
-  const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
+  const [dateRange, setDateRange] = useState(
+    reportData?.config?.startDate
+      ? [reportData?.config?.startDate, reportData?.config?.endDate]
+      : getDateRangeArray("this-week")
+  );
   const [dateRangeArray, setDateRangeArray] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
@@ -66,6 +71,19 @@ const TimeSheetReport = ({ reportData }: Props) => {
     setDownloading(false);
   };
 
+  const saveConfig = async () => {
+    const res = await userAPI.updateReport(reportData.id, {
+      startDate: dateRange[0],
+      endDate: dateRange[1],
+      userIds: selectedUsers,
+      projectIds: projects,
+      types: selectedSource,
+    });
+    if (res) {
+      dispatch(updateReportSlice(res));
+      message.success("Saved Successfully");
+    }
+  };
   const getTimeSheetReport = async () => {
     setIsLoading(true);
     const res = await userAPI.getTimeSheetReport({
@@ -95,6 +113,8 @@ const TimeSheetReport = ({ reportData }: Props) => {
     <>
       <ReportHeaderComponent
         title={reportData.name}
+        reportData={reportData}
+        setIsLoading={setIsLoading}
         exportButton={
           <Button
             type="ghost"
@@ -105,6 +125,9 @@ const TimeSheetReport = ({ reportData }: Props) => {
           >
             Export to Excel
           </Button>
+        }
+        saveCofigButton={
+          <PrimaryButton onClick={() => saveConfig()}> Save</PrimaryButton>
         }
       >
         <>

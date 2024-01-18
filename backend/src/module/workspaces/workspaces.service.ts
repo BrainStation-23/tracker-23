@@ -134,7 +134,7 @@ export class WorkspacesService {
 
   async getUserWorkspace(user: User) {
     const userWorkspace =
-      user.activeWorkspaceId &&
+      user?.activeWorkspaceId &&
       (await this.workspaceDatabase.getUserWorkspace(
         user.id,
         user.activeWorkspaceId,
@@ -242,7 +242,7 @@ export class WorkspacesService {
     } else {
       //check if already invited
       const userWorkspace =
-        user.activeWorkspaceId &&
+        user?.activeWorkspaceId &&
         invitedUser?.id &&
         (await this.workspaceDatabase.getUserWorkspace(
           invitedUser?.id,
@@ -259,7 +259,7 @@ export class WorkspacesService {
 
       //check for invitations which were rejected
       const rejectedUserWorkspace =
-        user.activeWorkspaceId &&
+        user?.activeWorkspaceId &&
         invitedUser?.id &&
         (await this.workspaceDatabase.getUserWorkspace(
           invitedUser?.id,
@@ -269,7 +269,7 @@ export class WorkspacesService {
 
       if (rejectedUserWorkspace) {
         newUserWorkspace =
-          user.activeWorkspaceId &&
+          user?.activeWorkspaceId &&
           (await this.workspaceDatabase.updateRejectedUserWorkspace(
             rejectedUserWorkspace.id,
             reqBody.role,
@@ -279,7 +279,7 @@ export class WorkspacesService {
           ));
       } else {
         newUserWorkspace =
-          user.activeWorkspaceId &&
+          user?.activeWorkspaceId &&
           invitedUser?.id &&
           (await this.workspaceDatabase.createUserWorkspaceWithPrisma({
             userId: invitedUser.id,
@@ -349,7 +349,7 @@ export class WorkspacesService {
 
   async getWorkspaceUsers(user: User) {
     const workspace =
-      user.activeWorkspaceId &&
+      user?.activeWorkspaceId &&
       (await this.workspaceDatabase.getWorkspaceUsers(user.activeWorkspaceId));
     if (!workspace) {
       throw new APIException('Workspace Not found', HttpStatus.BAD_REQUEST);
@@ -361,11 +361,15 @@ export class WorkspacesService {
     const users = filteredWorkspaces.map((userWorkspace) => {
       return {
         role: userWorkspace.role,
+        status: userWorkspace.status,
         designation: userWorkspace.designation,
         firstName: userWorkspace.user.firstName,
         lastName: userWorkspace.user.lastName,
         picture: userWorkspace.user.picture,
         id: userWorkspace.user.id,
+        email: userWorkspace.user.email,
+        approved: userWorkspace.user.approved,
+        activeWorkspaceId: userWorkspace.user.activeWorkspaceId,
       };
     });
 

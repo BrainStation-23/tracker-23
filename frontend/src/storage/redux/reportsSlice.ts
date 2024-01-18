@@ -1,13 +1,16 @@
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
 import { IntegrationType } from "models/integration";
 
+import { createSlice } from "@reduxjs/toolkit";
+
+import type { PayloadAction } from "@reduxjs/toolkit";
 export interface ReportConfig {
   id: number;
   projectIds?: number[];
-  users?: number[];
+  userIds?: number[];
   types?: IntegrationType[];
-  sprints?: number[];
+  sprintIds?: number[];
+  endDate?: string;
+  startDate?: string;
 }
 
 export type ReportType =
@@ -23,7 +26,7 @@ export interface ReportData {
   pageId: number;
 }
 
-interface ReportPage {
+export interface ReportPageDto {
   id: number;
   name: string;
   userWorkspaceId: number;
@@ -32,149 +35,38 @@ interface ReportPage {
 }
 
 interface ReportsSliceState {
-  reportPages: ReportPage[];
+  reportPages: ReportPageDto[];
 }
 
 const initialState: ReportsSliceState = {
-  reportPages: [
-    {
-      id: 1,
-      name: "Page 1",
-      userWorkspaceId: 23,
-      workspaceId: 5,
-      reports: [
-        {
-          id: 3,
-          name: "report 2",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            sprints: [923, 924],
-            users: [1, 35, 52],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "SPRINT_REPORT",
-          pageId: 1,
-        },
-        {
-          id: 2,
-          name: "report page 1",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 35, 52],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "TIME_SHEET",
-          pageId: 1,
-        },
-        {
-          id: 3,
-          name: "report 2",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 35, 52],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "SPRINT_ESTIMATION",
-          pageId: 1,
-        },
-        {
-          id: 3,
-          name: "report 4",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 35],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "TASK_LIST",
-          pageId: 1,
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Page 2",
-      userWorkspaceId: 23,
-      workspaceId: 5,
-      reports: [
-        {
-          id: 2,
-          name: "report 1",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 52],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "TIME_SHEET",
-          pageId: 1,
-        },
-        {
-          id: 3,
-          name: "report 4",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 35],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "TIME_SHEET",
-          pageId: 1,
-        },
-      ],
-    },
-    {
-      id: 3,
-      name: "Page 3",
-      userWorkspaceId: 23,
-      workspaceId: 5,
-      reports: [
-        {
-          id: 2,
-          name: "report 1",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 52],
-            types: ["OUTLOOK", "JIRA"],
-            sprints: [975, 950],
-          },
-          reportType: "TASK_LIST",
-          pageId: 1,
-        },
-        {
-          id: 3,
-          name: "report 4",
-          config: {
-            id: 1,
-            projectIds: [138, 139],
-            users: [1, 35],
-            types: ["OUTLOOK", "JIRA"],
-          },
-          reportType: "TASK_LIST",
-          pageId: 1,
-        },
-      ],
-    },
-  ],
+  reportPages: [],
 };
 
 const reportsSlice = createSlice({
   name: "reports",
   initialState,
   reducers: {
-    setReportsData: (state, action: PayloadAction<ReportPage[]>) => {
+    setReportPages: (state, action: PayloadAction<ReportPageDto[]>) => {
       state.reportPages = action.payload;
     },
-    addReportData: (state, action: PayloadAction<ReportData>) => {
-      if (state.reportPages.length > 0) {
-        state.reportPages[0].reports.push(action.payload);
+    addReport: (state, action: PayloadAction<ReportData>) => {
+      for (let i = 0; i < state.reportPages.length; i++) {
+        if (state.reportPages[i].id === action.payload.pageId)
+          state.reportPages[i].reports.push(action.payload);
       }
     },
-    updateReportData: (
+    deleteReportSlice: (state, action: PayloadAction<ReportData>) => {
+      for (let i = 0; i < state.reportPages.length; i++) {
+        if (state.reportPages[i].id === action.payload.pageId)
+          state.reportPages[i].reports = state.reportPages[i].reports.filter(
+            (report) => report.id !== action.payload.id
+          );
+      }
+    },
+    addReportPage: (state, action: PayloadAction<ReportPageDto>) => {
+      state.reportPages.push(action.payload);
+    },
+    updateReportPage: (
       state,
       action: PayloadAction<{ id: number; data: ReportData }>
     ) => {
@@ -196,17 +88,29 @@ const reportsSlice = createSlice({
         );
       }
     },
-    resetReportsData: (state) => {
+    updateReportSlice: (state, action: PayloadAction<ReportData>) => {
+      for (let i = 0; i < state.reportPages.length; i++) {
+        if (state.reportPages[i].id === action.payload.pageId)
+          state.reportPages[i].reports = state.reportPages[i].reports.map(
+            (report) =>
+              report.id === action.payload.id ? action.payload : report
+          );
+      }
+    },
+    resetReportPages: (state) => {
       state.reportPages = [];
     },
   },
 });
 
 export const {
-  setReportsData,
-  addReportData,
+  setReportPages,
+  addReport,
+  addReportPage,
   deleteReportData,
-  resetReportsData,
+  updateReportSlice,
+  deleteReportSlice,
+  resetReportPages,
 } = reportsSlice.actions;
 
 export default reportsSlice.reducer;

@@ -181,7 +181,7 @@ export class AuthService {
     const oldUser = await this.usersDatabase.findUserByEmail(req.user.email);
 
     if (oldUser?.firstName) {
-      if (!oldUser.activeWorkspaceId) {
+      if (!oldUser?.activeWorkspaceId) {
         const doesExist =
           await this.userWorkspaceDatabase.getSingleUserWorkspace({
             userId: oldUser.id,

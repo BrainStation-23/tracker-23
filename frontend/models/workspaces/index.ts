@@ -1,3 +1,4 @@
+import { ReportPageDto } from "@/storage/redux/reportsSlice";
 import { UserDto } from "models/user";
 
 export interface WorkspaceDto {
@@ -27,6 +28,7 @@ export interface UserWorkspaceDto {
 }
 
 export interface GetWorkspaceListWithUserDto {
+  pages: ReportPageDto[];
   user: UserDto;
   workspaces: WorkspaceDto[];
 }

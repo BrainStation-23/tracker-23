@@ -1,11 +1,17 @@
-import { Button, Spin } from "antd";
+import { Button, message, Spin } from "antd";
 import { userAPI } from "APIs";
 import { SprintReportDto } from "models/reports";
 import { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
+import { useDispatch } from "react-redux";
 
+import PrimaryButton from "@/components/common/buttons/primaryButton";
 import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
-import { ReportData } from "@/storage/redux/reportsSlice";
+import {
+  deleteReportSlice,
+  ReportData,
+  updateReportSlice,
+} from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SprintReportComponent from "../components/sprintReportComponents";
@@ -15,16 +21,36 @@ type Props = {
   reportData: ReportData;
 };
 const SprintReport = ({ reportData }: Props) => {
-  console.log("🚀 ~ SprintReport ~ reportData:", reportData);
-  const [sprint, setSprint] = useState<number>(reportData?.config?.sprints[0]);
+  const dispatch = useDispatch();
+  const [sprint, setSprint] = useState<number>(
+    reportData?.config?.sprintIds?.length > 0
+      ? reportData?.config?.sprintIds[0]
+      : null
+  );
   const [projects, setProjects] = useState<number[]>(
     reportData?.config?.projectIds ?? []
   );
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
-  const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
+  const [dateRange, setDateRange] = useState(
+    reportData?.config?.startDate
+      ? [reportData?.config?.startDate, reportData?.config?.endDate]
+      : getDateRangeArray("this-week")
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
 
+  const saveConfig = async () => {
+    const res = await userAPI.updateReport(reportData.id, {
+      projectIds: projects,
+      sprintIds: [sprint],
+      startDate: dateRange[0],
+      endDate: dateRange[1],
+    });
+    if (res) {
+      dispatch(updateReportSlice(res));
+      message.success("Saved Successfully");
+    }
+  };
   const excelExport = async () => {
     setDownloading(true);
 
@@ -33,12 +59,14 @@ const SprintReport = ({ reportData }: Props) => {
 
   const getSprintReport = async () => {
     setIsLoading(true);
-    const res = await userAPI.getSprintReport({
-      sprintId: sprint,
-      startDate: dateRange[0],
-      endDate: dateRange[1],
-    });
-    res && setSprintReportData(res);
+    if (sprint) {
+      const res = await userAPI.getSprintReport({
+        sprintId: sprint,
+        startDate: dateRange[0],
+        endDate: dateRange[1],
+      });
+      res && setSprintReportData(res);
+    }
     setIsLoading(false);
   };
   useEffect(() => {
@@ -48,6 +76,8 @@ const SprintReport = ({ reportData }: Props) => {
     <>
       <ReportHeaderComponent
         title={reportData.name}
+        reportData={reportData}
+        setIsLoading={setIsLoading}
         exportButton={
           <Button
             type="ghost"
@@ -58,6 +88,9 @@ const SprintReport = ({ reportData }: Props) => {
           >
             Export to Excel
           </Button>
+        }
+        saveCofigButton={
+          <PrimaryButton onClick={() => saveConfig()}> Save</PrimaryButton>
         }
       >
         <>

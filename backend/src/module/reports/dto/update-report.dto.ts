@@ -1,11 +1,11 @@
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsOptional, IsString } from 'class-validator';
 
 export class UpdateReportDto {
-  @IsDateString()
+  @IsString()
   @IsOptional()
   startDate?: Date;
 
-  @IsDateString()
+  @IsString()
   @IsOptional()
   endDate?: Date;
 
@@ -13,19 +13,23 @@ export class UpdateReportDto {
   @IsOptional()
   name?: string;
 
-  @IsString()
+  @IsArray()
   @IsOptional()
-  projectIds?: string;
+  projectIds?: number[];
 
-  @IsString()
+  @IsArray()
   @IsOptional()
-  userIds?: string;
+  calendarIds?: number[];
 
-  @IsString()
+  @IsArray()
   @IsOptional()
-  sprintIds?: string;
+  userIds?: number[];
 
-  @IsString()
+  @IsArray()
   @IsOptional()
-  types?: string;
+  sprintIds?: number[];
+
+  @IsArray()
+  @IsOptional()
+  types?: string[];
 }

@@ -1,25 +1,30 @@
-import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
-import { getFormattedTasks } from "@/services/taskActions";
-import { ReportData } from "@/storage/redux/reportsSlice";
+import { Button, message, Spin } from "antd";
 import { userAPI } from "APIs";
 import { IntegrationType } from "models/integration";
 import { SprintUser } from "models/reports";
 import { TaskDto } from "models/tasks";
 import React, { useEffect, useState } from "react";
-import TypeDependentSection from "../components/typeDependentSection";
-import TopPanelTaskListComponents from "../components/topPanelTaskListComponents";
-import TaskListReportComponent from "../components/taskListReportComponent";
-import { ExcelExport } from "@/services/exportHelpers";
-import { Button, Spin, message } from "antd";
-import ReportHeaderComponent from "../components/reportHeaderComponent";
-import UserSelectorComponent from "@/components/common/topPanels/components/userSelector";
 import { LuDownload } from "react-icons/lu";
+import { useDispatch } from "react-redux";
+
+import PrimaryButton from "@/components/common/buttons/primaryButton";
+import UserSelectorComponent from "@/components/common/topPanels/components/userSelector";
+import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
+import { ExcelExport } from "@/services/exportHelpers";
+import { getFormattedTasks } from "@/services/taskActions";
+import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
+
+import ReportHeaderComponent from "../components/reportHeaderComponent";
+import TaskListReportComponent from "../components/taskListReportComponent";
+import TopPanelTaskListComponents from "../components/topPanelTaskListComponents";
+import TypeDependentSection from "../components/typeDependentSection";
 
 type Props = {
   reportData: ReportData;
 };
 
 export default function TaskListReport({ reportData }: Props) {
+  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
@@ -27,16 +32,23 @@ export default function TaskListReport({ reportData }: Props) {
     reportData?.config?.types ?? []
   );
   const [sprints, setSprints] = useState<number[]>(
-    reportData?.config?.sprints ?? []
+    reportData?.config?.sprintIds ?? []
   );
   const [users, setUsers] = useState<SprintUser[]>([]);
   const [projects, setProjects] = useState<number[]>(
     reportData?.config?.projectIds ?? []
   );
   const [calendarIds, setCalendarIds] = useState<number[]>([]);
-  const [selectedUser, setSelectedUser] = useState<number>();
-  const [dateRange, setDateRange] = useState(getDateRangeArray("this-week"));
-
+  const [selectedUser, setSelectedUser] = useState<number>(
+    reportData?.config?.userIds?.length > 0
+      ? reportData?.config?.userIds[0]
+      : null
+  );
+  const [dateRange, setDateRange] = useState(
+    reportData?.config?.startDate
+      ? [reportData?.config?.startDate, reportData?.config?.endDate]
+      : getDateRangeArray("this-week")
+  );
   const [searchText, setSearchText] = useState("");
   const [status, setStatus] = useState([]);
   const [priority, setPriority] = useState([]);
@@ -60,7 +72,20 @@ export default function TaskListReport({ reportData }: Props) {
     }
     setIsLoading(false);
   };
-
+  const saveConfig = async () => {
+    const res = await userAPI.updateReport(reportData.id, {
+      startDate: dateRange[0],
+      endDate: dateRange[1],
+      sprintIds: sprints,
+      projectIds: projects,
+      userIds: selectedUser ? [selectedUser] : [],
+      types: selectedSource,
+    });
+    if (res) {
+      dispatch(updateReportSlice(res));
+      message.success("Saved Successfully");
+    }
+  };
   const excelExport = async () => {
     setDownloading(true);
     try {
@@ -105,11 +130,19 @@ export default function TaskListReport({ reportData }: Props) {
     selectedUser,
     selectedSource,
   ]);
-
+  const getUserListByProject = async () => {
+    const res = await userAPI.userListByProject(projects);
+    res && setUsers(res);
+  };
+  useEffect(() => {
+    getUserListByProject();
+  }, [projects]);
   return (
     <div>
       <ReportHeaderComponent
         title={reportData.name}
+        reportData={reportData}
+        setIsLoading={setIsLoading}
         exportButton={
           <Button
             type="ghost"
@@ -120,6 +153,9 @@ export default function TaskListReport({ reportData }: Props) {
           >
             Export to Excel
           </Button>
+        }
+        saveCofigButton={
+          <PrimaryButton onClick={() => saveConfig()}> Save</PrimaryButton>
         }
       >
         <>

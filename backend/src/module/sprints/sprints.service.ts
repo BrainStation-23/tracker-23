@@ -277,7 +277,7 @@ export class SprintsService {
 
   async getActiveSprintTasks(user: User, reqBody: GetSprintListQueryDto) {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace || !user.activeWorkspaceId)
+    if (!userWorkspace || !user?.activeWorkspaceId)
       throw new APIException(
         'User Workspace not found',
         HttpStatus.BAD_REQUEST,
@@ -513,7 +513,7 @@ export class SprintsService {
   }
 
   async getCalenderIds(user: User): Promise<number[] | []> {
-    if (!user.activeWorkspaceId) {
+    if (!user?.activeWorkspaceId) {
       throw new APIException(
         'user workspace not found',
         HttpStatus.BAD_REQUEST,
