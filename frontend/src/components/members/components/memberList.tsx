@@ -1,11 +1,21 @@
 import {
   WorkspaceMemberDto,
+  WorkspaceMemberRoleBorderColorEnum,
+  WorkspaceMemberRoleEnum,
   WorkspaceMemberStatusBGColorEnum,
   WorkspaceMemberStatusBorderColorEnum,
   WorkspaceMemberStatusEnum,
 } from "models/user";
 import { ColumnsType } from "antd/es/table";
 import { Avatar, Table, Typography } from "antd";
+import {
+  LuBadgeCheck,
+  LuCheckCircle,
+  LuMail,
+  LuUser,
+  LuUserCog,
+} from "react-icons/lu";
+
 const { Text } = Typography;
 
 type Props = {
@@ -15,7 +25,12 @@ const MemberList = ({ memberList }: Props) => {
   console.log(memberList);
   const columns: ColumnsType<WorkspaceMemberDto> = [
     {
-      title: "Name",
+      title: (
+        <div className="flex items-center gap-2">
+          <LuUser size={20} />
+          Name
+        </div>
+      ),
       dataIndex: "firstName",
       key: "firstName",
       width: "300px",
@@ -27,7 +42,7 @@ const MemberList = ({ memberList }: Props) => {
                 <Avatar
                   src={record.picture}
                   alt="N"
-                  className="h-[40px] w-[40px]"
+                  className="h-[24px] w-[24px]"
                 />
               ) : (
                 <Avatar
@@ -35,7 +50,7 @@ const MemberList = ({ memberList }: Props) => {
                     "https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
                   }
                   alt="N"
-                  className="h-[40px] w-[40px]"
+                  className="h-[24px] w-[24px]"
                 />
               )}
             </div>
@@ -48,9 +63,15 @@ const MemberList = ({ memberList }: Props) => {
           </div>
         );
       },
+      align: "left",
     },
     {
-      title: "Email",
+      title: (
+        <div className="flex w-full items-center justify-start gap-2">
+          <LuMail size={20} />
+          Email
+        </div>
+      ),
       dataIndex: "email",
       key: "email",
       width: "300px",
@@ -66,15 +87,21 @@ const MemberList = ({ memberList }: Props) => {
           </div>
         );
       },
+      align: "left",
     },
     {
-      title: "Designation",
+      title: (
+        <div className="flex w-full items-center justify-center gap-2">
+          <LuBadgeCheck size={20} />
+          Designation
+        </div>
+      ),
       dataIndex: "designation",
       key: "designation",
       width: "200px",
       render: (text: string, record: WorkspaceMemberDto, index: number) => {
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex w-full items-center justify-center gap-2">
             <Text
               className="w-[200px] cursor-pointer"
               ellipsis={{ tooltip: `${record?.designation ?? "--"}` }}
@@ -84,34 +111,63 @@ const MemberList = ({ memberList }: Props) => {
           </div>
         );
       },
+      align: "center",
     },
     {
-      title: "Role",
+      title: (
+        <div className="flex w-full items-center justify-center gap-2">
+          <LuUserCog size={20} />
+          Role
+        </div>
+      ),
       dataIndex: "role",
       key: "role",
       width: "150px",
-      render: (text: string, record: WorkspaceMemberDto, index: number) => {
-        return (
-          <div className="flex items-center gap-2">
-            <Text
-              className="w-[200px] cursor-pointer"
-              ellipsis={{ tooltip: `${record.role ?? "--"}` }}
-            >
-              {`${record.role ?? "--"}`}
-            </Text>
+      render: (text: string, record: WorkspaceMemberDto, index: number) => (
+        <div className="flex w-full items-center justify-center gap-2">
+          <div
+            style={{
+              border: `1px solid ${
+                WorkspaceMemberRoleBorderColorEnum[record.role]
+              }`,
+              borderRadius: "8px",
+            }}
+            className="relative flex w-max items-center gap-1 rounded-[10px] border px-4 py-1 text-xs font-medium text-black"
+          >
+            <div>
+              {WorkspaceMemberRoleEnum[record.role] ===
+              WorkspaceMemberRoleEnum.ADMIN ? (
+                <LuUserCog
+                  size={16}
+                  color={WorkspaceMemberRoleBorderColorEnum[record.role]}
+                />
+              ) : (
+                <LuUser
+                  size={16}
+                  color={WorkspaceMemberRoleBorderColorEnum[record.role]}
+                />
+              )}
+            </div>
+
+            <div>{WorkspaceMemberRoleEnum[record.role]}</div>
           </div>
-        );
-      },
+        </div>
+      ),
+      align: "center",
     },
     {
-      title: "Status",
+      title: (
+        <div className="flex w-full items-center justify-center gap-2">
+          <LuCheckCircle size={20} />
+          Satus
+        </div>
+      ),
       dataIndex: "status",
       key: "status",
       width: "150px",
       render: (text: string, record: WorkspaceMemberDto, index: number) => {
         return (
-          <div className="flex items-center gap-2">
-            {/* <MemberStatus status={"DELETED"} /> */}
+          <div className="flex w-full items-center justify-center gap-2">
             <div
               style={{
                 backgroundColor:
@@ -136,6 +192,7 @@ const MemberList = ({ memberList }: Props) => {
           </div>
         );
       },
+      align: "center",
     },
   ];
 
