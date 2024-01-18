@@ -195,14 +195,22 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
       columns.push({
         title: (
           <div className="flex flex-col items-center justify-center gap-4">
-            <div>
-              Sprint Overall Progress{" "}
-              {Math.round(
-                (column.value.devProgress.spentTime /
-                  column.value.devProgress.estimatedTime) *
-                  100
-              )}
-              %
+            <div className="flex w-full items-center justify-center gap-2">
+              <Text>
+                Sprint Progress -{" "}
+                {Math.round(
+                  (column.value.devProgress.spentTime /
+                    column.value.devProgress.estimatedTime) *
+                    100
+                )}
+                %
+              </Text>
+              <div className="w-[100px]">
+                <TimeProgressComponent
+                  spentTime={column.value.devProgress.spentTime}
+                  estimatedTime={column.value.devProgress.estimatedTime}
+                />
+              </div>
             </div>
             <div className="font-bold">Assigned Task</div>
           </div>
@@ -229,22 +237,27 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
       columns.push({
         title: (
           <div className="flex flex-col items-center justify-center gap-4">
-            <div>
+            <div className="text-[#1D1D1D]">
               {dateType === "date"
-                ? dayjs(column.key).format("D MMM")
+                ? dayjs(column.key).format("D MMM, YYYY")
                 : dateType}{" "}
-              Progress{" "}
-              {Math.round(
-                (column.value.devProgress.spentTime /
-                  column.value.devProgress.estimatedTime) *
-                  100
-              )}
-              %
             </div>
-            <div className="font-bold">
-              {dateType === "date"
-                ? dayjs(column.key).format("DD/MM/YYYY")
-                : dateType}
+            <div className="flex w-full items-center justify-center">
+              <div className="h-6 w-6">
+                <TimeProgressComponent
+                  spentTime={column.value.devProgress.spentTime}
+                  estimatedTime={column.value.devProgress.estimatedTime}
+                  isDonut={true}
+                />
+              </div>
+              <div>
+                {Math.round(
+                  (column.value.devProgress.spentTime /
+                    column.value.devProgress.estimatedTime) *
+                    100
+                )}
+                %
+              </div>
             </div>
           </div>
         ),
