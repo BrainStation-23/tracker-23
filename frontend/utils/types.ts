@@ -1,4 +1,7 @@
-import { updateOnboardingUserDto } from "./../models/user/index";
+import {
+  WorkspaceMemberDto,
+  updateOnboardingUserDto,
+} from "./../models/user/index";
 import {
   CreateLocalProjectModel,
   CreateWorkspaceModel,
@@ -84,7 +87,7 @@ export interface apiFunction {
   getAllProjects: () => Promise<any>;
   getAllReportProjects: () => Promise<any>;
   getWorkspaceList: () => Promise<any>;
-  getWorkspaceMembers: () => Promise<any>;
+  getWorkspaceMembers: () => Promise<WorkspaceMemberDto[] | false>;
   getWorkspaceSettings: () => Promise<any>;
   createWorkspace: (data: CreateWorkspaceModel) => Promise<any>;
   updateWorkspace: (data: CreateWorkspaceModel, id: number) => Promise<any>;

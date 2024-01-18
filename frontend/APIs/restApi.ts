@@ -31,7 +31,11 @@ import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 import { sortByStatus } from "../src/services/taskActions";
 import { SprintViewReportDto, getTimeSheetReportDto } from "models/reports";
 import { disconnectSocket } from "@/services/socket.service";
-import { updateApprovalUserDto, updateOnboardingUserDto } from "models/user";
+import {
+  WorkspaceMemberDto,
+  updateApprovalUserDto,
+  updateOnboardingUserDto,
+} from "models/user";
 
 export async function loginRest(
   data: LoginDto
@@ -726,7 +730,9 @@ export async function getWorkspaceListRest() {
   }
 }
 
-export async function getWorkspaceMembersRest() {
+export async function getWorkspaceMembersRest(): Promise<
+  WorkspaceMemberDto[] | false
+> {
   try {
     const res = await axios.get(`${apiEndPoints.members}`);
     return res.data;
