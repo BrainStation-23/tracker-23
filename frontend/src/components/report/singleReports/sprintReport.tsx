@@ -21,7 +21,6 @@ type Props = {
   reportData: ReportData;
 };
 const SprintReport = ({ reportData }: Props) => {
-  console.log("🚀 ~ SprintReport ~ reportData:", reportData);
   const dispatch = useDispatch();
   const [sprint, setSprint] = useState<number>(
     reportData?.config?.sprintIds?.length > 0
@@ -42,6 +41,7 @@ const SprintReport = ({ reportData }: Props) => {
 
   const saveConfig = async () => {
     const res = await userAPI.updateReport(reportData.id, {
+      projectIds: projects,
       sprintIds: [sprint],
       startDate: dateRange[0],
       endDate: dateRange[1],

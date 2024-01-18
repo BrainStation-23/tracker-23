@@ -12,6 +12,8 @@ import {
   updateReportSlice,
 } from "@/storage/redux/reportsSlice";
 
+import { ReportIcons } from "../reportPage";
+
 import type { PropsWithChildren } from "react";
 export default function ReportHeaderComponent({
   title,
@@ -65,7 +67,10 @@ export default function ReportHeaderComponent({
       <div className="flex items-center justify-between gap-3 ">
         <div onClick={() => setEditing(true)}>
           {!editing ? (
-            <div className="text-2xl font-semibold">{title}</div>
+            <div className="flex items-center gap-2 text-2xl font-semibold">
+              {ReportIcons[reportData.reportType]}
+              {title}
+            </div>
           ) : (
             <Form
               name="titleEdit"
@@ -80,22 +85,29 @@ export default function ReportHeaderComponent({
                 }
               }}
             >
-              <Form.Item
-                name="name"
-                rules={[{ required: true, message: "Please input something!" }]}
-              >
-                <Input
-                  placeholder="Type something and press Enter"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      form.submit();
-                    }
-                    if (e.key === "Escape") {
-                      setEditing(false);
-                    }
-                  }}
-                />
-              </Form.Item>
+              <div className="flex items-center gap-2 text-2xl font-semibold">
+                {ReportIcons[reportData.reportType]}
+                <Form.Item
+                  name="name"
+                  className="m-0"
+                  rules={[
+                    { required: true, message: "Please input something!" },
+                  ]}
+                >
+                  <Input
+                    placeholder="Type something and press Enter"
+                    className="m-0 p-0 px-1 text-xl focus:shadow-none"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        form.submit();
+                      }
+                      if (e.key === "Escape") {
+                        setEditing(false);
+                      }
+                    }}
+                  />
+                </Form.Item>
+              </div>
             </Form>
           )}
         </div>

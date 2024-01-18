@@ -1,6 +1,10 @@
 import { userAPI } from "APIs";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { FaChartBar } from "react-icons/fa";
+import { FaChartGantt } from "react-icons/fa6";
+import { LuGitCompare } from "react-icons/lu";
+import { MdChecklist } from "react-icons/md";
 import { useDispatch } from "react-redux";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
@@ -9,6 +13,7 @@ import {
   setReportProjectsSlice,
   setReportSprintListReducer,
 } from "@/storage/redux/projectsSlice";
+import { ReportData } from "@/storage/redux/reportsSlice";
 import { RootState } from "@/storage/redux/store";
 
 import PrimaryButton from "../common/buttons/primaryButton";
@@ -41,13 +46,26 @@ const ReportPageComponent = () => {
       res && dispatch(setReportProjectsSlice(res));
     }
   };
-
+  const reportToRender = (report: ReportData) => {
+    switch (report.reportType) {
+      case "TIME_SHEET":
+        return <TimeSheetReport reportData={report} />;
+      case "SPRINT_ESTIMATION":
+        return <SprintEstimateReport reportData={report} />;
+      case "TASK_LIST":
+        return <TaskListReport reportData={report} />;
+      case "SPRINT_REPORT":
+        return <SprintReport reportData={report} />;
+      default:
+        return <div>No report found</div>;
+    }
+  };
   useEffect(() => {
     getSprintList();
     getProjectWiseStatues();
   }, []);
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-7">
       <div className="flex items-center justify-between">
         <div className="text-xl font-bold">{reportPageData?.name}</div>{" "}
         <PrimaryButton onClick={() => setIsModalOpen(true)}>
@@ -55,18 +73,9 @@ const ReportPageComponent = () => {
         </PrimaryButton>
       </div>
       {reportPageData?.reports?.map((report) => {
-        switch (report.reportType) {
-          case "TIME_SHEET":
-            return <TimeSheetReport reportData={report} />;
-          case "SPRINT_ESTIMATION":
-            return <SprintEstimateReport reportData={report} />;
-          case "TASK_LIST":
-            return <TaskListReport reportData={report} />;
-          case "SPRINT_REPORT":
-            return <SprintReport reportData={report} />;
-          default:
-            return <div>No report found</div>;
-        }
+        return (
+          <div className="rounded border-2 p-2">{reportToRender(report)}</div>
+        );
       })}
       <GlobalModal title="Add New Report" {...{ isModalOpen, setIsModalOpen }}>
         <AddNewReport setIsModalOpen={setIsModalOpen} />
@@ -76,3 +85,10 @@ const ReportPageComponent = () => {
 };
 
 export default ReportPageComponent;
+
+export const ReportIcons = {
+  TIME_SHEET: <FaChartBar />,
+  SPRINT_ESTIMATION: <LuGitCompare />,
+  TASK_LIST: <MdChecklist />,
+  SPRINT_REPORT: <FaChartGantt />,
+};
