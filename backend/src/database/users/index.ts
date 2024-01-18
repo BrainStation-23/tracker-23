@@ -15,7 +15,7 @@ export class UsersDatabase {
   async findUsers(user: User) {
     try {
       const workspace =
-        user.activeWorkspaceId &&
+        user?.activeWorkspaceId &&
         (await this.prisma.workspace.findUnique({
           where: {
             id: user.activeWorkspaceId,
@@ -53,7 +53,7 @@ export class UsersDatabase {
   async updateRole(user: User, userId: number, role: Role) {
     try {
       const userWorkspace =
-        user.activeWorkspaceId &&
+        user?.activeWorkspaceId &&
         (await this.prisma.userWorkspace.findFirst({
           where: {
             userId,
@@ -75,7 +75,7 @@ export class UsersDatabase {
   async updateSettings(user: User, settings: UpdateSettingsReqDto) {
     try {
       return (
-        user.activeWorkspaceId &&
+        user?.activeWorkspaceId &&
         (await this.prisma.settings.update({
           where: {
             workspaceId: user.activeWorkspaceId,

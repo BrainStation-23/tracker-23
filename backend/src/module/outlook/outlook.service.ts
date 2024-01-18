@@ -27,7 +27,7 @@ export class OutlookService {
 
   async createIntegration(dto: AuthorizeOutlookDto, user: User) {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace || !user.activeWorkspaceId)
+    if (!userWorkspace || !user?.activeWorkspaceId)
       throw new APIException(
         'User Workspace not found',
         HttpStatus.BAD_REQUEST,

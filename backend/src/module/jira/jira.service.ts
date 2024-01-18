@@ -36,7 +36,7 @@ export class JiraService {
 
   async findIntegration(dto: AuthorizeJiraDto, user: User) {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace || !user.activeWorkspaceId)
+    if (!userWorkspace || !user?.activeWorkspaceId)
       throw new APIException(
         'User Workspace not found',
         HttpStatus.BAD_REQUEST,
@@ -67,7 +67,7 @@ export class JiraService {
       await lastValueFrom(this.httpService.get(urlResources, { headers }))
     ).data;
 
-    if (!user.activeWorkspaceId || !user.activeWorkspaceId)
+    if (!user?.activeWorkspaceId || !user?.activeWorkspaceId)
       throw new APIException('No active Workspace', HttpStatus.BAD_REQUEST);
 
     const updatedIntegration = await Promise.allSettled(
@@ -75,7 +75,7 @@ export class JiraService {
         const expires_in = 3500000;
         const issued_time = Date.now();
         const token_expire = issued_time + expires_in;
-        user.activeWorkspaceId &&
+        user?.activeWorkspaceId &&
           (await this.integrationDatabase.updateTempIntegration(
             {
               TempIntegrationIdentifier: {
@@ -130,7 +130,7 @@ export class JiraService {
   }
 
   async createIntegrationAndGetProjects(user: User, siteId: string) {
-    if (!user.activeWorkspaceId) {
+    if (!user?.activeWorkspaceId) {
       throw new APIException('workspace not found', HttpStatus.BAD_REQUEST);
     }
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
@@ -286,7 +286,7 @@ export class JiraService {
         });
 
       const localProjects =
-        user.activeWorkspaceId &&
+        user?.activeWorkspaceId &&
         (await this.projectDatabase.getProjectsWithStatusAndPriorities({
           source: 'T23',
           workspaceId: user.activeWorkspaceId,
