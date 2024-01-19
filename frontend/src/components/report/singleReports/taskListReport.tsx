@@ -143,7 +143,7 @@ export default function TaskListReport({ reportData }: Props) {
     getUserListByProject();
   }, [projects]);
   return (
-    <div>
+    <>
       <ReportHeaderComponent
         title={reportData.name}
         reportData={reportData}
@@ -203,6 +203,6 @@ export default function TaskListReport({ reportData }: Props) {
       <Spin className="custom-spin" spinning={isLoading}>
         <TaskListReportComponent {...{ tasks }} />
       </Spin>
-    </div>
+    </>
   );
 }

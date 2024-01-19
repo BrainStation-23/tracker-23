@@ -82,7 +82,7 @@ const ReportPageComponent = () => {
     getProjectWiseStatues();
   }, []);
   return (
-    <div className="flex flex-col gap-7">
+    <div className="flex flex-col gap-7 pb-5">
       <div className="flex items-center justify-between">
         <div className="text-xl font-bold">{reportPageData?.name}</div>{" "}
         <PrimaryButton onClick={() => setIsModalOpen(true)}>
@@ -91,7 +91,9 @@ const ReportPageComponent = () => {
       </div>
       {reportPageData?.reports?.map((report) => {
         return (
-          <div className="rounded border-2 p-2">{reportToRender(report)}</div>
+          <div className="flex flex-col gap-5 rounded border-2 p-4">
+            {reportToRender(report)}
+          </div>
         );
       })}
       <GlobalModal title="Add New Report" {...{ isModalOpen, setIsModalOpen }}>
