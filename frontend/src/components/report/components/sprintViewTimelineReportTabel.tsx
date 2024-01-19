@@ -63,10 +63,28 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
         children: (
           <div className="flex h-full w-full flex-col justify-start">
             {cell === "progress" ? (
-              <TimeProgressComponent
-                spentTime={record.devProgress[column.key]?.spentTime}
-                estimatedTime={record.devProgress[column.key]?.estimatedTime}
-              />
+              <div className="flex w-full items-center justify-center gap-2">
+                <Text
+                  className="w-[50px]"
+                  ellipsis={{
+                    tooltip: `Estimated: ${column.value.devProgress.estimatedTime.toFixed(
+                      2
+                    )}h, Spent: ${column.value.devProgress.spentTime.toFixed(
+                      2
+                    )}h`,
+                  }}
+                >
+                  {`${Math.round(
+                    (column.value.devProgress.spentTime /
+                      column.value.devProgress.estimatedTime) *
+                      100
+                  )}%`}
+                </Text>
+                <TimeProgressComponent
+                  spentTime={record.devProgress[column.key]?.spentTime}
+                  estimatedTime={record.devProgress[column.key]?.estimatedTime}
+                />
+              </div>
             ) : cell === "task" ? (
               <div
                 className={classNames(
@@ -161,7 +179,7 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
                 className="w-[200px] cursor-pointer"
                 ellipsis={{ tooltip: "No assigned tasks" }}
               >
-                {"--"}
+                {/* {"--"} */}
               </Text>
             )}
           </div>
@@ -172,8 +190,8 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
           style: {
             paddingTop: 16,
             paddingBottom: 16,
-            // paddingLeft: 0,
-            // paddingRight: 0,
+            borderLeftWidth: cell == "task" || cell == "noTask" ? 0 : 1,
+            borderRightWidth: cell == "task" || cell == "noTask" ? 0 : 1,
           },
         },
       };
