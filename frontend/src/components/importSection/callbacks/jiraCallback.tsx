@@ -60,7 +60,7 @@ const JiraCallBack = () => {
   };
   let tip = "";
   if (router.query.code) tip = "Integrating Jira";
-  if (router.query.error) tip = "Cancelling IntegrationDto";
+  if (router.query.error) tip = "Cancelling Integration";
   return (
     <>
       <div className="flex w-full justify-center p-40">
