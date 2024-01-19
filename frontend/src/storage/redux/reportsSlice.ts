@@ -107,6 +107,15 @@ const reportsSlice = createSlice({
           );
       }
     },
+    updateReportPageNameSlice: (
+      state,
+      action: PayloadAction<ReportPageDto>
+    ) => {
+      for (let i = 0; i < state.reportPages.length; i++) {
+        if (state.reportPages[i].id === action.payload.id)
+          state.reportPages[i].name = action.payload.name;
+      }
+    },
     resetReportPages: (state) => {
       state.reportPages = [];
     },
@@ -122,6 +131,7 @@ export const {
   deleteReportSlice,
   resetReportPages,
   setReportIntegrationTypesSlice,
+  updateReportPageNameSlice,
 } = reportsSlice.actions;
 
 export default reportsSlice.reducer;

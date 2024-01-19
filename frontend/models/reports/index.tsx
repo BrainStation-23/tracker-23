@@ -231,3 +231,6 @@ export interface UpdateReportDto {
   sprintIds?: number[];
   types?: IntegrationType[];
 }
+export interface UpdateReportPageDto {
+  name: String;
+}
