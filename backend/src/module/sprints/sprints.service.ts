@@ -496,8 +496,8 @@ export class SprintsService {
         key: Number(key) ? new Date(Number(key)) : key,
         value: {
           devProgress: {
-            estimatedTime: value.estimation.toFixed(2),
-            spentTime: value.spentTime.toFixed(2),
+            estimatedTime: Number(value.estimation.toFixed(2)),
+            spentTime: Number(value.spentTime.toFixed(2)),
           },
         },
       });
@@ -520,11 +520,12 @@ export class SprintsService {
           ]);
       //mapping dates with every userWorkspaceIds -->end
 
-      value.devProgress.estimatedTime =
-        value.devProgress.estimatedTime?.toFixed(2);
+      value.devProgress.estimatedTime = Number(
+        value.devProgress.estimatedTime?.toFixed(2),
+      );
       value.devProgress.spentTime = data?.spentDateWiseTime
-        ? data?.spentDateWiseTime.toFixed()
-        : value.devProgress.spentTime?.toFixed(2);
+        ? Number(data?.spentDateWiseTime.toFixed(2))
+        : Number(value.devProgress.spentTime?.toFixed(2));
       mappedUserWithWorkspaceId.get(userW)?.data.push({
         key: keyType === 'AssignTasks' ? keyType : new Date(keyType),
         value,
@@ -541,8 +542,8 @@ export class SprintsService {
           key: date,
           value: {
             devProgress: {
-              estimatedTime: fixedVal?.toFixed(2),
-              spentTime: fixedVal?.toFixed(2),
+              estimatedTime: Number(fixedVal?.toFixed(2)),
+              spentTime: Number(fixedVal?.toFixed(2)),
             },
           },
         });
@@ -555,8 +556,8 @@ export class SprintsService {
             key: date,
             value: {
               devProgress: {
-                estimatedTime: fixedVal?.toFixed(2),
-                spentTime: fixedVal?.toFixed(2),
+                estimatedTime: Number(fixedVal?.toFixed(2)),
+                spentTime: Number(fixedVal?.toFixed(2)),
               },
               tasks: [],
             },
