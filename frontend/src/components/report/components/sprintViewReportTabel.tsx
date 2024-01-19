@@ -21,53 +21,53 @@ const SprintViewReportTabel = ({ data }: Props) => {
     record: SprintViewReportTableRow,
     column: SprintViewReportColumn
   ) => {
-    if (column.id in record) {
+    if (column.key in record) {
       return {
         children: (
           <div className="flex h-full w-full flex-col justify-start">
             {record.userSpan > 0 ? (
               <TimeProgressComponent
-                spentTime={record.devProgress[column.id]?.spentTime}
-                estimatedTime={record.devProgress[column.id]?.estimatedTime}
+                spentTime={record.devProgress[column.key]?.spentTime}
+                estimatedTime={record.devProgress[column.key]?.estimatedTime}
               />
-            ) : column.id !== "AssignTasks" && column.id in record.task ? (
+            ) : column.key !== "AssignTasks" && column.key in record.task ? (
               <div
                 className={`flex h-full w-full justify-start ${
-                  record.task[column.id].status === "Done"
+                  record.task[column.key].status === "Done"
                     ? "bg-[#6CAE2B33]"
                     : "bg-[#E7F4F8]"
                 }`}
               >
                 <Text
-                  key={record.task[column.id].key}
+                  key={record.task[column.key].key}
                   className={`h-[24px] w-[200px] cursor-pointer ${
-                    record.task[column.id].status === "Done"
+                    record.task[column.key].status === "Done"
                       ? "line-through"
                       : ""
                   }`}
-                  ellipsis={{ tooltip: record.task[column.id].title }}
+                  ellipsis={{ tooltip: record.task[column.key].title }}
                 >
-                  {record.task[column.id].title}
+                  {record.task[column.key].title}
                 </Text>
               </div>
-            ) : column.id === "AssignTasks" && column.id in record.task ? (
+            ) : column.key === "AssignTasks" && column.key in record.task ? (
               <div
                 className={`flex w-full justify-start ${
-                  record.task[column.id].status === "Done"
+                  record.task[column.key].status === "Done"
                     ? "bg-[#6CAE2B33]"
                     : "bg-[#E7F4F8]"
                 }`}
               >
                 <Text
-                  key={record.task[column.id].key}
+                  key={record.task[column.key].key}
                   className={`w-[200px] cursor-pointer ${
-                    record.task[column.id].status === "Done"
+                    record.task[column.key].status === "Done"
                       ? "line-through"
                       : ""
                   }`}
-                  ellipsis={{ tooltip: record.task[column.id].title }}
+                  ellipsis={{ tooltip: record.task[column.key].title }}
                 >
-                  {record.task[column.id].title}
+                  {record.task[column.key].title}
                 </Text>
               </div>
             ) : (
@@ -142,7 +142,7 @@ const SprintViewReportTabel = ({ data }: Props) => {
     },
   ];
   data?.columns.forEach((column) => {
-    if (column.id === "AssignTasks") {
+    if (column.key === "AssignTasks") {
       columns.push({
         title: (
           <div className="flex flex-col items-center justify-center gap-4">
@@ -168,12 +168,12 @@ const SprintViewReportTabel = ({ data }: Props) => {
         ) => renderTableTaskCell(record, column),
         align: "center",
       });
-    } else if (column.id === "Yesterday" || column.id === "Today") {
+    } else if (column.key === "Yesterday" || column.key === "Today") {
       columns.push({
         title: (
           <div className="flex flex-col items-center justify-center gap-4">
             <div>
-              {column.id} Progress{" "}
+              {column.key} Progress{" "}
               {Math.round(
                 (column.value.devProgress.spentTime /
                   column.value.devProgress.estimatedTime) *
@@ -181,11 +181,11 @@ const SprintViewReportTabel = ({ data }: Props) => {
               )}
               %
             </div>
-            <div className="font-bold">{column.id}</div>
+            <div className="font-bold">{column.key}</div>
           </div>
         ),
-        dataIndex: column.id,
-        key: column.id,
+        dataIndex: column.key,
+        key: column.key,
         render: (
           value: SprintViewReportTask,
           record: SprintViewReportTableRow,
@@ -198,7 +198,7 @@ const SprintViewReportTabel = ({ data }: Props) => {
         title: (
           <div className="flex flex-col items-center justify-center gap-4">
             <div>
-              {dayjs(column.id).format("D MMM")} Progress{" "}
+              {dayjs(column.key).format("D MMM")} Progress{" "}
               {Math.round(
                 (column.value.devProgress.spentTime /
                   column.value.devProgress.estimatedTime) *
@@ -207,12 +207,12 @@ const SprintViewReportTabel = ({ data }: Props) => {
               %
             </div>
             <div className="font-bold">
-              {dayjs(column.id).format("DD/MM/YYYY")}
+              {dayjs(column.key).format("DD/MM/YYYY")}
             </div>
           </div>
         ),
-        dataIndex: column.id,
-        key: column.id,
+        dataIndex: column.key,
+        key: column.key,
         render: (
           value: SprintViewReportTask,
           record: SprintViewReportTableRow,

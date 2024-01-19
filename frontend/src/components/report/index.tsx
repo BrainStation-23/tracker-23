@@ -7,6 +7,7 @@ import {
   SprintUser,
   SprintUserReportDto,
   SprintViewReportDto,
+  SprintViewTimelineReportDto,
 } from "models/reports";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
@@ -29,7 +30,7 @@ import TopPanelSprintReportComponents from "./components/topPanelSprintReportCom
 import TopPanelTaskListComponents from "./components/topPanelTaskListComponents";
 import TypeDependentSection from "./components/typeDependentSection";
 import SprintViewReportComponent from "./components/sprintViewReportComponent";
-import NewSprintViewReportComponent from "./components/newSprintViewReportComponent";
+import SprintViewTimelineReportComponent from "./components/sprintViewTimelineReportComponent";
 
 const ReportComponent = () => {
   const dispatch = useDispatch();
@@ -38,6 +39,10 @@ const ReportComponent = () => {
   const [SprintReportFecthedOnce, setSprintReportFecthedOnce] = useState(false);
   const [SprintViewReportFecthedOnce, setSprintViewReportFecthedOnce] =
     useState(false);
+  const [
+    SprintViewTimelineReportFecthedOnce,
+    setSprintViewTimelineReportFecthedOnce,
+  ] = useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
   const [data, setData] = useState([]);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
@@ -47,6 +52,8 @@ const ReportComponent = () => {
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
   const [sprintViewReportData, setSprintViewReportData] =
     useState<SprintViewReportDto>();
+  const [sprintViewTimelineReportData, setSprintViewTimelineReportData] =
+    useState<SprintViewTimelineReportDto>();
   const [sprints, setSprints] = useState<number[]>([]);
   const [sprintReportSprintId, setSprintReportSprintId] = useState<number>();
   const [users, setUsers] = useState<SprintUser[]>([]);
@@ -63,8 +70,8 @@ const ReportComponent = () => {
   const [status, setStatus] = useState([]);
   const [priority, setPriority] = useState([]);
   const [activeTab, setActiveTab] = useState<ReportPageTabs>(
-    "Time Sheet"
-    // "Sprint Report"
+    // "Time Sheet",
+    "Sprint View Timeline Report"
   );
   const getTimeSheetReport = async () => {
     // setIsLoading(true);
@@ -109,7 +116,12 @@ const ReportComponent = () => {
         return <SprintReportComponent data={sprintReportData} />;
       case "Sprint View Report":
         return <SprintViewReportComponent data={sprintViewReportData} />;
-      // return <NewSprintViewReportComponent data={sprintViewReportData} />;
+      case "Sprint View Timeline Report":
+        return (
+          <SprintViewTimelineReportComponent
+            data={sprintViewTimelineReportData}
+          />
+        );
       default:
         return <></>;
     }
@@ -245,6 +257,26 @@ const ReportComponent = () => {
     Loaded["Sprint View Report"] = true;
   };
 
+  const getSprintViewTimelineReport = async () => {
+    if (!(sprintReportSprintId && dateRange[0] && dateRange[0])) {
+      setSprintViewTimelineReportData(null);
+      Loaded["Sprint View Timeline Report"] = true;
+      return;
+    }
+    Loaded["Sprint View Timeline Report"] = false;
+    // setIsLoading(true);
+    const res = await userAPI.getSprintViewTimelineReport({
+      sprintId: sprintReportSprintId,
+      startDate: dateRange[0],
+      endDate: dateRange[1],
+    });
+    console.log("res", res);
+    res && setSprintViewTimelineReportData(res);
+    res && setSprintViewTimelineReportFecthedOnce(true);
+    // setIsLoading(false);
+    Loaded["Sprint View Timeline Report"] = true;
+  };
+
   const getUserListByProject = async () => {
     const res = await userAPI.userListByProject(projects);
     res && setUsers(res);
@@ -301,6 +333,8 @@ const ReportComponent = () => {
     activeTab === "Sprint Report" && getSprintReport();
 
     activeTab === "Sprint View Report" && getSprintViewReport();
+    activeTab === "Sprint View Timeline Report" &&
+      getSprintViewTimelineReport();
   }, [sprintReportSprintId, dateRange]);
   useEffect(() => {
     activeTab === "Sprint Report" &&
@@ -310,6 +344,10 @@ const ReportComponent = () => {
     activeTab === "Sprint View Report" &&
       !SprintViewReportFecthedOnce &&
       getSprintViewReport();
+
+    activeTab === "Sprint View Timeline Report" &&
+      !SprintViewTimelineReportFecthedOnce &&
+      getSprintViewTimelineReport();
   }, [activeTab]);
   return (
     <div>
@@ -371,7 +409,8 @@ const ReportComponent = () => {
               />
             )}
             {(activeTab === "Sprint Report" ||
-              activeTab === "Sprint View Report") && (
+              activeTab === "Sprint View Report" ||
+              activeTab === "Sprint View Timeline Report") && (
               <TopPanelSprintReportComponents
                 {...{
                   sprint: sprintReportSprintId,

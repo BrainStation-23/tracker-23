@@ -21,6 +21,7 @@ import {
   SprintReportDto,
   SprintUserReportDto,
   SprintViewReportDto,
+  SprintViewTimelineReportDto,
   UpdateReportDto,
   getTimeSheetReportDto,
 } from "models/reports";
@@ -115,7 +116,10 @@ export interface apiFunction {
     data?: SprintUserReportParamsModel
   ) => Promise<SprintUserReportDto>;
   getSprintReport: (data?: any) => Promise<SprintReportDto>;
-  getSprintViewReport: (data?: any) => Promise<SprintViewReportDto>;
+  getSprintViewReport: (data?: any) => Promise<SprintViewReportDto | false>;
+  getSprintViewTimelineReport: (
+    data?: any
+  ) => Promise<SprintViewTimelineReportDto | false>;
   getInvitedUserInfo: (token: string) => Promise<any>;
   getAllUsers: () => Promise<any>;
   updateApprovalUser: (
