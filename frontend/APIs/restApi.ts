@@ -16,22 +16,33 @@ import {
 } from "models/auth";
 import { SendWorkspaceInviteDto } from "models/invitation";
 import {
+  CreateReportDto,
+  CreateReportPageDto,
+  getTimeSheetReportDto,
+  SprintViewReportDto,
+  SprintViewTimelineReportDto,
+  UpdateReportDto,
+} from "models/reports";
+import {
   AddWorkLogParams,
   CreateTaskDto,
   UpdateTaskEstimationParams,
   UpdateTaskStatusParams,
 } from "models/tasks";
+import {
+  updateApprovalUserDto,
+  updateOnboardingUserDto,
+  WorkspaceMemberDto,
+} from "models/user";
 import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
 
 import { RemoveCookie, SetCookie } from "@/services/cookie.service";
+import { disconnectSocket } from "@/services/socket.service";
 import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
-import { SprintViewReportDto, getTimeSheetReportDto } from "models/reports";
-import { disconnectSocket } from "@/services/socket.service";
-import { updateApprovalUserDto, updateOnboardingUserDto } from "models/user";
 
 export async function loginRest(
   data: LoginDto
@@ -726,7 +737,9 @@ export async function getWorkspaceListRest() {
   }
 }
 
-export async function getWorkspaceMembersRest() {
+export async function getWorkspaceMembersRest(): Promise<
+  WorkspaceMemberDto[] | false
+> {
   try {
     const res = await axios.get(`${apiEndPoints.members}`);
     return res.data;
@@ -946,49 +959,49 @@ export async function getSprintViewReportRest({
   sprintId,
   startDate,
   endDate,
-}: SprintReportParamsModel) {
+}: SprintReportParamsModel): Promise<SprintViewReportDto | false> {
   try {
     // TODO: Replace with original implementation when API ready
     const data: SprintViewReportDto = {
       columns: [
         {
-          id: "AssignTasks",
+          key: "AssignTasks",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "Today",
+          key: "Today",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "Yesterday",
+          key: "Yesterday",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-14T08:24:18.123Z",
+          key: "2024-01-14T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-13T08:24:18.123Z",
+          key: "2024-01-13T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-12T08:24:18.123Z",
+          key: "2024-01-12T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-11T08:24:18.123Z",
+          key: "2024-01-11T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-10T08:24:18.123Z",
+          key: "2024-01-10T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-09T08:24:18.123Z",
+          key: "2024-01-09T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
         {
-          id: "2024-01-08T08:24:18.123Z",
+          key: "2024-01-08T08:24:18.123Z",
           value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
         },
       ],
@@ -1005,19 +1018,19 @@ export async function getSprintViewReportRest({
                 title: "Feature A",
                 key: "PROJ-123",
                 status: "In Progress",
-                statusCategoryName: "InProgress",
+                statusCategoryName: "IN_PROGRESS",
               },
               {
                 title: "Bug Fix B",
                 key: "PROJ-124",
                 status: "To Do",
-                statusCategoryName: "ToDo",
+                statusCategoryName: "TO_DO",
               },
               {
                 title: "Refactor C",
                 key: "PROJ-125",
                 status: "Done",
-                statusCategoryName: "Done",
+                statusCategoryName: "DONE",
               },
             ],
           },
@@ -1028,7 +1041,7 @@ export async function getSprintViewReportRest({
                 title: "Feature A",
                 key: "PROJ-123",
                 status: "In Progress",
-                statusCategoryName: "InProgress",
+                statusCategoryName: "IN_PROGRESS",
               },
             ],
           },
@@ -1050,7 +1063,7 @@ export async function getSprintViewReportRest({
                 title: "Refactor C",
                 key: "PROJ-125",
                 status: "Done",
-                statusCategoryName: "Done",
+                statusCategoryName: "DONE",
               },
             ],
           },
@@ -1077,7 +1090,7 @@ export async function getSprintViewReportRest({
                 title: "Feature A",
                 key: "PROJ-123",
                 status: "Done",
-                statusCategoryName: "Done",
+                statusCategoryName: "DONE",
               },
             ],
           },
@@ -1088,7 +1101,7 @@ export async function getSprintViewReportRest({
                 title: "Feature A",
                 key: "PROJ-123",
                 status: "In Progress",
-                statusCategoryName: "InProgress",
+                statusCategoryName: "IN_PROGRESS",
               },
               {
                 title: "Bug Fix B",
@@ -1111,19 +1124,19 @@ export async function getSprintViewReportRest({
                 title: "Feature X",
                 key: "PROJ-126",
                 status: "To Do",
-                statusCategoryName: "ToDo",
+                statusCategoryName: "TO_DO",
               },
               {
                 title: "Bug Fix Y",
                 key: "PROJ-127",
                 status: "In Progress",
-                statusCategoryName: "InProgress",
+                statusCategoryName: "IN_PROGRESS",
               },
               {
                 title: "Refactor Z",
                 key: "PROJ-128",
                 status: "Done",
-                statusCategoryName: "Done",
+                statusCategoryName: "DONE",
               },
             ],
           },
@@ -1134,7 +1147,7 @@ export async function getSprintViewReportRest({
                 title: "Feature X",
                 key: "PROJ-126",
                 status: "To Do",
-                statusCategoryName: "ToDo",
+                statusCategoryName: "TO_DO",
               },
             ],
           },
@@ -1145,7 +1158,7 @@ export async function getSprintViewReportRest({
                 title: "Bug Fix Y",
                 key: "PROJ-127",
                 status: "In Progress",
-                statusCategoryName: "InProgress",
+                statusCategoryName: "IN_PROGRESS",
               },
             ],
           },
@@ -1156,7 +1169,7 @@ export async function getSprintViewReportRest({
                 title: "Refactor Z",
                 key: "PROJ-128",
                 status: "Done",
-                statusCategoryName: "Done",
+                statusCategoryName: "DONE",
               },
             ],
           },
@@ -1183,7 +1196,7 @@ export async function getSprintViewReportRest({
                 title: "Feature X",
                 key: "PROJ-126",
                 status: "Done",
-                statusCategoryName: "Done",
+                statusCategoryName: "DONE",
               },
             ],
           },
@@ -1194,13 +1207,13 @@ export async function getSprintViewReportRest({
                 title: "Feature X",
                 key: "PROJ-126",
                 status: "To Do",
-                statusCategoryName: "ToDo",
+                statusCategoryName: "TO_DO",
               },
               {
                 title: "Bug Fix Y",
                 key: "PROJ-127",
                 status: "In Progress",
-                statusCategoryName: "InProgress",
+                statusCategoryName: "IN_PROGRESS",
               },
             ],
           },
@@ -1217,19 +1230,19 @@ export async function getSprintViewReportRest({
                 title: "Feature X",
                 key: "PROJ-126",
                 status: "To Do",
-                statusCategoryName: "ToDo",
+                statusCategoryName: "TO_DO",
               },
               {
                 title: "Bug Fix Y",
                 key: "PROJ-127",
                 status: "In Progress",
-                statusCategoryName: "InProgress",
+                statusCategoryName: "IN_PROGRESS",
               },
               {
                 title: "Refactor Z",
                 key: "PROJ-128",
                 status: "Done",
-                statusCategoryName: "Done",
+                statusCategoryName: "DONE",
               },
             ],
           },
@@ -1240,7 +1253,7 @@ export async function getSprintViewReportRest({
                 title: "Feature X",
                 key: "PROJ-126",
                 status: "To Do",
-                statusCategoryName: "ToDo",
+                statusCategoryName: "TO_DO",
               },
             ],
           },
@@ -1251,7 +1264,7 @@ export async function getSprintViewReportRest({
                 title: "Bug Fix Y",
                 key: "PROJ-127",
                 status: "In Progress",
-                statusCategoryName: "InProgress",
+                statusCategoryName: "IN_PROGRESS",
               },
             ],
           },
@@ -1262,7 +1275,7 @@ export async function getSprintViewReportRest({
                 title: "Refactor Z",
                 key: "PROJ-128",
                 status: "Done",
-                statusCategoryName: "Done",
+                statusCategoryName: "DONE",
               },
             ],
           },
@@ -1289,7 +1302,7 @@ export async function getSprintViewReportRest({
                 title: "Feature X",
                 key: "PROJ-126",
                 status: "Done",
-                statusCategoryName: "Done",
+                statusCategoryName: "DONE",
               },
             ],
           },
@@ -1300,13 +1313,13 @@ export async function getSprintViewReportRest({
                 title: "Feature X",
                 key: "PROJ-126",
                 status: "To Do",
-                statusCategoryName: "ToDo",
+                statusCategoryName: "TO_DO",
               },
               {
                 title: "Bug Fix Y",
                 key: "PROJ-127",
                 status: "In Progress",
-                statusCategoryName: "InProgress",
+                statusCategoryName: "IN_PROGRESS",
               },
             ],
           },
@@ -1323,19 +1336,19 @@ export async function getSprintViewReportRest({
                 title: "Feature X",
                 key: "PROJ-126",
                 status: "To Do",
-                statusCategoryName: "ToDo",
+                statusCategoryName: "TO_DO",
               },
               {
                 title: "Bug Fix Y",
                 key: "PROJ-127",
                 status: "In Progress",
-                statusCategoryName: "InProgress",
+                statusCategoryName: "IN_PROGRESS",
               },
               {
                 title: "Refactor Z",
                 key: "PROJ-128",
                 status: "Done",
-                statusCategoryName: "Done",
+                statusCategoryName: "DONE",
               },
             ],
           },
@@ -1346,7 +1359,7 @@ export async function getSprintViewReportRest({
                 title: "Feature X",
                 key: "PROJ-126",
                 status: "To Do",
-                statusCategoryName: "ToDo",
+                statusCategoryName: "TO_DO",
               },
             ],
           },
@@ -1357,7 +1370,7 @@ export async function getSprintViewReportRest({
                 title: "Bug Fix Y",
                 key: "PROJ-127",
                 status: "In Progress",
-                statusCategoryName: "InProgress",
+                statusCategoryName: "IN_PROGRESS",
               },
             ],
           },
@@ -1368,7 +1381,7 @@ export async function getSprintViewReportRest({
                 title: "Refactor Z",
                 key: "PROJ-128",
                 status: "Done",
-                statusCategoryName: "Done",
+                statusCategoryName: "DONE",
               },
             ],
           },
@@ -1395,7 +1408,7 @@ export async function getSprintViewReportRest({
                 title: "Feature X",
                 key: "PROJ-126",
                 status: "Done",
-                statusCategoryName: "Done",
+                statusCategoryName: "DONE",
               },
             ],
           },
@@ -1406,16 +1419,288 @@ export async function getSprintViewReportRest({
                 title: "Feature X",
                 key: "PROJ-126",
                 status: "To Do",
-                statusCategoryName: "ToDo",
+                statusCategoryName: "TO_DO",
               },
               {
                 title: "Bug Fix Y",
                 key: "PROJ-127",
                 status: "In Progress",
-                statusCategoryName: "InProgress",
+                statusCategoryName: "IN_PROGRESS",
               },
             ],
           },
+        },
+      ],
+    };
+    const res = await fakeAxiosRequest(
+      `${apiEndPoints.sprintReport}?` +
+        (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
+        (sprintId ? `&sprintId=${sprintId}` : ""),
+      data
+    );
+    // For now, just return the dummy response data
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getSprintViewTimelineReportRest({
+  sprintId,
+  startDate,
+  endDate,
+}: SprintReportParamsModel): Promise<SprintViewTimelineReportDto | false> {
+  try {
+    // TODO: Replace with original implementation when API ready
+    const data: SprintViewTimelineReportDto = {
+      columns: [
+        {
+          key: "AssignTasks",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-08T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-09T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-10T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-11T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-12T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-13T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-14T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-15T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-16T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+        {
+          key: "2024-01-17T08:24:18.123Z",
+          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
+        },
+      ],
+      rows: [
+        {
+          userId: 101,
+          name: "John Doe",
+          picture: "https://example.com/johndoe.jpg",
+          email: "john.doe@example.com",
+          data: [
+            {
+              key: "AssignTasks",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Feature A",
+                    key: "PROJ-123",
+                    status: "In Progress",
+                    statusCategoryName: "IN_PROGRESS",
+                  },
+                  {
+                    title: "Bug Fix B",
+                    key: "PROJ-124",
+                    status: "To Do",
+                    statusCategoryName: "TO_DO",
+                  },
+                  {
+                    title: "Refactor C",
+                    key: "PROJ-125",
+                    status: "Done",
+                    statusCategoryName: "DONE",
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-08T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Feature A",
+                    key: "PROJ-123",
+                    status: "In Progress",
+                    statusCategoryName: "IN_PROGRESS",
+                    timeRange: {
+                      start: "2024-01-08T08:24:18.123Z",
+                      end: "2024-01-08T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-09T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Bug Fix B",
+                    key: "PROJ-124",
+                    status: "In Review",
+                    statusCategoryName: "IN_PROGRESS",
+                    timeRange: {
+                      start: "2024-01-09T08:24:18.123Z",
+                      end: "2024-01-09T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-10T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Refactor C",
+                    key: "PROJ-125",
+                    status: "Done",
+                    statusCategoryName: "DONE",
+                    timeRange: {
+                      start: "2024-01-10T08:24:18.123Z",
+                      end: "2024-01-12T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-11T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Refactor C",
+                    key: "PROJ-125",
+                    status: "Done",
+                    statusCategoryName: "DONE",
+                    timeRange: {
+                      start: "2024-01-10T08:24:18.123Z",
+                      end: "2024-01-12T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-12T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Refactor C",
+                    key: "PROJ-125",
+                    status: "Done",
+                    statusCategoryName: "DONE",
+                    timeRange: {
+                      start: "2024-01-10T08:24:18.123Z",
+                      end: "2024-01-12T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-13T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [],
+              },
+            },
+            {
+              key: "2024-01-14T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [],
+              },
+            },
+            {
+              key: "2024-01-15T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Feature A",
+                    key: "PROJ-123",
+                    status: "In Progress",
+                    statusCategoryName: "IN_PROGRESS",
+                    timeRange: {
+                      start: "2024-01-15T08:24:18.123Z",
+                      end: "2024-01-16T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-16T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Feature A",
+                    key: "PROJ-123",
+                    status: "In Progress",
+                    statusCategoryName: "IN_PROGRESS",
+                    timeRange: {
+                      start: "2024-01-15T08:24:18.123Z",
+                      end: "2024-01-16T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              key: "2024-01-17T08:24:18.123Z",
+              value: {
+                devProgress: { estimatedTime: 10, spentTime: 7 },
+                tasks: [
+                  {
+                    title: "Feature A",
+                    key: "PROJ-123",
+                    status: "In Progress",
+                    statusCategoryName: "IN_PROGRESS",
+                    timeRange: {
+                      start: "2024-01-17T08:24:18.123Z",
+                      end: "2024-01-17T08:24:18.123Z",
+                    },
+                  },
+                  {
+                    title: "Bug Fix B",
+                    key: "PROJ-124",
+                    status: "In Review",
+                    statusCategoryName: "IN_PROGRESS",
+                    timeRange: {
+                      start: "2024-01-17T08:24:18.123Z",
+                      end: "2024-01-17T08:24:18.123Z",
+                    },
+                  },
+                ],
+              },
+            },
+          ],
         },
       ],
     };
@@ -1499,6 +1784,45 @@ export async function userListByProjectRest(projectIds: number[]) {
       `${apiEndPoints.userListByProject}` +
         (projectIds?.length > 0 ? `?projectIds=${projectIds}` : "")
     );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function createReportPageRest(data: CreateReportPageDto) {
+  try {
+    const res = await axios.post(`${apiEndPoints.reportPage}`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function createReportRest(data: CreateReportDto) {
+  try {
+    const res = await axios.post(`${apiEndPoints.reports}`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function updateReportRest(
+  reportId: number,
+  data: UpdateReportDto
+) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.reports}/${reportId}`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function deleteReportRest(reportId: number) {
+  try {
+    const res = await axios.delete(`${apiEndPoints.reports}/${reportId}`);
     return res.data;
   } catch (error: any) {
     return false;

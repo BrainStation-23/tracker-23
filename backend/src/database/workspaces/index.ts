@@ -394,6 +394,9 @@ export class WorkspaceDatabase {
                   firstName: true,
                   lastName: true,
                   picture: true,
+                  email: true,
+                  activeWorkspaceId: true,
+                  approved: true,
                 },
               },
             },
@@ -474,6 +477,23 @@ export class WorkspaceDatabase {
     } catch (error) {
       console.log(error);
       return null;
+    }
+  }
+
+  async getPagesForWorkspace(query: Record<string, any>): Promise<any[] | []> {
+    try {
+      return await this.prisma.page.findMany({
+        where: query,
+        include: {
+          reports: true,
+        },
+      });
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: index.ts:489 ~ WorkspaceDatabase ~ getPagesForWorkspace ~ error:',
+        error,
+      );
+      return [];
     }
   }
 }

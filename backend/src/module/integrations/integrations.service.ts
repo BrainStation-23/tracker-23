@@ -25,7 +25,7 @@ export class IntegrationsService {
 
   async getUserIntegrations(user: User) {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace || !user.activeWorkspaceId)
+    if (!userWorkspace || !user?.activeWorkspaceId)
       throw new APIException(
         'User Workspace not found',
         HttpStatus.BAD_REQUEST,
@@ -69,10 +69,46 @@ export class IntegrationsService {
     );
   }
 
+  async getIntegrationsForReportPage(user: User) {
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      throw new APIException(
+        'User workspace not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (userWorkspace.role === Role.ADMIN) {
+      return await this.integrationDatabase.getIntegrationListByWorkspaceId(
+        userWorkspace.workspaceId,
+      );
+    } else {
+      const integrations =
+        await this.integrationDatabase.getIntegrationListByWorkspaceId(
+          userWorkspace.workspaceId,
+        );
+
+      const integrationIds = integrations.map(
+        (integration: any) => integration.id,
+      );
+
+      const userIntegrations =
+        userWorkspace &&
+        (await this.userIntegrationDatabase.getUserIntegrationListByIntegrationIds(
+          userWorkspace.id,
+          integrationIds,
+        ));
+
+      return userIntegrations?.map(
+        (userIntegration: any) => userIntegration.integration,
+      );
+    }
+  }
+
   async getUpdatedUserIntegration(user: User, userIntegrationId: number) {
     const url = 'https://auth.atlassian.com/oauth/token';
     const headers: any = { 'Content-Type': 'application/json' };
-    if (!user.activeWorkspaceId)
+    if (!user?.activeWorkspaceId)
       throw new APIException('No active Workspace', HttpStatus.BAD_REQUEST);
 
     const userIntegration =

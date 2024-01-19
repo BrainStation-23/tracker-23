@@ -14,6 +14,9 @@ export class PageDatabase {
           workspaceId: page.workspaceId,
           name: page.name,
         },
+        include: {
+          reports: true,
+        },
       });
     } catch (error) {
       console.log(

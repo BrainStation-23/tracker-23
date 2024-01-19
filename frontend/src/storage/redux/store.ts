@@ -4,6 +4,7 @@ import integrationsReducer from "./integrationsSlice";
 import notificationsReducer from "./notificationsSlice";
 import priorityReducer from "./prioritySlice";
 import projectsReducer from "./projectsSlice";
+import reportsReducer from "./reportsSlice";
 import settingsReducer from "./settingsSlice";
 import syncReducer from "./syncSlice";
 import tasksReducer from "./tasksSlice";
@@ -21,6 +22,7 @@ export const store = configureStore({
     workspacesSlice: workspacesReducer,
     settingsSlice: settingsReducer,
     prioritySlice: priorityReducer,
+    reportsSlice: reportsReducer,
   },
 });
 

@@ -1,4 +1,5 @@
 import { IntegrationType } from "models/integration";
+import { StatusDto } from "models/tasks";
 
 export type getTimeSheetReportDto = {
   startDate?: any;
@@ -33,7 +34,20 @@ export type ReportPageTabs =
   | "Sprint Estimate"
   | "Sprint Report"
   | "Task List"
-  | "Sprint View Report";
+  | "Sprint View Report"
+  | "Sprint View Timeline Report";
+
+export type ReportTypesDto =
+  | "TIME_SHEET"
+  | "SPRINT_ESTIMATION"
+  | "TASK_LIST"
+  | "SPRINT_REPORT";
+export enum ReportTypesEnum {
+  "TIME_SHEET" = "Time Sheet",
+  "SPRINT_ESTIMATION" = "Sprint Estimation",
+  "TASK_LIST" = "Task List",
+  "SPRINT_REPORT" = "Sprint Report",
+}
 
 // Define models for tasks
 export interface SprintReportTask {
@@ -77,7 +91,18 @@ export interface SprintViewReportTask {
   title: string;
   key: string;
   status: string;
-  statusCategoryName: string;
+  statusCategoryName: StatusDto;
+}
+
+export interface SprintViewTimelineReportTask {
+  title: string;
+  key: string;
+  status: string;
+  statusCategoryName: StatusDto;
+  timeRange?: {
+    start: string;
+    end: string;
+  };
 }
 
 export interface AssignTasks {
@@ -99,6 +124,21 @@ export interface SprintViewReportRow {
   [date: string]: SprintViewAssignTasks | any;
 }
 
+export interface SprintViewTimelineReportData {
+  key: string;
+  value: {
+    devProgress: TimeDevProgress;
+    tasks: SprintViewTimelineReportTask[];
+  };
+}
+export interface SprintViewTimelineReportRow {
+  userId: number;
+  name: string;
+  picture: string | null;
+  email: string;
+  data: SprintViewTimelineReportData[];
+}
+
 export interface SprintViewReportTableRow {
   userId: number;
   name: string;
@@ -114,7 +154,7 @@ export interface SprintViewReportTableRow {
   tasksSpan: number;
 }
 
-export interface NewSprintViewReportTableRow {
+export interface SprintViewTimelineReportTableRow {
   userId: number;
   name: string;
   picture: string | null;
@@ -133,15 +173,23 @@ export interface NewSprintViewReportTableRow {
 }
 
 export interface SprintViewReportColumn {
-  id: string;
+  key: string;
   value: {
     devProgress: TimeDevProgress;
   };
 }
 
+export interface SprintViewTimelineReportColumn
+  extends SprintViewReportColumn {}
+
 export interface SprintViewReportDto {
   columns: SprintViewReportColumn[];
   rows: SprintViewReportRow[];
+}
+
+export interface SprintViewTimelineReportDto {
+  columns: SprintViewTimelineReportColumn[];
+  rows: SprintViewTimelineReportRow[];
 }
 
 interface DevProgress {
@@ -200,4 +248,21 @@ export interface ModifiesSprintViewReport {
   // assignedTask: SprintReportTask | null;
   // todayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
   // yesterdayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
+}
+export interface CreateReportPageDto {
+  name: string;
+}
+export interface CreateReportDto {
+  name: string;
+  reportType: ReportTypesDto;
+  pageId: number;
+}
+export interface UpdateReportDto {
+  name?: String;
+  startDate?: String;
+  endDate?: String;
+  projectIds?: number[];
+  userIds?: number[];
+  sprintIds?: number[];
+  types?: IntegrationType[];
 }
