@@ -1,4 +1,5 @@
 import { IntegrationType } from "models/integration";
+import { StatusDto } from "models/tasks";
 
 export type getTimeSheetReportDto = {
   startDate?: any;
@@ -90,14 +91,14 @@ export interface SprintViewReportTask {
   title: string;
   key: string;
   status: string;
-  statusCategoryName: string;
+  statusCategoryName: StatusDto;
 }
 
 export interface SprintViewTimelineReportTask {
   title: string;
   key: string;
   status: string;
-  statusCategoryName: string;
+  statusCategoryName: StatusDto;
   timeRange?: {
     start: string;
     end: string;

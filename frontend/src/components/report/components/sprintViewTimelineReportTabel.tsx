@@ -7,6 +7,8 @@ import {
 } from "models/reports";
 import dayjs from "dayjs";
 import TimeProgressComponent from "./timeProgressComponent";
+import classNames from "classnames";
+import { TaskStatusEnum } from "models/tasks";
 
 const { Text } = Typography;
 type Props = {
@@ -67,11 +69,20 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
               />
             ) : cell === "task" ? (
               <div
-                className={`flex h-full w-full justify-start rounded ${
-                  record.task[column.key].status === "Done"
-                    ? "bg-[#6CAE2B33]"
-                    : "bg-[#E7F4F8]"
-                }`}
+                className={classNames(
+                  `flex h-full w-full justify-start rounded`,
+                  {
+                    ["bg-statusToDoBg"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.TO_DO,
+                    ["bg-statusInProgressBg"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.IN_PROGRESS,
+                    ["bg-statusDoneBg"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.DONE,
+                  }
+                )}
               >
                 <Text
                   key={record.task[column.key].key}
@@ -86,30 +97,63 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
                 <div className={`flex justify-start`}>
                   <Text
                     key={record.task[column.key].key}
-                    className={`cursor-pointer ${
-                      record.task[column.key].status === "Done"
-                        ? "text-[#65656C] line-through"
-                        : "text-[#1D1D1D]"
-                    }`}
+                    className={classNames(`cursor-pointer`, {
+                      ["text-statusToDo"]:
+                        record.task[column.key].statusCategoryName ===
+                        TaskStatusEnum.TO_DO,
+                      ["text-statusInProgress"]:
+                        record.task[column.key].statusCategoryName ===
+                        TaskStatusEnum.IN_PROGRESS,
+                      ["text-statusDone"]:
+                        record.task[column.key].statusCategoryName ===
+                        TaskStatusEnum.DONE,
+                    })}
                     ellipsis={{ tooltip: record.task[column.key].title }}
                   >
                     {record.task[column.key].title}
                   </Text>
                 </div>
                 <div
-                  className={`flex justify-start rounded-lg px-2 ${
-                    record.task[column.key].status === "Done"
-                      ? "bg-[#6CAE2B33]"
-                      : "bg-[#E7F4F8]"
-                  }`}
+                  className={classNames(
+                    "relative flex w-max items-center gap-1 rounded-[36px] border px-2 py-0.5 text-xs font-medium text-black",
+                    {
+                      ["bg-statusToDoBg"]:
+                        record.task[column.key].statusCategoryName ===
+                        TaskStatusEnum.TO_DO,
+                      ["bg-statusInProgressBg"]:
+                        record.task[column.key].statusCategoryName ===
+                        TaskStatusEnum.IN_PROGRESS,
+                      ["bg-statusDoneBg"]:
+                        record.task[column.key].statusCategoryName ===
+                        TaskStatusEnum.DONE,
+
+                      ["border-statusToDo"]:
+                        record.task[column.key].statusCategoryName ===
+                        TaskStatusEnum.TO_DO,
+                      ["border-statusInProgress"]:
+                        record.task[column.key].statusCategoryName ===
+                        TaskStatusEnum.IN_PROGRESS,
+                      ["border-statusDone"]:
+                        record.task[column.key].statusCategoryName ===
+                        TaskStatusEnum.DONE,
+                    }
+                  )}
                 >
-                  <Text
-                    key={record.task[column.key].key}
-                    className={`cursor-pointer`}
-                    ellipsis={{ tooltip: record.task[column.key].status }}
-                  >
-                    {record.task[column.key].status}
-                  </Text>
+                  <div
+                    className={classNames("h-2 w-2 rounded-full", {
+                      ["bg-statusToDo"]:
+                        record.task[column.key].statusCategoryName ===
+                        TaskStatusEnum.TO_DO,
+                      ["bg-statusInProgress"]:
+                        record.task[column.key].statusCategoryName ===
+                        TaskStatusEnum.IN_PROGRESS,
+                      ["bg-statusDone"]:
+                        record.task[column.key].statusCategoryName ===
+                        TaskStatusEnum.DONE,
+                    })}
+                  />
+
+                  <div>{record.task[column.key].status}</div>
                 </div>
               </div>
             ) : (
