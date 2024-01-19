@@ -1,9 +1,7 @@
-import { Button, Form, Input, Spin } from "antd";
-import Link from "next/link";
+import { Button, Typography } from "antd";
 import { useRouter } from "next/router";
 import {
   LuClipboardList,
-  LuDownload,
   LuFolder,
   LuHelpCircle,
   LuLayoutDashboard,
@@ -20,21 +18,24 @@ import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
 import WorkspaceNav from "./components/workspaceNav";
-import GlobalModal from "../modals/globalModal";
-import PrimaryButton from "../common/buttons/primaryButton";
 import AddNewReportPage from "../report/components/addNewReportPage";
 import { useState } from "react";
+import MyLink from "../common/link/MyLink";
 
 type SideMenuProps = {
   option: { link: any; title: String; icon: any };
   active: boolean;
 };
+const { Text } = Typography;
 
 const SideMenu = () => {
   const router = useRouter();
   const reportPages = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages
   );
+  const pageId = router.query?.reportPageId
+    ? parseInt(router.query?.reportPageId as string)
+    : -1;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const SideMenuOption = ({ option, active }: SideMenuProps) => {
     const router = useRouter();
@@ -85,21 +86,35 @@ const SideMenu = () => {
           <div className="ml-2 flex flex-col gap-2 p-5">
             {reportPages?.map((reportPage) => {
               return (
-                <Link
+                <MyLink
                   href={"/reports/" + reportPage.id}
-                  className="flex gap-2 bg-red-50 text-black"
+                  className={`group flex items-center gap-2 rounded p-1 text-black hover:bg-[#ECECED] hover:font-semibold hover:text-primary ${
+                    pageId === reportPage.id
+                      ? "bg-[#ECECED] font-semibold text-primary"
+                      : ""
+                  }`}
                 >
-                  <div
-                    className={` flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
-                      active
-                        ? "stroke-primary "
-                        : "stroke-[#ADACB0] text-[#ADACB0]"
-                    }`}
-                  >
-                    <LuNewspaper size={16} />
-                  </div>
-                  {reportPage.name}
-                </Link>
+                  <>
+                    <div
+                      className={`flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
+                        pageId === reportPage.id
+                          ? "stroke-primary "
+                          : "stroke-[#ADACB0] text-[#ADACB0]"
+                      }`}
+                    >
+                      <LuNewspaper size={16} />
+                    </div>
+                    <div className="w-[130px]">
+                      <Text
+                        className="m-0 p-0 text-xs"
+                        ellipsis={{ tooltip: reportPage.name }}
+                      >
+                        {reportPage.name}
+                      </Text>
+                    </div>
+                    {/* <MoreOutlined /> */}
+                  </>
+                </MyLink>
               );
             })}
           </div>

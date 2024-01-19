@@ -82,7 +82,7 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
         },
         {
           title: (
-            <div className="flex items-center gap-2 w-max">
+            <div className="flex w-max items-center gap-2">
               <LuTimer />
               Spent Time
             </div>
@@ -148,6 +148,7 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
       onChange={handleTableChange}
       className="w-full"
       bordered
+      scroll={{ x: 1500 }}
     />
   );
 };
