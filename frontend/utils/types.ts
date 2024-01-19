@@ -23,6 +23,7 @@ import {
   SprintViewReportDto,
   SprintViewTimelineReportDto,
   UpdateReportDto,
+  UpdateReportPageDto,
   getTimeSheetReportDto,
 } from "models/reports";
 import {
@@ -134,5 +135,10 @@ export interface apiFunction {
   createReportPage: (data: CreateReportPageDto) => Promise<any>;
   createReport: (data: CreateReportDto) => Promise<any>;
   updateReport: (reportId: number, data: UpdateReportDto) => Promise<any>;
+  updateReportPage: (
+    reportId: number,
+    data: UpdateReportPageDto
+  ) => Promise<any>;
   deleteReport: (reportId: number) => Promise<any>;
+  getIntegrationTypesReportPage: () => Promise<any>;
 }

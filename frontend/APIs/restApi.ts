@@ -22,6 +22,7 @@ import {
   SprintViewReportDto,
   SprintViewTimelineReportDto,
   UpdateReportDto,
+  UpdateReportPageDto,
 } from "models/reports";
 import {
   AddWorkLogParams,
@@ -1819,10 +1820,32 @@ export async function updateReportRest(
     return false;
   }
 }
+export async function updateReportPageRest(
+  reportPageId: number,
+  data: UpdateReportPageDto
+) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.reportPage}/${reportPageId}`, data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
 
 export async function deleteReportRest(reportId: number) {
   try {
     const res = await axios.delete(`${apiEndPoints.reports}/${reportId}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getIntegrationTypesReportPageRest() {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.getIntegrationTypesReportPage}`
+    );
     return res.data;
   } catch (error: any) {
     return false;

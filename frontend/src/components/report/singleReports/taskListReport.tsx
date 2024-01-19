@@ -38,7 +38,9 @@ export default function TaskListReport({ reportData }: Props) {
   const [projects, setProjects] = useState<number[]>(
     reportData?.config?.projectIds ?? []
   );
-  const [calendarIds, setCalendarIds] = useState<number[]>([]);
+  const [calendarIds, setCalendarIds] = useState<number[]>(
+    reportData?.config?.calendarIds ? reportData?.config?.calendarIds : []
+  );
   const [selectedUser, setSelectedUser] = useState<number>(
     reportData?.config?.userIds?.length > 0
       ? reportData?.config?.userIds[0]
@@ -63,6 +65,7 @@ export default function TaskListReport({ reportData }: Props) {
       status,
       sprints,
       projectIds: projects,
+      calendarIds,
       userIds: selectedUser ? [selectedUser] : [],
       types: selectedSource,
     });
@@ -78,6 +81,7 @@ export default function TaskListReport({ reportData }: Props) {
       endDate: dateRange[1],
       sprintIds: sprints,
       projectIds: projects,
+      calendarIds,
       userIds: selectedUser ? [selectedUser] : [],
       types: selectedSource,
     });
@@ -129,6 +133,7 @@ export default function TaskListReport({ reportData }: Props) {
     projects,
     selectedUser,
     selectedSource,
+    calendarIds,
   ]);
   const getUserListByProject = async () => {
     const res = await userAPI.userListByProject(projects);
@@ -138,7 +143,7 @@ export default function TaskListReport({ reportData }: Props) {
     getUserListByProject();
   }, [projects]);
   return (
-    <div>
+    <>
       <ReportHeaderComponent
         title={reportData.name}
         reportData={reportData}
@@ -198,6 +203,6 @@ export default function TaskListReport({ reportData }: Props) {
       <Spin className="custom-spin" spinning={isLoading}>
         <TaskListReportComponent {...{ tasks }} />
       </Spin>
-    </div>
+    </>
   );
 }

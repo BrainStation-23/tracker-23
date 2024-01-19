@@ -29,7 +29,9 @@ const TimeSheetReport = ({ reportData }: Props) => {
   const [projects, setProjects] = useState<number[]>(
     reportData?.config?.projectIds ? reportData?.config?.projectIds : []
   );
-  const [calendarIds, setCalendarIds] = useState<number[]>([]);
+  const [calendarIds, setCalendarIds] = useState<number[]>(
+    reportData?.config?.calendarIds ? reportData?.config?.calendarIds : []
+  );
   const [column, setColumns] = useState([]);
   const [users, setUsers] = useState<SprintUser[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<number[]>(
@@ -77,6 +79,7 @@ const TimeSheetReport = ({ reportData }: Props) => {
       endDate: dateRange[1],
       userIds: selectedUsers,
       projectIds: projects,
+      calendarIds,
       types: selectedSource,
     });
     if (res) {
@@ -91,6 +94,7 @@ const TimeSheetReport = ({ reportData }: Props) => {
       endDate: dateRange[1],
       userIds: selectedUsers,
       projectIds: projects,
+      calendarIds,
       types: selectedSource,
     });
     res.columns && setColumns(res.columns);

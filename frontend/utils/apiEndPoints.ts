@@ -53,4 +53,5 @@ export const apiEndPoints = {
   userListByProject: `/users/userListByProjectId`,
   reportPage: "/pages",
   reports: "/reports",
+  getIntegrationTypesReportPage: "/integrations/report-page",
 };

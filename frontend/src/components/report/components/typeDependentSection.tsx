@@ -76,9 +76,8 @@ const TypeDependentSection = ({
             className="w-[210px]"
           />
         ))}
-      {["Sprint Estimate", "Sprint Report"].includes(activeTab) &&
-        showCalendarSelector &&
-        activeTab === "Task List" && (
+      {!["Sprint Estimate", "Sprint Report"].includes(activeTab) &&
+        showCalendarSelector && (
           <CalendarSelectorComponent
             key={Math.random()}
             {...{ calendarIds, setCalendarIds }}
