@@ -321,6 +321,7 @@ model Settings {
   id         Int    @id @default(autoincrement())
   syncTime   Int    @default(6)
   timeFormat String @default("Day")
+  extraSpent Int    @default(120)
 
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int       @unique
