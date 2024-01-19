@@ -13,7 +13,10 @@ import {
   setReportProjectsSlice,
   setReportSprintListReducer,
 } from "@/storage/redux/projectsSlice";
-import { ReportData } from "@/storage/redux/reportsSlice";
+import {
+  ReportData,
+  setReportIntegrationTypesSlice,
+} from "@/storage/redux/reportsSlice";
 import { RootState } from "@/storage/redux/store";
 
 import PrimaryButton from "../common/buttons/primaryButton";
@@ -23,6 +26,7 @@ import SprintEstimateReport from "./singleReports/sprintEstimateReport";
 import SprintReport from "./singleReports/sprintReport";
 import TaskListReport from "./singleReports/taskListReport";
 import TimeSheetReport from "./singleReports/timeSheetReport";
+import { IntegrationType } from "models/integration";
 
 const ReportPageComponent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,6 +44,18 @@ const ReportPageComponent = () => {
     const res = await userAPI.getReportSprints();
     if (res?.length > 0) dispatch(setReportSprintListReducer(res));
   };
+  const getIntegrationTypes = async () => {
+    const res = await userAPI.getIntegrationTypesReportPage();
+    console.log("🚀 ~ getIntegrationTypes ~ res:", res);
+    if (res?.length > 0) {
+      const types: IntegrationType[] = Array.from(
+        new Set(res.map((type: any) => type.type))
+      );
+      console.log("🚀 ~ getIntegrationTypes ~ types:", types);
+      dispatch(setReportIntegrationTypesSlice(types));
+    }
+  };
+
   const getProjectWiseStatues = async () => {
     {
       const res = await userAPI.getAllReportProjects();
@@ -61,6 +77,7 @@ const ReportPageComponent = () => {
     }
   };
   useEffect(() => {
+    getIntegrationTypes();
     getSprintList();
     getProjectWiseStatues();
   }, []);

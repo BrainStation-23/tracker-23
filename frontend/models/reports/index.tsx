@@ -226,6 +226,7 @@ export interface UpdateReportDto {
   startDate?: String;
   endDate?: String;
   projectIds?: number[];
+  calendarIds?: number[];
   userIds?: number[];
   sprintIds?: number[];
   types?: IntegrationType[];

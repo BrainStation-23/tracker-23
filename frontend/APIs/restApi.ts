@@ -1555,3 +1555,14 @@ export async function deleteReportRest(reportId: number) {
     return false;
   }
 }
+
+export async function getIntegrationTypesReportPageRest() {
+  try {
+    const res = await axios.get(
+      `${apiEndPoints.getIntegrationTypesReportPage}`
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}

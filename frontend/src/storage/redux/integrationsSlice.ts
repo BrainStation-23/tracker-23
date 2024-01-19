@@ -1,24 +1,24 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Integration } from "models/integration";
-
-
+import { IntegrationDto, IntegrationType } from "models/integration";
 
 interface IntegrationsState {
-  integrations: Integration[];
+  integrations: IntegrationDto[];
+  integrationTypes: IntegrationType[];
 }
 
 const initialState: IntegrationsState = {
   integrations: [],
+  integrationTypes: [],
 };
 
 const integrationsSlice = createSlice({
   name: "integrations",
   initialState,
   reducers: {
-    setIntegrationsSlice: (state, action: PayloadAction<Integration[]>) => {
+    setIntegrationsSlice: (state, action: PayloadAction<IntegrationDto[]>) => {
       state.integrations = action.payload;
     },
-    addIntegrationsSlice: (state, action: PayloadAction<Integration>) => {
+    addIntegrationsSlice: (state, action: PayloadAction<IntegrationDto>) => {
       state.integrations.push(action.payload);
     },
     deleteIntegrationsSlice: (state, action: PayloadAction<number>) => {
@@ -29,6 +29,12 @@ const integrationsSlice = createSlice({
     resetIntegrationsSlice: (state) => {
       state.integrations = [];
     },
+    setIntegrationTypesSlice: (
+      state,
+      action: PayloadAction<IntegrationType[]>
+    ) => {
+      state.integrationTypes = action.payload;
+    },
   },
 });
 
@@ -37,6 +43,7 @@ export const {
   addIntegrationsSlice,
   deleteIntegrationsSlice,
   resetIntegrationsSlice,
+  setIntegrationTypesSlice,
 } = integrationsSlice.actions;
 
 export default integrationsSlice.reducer;

@@ -78,6 +78,7 @@ import {
   createReportRest,
   updateReportRest,
   deleteReportRest,
+  getIntegrationTypesReportPageRest,
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -158,6 +159,7 @@ const restApi: apiFunction = {
   createReport: createReportRest,
   updateReport: updateReportRest,
   deleteReport: deleteReportRest,
+  getIntegrationTypesReportPage: getIntegrationTypesReportPageRest,
 };
 
 export const userAPI: apiFunction = restApi;

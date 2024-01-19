@@ -6,6 +6,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 export interface ReportConfig {
   id: number;
   projectIds?: number[];
+  calendarIds?: number[];
   userIds?: number[];
   types?: IntegrationType[];
   sprintIds?: number[];
@@ -36,10 +37,13 @@ export interface ReportPageDto {
 
 interface ReportsSliceState {
   reportPages: ReportPageDto[];
+  integrationTypes: IntegrationType[];
 }
 
 const initialState: ReportsSliceState = {
   reportPages: [],
+
+  integrationTypes: [],
 };
 
 const reportsSlice = createSlice({
@@ -54,6 +58,12 @@ const reportsSlice = createSlice({
         if (state.reportPages[i].id === action.payload.pageId)
           state.reportPages[i].reports.push(action.payload);
       }
+    },
+    setReportIntegrationTypesSlice: (
+      state,
+      action: PayloadAction<IntegrationType[]>
+    ) => {
+      state.integrationTypes = action.payload;
     },
     deleteReportSlice: (state, action: PayloadAction<ReportData>) => {
       for (let i = 0; i < state.reportPages.length; i++) {
@@ -111,6 +121,7 @@ export const {
   updateReportSlice,
   deleteReportSlice,
   resetReportPages,
+  setReportIntegrationTypesSlice,
 } = reportsSlice.actions;
 
 export default reportsSlice.reducer;

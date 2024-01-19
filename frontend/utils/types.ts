@@ -131,4 +131,5 @@ export interface apiFunction {
   createReport: (data: CreateReportDto) => Promise<any>;
   updateReport: (reportId: number, data: UpdateReportDto) => Promise<any>;
   deleteReport: (reportId: number) => Promise<any>;
+  getIntegrationTypesReportPage: () => Promise<any>;
 }

@@ -1,6 +1,6 @@
 import { Button } from "antd";
 import { userAPI } from "APIs";
-import { Integration } from "models/integration";
+import { IntegrationDto } from "models/integration";
 import { useRouter } from "next/router";
 
 import JiraLogoFullSvg from "@/assets/svg/JiraFullLogoSvg";
@@ -8,7 +8,7 @@ import TrelloLogoSvg from "@/assets/svg/TrelloLogoSvg";
 import OpenLinkInNewTab from "@/components/common/link/OpenLinkInNewTab";
 
 type Props = {
-  integration: Integration;
+  integration: IntegrationDto;
   setIsModalSpinning: Function;
 };
 

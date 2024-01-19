@@ -1,11 +1,11 @@
-import { Integration } from "models/integration";
+import { IntegrationDto } from "models/integration";
 
 import ImportCard from "./importCard";
 
 type Props = {
   title: string;
   adminMode: boolean;
-  integrations: Integration[];
+  integrations: IntegrationDto[];
   handleUninstallIntegration: Function;
   handleDeleteIntegration: Function;
   installed?: boolean;

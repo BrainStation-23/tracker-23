@@ -51,7 +51,7 @@ const OutlookCallBack = () => {
   };
   let tip = "";
   if (router.query.code) tip = "Integrating Outlook";
-  if (router.query.error) tip = "Cancelling Integration";
+  if (router.query.error) tip = "Cancelling IntegrationDto";
   return (
     <>
       <div className="flex w-full justify-center p-40">

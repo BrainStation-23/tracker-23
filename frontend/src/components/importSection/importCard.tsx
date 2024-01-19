@@ -1,7 +1,7 @@
 import { Button } from "antd";
 import { userAPI } from "APIs";
 import {
-  Integration,
+  IntegrationDto,
   integrationName,
   IntegrationType,
 } from "models/integration";
@@ -19,7 +19,7 @@ import DeleteButton from "../common/buttons/deleteButton";
 import OpenLinkInNewTab from "../common/link/OpenLinkInNewTab";
 
 type Props = {
-  data: Integration;
+  data: IntegrationDto;
   handleUninstallIntegration?: Function;
   handleDeleteIntegration?: Function;
   installed?: boolean;
