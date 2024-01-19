@@ -479,19 +479,106 @@ export class SprintsService {
   }
 
   async newSprintView(user: User, query: NewSprintViewQueryDto) {
+    const columns: any[] = [];
+    const mappedUserWDate = new Map<number, any[]>();
+    const tasks = await this.getSprintTasks(Number(query.sprintId));
+    const mappedUserWithWorkspaceId = await this.mapUserWorkspaces(query, user);
+    const {
+      mappedKeyAndValueForRow,
+      MappedEstimationAndSpentTimeForColumn,
+      mappedSpentTimeWithDateAndUserWorkspaceId,
+      dateArray,
+    } = this.updateUserData(tasks, mappedUserWithWorkspaceId, query);
+
+    //Push the real data into columns
+    for (const [key, value] of MappedEstimationAndSpentTimeForColumn) {
+      columns.push({
+        key: Number(key) ? new Date(Number(key)) : key,
+        value: {
+          devProgress: {
+            estimatedTime: value.estimation.toFixed(2),
+            spentTime: value.spentTime.toFixed(2),
+          },
+        },
+      });
+    }
+
+    //Push the real data into rows
+    for (const [key, value] of mappedKeyAndValueForRow.entries()) {
+      const { keyType, userW } = JSON.parse(key); // keyType string of date. example : "2023-12-18T18:00:00.000Z"
+      const data = mappedSpentTimeWithDateAndUserWorkspaceId.get(key); //if finds, that means date-wise spent-time otherwise assignTask spent-time
+
+      //mapping dates with every userWorkspaceIds -->start
+      mappedUserWDate.has(userW)
+        ? mappedUserWDate
+            .get(userW)
+            ?.push(
+              keyType === 'AssignTasks' ? keyType : new Date(keyType).getTime(),
+            )
+        : mappedUserWDate.set(userW, [
+            keyType === 'AssignTasks' ? keyType : new Date(keyType).getTime(),
+          ]);
+      //mapping dates with every userWorkspaceIds -->end
+
+      value.devProgress.estimatedTime =
+        value.devProgress.estimatedTime?.toFixed(2);
+      value.devProgress.spentTime = data?.spentDateWiseTime
+        ? data?.spentDateWiseTime.toFixed()
+        : value.devProgress.spentTime?.toFixed(2);
+      mappedUserWithWorkspaceId.get(userW)?.data.push({
+        key: keyType === 'AssignTasks' ? keyType : new Date(keyType),
+        value,
+      });
+    }
+
+    // Push demo data in which dates do not belong any real value
+    for (let index = 0; index < dateArray.length; index++) {
+      const date = dateArray[index];
+      const fixedVal = 0;
+      // Push demo data into columns
+      if (!MappedEstimationAndSpentTimeForColumn.has(String(date.getTime()))) {
+        columns.push({
+          key: date,
+          value: {
+            devProgress: {
+              estimatedTime: fixedVal?.toFixed(2),
+              spentTime: fixedVal?.toFixed(2),
+            },
+          },
+        });
+      }
+
+      // Push demo data into rows
+      for (const userW of mappedUserWDate.keys()) {
+        if (!mappedUserWDate.get(userW)?.includes(date.getTime())) {
+          mappedUserWithWorkspaceId.get(userW)?.data.push({
+            key: date,
+            value: {
+              devProgress: {
+                estimatedTime: fixedVal?.toFixed(2),
+                spentTime: fixedVal?.toFixed(2),
+              },
+              tasks: [],
+            },
+          });
+          mappedUserWDate.get(userW)?.push(date.getTime());
+        }
+      }
+    }
+
+    return { columns, rows: [...mappedUserWithWorkspaceId.values()] };
+  }
+
+  private async mapUserWorkspaces(
+    query: NewSprintViewQueryDto,
+    user: User,
+  ): Promise<Map<number, any>> {
     const sprint = await this.sprintDatabase.getSprintById({
       id: Number(query.sprintId),
     });
     if (!sprint) {
       throw new APIException('Sprint not found!', HttpStatus.BAD_REQUEST);
     }
-
-    const taskIds: number[] = sprint.sprintTask.map(
-      (sprintTask) => sprintTask.taskId,
-    );
-    const tasks = await this.tasksDatabase.getTasks({
-      id: { in: taskIds },
-    });
     const userIds = query?.userIds;
     const arrayOfUserIds = userIds?.split(',');
     const userIdsArray = arrayOfUserIds?.map(Number);
@@ -501,53 +588,6 @@ export class SprintsService {
       status: UserWorkspaceStatus.ACTIVE,
       userId: { in: userIdsArray },
     });
-
-    const mappedUserWithWorkspaceId = await this.mapUserWorkspaces(
-      userWorkspaceList,
-      sprint,
-    );
-
-    const data: any[] = [];
-    let done = 0;
-    let flag = true;
-
-    for (
-      let idx = new Date(query.startDate).getTime();
-      idx <= new Date(query.endDate).getTime();
-      idx += 3600 * 1000 * 24
-    ) {
-      done += this.updateUserData(
-        tasks,
-        mappedUserWithWorkspaceId,
-        idx,
-        flag,
-        done,
-      );
-      flag = false;
-
-      const formattedData = {
-        date: new Date(idx),
-        users: _.cloneDeep([...mappedUserWithWorkspaceId.values()]),
-      };
-
-      this.resetUserTasks(mappedUserWithWorkspaceId);
-      data.push(formattedData);
-    }
-
-    const sprintInfo = {
-      name: sprint.name,
-      projectName: sprint.project.projectName,
-      total: sprint.sprintTask.length,
-      done,
-    };
-
-    return { data, sprintInfo };
-  }
-
-  private async mapUserWorkspaces(
-    userWorkspaceList: any[],
-    sprint: any,
-  ): Promise<Map<number, any>> {
     const mappedUserWithWorkspaceId = new Map<number, any>();
 
     for (const userWorkspace of userWorkspaceList) {
@@ -568,10 +608,8 @@ export class SprintsService {
             ? `${user.firstName} ${user.lastName}`
             : user.firstName,
           picture: user.picture,
-          devProgress: { estimatedTime: 0, spentTime: 0 },
-          assignedTasks: [],
-          yesterdayTasks: [],
-          todayTasks: [],
+          email: user.email,
+          data: [],
         });
       }
     }
@@ -579,64 +617,150 @@ export class SprintsService {
     return mappedUserWithWorkspaceId;
   }
 
-  private updateUserData(
-    tasks: any[],
-    mappedUserWithWorkspaceId: Map<number, any>,
-    idx: number,
-    flag: boolean,
-    done: number,
-  ): number {
-    console.log(tasks.length)
-    for (const task of tasks) {
-      if (
-        task.userWorkspaceId &&
-        mappedUserWithWorkspaceId.has(task.userWorkspaceId)
-      ) {
-        const existingUser = mappedUserWithWorkspaceId.get(
-          task.userWorkspaceId,
-        );
-        const taskCreatedAtTimestamp = new Date(task.createdAt).getTime();
-
-        if (taskCreatedAtTimestamp - 3600 * 1000 * 24 <= idx) {
-          if (task.status === 'Done') existingUser.devProgress.done += 1;
-
-          existingUser.devProgress.total += 1;
-          const assignTask = {
-            title: task.title,
-            key: task.key,
-            status: task.status,
-            statusCategoryName: task.statusCategoryName,
-          };
-
-          existingUser.assignedTasks.push(assignTask);
-
-          const doesTodayTask = this.doesTodayTask(idx, task.sessions);
-          const doesYesterDayTask = this.doesTodayTask(
-            idx - 3600 * 1000 * 24,
-            task.sessions,
-          );
-
-          if (doesTodayTask) existingUser.todayTasks.push(assignTask);
-          if (doesYesterDayTask) existingUser.yesterdayTasks.push(assignTask);
-
-          mappedUserWithWorkspaceId.set(task.userWorkspaceId, existingUser);
-        }
-      }
-
-      if (task.status === 'Done' && flag) {
-        done += 1;
-      }
+  async getSprintTasks(id: number) {
+    const sprint = await this.sprintDatabase.getSprintById({
+      id,
+    });
+    if (!sprint) {
+      throw new APIException('Sprint not found!', HttpStatus.BAD_REQUEST);
     }
-    return done;
+
+    const taskIds: number[] = sprint.sprintTask.map(
+      (sprintTask) => sprintTask.taskId,
+    );
+    return await this.tasksDatabase.getTasks({
+      id: { in: taskIds },
+    });
   }
 
-  private resetUserTasks(mappedUserWithWorkspaceId: Map<number, any>): void {
-    [...mappedUserWithWorkspaceId.values()].forEach((user: any) => {
-      user.assignedTasks = [];
-      user.todayTasks = [];
-      user.yesterdayTasks = [];
-      user.devProgress = { total: 0, done: 0 };
+  private updateUserData(
+    taskList: any[],
+    mappedUserWithWorkspaceId: Map<number, any>,
+    query: NewSprintViewQueryDto,
+  ) {
+    const dateArray: Date[] = [];
+    const oneDayTime = 3600 * 1000 * 24;
+    const MappedEstimationAndSpentTimeForColumn = new Map<
+      string,
+      { estimation: number; spentTime: number }
+    >();
+    const mappedSpentTimeWithDateAndUserWorkspaceId = new Map<
+      string,
+      { spentDateWiseTime: number }
+    >();
+    const {
+      mappedTimeSpentWithUserWorkspaceId,
+      mappedKeyAndValueForRow,
+      assignTasksSessionTime,
+      assignTasksEstimatedTime,
+    } = this.taskSpentTime(taskList, mappedUserWithWorkspaceId);
+
+    //assign the spentTime to the assignTasks
+    //Column
+    MappedEstimationAndSpentTimeForColumn.set('AssignTasks', {
+      spentTime: assignTasksSessionTime,
+      estimation: assignTasksEstimatedTime,
     });
+    //Row
+    for (const [key, value] of mappedKeyAndValueForRow.entries()) {
+      const { userW } = JSON.parse(key);
+      const sessionValue = mappedTimeSpentWithUserWorkspaceId.get(userW);
+      value.devProgress.spentTime = sessionValue.spentTime;
+    }
+    //find date wise task and spent time
+    for (
+      let idx = new Date(query.startDate).getTime() + oneDayTime;
+      idx <= new Date(query.endDate).getTime() + oneDayTime;
+      idx += oneDayTime
+    ) {
+      dateArray.push(new Date(idx));
+      for (const task of taskList) {
+        const doesTodayTask = this.todayTaskWithTimeRangeAndSpentTime(
+          idx,
+          task.sessions,
+          mappedSpentTimeWithDateAndUserWorkspaceId,
+        );
+
+        //Keep date wise devProgress for column start
+        if (
+          doesTodayTask.flag &&
+          MappedEstimationAndSpentTimeForColumn.has(String(idx))
+        ) {
+          const data = MappedEstimationAndSpentTimeForColumn.get(String(idx));
+          if (data) {
+            data.estimation += task.estimation;
+            data.spentTime += doesTodayTask.spentTime;
+          }
+        } else if (doesTodayTask.flag) {
+          MappedEstimationAndSpentTimeForColumn.set(String(idx), {
+            estimation: task.estimation,
+            spentTime: doesTodayTask.spentTime,
+          });
+        }
+        //Keep date wise devProgress for column end
+
+        if (
+          doesTodayTask.flag &&
+          task.userWorkspaceId &&
+          mappedUserWithWorkspaceId.has(task.userWorkspaceId)
+        ) {
+          const mapKey = JSON.stringify({
+            keyType: new Date(idx),
+            userW: task.userWorkspaceId,
+          });
+          if (mappedKeyAndValueForRow.has(mapKey)) {
+            const valueData = mappedKeyAndValueForRow.get(mapKey);
+            const incomingEstimationTime =
+              valueData.devProgress.estimatedTime + task.estimation;
+            // const incomingSpentTime =
+            //   valueData.devProgress.spentTime + doesTodayTask.spentTime;
+
+            valueData.devProgress = {
+              estimatedTime: incomingEstimationTime,
+              // spentTime: incomingSpentTime,
+            };
+            valueData.tasks.push({
+              title: task.title,
+              key: task.key,
+              timeRange: {
+                start: new Date(doesTodayTask.timeRange.start),
+                end: new Date(doesTodayTask.timeRange.end),
+              },
+              status: task.status,
+              statusCategoryName: task.statusCategoryName,
+            });
+          } else {
+            const devProgress = {
+              estimatedTime: task.estimation,
+              spentTime: 0,
+            };
+            const tasks: any[] = [];
+
+            tasks.push({
+              title: task.title,
+              key: task.key,
+              timeRange: {
+                start: new Date(doesTodayTask.timeRange.start),
+                end: new Date(doesTodayTask.timeRange.end),
+              },
+              status: task.status,
+              statusCategoryName: task.statusCategoryName,
+            });
+            mappedKeyAndValueForRow.set(mapKey, {
+              devProgress,
+              tasks,
+            });
+          }
+        }
+      }
+    }
+
+    return {
+      mappedKeyAndValueForRow,
+      MappedEstimationAndSpentTimeForColumn,
+      mappedSpentTimeWithDateAndUserWorkspaceId,
+      dateArray,
+    };
   }
 
   private doesTodayTask(time: number, sessions: Session[]) {
@@ -653,6 +777,165 @@ export class SprintsService {
       }
     }
     return false;
+  }
+
+  private todayTaskWithTimeRangeAndSpentTime(
+    time: number,
+    sessions: Session[],
+    mappedSpentTimeWithDateAndUserWorkspaceId: Map<
+      string,
+      { spentDateWiseTime: number }
+    >,
+  ) {
+    let flag = false;
+    let sessionTimeArray: any[] = [];
+    const mySet: any = new Set();
+    const parsedTime = dayjs(new Date(time));
+    const startTime = parsedTime.startOf('day').valueOf();
+    const endTime = parsedTime.endOf('day').valueOf();
+    let sessionSpentTime = 0;
+    for (let index = 0; index < sessions.length; index++) {
+      const session = sessions[index];
+      const sessionStartTime = dayjs(session.startTime);
+      mySet.add(sessionStartTime.startOf('day').valueOf());
+      if (
+        new Date(session.startTime).getTime() >= startTime &&
+        new Date(session.startTime).getTime() <= endTime
+      ) {
+        flag = true;
+      }
+      if (session.endTime && new Date(session.startTime).getTime() <= endTime) {
+        sessionSpentTime +=
+          (new Date(session.endTime).getTime() -
+            new Date(session.startTime).getTime()) /
+          (1000 * 3600);
+      }
+      const mapKey = JSON.stringify({
+        keyType: new Date(time),
+        userW: session.userWorkspaceId,
+      });
+      if (mappedSpentTimeWithDateAndUserWorkspaceId.has(mapKey)) {
+        const data = mappedSpentTimeWithDateAndUserWorkspaceId.get(mapKey);
+        if (data) {
+          data.spentDateWiseTime += sessionSpentTime;
+        }
+      } else if (session.userWorkspaceId) {
+        mappedSpentTimeWithDateAndUserWorkspaceId.set(mapKey, {
+          spentDateWiseTime: sessionSpentTime,
+        });
+      }
+    }
+
+    //TimeRange figure out of a task
+    sessionTimeArray = [...mySet];
+    sessionTimeArray.sort((a, b) => a - b);
+    if (flag) {
+      const targetStartTimeIndex = sessionTimeArray.indexOf(startTime);
+      let end = startTime;
+      let start = startTime;
+      for (let i = targetStartTimeIndex + 1; i < sessionTimeArray.length; i++) {
+        if (sessionTimeArray[i] - end === 86400000) {
+          end = sessionTimeArray[i];
+        }
+      }
+      for (let i = targetStartTimeIndex - 1; i >= 0; i--) {
+        if (start - sessionTimeArray[i] === 86400000) {
+          start = sessionTimeArray[i];
+        }
+      }
+      return {
+        flag: true,
+        timeRange: { start, end },
+        spentTime: sessionSpentTime,
+      };
+    }
+    return { flag: false, timeRange: { start: 0, end: 0 }, spentTime: 0 };
+  }
+
+  private taskSpentTime(
+    taskList: any[],
+    mappedUserWithWorkspaceId: Map<number, any>,
+  ) {
+    const mappedKeyAndValueForRow = new Map<string, any>();
+    const mappedTimeSpentWithUserWorkspaceId = new Map<number, any>();
+    let assignTasksSessionTime = 0,
+      assignTasksEstimatedTime = 0;
+    for (const task of taskList) {
+      const sessions = task.sessions;
+      if (mappedUserWithWorkspaceId.has(task.userWorkspaceId)) {
+        assignTasksEstimatedTime += task.estimation;
+      }
+
+      for (let index = 0; index < sessions.length; index++) {
+        const session: Session = sessions[index];
+        if (session.endTime) {
+          const sessionSpentTime =
+            (new Date(session.endTime).getTime() -
+              new Date(session.startTime).getTime()) /
+            (1000 * 3600);
+          if (mappedUserWithWorkspaceId.has(task.userWorkspaceId)) {
+            assignTasksSessionTime += sessionSpentTime;
+          }
+          if (
+            session.userWorkspaceId &&
+            mappedTimeSpentWithUserWorkspaceId.has(session.userWorkspaceId)
+          ) {
+            const spentValue = mappedTimeSpentWithUserWorkspaceId.get(
+              session.userWorkspaceId,
+            );
+            spentValue.spentTime += sessionSpentTime;
+          } else if (session.userWorkspaceId) {
+            mappedTimeSpentWithUserWorkspaceId.set(session.userWorkspaceId, {
+              spentTime: sessionSpentTime,
+            });
+          }
+        }
+      }
+
+      //Find the assign tasks
+      if (mappedUserWithWorkspaceId.has(task.userWorkspaceId)) {
+        const mapKey = JSON.stringify({
+          keyType: 'AssignTasks',
+          userW: task.userWorkspaceId,
+        });
+        if (mappedKeyAndValueForRow.has(mapKey)) {
+          const valueData = mappedKeyAndValueForRow.get(mapKey);
+          valueData.devProgress = {
+            estimatedTime:
+              valueData.devProgress.estimatedTime + task.estimation,
+          };
+          valueData.tasks.push({
+            title: task.title,
+            key: task.key,
+            status: task.status,
+            statusCategoryName: task.statusCategoryName,
+          });
+        } else {
+          const tasks: any[] = [];
+          const devProgress = {
+            estimatedTime: task.estimation,
+            spentTime: 0,
+          };
+
+          tasks.push({
+            title: task.title,
+            key: task.key,
+            status: task.status,
+            statusCategoryName: task.statusCategoryName,
+          });
+          mappedKeyAndValueForRow.set(mapKey, {
+            devProgress,
+            tasks,
+          });
+        }
+      }
+    }
+    return {
+      mappedTimeSpentWithUserWorkspaceId,
+      mappedKeyAndValueForRow,
+      assignTasksSessionTime,
+      assignTasksEstimatedTime,
+    };
   }
 
   async getReportPageSprints(user: User) {

@@ -43,7 +43,7 @@ export class SprintsController {
     @GetUser() user: User,
     @Query() query: NewSprintViewQueryDto,
   ) {
-    return this.sprintsService.newSprintView(user, query);
+    return await this.sprintsService.newSprintView(user, query);
   }
 
   @Get('report-page')
