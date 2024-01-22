@@ -27,7 +27,7 @@ model Workspace {
   projects       Project[]
   integrations   Integration[]
   notifications  Notification[]
-  pages Page[]
+  pages          Page[]
   // workspaceInvitations WorkspaceInvitation[]
 
   // Creator          User              @relation(fields: [creatorUserId], references: [id])
@@ -54,7 +54,7 @@ model UserWorkspace {
   task            Task[]
   userIntegration UserIntegration[]
   sessions        Session[]
-  pages Page[]
+  pages           Page[]
 
   user          User        @relation("User", fields: [userId], references: [id])
   userId        Int
@@ -350,22 +350,44 @@ model Scripts {
 }
 
 model Page {
-  id              Int        @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   name            String?
   userWorkspace   UserWorkspace @relation(fields: [userWorkspaceId], references: [id], onDelete: Cascade)
   userWorkspaceId Int
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId Int
-  reports          Report[]
+  workspace       Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId     Int
+  reports         Report[]
 }
+
 model Report {
-  id              Int        @id @default(autoincrement())
-  name            String?
-  config Json?
-  reportType      ReportType
-  page          Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  pageId        Int
+  id         Int        @id @default(autoincrement())
+  name       String?
+  config     Json?
+  reportType ReportType
+  page       Page       @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId     Int
 }
+
+model Onboarding {
+  id      Int      @id @default(autoincrement())
+  userId  Int
+  answers Answer[]
+}
+
+model StaticContent {
+  id       Int               @id @default(autoincrement())
+  type     StaticContenttype
+  contents Json[]
+}
+
+model Answer {
+  id           Int        @id @default(autoincrement())
+  question     String
+  answer       String
+  onboarding   Onboarding @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  onboardingId Int
+}
+
 enum Priority {
   LOW
   MEDIUM
@@ -435,4 +457,8 @@ enum ReportType {
   TASK_LIST
   SPRINT_REPORT
   SPRINT_TIMELINE
+}
+
+enum StaticContenttype {
+  ONBOARDING
 }
