@@ -30,6 +30,7 @@ import TimeSheetReport from "./singleReports/timeSheetReport";
 import { IntegrationType } from "models/integration";
 import { Form, Input } from "antd";
 import { UpdateReportPageDto } from "models/reports";
+import SprintTimelineReport from "./singleReports/sprintTimelineReport";
 
 const ReportPageComponent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -76,6 +77,8 @@ const ReportPageComponent = () => {
         return <TaskListReport reportData={report} />;
       case "SPRINT_REPORT":
         return <SprintReport reportData={report} />;
+      case "SPRINT_TIMELINE":
+        return <SprintTimelineReport reportData={report} />;
       default:
         return <div>No report found</div>;
     }
