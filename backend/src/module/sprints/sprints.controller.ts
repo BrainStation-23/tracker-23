@@ -4,7 +4,10 @@ import { JwtAuthGuard } from 'src/guard';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
 import { GetSprintListQueryDto } from './dto';
-import { SprintViewReqBodyDto } from './dto/sprintView.dto';
+import {
+  NewSprintViewQueryDto,
+  SprintViewReqBodyDto,
+} from './dto/sprintView.dto';
 
 @Controller('sprints')
 export class SprintsController {
@@ -32,6 +35,15 @@ export class SprintsController {
     @Query() query: SprintViewReqBodyDto,
   ) {
     return this.sprintsService.sprintView(user, query);
+  }
+
+  @Get('new-sprint-view')
+  @UseGuards(JwtAuthGuard)
+  async newSprintView(
+    @GetUser() user: User,
+    @Query() query: NewSprintViewQueryDto,
+  ) {
+    return await this.sprintsService.newSprintView(user, query);
   }
 
   @Get('report-page')

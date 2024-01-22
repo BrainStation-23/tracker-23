@@ -22,6 +22,7 @@ import { DataMigrationModule } from './module/data_migration/data_migration.modu
 import { OutlookModule } from './module/outlook/outlook.module';
 import { PagesModule } from './module/pages/pages.module';
 import { ReportsModule } from './module/reports/reports.module';
+import { OnboardingModule } from './module/onboarding/onboarding.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ReportsModule } from './module/reports/reports.module';
     OutlookModule,
     PagesModule,
     ReportsModule,
+    OnboardingModule,
   ],
   providers: [CronService],
 })
