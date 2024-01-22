@@ -680,6 +680,7 @@ export class SprintsService {
           idx,
           task.sessions,
           mappedSpentTimeWithDateAndUserWorkspaceId,
+          task.status,
         );
 
         //Keep date wise devProgress for column start
@@ -727,8 +728,14 @@ export class SprintsService {
                 start: new Date(doesTodayTask.timeRange.start),
                 end: new Date(doesTodayTask.timeRange.end),
               },
-              status: task.status,
-              statusCategoryName: task.statusCategoryName,
+              status:
+                doesTodayTask.status === 'In Progress'
+                  ? 'In Progress'
+                  : task.status,
+              statusCategoryName:
+                doesTodayTask.status === 'In Progress'
+                  ? 'IN_PROGRESS'
+                  : task.statusCategoryName,
             });
           } else {
             const devProgress = {
@@ -744,8 +751,14 @@ export class SprintsService {
                 start: new Date(doesTodayTask.timeRange.start),
                 end: new Date(doesTodayTask.timeRange.end),
               },
-              status: task.status,
-              statusCategoryName: task.statusCategoryName,
+              status:
+                doesTodayTask.status === 'In Progress'
+                  ? 'In Progress'
+                  : task.status,
+              statusCategoryName:
+                doesTodayTask.status === 'In Progress'
+                  ? 'IN_PROGRESS'
+                  : task.statusCategoryName,
             });
             mappedKeyAndValueForRow.set(mapKey, {
               devProgress,
@@ -787,6 +800,7 @@ export class SprintsService {
       string,
       { spentDateWiseTime: number }
     >,
+    taskStatus: string,
   ) {
     let flag = false;
     let sessionTimeArray: any[] = [];
@@ -834,6 +848,39 @@ export class SprintsService {
       const targetStartTimeIndex = sessionTimeArray.indexOf(startTime);
       let end = startTime;
       let start = startTime;
+      if (taskStatus === 'Done') {
+        if (sessionTimeArray.length - 1 === targetStartTimeIndex) {
+          return {
+            flag: true,
+            timeRange: { start, end },
+            spentTime: sessionSpentTime,
+          };
+        } else {
+          for (
+            let i = targetStartTimeIndex + 1;
+            i < sessionTimeArray.length - 1;
+            i++
+          ) {
+            if (sessionTimeArray[i] - end === 86400000) {
+              end = sessionTimeArray[i];
+            }
+          }
+          for (let i = targetStartTimeIndex - 1; i >= 0; i--) {
+            if (start - sessionTimeArray[i] === 86400000) {
+              start = sessionTimeArray[i];
+            }
+          }
+          return {
+            flag: true,
+            timeRange: { start, end },
+            spentTime: sessionSpentTime,
+            status: 'In Progress',
+          };
+        }
+      }
+      // const targetStartTimeIndex = sessionTimeArray.indexOf(startTime);
+      // let end = startTime;
+      // let start = startTime;
       for (let i = targetStartTimeIndex + 1; i < sessionTimeArray.length; i++) {
         if (sessionTimeArray[i] - end === 86400000) {
           end = sessionTimeArray[i];
