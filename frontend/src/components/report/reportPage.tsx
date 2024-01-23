@@ -177,4 +177,5 @@ export const ReportIcons = {
   SPRINT_ESTIMATION: <LuGitCompare />,
   TASK_LIST: <MdChecklist />,
   SPRINT_REPORT: <FaChartGantt />,
+  SPRINT_TIMELINE: <FaChartGantt />,
 };

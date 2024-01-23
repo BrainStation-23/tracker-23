@@ -44,6 +44,7 @@ export const apiEndPoints = {
   exportTimeSheetReport: "/export/time-sheet",
   sprintUserReport: "sessions/spent-time/sprint-user-report",
   sprintReport: "/sprints/sprint-view",
+  sprintTimelineReport: "/sprints/new-sprint-view",
   invitedUserInfo: "workspaces/verify/invited-user/",
   invitedUserLogin: `/auth/invitedUser/login`,
   invitedUserRegister: `/auth/invitedUser/register`,
