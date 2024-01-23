@@ -163,3 +163,7 @@ body {
 .custom-create-task-css .ant-form-item-label {
   padding: 0;
 }
+
+.oneComponentDropdownItem .ant-dropdown-menu-item {
+  padding: 5px 0 !important;
+}
