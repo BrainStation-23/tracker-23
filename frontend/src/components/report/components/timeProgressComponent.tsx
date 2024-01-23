@@ -15,6 +15,10 @@ const TimeProgressComponent = ({
   isDonut = false,
 }: Props) => {
   console.log("TimeProgressComponent", spentTime, estimatedTime);
+  if (estimatedTime === 0) {
+    return <></>;
+  }
+
   const exceededTime =
     spentTime > estimatedTime ? Math.abs(spentTime - estimatedTime) : 0;
 

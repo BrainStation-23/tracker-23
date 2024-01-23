@@ -18,7 +18,8 @@ export type ReportType =
   | "TIME_SHEET"
   | "SPRINT_ESTIMATION"
   | "TASK_LIST"
-  | "SPRINT_REPORT";
+  | "SPRINT_REPORT"
+  | "SPRINT_TIMELINE";
 export interface ReportData {
   id: number;
   name: string;

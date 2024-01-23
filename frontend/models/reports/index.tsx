@@ -37,17 +37,15 @@ export type ReportPageTabs =
   | "Sprint View Report"
   | "Sprint View Timeline Report";
 
-export type ReportTypesDto =
-  | "TIME_SHEET"
-  | "SPRINT_ESTIMATION"
-  | "TASK_LIST"
-  | "SPRINT_REPORT";
 export enum ReportTypesEnum {
   "TIME_SHEET" = "Time Sheet",
   "SPRINT_ESTIMATION" = "Sprint Estimation",
   "TASK_LIST" = "Task List",
   "SPRINT_REPORT" = "Sprint Report",
+  SPRINT_TIMELINE = "Sprint Timeline",
 }
+
+export type ReportTypesDto = keyof typeof ReportTypesEnum;
 
 // Define models for tasks
 export interface SprintReportTask {
