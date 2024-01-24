@@ -111,8 +111,6 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
                   }px] cursor-pointer text-left`}
                   ellipsis={{ tooltip: record.task[column.key].title }}
                 >
-                  {record.task[column.key].title}{" "}
-                  {record.task[column.key].title}{" "}
                   {record.task[column.key].title}
                 </Text>
               </div>
