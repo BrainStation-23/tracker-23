@@ -30,8 +30,8 @@ export class UpdateUserOnboardingStepReqBody {
   emails: string;
 
   @IsArray()
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => QuestionAnswersDto)
   @ValidateNested({ each: true })
-  data: QuestionAnswersDto[];
+  data?: QuestionAnswersDto[];
 }

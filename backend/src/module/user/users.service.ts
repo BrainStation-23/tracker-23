@@ -230,7 +230,8 @@ export class UsersService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    await this.onboardingService.onboardingUser(user, reqBody.data);
+    reqBody?.data &&
+      (await this.onboardingService.onboardingUser(user, reqBody.data));
     return updatedUser;
   }
 }
