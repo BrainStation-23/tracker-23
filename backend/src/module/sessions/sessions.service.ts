@@ -921,7 +921,7 @@ export class SessionsService {
     loggedInUser: Partial<User>,
     user?: Partial<User>,
   ) {
-    if (!loggedInUser || !loggedInUser.activeWorkspaceId)
+    if (!loggedInUser || !loggedInUser?.activeWorkspaceId)
       throw new APIException(
         'No workspace id detected',
         HttpStatus.BAD_REQUEST,

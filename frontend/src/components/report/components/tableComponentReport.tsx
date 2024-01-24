@@ -24,6 +24,7 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
       title: "User",
       dataIndex: "name",
       key: "name",
+      width: 200,
       fixed: "left",
       render: (_: any, v: any) => (
         <div className="flex items-center gap-2">
@@ -68,7 +69,7 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
       dataIndex: date,
       key: date,
       align: "center",
-      // width: 100,
+      width: 150,
       render: (_: any, v: any) => {
         return (
           <div className="w-full cursor-pointer rounded px-2 text-center  text-black">
@@ -84,6 +85,7 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
     key: "totalTime",
     align: "center",
     fixed: "right",
+    width: 100,
     render: (_: any, { totalTime }: any) => {
       return (
         <div className="w-full rounded px-2 text-center text-black">
@@ -129,6 +131,8 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
       // rowClassName={getRowClassName}
       onChange={handleTableChange}
       className="w-full"
+      scroll={{ x: 1500 }}
+      bordered
     />
   );
 };

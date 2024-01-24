@@ -6,6 +6,7 @@ import {
   authJiraRest,
   changeWorkspaceRest,
   createProjectRest,
+  createReportPageRest,
   createSessionRest,
   createTaskRest,
   createWorkspaceRest,
@@ -33,6 +34,7 @@ import {
   getReportSprintsRest,
   getSpentTimePerDayRest,
   getSprintReportRest,
+  getSprintViewReportRest,
   getSprintUserReportRest,
   getTaskListReportRest,
   getTasksRest,
@@ -73,6 +75,12 @@ import {
   updateTimeFormatRest,
   updateWorkspaceRest,
   userListByProjectRest,
+  getSprintViewTimelineReportRest,
+  createReportRest,
+  updateReportRest,
+  deleteReportRest,
+  getIntegrationTypesReportPageRest,
+  updateReportPageRest,
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -143,11 +151,19 @@ const restApi: apiFunction = {
   exportTimeSheetReport: exportTimeSheetReportRest,
   getSprintUserReport: getSprintUserReportRest,
   getSprintReport: getSprintReportRest,
+  getSprintViewReport: getSprintViewReportRest,
+  getSprintViewTimelineReport: getSprintViewTimelineReportRest,
   getInvitedUserInfo: getInvitedUserInfoRest,
   getAllUsers: getAllUsersRest,
   updateApprovalUser: updateApprovalUserRest,
   updateOnboardingUser: updateOnboardingUserRest,
   userListByProject: userListByProjectRest,
+  createReportPage: createReportPageRest,
+  createReport: createReportRest,
+  updateReport: updateReportRest,
+  deleteReport: deleteReportRest,
+  getIntegrationTypesReportPage: getIntegrationTypesReportPageRest,
+  updateReportPage: updateReportPageRest,
 };
 
 export const userAPI: apiFunction = restApi;

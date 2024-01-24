@@ -14,15 +14,18 @@ import InviteToWorkspace from "./components/inviteToWorkspace";
 
 const InvitationsComponent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [inviteList, setInviteList] = useState([]);
+  const [spinning, setSpinning] = useState(false);
   const tabs = ["All", "Pending", "Responded"];
   const [activeTab, setActiveTab] = useState<"All" | "Pending" | "Responded">(
     "All"
   );
 
+  const [inviteList, setInviteList] = useState([]);
   const getInviteList = async () => {
+    setSpinning(true);
     const res = await userAPI.getWorkspaceInvitationList();
     if (res) setInviteList(res);
+    setSpinning(false);
   };
   const updateInviteList = (invite: any) => {
     const newInviteList = inviteList.map((inv) => {
@@ -73,6 +76,7 @@ const InvitationsComponent = () => {
           data={inviteList}
           activeTab={activeTab}
           updateInviteList={updateInviteList}
+          {...{ spinning, setSpinning }}
         />
       </div>
       <GlobalModal

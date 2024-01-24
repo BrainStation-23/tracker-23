@@ -1,4 +1,8 @@
-import { UserDto } from "models/user";
+import {
+  UserDto,
+  WorkspaceMemberRole,
+  WorkspaceMemberStatus,
+} from "models/user";
 
 interface Workspace {
   id: number;
@@ -11,7 +15,7 @@ interface Workspace {
 
 export interface InviteUserWorkspaceDto {
   id: number;
-  role: "ADMIN" | "USER";
+  role: WorkspaceMemberRole;
   valid: boolean;
   createdAt: string;
   updatedAt: string;
@@ -20,7 +24,8 @@ export interface InviteUserWorkspaceDto {
   workspaceId: number;
   inviterId: number;
   invitationId: string | null;
-  status: "ACTIVE" | "INVITED" | "REJECTED" | "INACTIVE";
+  status: WorkspaceMemberStatus;
+  designation?: string;
   workspace: Workspace;
   inviter: UserDto;
 }

@@ -5,6 +5,9 @@ import { LuBringToFront } from "react-icons/lu";
 
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import { integrationIcons } from "@/components/importSection/importCard";
+import { useRouter } from "next/router";
+import { useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
 
 type Props = {
   selectedSource?: string[];
@@ -23,9 +26,14 @@ const SourceSelectorComponent = ({
   selectedSource,
   setSelectedSource,
   className,
-  allSouce = ["JIRA", "OUTLOOK"],
 }: Props) => {
   const { Text } = Typography;
+
+  const router = useRouter();
+  const path = router.asPath;
+  const allSouce = path.includes("report")
+    ? useAppSelector((state: RootState) => state.reportsSlice.integrationTypes)
+    : useAppSelector((state: RootState) => state.integrations.integrationTypes);
 
   const Options = allSouce?.map((source) => {
     return {

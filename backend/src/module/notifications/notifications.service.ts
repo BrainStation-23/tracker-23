@@ -14,16 +14,16 @@ export class NotificationsService {
           userId: user.id,
           cleared: false,
         },
+        orderBy: {
+          createdAt: 'desc', // Order by createdAt field in descending order (latest first)
+        },
       });
     } catch (error) {
       console.log(
         '🚀 ~ file: notifications.service.ts:19 ~ NotificationsService ~ getNotifications ~ error:',
         error,
       );
-      throw new APIException(
-        'Could not get Notifications',
-        HttpStatus.BAD_REQUEST,
-      );
+      return [];
     }
   }
 

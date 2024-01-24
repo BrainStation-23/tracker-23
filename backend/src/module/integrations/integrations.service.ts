@@ -9,6 +9,7 @@ import { WorkspacesService } from '../workspaces/workspaces.service';
 import { APIException } from '../exception/api.exception';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { IntegrationDatabase } from 'src/database/integrations/index';
+import { ReportsService } from '../reports/reports.service';
 
 @Injectable()
 export class IntegrationsService {
@@ -19,11 +20,12 @@ export class IntegrationsService {
     private workspacesService: WorkspacesService,
     private userIntegrationDatabase: UserIntegrationDatabase,
     private integrationDatabase: IntegrationDatabase,
+    private reportService: ReportsService,
   ) {}
 
   async getUserIntegrations(user: User) {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace || !user.activeWorkspaceId)
+    if (!userWorkspace || !user?.activeWorkspaceId)
       throw new APIException(
         'User Workspace not found',
         HttpStatus.BAD_REQUEST,
@@ -67,10 +69,46 @@ export class IntegrationsService {
     );
   }
 
+  async getIntegrationsForReportPage(user: User) {
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      throw new APIException(
+        'User workspace not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (userWorkspace.role === Role.ADMIN) {
+      return await this.integrationDatabase.getIntegrationListByWorkspaceId(
+        userWorkspace.workspaceId,
+      );
+    } else {
+      const integrations =
+        await this.integrationDatabase.getIntegrationListByWorkspaceId(
+          userWorkspace.workspaceId,
+        );
+
+      const integrationIds = integrations.map(
+        (integration: any) => integration.id,
+      );
+
+      const userIntegrations =
+        userWorkspace &&
+        (await this.userIntegrationDatabase.getUserIntegrationListByIntegrationIds(
+          userWorkspace.id,
+          integrationIds,
+        ));
+
+      return userIntegrations?.map(
+        (userIntegration: any) => userIntegration.integration,
+      );
+    }
+  }
+
   async getUpdatedUserIntegration(user: User, userIntegrationId: number) {
     const url = 'https://auth.atlassian.com/oauth/token';
     const headers: any = { 'Content-Type': 'application/json' };
-    if (!user.activeWorkspaceId)
+    if (!user?.activeWorkspaceId)
       throw new APIException('No active Workspace', HttpStatus.BAD_REQUEST);
 
     const userIntegration =
@@ -154,6 +192,31 @@ export class IntegrationsService {
       const integration = await this.integrationDatabase.findUniqueIntegration({
         id,
       });
+      if (!integration) {
+        throw new APIException('Can not delete integration');
+      }
+
+      //This code for updating report config start
+      const userIntegrations =
+        await this.userIntegrationDatabase.getUserIntegrations({
+          userWorkspaceId: userWorkspace.id,
+          integration: {
+            type: integration.type,
+          },
+        });
+
+      const projects = await this.integrationDatabase.findProjects({
+        integrationId: integration.id,
+        workspaceId: user.activeWorkspaceId,
+      });
+      const projectIds = projects.map((project) => {
+        return project.id;
+      });
+      await this.reportService.updateReportConfig(user, {
+        projectIds: projectIds,
+        ...(userIntegrations.length === 1 && { type: integration.type }),
+      });
+      //This code for updating report config end
 
       if (integration?.type === IntegrationType.OUTLOOK) {
         const transactionRes = await this.prisma.$transaction([

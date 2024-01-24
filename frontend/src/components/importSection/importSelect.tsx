@@ -1,11 +1,11 @@
-import { Integration, IntegrationType } from "models/integration";
+import { IntegrationDto, IntegrationType } from "models/integration";
 import { useState } from "react";
 import { allIntegrations } from "utils/constants";
 
 import IntegrationCard from "./importSections";
 
 type Props = {
-  integrations: Integration[];
+  integrations: IntegrationDto[];
   handleUninstallIntegration: Function;
   handleDeleteIntegration: Function;
   adminMode: boolean;

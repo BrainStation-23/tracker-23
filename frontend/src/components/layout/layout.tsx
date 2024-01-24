@@ -10,7 +10,10 @@ import { noNavbar, publicRoutes } from "utils/constants";
 import { GetCookie } from "@/services/cookie.service";
 import { initializeSocket } from "@/services/socket.service";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
-import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
+import {
+  setIntegrationsSlice,
+  setIntegrationTypesSlice,
+} from "@/storage/redux/integrationsSlice";
 import { setNotifications } from "@/storage/redux/notificationsSlice";
 import { setPriorities } from "@/storage/redux/prioritySlice";
 import { setProjectsSlice } from "@/storage/redux/projectsSlice";
@@ -24,6 +27,8 @@ import Navbar from "../navbar";
 import SideMenu from "../sideMenu";
 import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
 import { deleteFromLocalStorage } from "@/storage/storage";
+import { setReportPages } from "@/storage/redux/reportsSlice";
+import { IntegrationDto, IntegrationType } from "models/integration";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -76,6 +81,12 @@ const CustomLayout = ({ children }: any) => {
     if (!(integrationsSlice?.length > 0) && integrations) {
       dispatch(setIntegrationsSlice(integrations));
       integrations?.length > 0 && getProjectWiseStatues();
+    }
+    if (integrations?.length > 0) {
+      const types: IntegrationType[] = Array.from(
+        new Set(integrations.map((tmp: IntegrationDto) => tmp.type))
+      );
+      dispatch(setIntegrationTypesSlice(types));
     }
   };
 
@@ -209,6 +220,9 @@ const CustomLayout = ({ children }: any) => {
       errorRes?.error?.message && message.error(errorRes?.error?.message);
       // logOutFunction();
     }
+    if (res.pages) {
+      dispatch(setReportPages(res.pages));
+    }
     setLoading(false);
   };
 
@@ -224,14 +238,6 @@ const CustomLayout = ({ children }: any) => {
     }
   }, [router, path]);
   useEffect(() => {
-    if (userInfo?.status === "ONBOARD") {
-      !path.includes("onBoarding") && router.push("/onBoarding");
-    } else if (userInfo?.status === "ACTIVE") {
-      path.includes("onBoarding") && router.push("/taskList");
-    }
-  }, [router, path, userInfo]);
-
-  useEffect(() => {
     if (
       !publicRoutes.some((route) => path.includes(route)) &&
       !path.includes("socialLogin")
@@ -240,6 +246,23 @@ const CustomLayout = ({ children }: any) => {
       getWorkspaces();
     }
   }, [reloadWorkspace]);
+  useEffect(() => {
+    if (userInfo?.status === "ONBOARD") {
+      !path.includes("onBoarding") && router.push("/onBoarding");
+    } else if (userInfo?.status === "ACTIVE") {
+      path.includes("onBoarding") && router.push("/taskList");
+    }
+  }, [router, path, userInfo]);
+
+  // useEffect(() => {
+  //   if (
+  //     !publicRoutes.some((route) => path.includes(route)) &&
+  //     !path.includes("socialLogin")
+  //   ) {
+  //     setLoading(true);
+  //     getWorkspaces();
+  //   }
+  // }, [reloadWorkspace]);
   useEffect(() => {
     !["/inviteLink", "/socialLogin/redirect"].some((route) =>
       path.includes(route)

@@ -26,7 +26,6 @@ const GlobalClock = () => {
   }
   useEffect(() => {
     startTime();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {}, [time]);
   return (

@@ -110,6 +110,11 @@ export interface SprintDto {
   projectId?: number;
 }
 
-export type StatusDto = "TO_DO" | "IN_PROGRESS" | "DONE";
+export enum TaskStatusEnum {
+  TO_DO = "TO_DO",
+  IN_PROGRESS = "IN_PROGRESS",
+  DONE = "DONE",
+}
+export type StatusDto = keyof typeof TaskStatusEnum;
 export type PriorityCategoryDto = "HIGHEST" | "HIGH" | "MEDIUM" | "LOW";
 export type FrequencyDto = "DAILY" | "WEEKLY" | "BI-WEEKLY";

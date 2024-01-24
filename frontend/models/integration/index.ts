@@ -1,4 +1,4 @@
-export type Integration = {
+export type IntegrationDto = {
   id?: number;
   site?: string;
   siteId?: string;

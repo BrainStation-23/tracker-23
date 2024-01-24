@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Role, Settings, User, UserWorkspaceStatus } from '@prisma/client';
+import {
+  Role,
+  Settings,
+  User,
+  UserWorkspace,
+  UserWorkspaceStatus,
+} from '@prisma/client';
 import {
   SendInvitationReqBody,
   WorkspaceReqBody,
@@ -188,7 +194,7 @@ export class WorkspaceDatabase {
     userId: number,
     workspaceId: number,
     status?: UserWorkspaceStatus[],
-  ) {
+  ): Promise<UserWorkspace | null> {
     try {
       return await this.prisma.userWorkspace.findFirst({
         where: {
@@ -388,6 +394,9 @@ export class WorkspaceDatabase {
                   firstName: true,
                   lastName: true,
                   picture: true,
+                  email: true,
+                  activeWorkspaceId: true,
+                  approved: true,
                 },
               },
             },
@@ -468,6 +477,23 @@ export class WorkspaceDatabase {
     } catch (error) {
       console.log(error);
       return null;
+    }
+  }
+
+  async getPagesForWorkspace(query: Record<string, any>): Promise<any[] | []> {
+    try {
+      return await this.prisma.page.findMany({
+        where: query,
+        include: {
+          reports: true,
+        },
+      });
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: index.ts:489 ~ WorkspaceDatabase ~ getPagesForWorkspace ~ error:',
+        error,
+      );
+      return [];
     }
   }
 }
