@@ -1,5 +1,6 @@
 import { Form, message, Steps, theme } from "antd";
 import { userAPI } from "APIs";
+import { OnBoardingQuestionDto } from "models/onboarding";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -29,10 +30,83 @@ const OnboardingSteps: React.FC = () => {
   const [emails, setEmails] = useState<string[]>([]);
   console.log("🚀 ~ file: onboardingSteps.tsx:27 ~ emails:", emails);
   const [accountName, setAccountName] = useState(null);
+  const data: OnBoardingQuestionDto[] = [
+    {
+      question: "What is your profession?",
+      type: "profession",
+      options: [
+        "Software Developer",
+        "Designer",
+        "Product Manager",
+        "Data Scientist",
+      ],
+      answer: "",
+      placeholder: "Select your profession",
+    },
+    {
+      question: "What is your role?",
+      type: "role",
+      options: [
+        "Frontend Developer",
+        "Backend Developer",
+        "UI/UX Designer",
+        "Product Owner",
+      ],
+      answer: "",
+      placeholder: "Select your role",
+    },
+    {
+      question: "What are you interested in?",
+      type: "interests",
+      options: [
+        "Web Development",
+        "Machine Learning",
+        "UI/UX Design",
+        "Project Management",
+      ],
+      answer: "",
+      placeholder: "Select your interests",
+    },
+    {
+      question: "How did you know about this application?",
+      type: "introducer",
+      options: [
+        "Online Search",
+        "Friend/Colleague Recommendation",
+        "Social Media",
+        "Event/Conference",
+      ],
+      answer: "",
+      placeholder: "Select how you knew about the application",
+    },
+    {
+      question:
+        "Have you had any previous experience with similar task management tools?",
+      type: "pastExperience",
+      options: ["Yes", "No"],
+      answer: "",
+      placeholder: "Select Yes or No",
+    },
+    {
+      question:
+        "Which task management system have you used in the last 2 years?",
+      type: "havePastExperience",
+      options: ["Jira", "Trello", "Google Calendar", "Teams Calendar"],
+      answer: "",
+      placeholder: "Select task management system(s) used in the last 2 years",
+    },
+    {
+      question: "Which task management software are you currently using?",
+      type: "currentlyUsing",
+      options: ["Jira", "Trello", "Google Calendar", "Teams Calendar"],
+      answer: "",
+      placeholder: "Select current task management software(s)",
+    },
+  ];
   const steps = [
     {
       title: "Purpose",
-      content: <AccessSelectionStep />,
+      content: <AccessSelectionStep data={data} />,
     },
     // {
     //   title: "Name",
@@ -60,15 +134,25 @@ const OnboardingSteps: React.FC = () => {
     const res = await userAPI.updateOnboardingUser(user.id, data);
     return res;
   };
+  const formateData = (val: any) => {
+    return data.map((d) => {
+      return {
+        ...d,
+        answer: `${val[d.type]}`, // Doing this because backend wants this way =>  array => string
+      };
+    });
+  };
 
   const onFinish = async (value: any) => {
     console.log("🚀 ~ file: namingSection.tsx:7 ~ onFinish ~ value:", value);
     setAccountName(value.account);
     let res: any;
     if (current === 0) {
+      const formattedData = formateData(value);
       res = await updateOnboarding({
         index: current + 1,
         completed: true,
+        data: formattedData,
       });
     } else {
       res = await updateOnboarding({
