@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Role, User, UserStatus, UserWorkspaceStatus } from '@prisma/client';
 import { UsersDatabase } from 'src/database/users';
-import { APIException } from '../exception/api.exception';
+import { APIException } from 'src/module/exception/api.exception';
 import { UpdateSettingsReqDto } from './dto/create.settings.dto';
 import { TasksDatabase } from 'src/database/tasks';
 import {
@@ -12,8 +12,9 @@ import { UserListByProjectIdReqDto } from './dto/getUserListByProjectId.dto';
 import { ProjectDatabase } from 'src/database/projects';
 import { SessionDatabase } from 'src/database/sessions';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
-import { SendInvitationReqBody } from '../workspaces/dto';
-import { WorkspacesService } from '../workspaces/workspaces.service';
+import { SendInvitationReqBody } from 'src/module/workspaces/dto';
+import { WorkspacesService } from 'src/module/workspaces/workspaces.service';
+import { OnboardingService } from 'src/module/onboarding/onboarding.service';
 
 @Injectable()
 export class UsersService {
@@ -24,6 +25,7 @@ export class UsersService {
     private projectDatabase: ProjectDatabase,
     private sessionDatabase: SessionDatabase,
     private userIntegrationDatabase: UserIntegrationDatabase,
+    private onboardingService: OnboardingService,
   ) {}
 
   async getUsers(user: User) {
@@ -228,6 +230,7 @@ export class UsersService {
         HttpStatus.BAD_REQUEST,
       );
     }
+    await this.onboardingService.onboardingUser(user, reqBody.data);
     return updatedUser;
   }
 }
