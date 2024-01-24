@@ -1,3 +1,6 @@
+import { Avatar, Table, Typography } from "antd";
+import { ColumnsType } from "antd/es/table";
+import { InviteUserWorkspaceDto } from "models/invitations";
 import {
   WorkspaceMemberRoleBorderColorEnum,
   WorkspaceMemberRoleEnum,
@@ -5,16 +8,15 @@ import {
   WorkspaceMemberStatusBorderColorEnum,
   WorkspaceMemberStatusEnum,
 } from "models/user";
-import { ColumnsType } from "antd/es/table";
-import { Avatar, Table, Typography } from "antd";
 import {
   LuBadgeCheck,
   LuCheckCircle,
+  LuFolder,
   LuMail,
   LuUser,
   LuUserCog,
 } from "react-icons/lu";
-import { InviteUserWorkspaceDto } from "models/invitations";
+
 import MoreFunctionInvitationPageComponent from "./moreFunctionInvitationPage";
 
 const { Text } = Typography;
@@ -92,6 +94,30 @@ const InvitationList = ({
               ellipsis={{ tooltip: `${record.inviter.email ?? "--"}` }}
             >
               {`${record.inviter.email ?? "--"}`}
+            </Text>
+          </div>
+        );
+      },
+      align: "left",
+    },
+    {
+      title: (
+        <div className="flex w-full items-center justify-start gap-2">
+          <LuFolder size={20} />
+          Workspace
+        </div>
+      ),
+      dataIndex: "workspace",
+      key: "workspace",
+      width: "200px",
+      render: (text: string, record: InviteUserWorkspaceDto, index: number) => {
+        return (
+          <div className="flex  items-center gap-2">
+            <Text
+              className="w-[200px] cursor-pointer"
+              ellipsis={{ tooltip: `${record.workspace.name ?? "--"}` }}
+            >
+              {`${record.workspace.name ?? "--"}`}
             </Text>
           </div>
         );
