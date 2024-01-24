@@ -138,7 +138,7 @@ const OnboardingSteps: React.FC = () => {
     return data.map((d) => {
       return {
         ...d,
-        answer: `${val[d.type]}`,
+        answer: `${val[d.type]}`, // Doing this because backend wants this way =>  array => string
       };
     });
   };
