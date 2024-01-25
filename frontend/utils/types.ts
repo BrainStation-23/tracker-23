@@ -1,8 +1,4 @@
 import {
-  WorkspaceMemberDto,
-  updateOnboardingUserDto,
-} from "./../models/user/index";
-import {
   CreateLocalProjectModel,
   CreateWorkspaceModel,
   SearchParamsModel,
@@ -18,13 +14,13 @@ import { SendWorkspaceInviteDto } from "models/invitation";
 import {
   CreateReportDto,
   CreateReportPageDto,
+  getTimeSheetReportDto,
   SprintReportDto,
   SprintUserReportDto,
   SprintViewReportDto,
   SprintViewTimelineReportDto,
   UpdateReportDto,
   UpdateReportPageDto,
-  getTimeSheetReportDto,
 } from "models/reports";
 import {
   AddWorkLogParams,
@@ -32,10 +28,14 @@ import {
   UpdateTaskEstimationParams,
   UpdateTaskStatusParams,
 } from "models/tasks";
+import { updateApprovalUserDto } from "models/user";
 
 import { RegisterDto } from "../models/auth/index";
 import { TaskDto } from "../models/tasks/index";
-import { updateApprovalUserDto } from "models/user";
+import {
+  updateOnboardingUserDto,
+  WorkspaceMemberDto,
+} from "../models/user/index";
 
 export interface apiFunction {
   login: (data: LoginDto) => Promise<LoginResponseDto | undefined>;
@@ -139,6 +139,7 @@ export interface apiFunction {
     reportId: number,
     data: UpdateReportPageDto
   ) => Promise<any>;
+  deleteReportPage: (reportId: number) => Promise<any>;
   deleteReport: (reportId: number) => Promise<any>;
   getIntegrationTypesReportPage: () => Promise<any>;
 }
