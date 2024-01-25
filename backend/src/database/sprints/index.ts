@@ -82,13 +82,12 @@ export class SprintDatabase {
     }
   }
 
-  async getTaskByProjectIdAndSource(projectId: number): Promise<Task[] | []> {
+  async getTaskByProjectIdAndSource(
+    query: Record<string, any>,
+  ): Promise<Task[] | []> {
     try {
       return await this.prisma.task.findMany({
-        where: {
-          projectId,
-          source: IntegrationType.JIRA,
-        },
+        where: query,
       });
     } catch (error) {
       console.log(error);
