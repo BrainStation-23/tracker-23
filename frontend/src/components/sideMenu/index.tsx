@@ -1,5 +1,6 @@
 import { Button, Typography } from "antd";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import {
   LuClipboardList,
   LuFolder,
@@ -14,13 +15,16 @@ import {
 } from "react-icons/lu";
 
 import BSLogoSvg from "@/assets/svg/BSLogoSvg";
+import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
 import { useAppSelector } from "@/storage/redux";
+import { ReportPageDto } from "@/storage/redux/reportsSlice";
 import { RootState } from "@/storage/redux/store";
 
-import WorkspaceNav from "./components/workspaceNav";
-import AddNewReportPage from "../report/components/addNewReportPage";
-import { useState } from "react";
 import MyLink from "../common/link/MyLink";
+import GlobalModal from "../modals/globalModal";
+import AddNewReportPage from "../report/components/addNewReportPage";
+import DeleteReportPageWarning from "./components/deletePageWarning";
+import WorkspaceNav from "./components/workspaceNav";
 
 type SideMenuProps = {
   option: { link: any; title: String; icon: any };
@@ -37,6 +41,12 @@ const SideMenu = () => {
     ? parseInt(router.query?.reportPageId as string)
     : -1;
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletePage, setDeletePage] = useState<ReportPageDto>();
+  const handleDeletePage = (page: ReportPageDto) => {
+    setDeletePage(page);
+    setIsDeleteModalOpen(true);
+  };
   const SideMenuOption = ({ option, active }: SideMenuProps) => {
     const router = useRouter();
     if (option.title === "Reports") {
@@ -83,38 +93,56 @@ const SideMenu = () => {
               <LuPlus />
             </Button>
           </div>
-          <div className="ml-2 flex flex-col gap-2 p-5">
+          <div className="ml-2 flex h-[130px] flex-col gap-2 overflow-y-auto p-5">
             {reportPages?.map((reportPage) => {
               return (
-                <MyLink
-                  href={"/reports/" + reportPage.id}
-                  className={`group flex items-center gap-2 rounded p-1 text-black hover:bg-[#ECECED] hover:font-semibold hover:text-primary ${
-                    pageId === reportPage.id
-                      ? "bg-[#ECECED] font-semibold text-primary"
-                      : ""
-                  }`}
-                >
-                  <>
-                    <div
-                      className={`flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
-                        pageId === reportPage.id
-                          ? "stroke-primary "
-                          : "stroke-[#ADACB0] text-[#ADACB0]"
-                      }`}
+                <>
+                  <div
+                    className={`group flex w-full items-center justify-between gap-2 rounded px-2 text-black hover:bg-[#ECECED] hover:font-semibold hover:text-primary ${
+                      pageId === reportPage.id
+                        ? "bg-[#ECECED] font-semibold text-primary"
+                        : ""
+                    }`}
+                  >
+                    {" "}
+                    <MyLink
+                      href={"/reports/" + reportPage.id}
+                      className="flex items-center  gap-2 p-1"
                     >
-                      <LuNewspaper size={16} />
-                    </div>
-                    <div className="w-[130px]">
-                      <Text
-                        className="m-0 p-0 text-xs"
-                        ellipsis={{ tooltip: reportPage.name }}
+                      <div
+                        className={`flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
+                          pageId === reportPage.id
+                            ? "stroke-primary "
+                            : "stroke-[#ADACB0] text-[#ADACB0]"
+                        }`}
                       >
-                        {reportPage.name}
-                      </Text>
+                        <LuNewspaper size={16} />
+                      </div>
+                      <div className="flex w-[120px] items-center">
+                        <Text
+                          className="m-0 p-0 text-xs "
+                          ellipsis={{ tooltip: reportPage.name }}
+                        >
+                          {reportPage.name}
+                        </Text>
+                      </div>
+                      {/* <MoreOutlined /> */}
+                    </MyLink>
+                    <div
+                      aria-disabled={"true"}
+                      className={`${
+                        pageId === reportPage.id
+                          ? " cursor-not-allowed"
+                          : "cursor-pointer"
+                      }`}
+                      onClick={() =>
+                        pageId !== reportPage.id && handleDeletePage(reportPage)
+                      }
+                    >
+                      <DeleteIconSvg />
                     </div>
-                    {/* <MoreOutlined /> */}
-                  </>
-                </MyLink>
+                  </div>
+                </>
               );
             })}
           </div>
@@ -123,7 +151,7 @@ const SideMenu = () => {
     }
     return (
       <div
-        className={`group flex items-center gap-2 rounded-lg py-[10px] px-1 pl-[10px] hover:cursor-pointer hover:bg-[#ECECED] hover:text-primary ${
+        className={`group flex items-center gap-2 rounded-lg py-[6px] px-1 pl-[10px] hover:cursor-pointer hover:bg-[#ECECED] hover:text-primary ${
           active ? "bg-[#ECECED] text-primary" : ""
         }`}
         onClick={() => {
@@ -181,6 +209,16 @@ const SideMenu = () => {
         </div>
       </div>
       <AddNewReportPage {...{ isModalOpen, setIsModalOpen }} />
+      <GlobalModal
+        title="Deleting Report Page"
+        isModalOpen={isDeleteModalOpen}
+        setIsModalOpen={setIsDeleteModalOpen}
+      >
+        <DeleteReportPageWarning
+          page={deletePage}
+          setIsModalOpen={setIsDeleteModalOpen}
+        />
+      </GlobalModal>
     </div>
   );
 };

@@ -1581,6 +1581,17 @@ export async function updateReportPageRest(
   }
 }
 
+export async function deleteReportPageRest(reportPageId: number) {
+  try {
+    const res = await axios.delete(
+      `${apiEndPoints.reportPage}/${reportPageId}`
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
 export async function deleteReportRest(reportId: number) {
   try {
     const res = await axios.delete(`${apiEndPoints.reports}/${reportId}`);

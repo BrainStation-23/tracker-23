@@ -77,6 +77,11 @@ const reportsSlice = createSlice({
     addReportPage: (state, action: PayloadAction<ReportPageDto>) => {
       state.reportPages.push(action.payload);
     },
+    deleteReportPageSlice: (state, action: PayloadAction<ReportPageDto>) => {
+      state.reportPages = state.reportPages.filter(
+        (report) => report.id !== action.payload.id
+      );
+    },
     updateReportPage: (
       state,
       action: PayloadAction<{ id: number; data: ReportData }>
@@ -127,6 +132,7 @@ export const {
   setReportPages,
   addReport,
   addReportPage,
+  deleteReportPageSlice,
   deleteReportData,
   updateReportSlice,
   deleteReportSlice,
