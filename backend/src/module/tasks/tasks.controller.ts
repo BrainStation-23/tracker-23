@@ -88,7 +88,11 @@ export class TasksController {
     @Param('projectId') projectId: string,
     @Response() res: any,
   ) {
-    return await this.tasksService.syncTasks(user, Number(projectId), res);
+    return this.tasksService.syncSingleProjectOrCalendar(
+      user,
+      Number(projectId),
+      res,
+    );
   }
   @Get('syncAll')
   @UseGuards(JwtAuthGuard)

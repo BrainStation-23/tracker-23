@@ -6,6 +6,8 @@ import {
   Session,
   Role,
   IntegrationType,
+  UserIntegration,
+  Project,
 } from '@prisma/client';
 import { GetSprintListQueryDto } from './dto';
 import { WorkspacesService } from '../workspaces/workspaces.service';
@@ -39,8 +41,8 @@ export class SprintsService {
 
   async createSprintAndTask(
     user: User,
-    projectId: number,
-    userIntegrationId: number,
+    project: Project,
+    userIntegration: UserIntegration,
   ) {
     const sprint_list: any[] = [];
     const issue_list: any[] = [];
@@ -49,19 +51,9 @@ export class SprintsService {
     const projectBoardIds: any[] = [];
     const mappedSprintWithJiraId = new Map<number, any>();
 
-    const project = await this.projectDatabase.getProjectById(projectId);
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     if (!userWorkspace)
       throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
-    const userIntegration = await this.sprintDatabase.getUserIntegration(
-      userIntegrationId,
-    );
-    if (!userIntegration) {
-      throw new APIException(
-        'User Integration not found!',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
 
     const boardUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/agile/1.0/board`;
     const boardList = await this.jiraClient.CallJira(
@@ -76,9 +68,11 @@ export class SprintsService {
       }
     }
 
-    const task_list = await this.sprintDatabase.getTaskByProjectIdAndSource(
-      projectId,
-    );
+    const task_list = await this.sprintDatabase.getTaskByProjectIdAndSource({
+      projectId: project.id,
+      workspaceId: user.activeWorkspaceId,
+      source: IntegrationType.JIRA,
+    });
     for (let index = 0, len = projectBoardIds.length; index < len; index++) {
       for (let startAt = 0; ; startAt += 50) {
         const sprintUrl = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/agile/1.0/board/${projectBoardIds[index]}/sprint`;
@@ -99,7 +93,7 @@ export class SprintsService {
     }
 
     const localDbSprints = await this.sprintDatabase.findSprintListByProjectId(
-      projectId,
+      project.id,
     );
     for (let index = 0, len = sprintResponses.length; index < len; index++) {
       const sprint = sprintResponses[index];
@@ -133,7 +127,7 @@ export class SprintsService {
     for (const [jiraSprintId, val] of mappedSprintWithJiraId) {
       sprint_list.push({
         jiraSprintId: jiraSprintId,
-        projectId: projectId,
+        projectId: project.id,
         state: val.state,
         name: val.name,
         startDate: val.startDate
@@ -150,7 +144,7 @@ export class SprintsService {
 
     const [crtSprint, sprints] = await Promise.all([
       await this.sprintDatabase.createSprints(sprint_list),
-      await this.sprintDatabase.findSprintListByProjectId(projectId),
+      await this.sprintDatabase.findSprintListByProjectId(project.id),
     ]);
 
     //relation between sprintId and jiraSprintId
@@ -165,10 +159,12 @@ export class SprintsService {
     //relation between taskId and integratedTaskId
     const mappedTaskId = new Map<number, number>();
     for (let index = 0; index < task_list.length; index++) {
-      mappedTaskId.set(
-        Number(task_list[index].integratedTaskId),
-        task_list[index].id,
-      );
+      if (!mappedTaskId.has(Number(task_list[index].integratedTaskId))) {
+        mappedTaskId.set(
+          Number(task_list[index].integratedTaskId),
+          task_list[index].id,
+        );
+      }
     }
     //relation between {sprintId, taskId} and sprintTaskId
     const existingTaskOfSprintMapped = new Map<string, number>();

@@ -1372,6 +1372,28 @@ export class TasksService {
     const notification = await this.createNotification(user, msg, msg);
     this.myGateway.sendNotification(`${user.id}`, notification);
   }
+  async syncSingleProjectOrCalendar(
+    user: User,
+    projId: number,
+    res?: Response,
+  ) {
+    const project = await this.prisma.project.findUnique({
+      where: { id: projId },
+      include: { integration: true },
+    });
+    if (!project) {
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user),
+      ]);
+      throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
+    }
+    if (project.integration?.type === IntegrationType.OUTLOOK) {
+      return await this.syncEvents(user, project.id, res);
+    } else if (project.integration?.type === IntegrationType.JIRA) {
+      return await this.syncTasks(user, project.id, res);
+    }
+  }
 
   async syncTasks(user: User, projId: number, res?: Response) {
     const project = await this.prisma.project.findUnique({
@@ -1385,88 +1407,84 @@ export class TasksService {
       ]);
       throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
     }
-    if (project.integration?.type === IntegrationType.OUTLOOK) {
-      await this.syncEvents(user, project.id, res);
-    } else if (project.integration?.type === IntegrationType.JIRA) {
-      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-      if (!userWorkspace) {
-        Promise.allSettled([
-          await this.sendImportedNotification(user, 'Syncing Failed!'),
-          await this.syncCall(StatusEnum.FAILED, user),
-        ]);
-        throw new APIException(
-          'Can not import project tasks, userWorkspace not found!',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
 
-      const userIntegration =
-        project?.integrationId &&
-        (await this.getUserIntegration(
-          userWorkspace.id,
-          project.integrationId,
-        ));
-      const updatedUserIntegration =
-        userIntegration &&
-        (await this.integrationsService.getUpdatedUserIntegration(
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user),
+      ]);
+      throw new APIException(
+        'Can not import project tasks, userWorkspace not found!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const userIntegration =
+      project?.integrationId &&
+      (await this.getUserIntegration(userWorkspace.id, project.integrationId));
+    const updatedUserIntegration =
+      userIntegration &&
+      (await this.integrationsService.getUpdatedUserIntegration(
+        user,
+        userIntegration.id,
+      ));
+
+    if (!updatedUserIntegration) {
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user),
+      ]);
+      // throw new APIException(
+      //   'Could not sync project tasks, userWorkspace not found!',
+      //   HttpStatus.BAD_REQUEST,
+      // );
+      return [];
+    }
+    try {
+      Promise.allSettled([
+        res && (await this.syncCall(StatusEnum.IN_PROGRESS, user)),
+        res &&
+          (await this.sendImportedNotification(
+            user,
+            'Syncing in progress!',
+            res,
+          )),
+        await this.syncTasksFetchAndProcessTasksAndWorklog(
           user,
-          userIntegration.id,
-        ));
-
-      if (!updatedUserIntegration) {
-        Promise.allSettled([
-          await this.sendImportedNotification(user, 'Syncing Failed!'),
-          await this.syncCall(StatusEnum.FAILED, user),
-        ]);
-        // throw new APIException(
-        //   'Could not sync project tasks, userWorkspace not found!',
-        //   HttpStatus.BAD_REQUEST,
-        // );
-        return [];
-      }
-      try {
-        Promise.allSettled([
-          res && (await this.syncCall(StatusEnum.IN_PROGRESS, user)),
-          res &&
-            (await this.sendImportedNotification(
-              user,
-              'Syncing in progress!',
-              res,
-            )),
-          await this.syncTasksFetchAndProcessTasksAndWorklog(
+          project,
+          updatedUserIntegration,
+        ),
+        await this.sprintService.createSprintAndTask(
+          user,
+          project,
+          updatedUserIntegration,
+        ),
+        await this.updateProjectIntegrationStatus(projId),
+        res && (await this.syncCall(StatusEnum.DONE, user)),
+        res &&
+          (await this.sendImportedNotification(
             user,
-            project,
-            updatedUserIntegration,
-          ),
-          await this.sprintService.createSprintAndTask(
-            user,
-            projId,
-            updatedUserIntegration.id,
-          ),
-          await this.updateProjectIntegrationStatus(projId),
-          res && (await this.syncCall(StatusEnum.DONE, user)),
-          res &&
-            (await this.sendImportedNotification(
-              user,
-              'Project Synced Successfully!',
-              res,
-            )),
-        ]);
-        return { Message: 'Project Synced Successfully!' };
-      } catch (err) {
-        console.log(
-          '🚀 ~ file: tasks.service.ts:1511 ~ TasksService ~ syncTasks ~ err:',
-          err,
-        );
-        Promise.allSettled([
-          await this.sendImportedNotification(user, 'Syncing Failed!'),
-          await this.syncCall(StatusEnum.FAILED, user),
-        ]);
-        throw new APIException(
-          'Could not Sync project tasks!',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+            'Project Synced Successfully!',
+            res,
+          )),
+      ]);
+      return res
+        ? res.send({ Message: 'Project Synced Successfully!' })
+        : { Message: 'Project Synced Successfully!' };
+    } catch (err) {
+      console.log(
+        '🚀 ~ file: tasks.service.ts:1511 ~ TasksService ~ syncTasks ~ err:',
+        err,
+      );
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user),
+      ]);
+      throw new APIException(
+        'Could not Sync project tasks!',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -2418,11 +2436,13 @@ export class TasksService {
         res &&
           (await this.sendImportedNotification(
             user,
-            'Project Synced Successfully!',
+            'Calendar Synced Successfully!',
             res,
           )),
       ]);
-      return { Message: 'Project Synced Successfully!' };
+      return res
+        ? res.send({ Message: 'Calendar Synced Successfully!' })
+        : { Message: 'Calendar Synced Successfully!' };
     } catch (err) {
       console.log(
         '🚀 ~ file: tasks.service.ts:1511 ~ TasksService ~ syncTasks ~ err:',
@@ -2433,7 +2453,7 @@ export class TasksService {
         await this.syncCall(StatusEnum.FAILED, user),
       ]);
       throw new APIException(
-        'Could not Sync project tasks!',
+        'Could not Sync Calendar Events!',
         HttpStatus.BAD_REQUEST,
       );
     }
