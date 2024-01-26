@@ -341,7 +341,7 @@ export class WorkspacesService {
     if (!updatedUserWorkspace) {
       throw new APIException(
         'Can not change the invitation status',
-        HttpStatus.NOT_MODIFIED,
+        HttpStatus.BAD_REQUEST,
       );
     }
     return updatedUserWorkspace;
