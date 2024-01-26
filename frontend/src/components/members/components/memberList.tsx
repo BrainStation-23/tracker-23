@@ -15,13 +15,15 @@ import {
   LuUser,
   LuUserCog,
 } from "react-icons/lu";
+import MoreFunctionMembersPageComponent from "./moreFunctionmMembersPage";
 
 const { Text } = Typography;
 
 type Props = {
   memberList: WorkspaceMemberDto[];
+  updateMember: Function;
 };
-const MemberList = ({ memberList }: Props) => {
+const MemberList = ({ memberList, updateMember }: Props) => {
   console.log(memberList);
   const columns: ColumnsType<WorkspaceMemberDto> = [
     {
@@ -192,6 +194,20 @@ const MemberList = ({ memberList }: Props) => {
           </div>
         );
       },
+      align: "center",
+    },
+    {
+      title: <>Actions</>,
+      dataIndex: "",
+      key: "",
+      width: "1px",
+      render: (text: string, record: WorkspaceMemberDto, index: number) => (
+        <div className="bgs-red-300 flex justify-center gap-2">
+          <MoreFunctionMembersPageComponent
+            {...{ member: record, updateMember }}
+          />
+        </div>
+      ),
       align: "center",
     },
   ];
