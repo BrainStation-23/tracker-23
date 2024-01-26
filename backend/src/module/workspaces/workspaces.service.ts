@@ -354,11 +354,11 @@ export class WorkspacesService {
     if (!workspace) {
       throw new APIException('Workspace Not found', HttpStatus.BAD_REQUEST);
     }
-    const filteredWorkspaces = workspace.userWorkspaces.filter(
-      (userWorkspace) => userWorkspace.status === UserWorkspaceStatus.ACTIVE,
-    );
+    // const filteredWorkspaces = workspace.userWorkspaces.filter(
+    //   (userWorkspace) => userWorkspace.status === UserWorkspaceStatus.ACTIVE,
+    // );
 
-    const users = filteredWorkspaces.map((userWorkspace) => {
+    const users = workspace.userWorkspaces.map((userWorkspace) => {
       return {
         role: userWorkspace.role,
         status: userWorkspace.status,

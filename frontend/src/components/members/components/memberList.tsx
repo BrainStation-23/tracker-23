@@ -60,7 +60,11 @@ const MemberList = ({ memberList, updateMember }: Props) => {
               className="w-[200px] cursor-pointer"
               ellipsis={{ tooltip: `${record.firstName} ${record.lastName}` }}
             >
-              {`${record.firstName} ${record.lastName}`}
+              {record.firstName ? (
+                <>{`${record.firstName} ${record.lastName}`}</>
+              ) : (
+                "----"
+              )}
             </Text>
           </div>
         );
