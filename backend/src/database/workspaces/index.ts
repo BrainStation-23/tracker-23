@@ -388,6 +388,7 @@ export class WorkspaceDatabase {
               role: true,
               designation: true,
               status: true,
+              id: true,
               user: {
                 select: {
                   id: true,

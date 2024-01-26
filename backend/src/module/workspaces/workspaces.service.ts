@@ -366,7 +366,7 @@ export class WorkspacesService {
         firstName: userWorkspace.user.firstName,
         lastName: userWorkspace.user.lastName,
         picture: userWorkspace.user.picture,
-        id: userWorkspace.user.id,
+        id: userWorkspace.id,
         email: userWorkspace.user.email,
         approved: userWorkspace.user.approved,
         activeWorkspaceId: userWorkspace.user.activeWorkspaceId,
