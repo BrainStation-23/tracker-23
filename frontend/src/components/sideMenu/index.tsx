@@ -84,68 +84,71 @@ const SideMenu = () => {
                 {option.title}
               </div>
             </div>
-            <Button
-              className="p-1 px-2"
+            <div
+              className="rounded border p-[1px] group-hover:border-secondary "
               onClick={() => {
                 setIsModalOpen(true);
               }}
             >
               <LuPlus />
-            </Button>
+            </div>
           </div>
-          <div className="ml-2 flex h-[130px] flex-col gap-2 overflow-y-auto p-5">
-            {reportPages?.map((reportPage) => {
-              return (
-                <>
-                  <div
-                    className={`group flex w-full items-center justify-between gap-2 rounded px-2 text-black hover:bg-[#ECECED] hover:font-semibold hover:text-primary ${
-                      pageId === reportPage.id
-                        ? "bg-[#ECECED] font-semibold text-primary"
-                        : ""
-                    }`}
-                  >
-                    {" "}
-                    <MyLink
-                      href={"/reports/" + reportPage.id}
-                      className="flex items-center  gap-2 p-1"
-                    >
-                      <div
-                        className={`flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
-                          pageId === reportPage.id
-                            ? "stroke-primary "
-                            : "stroke-[#ADACB0] text-[#ADACB0]"
-                        }`}
-                      >
-                        <LuNewspaper size={16} />
-                      </div>
-                      <div className="flex w-[120px] items-center">
-                        <Text
-                          className="m-0 p-0 text-xs "
-                          ellipsis={{ tooltip: reportPage.name }}
-                        >
-                          {reportPage.name}
-                        </Text>
-                      </div>
-                      {/* <MoreOutlined /> */}
-                    </MyLink>
+          {reportPages?.length > 0 && (
+            <div className="ml-2 flex max-h-[130px] flex-col gap-2 overflow-y-auto p-5">
+              {reportPages?.map((reportPage) => {
+                return (
+                  <>
                     <div
-                      aria-disabled={"true"}
-                      className={`${
+                      className={`group flex w-full items-center justify-between gap-2 rounded px-2 text-black hover:bg-[#ECECED] hover:font-semibold hover:text-primary ${
                         pageId === reportPage.id
-                          ? " cursor-not-allowed"
-                          : "cursor-pointer"
+                          ? "bg-[#ECECED] font-semibold text-primary"
+                          : ""
                       }`}
-                      onClick={() =>
-                        pageId !== reportPage.id && handleDeletePage(reportPage)
-                      }
                     >
-                      <DeleteIconSvg />
+                      {" "}
+                      <MyLink
+                        href={"/reports/" + reportPage.id}
+                        className="flex items-center  gap-2 p-1"
+                      >
+                        <div
+                          className={`flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
+                            pageId === reportPage.id
+                              ? "stroke-primary "
+                              : "stroke-[#ADACB0] text-[#ADACB0]"
+                          }`}
+                        >
+                          <LuNewspaper size={16} />
+                        </div>
+                        <div className="flex w-[120px] items-center">
+                          <Text
+                            className="m-0 p-0 text-xs "
+                            ellipsis={{ tooltip: reportPage.name }}
+                          >
+                            {reportPage.name}
+                          </Text>
+                        </div>
+                        {/* <MoreOutlined /> */}
+                      </MyLink>
+                      <div
+                        aria-disabled={"true"}
+                        className={`${
+                          pageId === reportPage.id
+                            ? " cursor-not-allowed"
+                            : "cursor-pointer"
+                        }`}
+                        onClick={() =>
+                          pageId !== reportPage.id &&
+                          handleDeletePage(reportPage)
+                        }
+                      >
+                        <DeleteIconSvg />
+                      </div>
                     </div>
-                  </div>
-                </>
-              );
-            })}
-          </div>
+                  </>
+                );
+              })}
+            </div>
+          )}
         </div>
       );
     }

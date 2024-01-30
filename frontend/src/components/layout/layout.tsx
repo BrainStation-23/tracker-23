@@ -288,7 +288,7 @@ const CustomLayout = ({ children }: any) => {
         <div className="flex">
           {!publicRoutes.some((route) => path.includes(route)) &&
             !path.includes("onBoarding") && (
-              <div className="mr-6 w-[300px]">
+              <div className="mr-6 h-screen min-w-[280px]">
                 <div className="fixed">
                   <SideMenu />
                 </div>
@@ -298,9 +298,12 @@ const CustomLayout = ({ children }: any) => {
           path.includes("socialLogin") ||
           publicRoutes.some((route) => path.includes(route)) ? (
             <div
-              className={classNames("flex w-full flex-col overflow-y-auto", {
-                "px-8": !isPublicRoute && !path.includes("onBoarding"),
-              })}
+              className={classNames(
+                "flex w-full flex-col overflow-auto overflow-y-auto",
+                {
+                  "px-8": !isPublicRoute && !path.includes("onBoarding"),
+                }
+              )}
             >
               {!isPublicRoute &&
                 !path.includes("onBoarding") &&
