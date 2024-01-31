@@ -20,12 +20,18 @@ type Props = {
 };
 
 const Navbar = ({ extraComponent }: Props) => {
+  const router = useRouter();
   const [userDetails, setUserDetails] = useState<LoginResponseDto>();
   const syncing: boolean = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
 
-  const router = useRouter();
+  const pageId = router.query?.reportPageId
+    ? parseInt(router.query?.reportPageId as string)
+    : -1;
+  const reportPageData = useAppSelector(
+    (state: RootState) => state.reportsSlice.reportPages
+  ).find((reportPage) => reportPage.id === pageId);
   const path = router.asPath;
   const btnText = path === "/login" ? "Register" : "Login";
 
@@ -71,6 +77,7 @@ const Navbar = ({ extraComponent }: Props) => {
   const dropdownRender = (menu: React.ReactNode) => (
     <div className="float-right">{menu}</div>
   );
+  console.log(router.asPath.includes("report"), reportPageData?.name);
   return (
     <div className=" mb-2 flex h-16 w-full items-center justify-between">
       <div className="py-6">
@@ -82,7 +89,14 @@ const Navbar = ({ extraComponent }: Props) => {
                 className={`flex items-center gap-2 rounded-lg text-black `}
               >
                 <div className=" stroke-black">{option.icon}</div>
-                <div className={`text-base font-semibold`}>{option.title}</div>
+                <div className={`text-base font-semibold`}>
+                  {option.title}
+                  {router.asPath.includes("report") && reportPageData?.name ? (
+                    "/" + reportPageData?.name
+                  ) : (
+                    <></>
+                  )}
+                </div>
               </div>
             )
         )}
@@ -94,7 +108,7 @@ const Navbar = ({ extraComponent }: Props) => {
             }}
           >
             <div>{pageInfo[0].icon}</div>
-            <div className={`text-sm`}>{pageInfo[0].title}</div>
+            <div className={`text-sm`}>{pageInfo[0].title} </div>
           </div>
         )}
       </div>

@@ -109,7 +109,7 @@ const SideMenu = () => {
                     functionDropdownOpen ? "rotate-90" : ""
                   } duration-400 transition-all`}
                 />{" "}
-                Functions
+                Overview
               </div>
               <div
                 className={`${
