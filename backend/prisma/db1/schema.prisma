@@ -197,7 +197,9 @@ model Project {
   integrationId Int?
   workspace     Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId   Int
+  userWorkspaceId Int?
 
+  @@unique([calendarId, workspaceId, userWorkspaceId], name: "CalendarIdentifier")
   @@unique([projectName, source, workspaceId], name: "ProjectIdentifier")
 }
 
@@ -288,7 +290,8 @@ model callSync {
 model webhook {
   id             Int      @id @default(autoincrement())
   projectKey     String[]
-  webhookId      Int
+  webhookId      String
+  calendarId     String?
   siteId         String
   expirationDate DateTime
 

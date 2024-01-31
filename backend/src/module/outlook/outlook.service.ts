@@ -143,6 +143,7 @@ export class OutlookService {
           integrated: false,
           integrationId: integration.id,
           workspaceId: user.activeWorkspaceId,
+          userWorkspaceId: userWorkspace.id,
         });
     }
 

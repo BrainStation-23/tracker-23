@@ -3,16 +3,22 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/guard';
 import { WebhooksService } from './webhooks.service';
 import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
-import { RegisterWebhookDto, extendWebhookLifeReqDto } from './dto';
-import { deleteWebhookDto } from './dto/deleteWebhook.dto';
+import {
+  RegisterOutlookWebhookQueryDto,
+  RegisterWebhookDto,
+  deleteWebhookDto,
+  extendWebhookLifeReqDto,
+} from './dto';
 @Controller('webhook')
 export class WebhooksController {
   constructor(private webhooksService: WebhooksService) {}
@@ -29,6 +35,47 @@ export class WebhooksController {
     @Body() reqBody: RegisterWebhookDto,
   ) {
     return this.webhooksService.registerWebhook(user, reqBody);
+  }
+
+  @Post('outlook/register')
+  @UseGuards(JwtAuthGuard)
+  async registerOutlookWebhook(
+    @GetUser() user: User,
+    @Query() query: RegisterOutlookWebhookQueryDto,
+  ) {
+    return await this.webhooksService.registerOutlookWebhook(
+      user,
+      query.calendarId,
+    );
+  }
+
+  @Post('outlook/receiver')
+  async handleOutlookWebhook(
+    @Query('validationToken') validationToken: any,
+    @Body() payload: any,
+  ) {
+    return await this.webhooksService.handleOutlookWebhook(
+      validationToken,
+      payload,
+    );
+  }
+
+  @Get('outlook/subscriptions')
+  @UseGuards(JwtAuthGuard)
+  async getOutlookWebhooks(@GetUser() user: User) {
+    return this.webhooksService.getOutlookWebhooks(user);
+  }
+
+  @Delete('outlook/subscriptions/:webhookId')
+  @UseGuards(JwtAuthGuard)
+  async deleteOutlookWebhook(
+    @GetUser() user: User,
+    @Param('webhookId') webhookId: string,
+  ) {
+    return await this.webhooksService.deleteOutlookWebhook(
+      user,
+      Number(webhookId),
+    );
   }
 
   @Delete('delete')

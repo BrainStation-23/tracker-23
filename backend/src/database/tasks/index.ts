@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IntegrationType, SessionStatus, User } from '@prisma/client';
+import { IntegrationType, SessionStatus, Task, User } from '@prisma/client';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 import { CreateTaskDto } from 'src/module/tasks/dto';
 import { GetActiveSprintTasks } from 'src/module/sprints/dto/get.active.sprint.tasks.filter.dto';
@@ -52,12 +52,10 @@ export class TasksDatabase {
     });
   }
 
-  async getProject(projectId: number) {
+  async getProject(query: Record<string, any>) {
     try {
       return await this.prisma.project.findFirst({
-        where: {
-          id: projectId,
-        },
+        where: query,
         select: {
           projectName: true,
           id: true,
@@ -231,6 +229,70 @@ export class TasksDatabase {
     } catch (err) {
       console.log(err);
       return [];
+    }
+  }
+
+  async updateTask(query: Record<string, any>, reqData: Record<string, any>) {
+    try {
+      return await this.prisma.task.update({
+        where: query,
+        data: reqData,
+      });
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
+
+  async updateManyTask(
+    query: Record<string, any>,
+    reqData: Record<string, any>,
+  ) {
+    try {
+      return await this.prisma.task.updateMany({
+        where: query,
+        data: reqData,
+      });
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
+
+  async deleteTasks(query: Record<string, any>) {
+    try {
+      return await this.prisma.task.deleteMany({
+        where: query,
+      });
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
+
+  async updateManyTaskSessions(
+    query: Record<string, any>,
+    reqData: Record<string, any>,
+  ) {
+    try {
+      return await this.prisma.session.updateMany({
+        where: query,
+        data: reqData,
+      });
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
+
+  async createTask(task: any) {
+    try {
+      return await this.prisma.task.create({
+        data: task,
+      });
+    } catch (err) {
+      console.log(err);
+      return null;
     }
   }
 }
