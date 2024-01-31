@@ -163,4 +163,18 @@ export class IntegrationDatabase {
       return null;
     }
   }
+
+  async getIntegration(query: Record<string, any>) {
+    try {
+      return await this.prisma.userIntegration.findFirst({
+        where: query,
+      });
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: index.ts:173 ~ IntegrationDatabase ~ getIntegrattion ~ error:',
+        error,
+      );
+      return null;
+    }
+  }
 }

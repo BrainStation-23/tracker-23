@@ -402,7 +402,9 @@ export class TasksService {
       );
       project = transaction && transaction[0];
     } else {
-      project = await this.tasksDatabase.getProject(Number(dto.projectId));
+      project = await this.tasksDatabase.getProject({
+        id: Number(dto.projectId),
+      });
     }
     if (dto.isRecurrent) {
       return (
