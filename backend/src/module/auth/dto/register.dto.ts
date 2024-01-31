@@ -8,6 +8,24 @@ import {
   MinLength,
 } from 'class-validator';
 
+export class RegisterSenOTPDto {
+  @IsString()
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @MinLength(6)
+  password: string;
+
+  @IsNotEmpty()
+  @IsString()
+  firstName: string;
+
+  @IsOptional()
+  @IsString()
+  lastName: string;
+}
+
 export class RegisterDto {
   @IsString()
   @IsEmail()
@@ -20,6 +38,10 @@ export class RegisterDto {
   @IsNotEmpty()
   @IsString()
   firstName: string;
+
+  @IsNotEmpty()
+  @IsString()
+  code: string;
 
   @IsOptional()
   @IsString()
