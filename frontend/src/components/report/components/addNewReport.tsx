@@ -17,6 +17,7 @@ const options: ReportTypesDto[] = [
   "SPRINT_ESTIMATION",
   "TASK_LIST",
   "SPRINT_REPORT",
+  "SPRINT_TIMELINE",
 ];
 
 const AddNewReport = ({ setIsModalOpen }: { setIsModalOpen: Function }) => {

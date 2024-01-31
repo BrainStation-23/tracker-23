@@ -341,7 +341,7 @@ export class WorkspacesService {
     if (!updatedUserWorkspace) {
       throw new APIException(
         'Can not change the invitation status',
-        HttpStatus.NOT_MODIFIED,
+        HttpStatus.BAD_REQUEST,
       );
     }
     return updatedUserWorkspace;
@@ -354,11 +354,11 @@ export class WorkspacesService {
     if (!workspace) {
       throw new APIException('Workspace Not found', HttpStatus.BAD_REQUEST);
     }
-    const filteredWorkspaces = workspace.userWorkspaces.filter(
-      (userWorkspace) => userWorkspace.status === UserWorkspaceStatus.ACTIVE,
-    );
+    // const filteredWorkspaces = workspace.userWorkspaces.filter(
+    //   (userWorkspace) => userWorkspace.status === UserWorkspaceStatus.ACTIVE,
+    // );
 
-    const users = filteredWorkspaces.map((userWorkspace) => {
+    const users = workspace.userWorkspaces.map((userWorkspace) => {
       return {
         role: userWorkspace.role,
         status: userWorkspace.status,
@@ -366,7 +366,7 @@ export class WorkspacesService {
         firstName: userWorkspace.user.firstName,
         lastName: userWorkspace.user.lastName,
         picture: userWorkspace.user.picture,
-        id: userWorkspace.user.id,
+        id: userWorkspace.id,
         email: userWorkspace.user.email,
         approved: userWorkspace.user.approved,
         activeWorkspaceId: userWorkspace.user.activeWorkspaceId,

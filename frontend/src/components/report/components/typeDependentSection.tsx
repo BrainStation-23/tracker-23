@@ -47,22 +47,43 @@ const TypeDependentSection = ({
 
   return (
     <>
-      {!["Sprint Estimate", "Sprint Report"].includes(activeTab) && (
+      {![
+        "Sprint Estimate",
+        "Sprint Report",
+        "Sprint View Timeline Report",
+      ].includes(activeTab) && (
         <SourceSelectorComponent {...{ selectedSource, setSelectedSource }} />
       )}
 
-      {(["Sprint Estimate", "Sprint Report"].includes(activeTab) ||
-        showProjectSelector) && (
-        <ProjectSelectorComponent
-          projectIds={projects}
-          setProjectIds={setProjects}
-          className="w-[210px]"
-        />
-      )}
-      {(["Sprint Estimate", "Sprint Report"].includes(activeTab) ||
+      {([
+        "Sprint Estimate",
+        "Sprint Report",
+        "Sprint View Timeline Report",
+      ].includes(activeTab) ||
+        showProjectSelector) &&
+        (activeTab === "Sprint View Timeline Report" ? (
+          <ProjectSelectorComponent
+            projectIds={projects}
+            setProjectIds={setProjects}
+            className="w-[210px]"
+            mode="single"
+          />
+        ) : (
+          <ProjectSelectorComponent
+            projectIds={projects}
+            setProjectIds={setProjects}
+            className="w-[210px]"
+          />
+        ))}
+      {([
+        "Sprint Estimate",
+        "Sprint Report",
+        "Sprint View Timeline Report",
+      ].includes(activeTab) ||
         (showProjectSelector && activeTab === "Task List")) &&
         sprintList.length > 0 &&
-        (activeTab === "Sprint Report" ? (
+        (activeTab === "Sprint Report" ||
+        activeTab === "Sprint View Timeline Report" ? (
           <SprintSelectorComponent
             mode="single"
             projectIds={projects}
@@ -76,7 +97,11 @@ const TypeDependentSection = ({
             className="w-[210px]"
           />
         ))}
-      {!["Sprint Estimate", "Sprint Report"].includes(activeTab) &&
+      {![
+        "Sprint Estimate",
+        "Sprint Report",
+        "Sprint View Timeline Report",
+      ].includes(activeTab) &&
         showCalendarSelector && (
           <CalendarSelectorComponent
             key={Math.random()}

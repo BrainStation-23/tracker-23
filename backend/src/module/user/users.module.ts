@@ -3,11 +3,12 @@ import { Module } from '@nestjs/common';
 import { UsersDatabase } from 'src/database/users';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { WorkspacesModule } from '../workspaces/workspaces.module';
-import { TasksModule } from '../tasks/tasks.module';
-import { IntegrationsModule } from '../integrations/integrations.module';
-import { SessionsModule } from '../sessions/sessions.module';
-import { ProjectsModule } from '../projects/projects.module';
+import { WorkspacesModule } from 'src/module/workspaces/workspaces.module';
+import { TasksModule } from 'src/module/tasks/tasks.module';
+import { IntegrationsModule } from 'src/module/integrations/integrations.module';
+import { SessionsModule } from 'src/module/sessions/sessions.module';
+import { ProjectsModule } from 'src/module/projects/projects.module';
+import { OnboardingModule } from 'src/module/onboarding/onboarding.module';
 @Module({
   imports: [
     HttpModule.register({}),
@@ -16,6 +17,7 @@ import { ProjectsModule } from '../projects/projects.module';
     IntegrationsModule,
     SessionsModule,
     ProjectsModule,
+    OnboardingModule,
   ],
   controllers: [UsersController],
   providers: [UsersService, UsersDatabase],

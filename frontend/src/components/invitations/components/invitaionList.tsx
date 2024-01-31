@@ -1,48 +1,55 @@
+import { Avatar, Table, Typography } from "antd";
+import { ColumnsType } from "antd/es/table";
+import { InviteUserWorkspaceDto } from "models/invitations";
 import {
-  WorkspaceMemberDto,
   WorkspaceMemberRoleBorderColorEnum,
   WorkspaceMemberRoleEnum,
   WorkspaceMemberStatusBGColorEnum,
   WorkspaceMemberStatusBorderColorEnum,
   WorkspaceMemberStatusEnum,
 } from "models/user";
-import { ColumnsType } from "antd/es/table";
-import { Avatar, Table, Typography } from "antd";
 import {
   LuBadgeCheck,
   LuCheckCircle,
+  LuFolder,
   LuMail,
   LuUser,
   LuUserCog,
 } from "react-icons/lu";
-import MoreFunctionMembersPageComponent from "./moreFunctionmMembersPage";
+
+import MoreFunctionInvitationPageComponent from "./moreFunctionInvitationPage";
 
 const { Text } = Typography;
 
 type Props = {
-  memberList: WorkspaceMemberDto[];
-  updateMember: Function;
+  invitationList: InviteUserWorkspaceDto[];
+  acceptInvite: Function;
+  rejectInvite: Function;
 };
-const MemberList = ({ memberList, updateMember }: Props) => {
-  console.log(memberList);
-  const columns: ColumnsType<WorkspaceMemberDto> = [
+const InvitationList = ({
+  invitationList,
+  acceptInvite,
+  rejectInvite,
+}: Props) => {
+  console.log(invitationList);
+  const columns: ColumnsType<InviteUserWorkspaceDto> = [
     {
       title: (
         <div className="flex items-center gap-2">
           <LuUser size={20} />
-          Name
+          Inviter
         </div>
       ),
       dataIndex: "firstName",
       key: "firstName",
       width: "300px",
-      render: (text: string, record: WorkspaceMemberDto, index: number) => {
+      render: (text: string, record: InviteUserWorkspaceDto, index: number) => {
         return (
           <div className="flex items-center gap-2">
             <div className=" ">
-              {record?.picture ? (
+              {record?.inviter?.picture ? (
                 <Avatar
-                  src={record.picture}
+                  src={record.inviter.picture}
                   alt="N"
                   className="h-[24px] w-[24px]"
                 />
@@ -58,13 +65,11 @@ const MemberList = ({ memberList, updateMember }: Props) => {
             </div>
             <Text
               className="w-[200px] cursor-pointer"
-              ellipsis={{ tooltip: `${record.firstName} ${record.lastName}` }}
+              ellipsis={{
+                tooltip: `${record.inviter.firstName} ${record.inviter.lastName}`,
+              }}
             >
-              {record.firstName ? (
-                <>{`${record.firstName} ${record.lastName}`}</>
-              ) : (
-                "----"
-              )}
+              {`${record.inviter.firstName} ${record.inviter.lastName}`}
             </Text>
           </div>
         );
@@ -75,20 +80,44 @@ const MemberList = ({ memberList, updateMember }: Props) => {
       title: (
         <div className="flex w-full items-center justify-start gap-2">
           <LuMail size={20} />
-          Email
+          Inviter Email
         </div>
       ),
       dataIndex: "email",
       key: "email",
       width: "300px",
-      render: (text: string, record: WorkspaceMemberDto, index: number) => {
+      render: (text: string, record: InviteUserWorkspaceDto, index: number) => {
         return (
           <div className="flex  items-center gap-2">
             <Text
               className="w-[200px] cursor-pointer"
-              ellipsis={{ tooltip: `${record.email ?? "--"}` }}
+              ellipsis={{ tooltip: `${record.inviter.email ?? "--"}` }}
             >
-              {`${record.email ?? "--"}`}
+              {`${record.inviter.email ?? "--"}`}
+            </Text>
+          </div>
+        );
+      },
+      align: "left",
+    },
+    {
+      title: (
+        <div className="flex w-full items-center justify-start gap-2">
+          <LuFolder size={20} />
+          Workspace
+        </div>
+      ),
+      dataIndex: "workspace",
+      key: "workspace",
+      width: "200px",
+      render: (text: string, record: InviteUserWorkspaceDto, index: number) => {
+        return (
+          <div className="flex  items-center gap-2">
+            <Text
+              className="w-[200px] cursor-pointer"
+              ellipsis={{ tooltip: `${record.workspace.name ?? "--"}` }}
+            >
+              {`${record.workspace.name ?? "--"}`}
             </Text>
           </div>
         );
@@ -105,7 +134,7 @@ const MemberList = ({ memberList, updateMember }: Props) => {
       dataIndex: "designation",
       key: "designation",
       width: "200px",
-      render: (text: string, record: WorkspaceMemberDto, index: number) => {
+      render: (text: string, record: InviteUserWorkspaceDto, index: number) => {
         return (
           <div className="flex w-full items-center justify-center gap-2">
             <Text
@@ -129,7 +158,7 @@ const MemberList = ({ memberList, updateMember }: Props) => {
       dataIndex: "role",
       key: "role",
       width: "150px",
-      render: (text: string, record: WorkspaceMemberDto, index: number) => (
+      render: (text: string, record: InviteUserWorkspaceDto, index: number) => (
         <div className="flex w-full items-center justify-center gap-2">
           <div
             style={{
@@ -171,7 +200,7 @@ const MemberList = ({ memberList, updateMember }: Props) => {
       dataIndex: "status",
       key: "status",
       width: "150px",
-      render: (text: string, record: WorkspaceMemberDto, index: number) => {
+      render: (text: string, record: InviteUserWorkspaceDto, index: number) => {
         return (
           <div className="flex w-full items-center justify-center gap-2">
             <div
@@ -205,10 +234,10 @@ const MemberList = ({ memberList, updateMember }: Props) => {
       dataIndex: "",
       key: "",
       width: "1px",
-      render: (text: string, record: WorkspaceMemberDto, index: number) => (
+      render: (text: string, record: InviteUserWorkspaceDto, index: number) => (
         <div className="bgs-red-300 flex justify-center gap-2">
-          <MoreFunctionMembersPageComponent
-            {...{ member: record, updateMember }}
+          <MoreFunctionInvitationPageComponent
+            {...{ invitedUser: record, acceptInvite, rejectInvite }}
           />
         </div>
       ),
@@ -220,7 +249,7 @@ const MemberList = ({ memberList, updateMember }: Props) => {
     <div className="my-5 flex w-full gap-4">
       <Table
         columns={columns}
-        dataSource={memberList}
+        dataSource={invitationList}
         className="w-full"
         // onChange={onChange}
         rowKey={"id"}
@@ -239,4 +268,4 @@ const MemberList = ({ memberList, updateMember }: Props) => {
   );
 };
 
-export default MemberList;
+export default InvitationList;

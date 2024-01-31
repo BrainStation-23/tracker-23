@@ -74,11 +74,13 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
                     )}h`,
                   }}
                 >
-                  {`${Math.round(
-                    (column.value.devProgress.spentTime /
-                      column.value.devProgress.estimatedTime) *
-                      100
-                  )}%`}
+                  {column.value.devProgress.estimatedTime
+                    ? `${Math.round(
+                        (column.value.devProgress.spentTime /
+                          column.value.devProgress.estimatedTime) *
+                          100
+                      )}%`
+                    : ""}
                 </Text>
                 <TimeProgressComponent
                   spentTime={record.devProgress[column.key]?.spentTime}
@@ -90,7 +92,7 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
                 className={classNames(
                   `flex h-full w-full justify-start rounded`,
                   {
-                    ["bg-statusToDoBg"]:
+                    ["bg-gray-100"]:
                       record.task[column.key].statusCategoryName ===
                       TaskStatusEnum.TO_DO,
                     ["bg-statusInProgressBg"]:
@@ -104,18 +106,20 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
               >
                 <Text
                   key={record.task[column.key].key}
-                  className={`h-[24px] w-[200px] cursor-pointer`}
+                  className={`h-[24px] w-[${
+                    colSpan * 200
+                  }px] cursor-pointer text-left`}
                   ellipsis={{ tooltip: record.task[column.key].title }}
                 >
                   {record.task[column.key].title}
                 </Text>
               </div>
             ) : cell === "assignedTask" ? (
-              <div className="flex  w-[300px] justify-start gap-2">
-                <div className={`flex justify-start`}>
+              <div className="flex  w-full justify-start gap-2">
+                <div className={`flex w-[200px] justify-start`}>
                   <Text
                     key={record.task[column.key].key}
-                    className={classNames(`cursor-pointer`, {
+                    className={classNames(`w-[200px] cursor-pointer`, {
                       ["text-statusToDo"]:
                         record.task[column.key].statusCategoryName ===
                         TaskStatusEnum.TO_DO,
@@ -171,12 +175,18 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
                     })}
                   />
 
-                  <div>{record.task[column.key].status}</div>
+                  <div className="w-[80px]">
+                    <Text
+                      ellipsis={{ tooltip: record.task[column.key].status }}
+                    >
+                      {record.task[column.key].status}
+                    </Text>
+                  </div>
                 </div>
               </div>
             ) : (
               <Text
-                className="w-[200px] cursor-pointer"
+                className="h-[24px] w-[200px] cursor-pointer"
                 ellipsis={{ tooltip: "No assigned tasks" }}
               >
                 {/* {"--"} */}
@@ -260,12 +270,13 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
             <div className="flex w-full items-center justify-center gap-2">
               <Text>
                 Sprint Progress -{" "}
-                {Math.round(
-                  (column.value.devProgress.spentTime /
-                    column.value.devProgress.estimatedTime) *
-                    100
-                )}
-                %
+                {column.value.devProgress.estimatedTime > 0
+                  ? `${Math.round(
+                      (column.value.devProgress.spentTime /
+                        column.value.devProgress.estimatedTime) *
+                        100
+                    )}%`
+                  : ""}
               </Text>
               <div className="w-[100px]">
                 <TimeProgressComponent
@@ -313,12 +324,13 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
                 />
               </div>
               <div>
-                {Math.round(
-                  (column.value.devProgress.spentTime /
-                    column.value.devProgress.estimatedTime) *
-                    100
-                )}
-                %
+                {column.value.devProgress.estimatedTime > 0
+                  ? `${Math.round(
+                      (column.value.devProgress.spentTime /
+                        column.value.devProgress.estimatedTime) *
+                        100
+                    )}%`
+                  : ""}
               </div>
             </div>
           </div>

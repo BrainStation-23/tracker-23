@@ -147,8 +147,8 @@ export class ProjectsService {
         ),
         await this.sprintService.createSprintAndTask(
           user,
-          projId,
-          updatedUserIntegration.id,
+          project,
+          updatedUserIntegration,
         ),
         await this.tasksService.updateProjectIntegrationStatus(projId),
         res && (await this.tasksService.syncCall(StatusEnum.DONE, user)),

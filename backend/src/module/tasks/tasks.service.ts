@@ -1374,6 +1374,28 @@ export class TasksService {
     const notification = await this.createNotification(user, msg, msg);
     this.myGateway.sendNotification(`${user.id}`, notification);
   }
+  async syncSingleProjectOrCalendar(
+    user: User,
+    projId: number,
+    res?: Response,
+  ) {
+    const project = await this.prisma.project.findUnique({
+      where: { id: projId },
+      include: { integration: true },
+    });
+    if (!project) {
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user),
+      ]);
+      throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
+    }
+    if (project.integration?.type === IntegrationType.OUTLOOK) {
+      return await this.syncEvents(user, project.id, res);
+    } else if (project.integration?.type === IntegrationType.JIRA) {
+      return await this.syncTasks(user, project.id, res);
+    }
+  }
 
   async syncTasks(user: User, projId: number, res?: Response) {
     const project = await this.prisma.project.findUnique({
@@ -1437,8 +1459,8 @@ export class TasksService {
         ),
         await this.sprintService.createSprintAndTask(
           user,
-          projId,
-          updatedUserIntegration.id,
+          project,
+          updatedUserIntegration,
         ),
         await this.updateProjectIntegrationStatus(projId),
         res && (await this.syncCall(StatusEnum.DONE, user)),
@@ -1449,7 +1471,9 @@ export class TasksService {
             res,
           )),
       ]);
-      return { Message: 'Project Synced Successfully!' };
+      return res
+        ? res.send({ Message: 'Project Synced Successfully!' })
+        : { Message: 'Project Synced Successfully!' };
     } catch (err) {
       console.log(
         '🚀 ~ file: tasks.service.ts:1511 ~ TasksService ~ syncTasks ~ err:',
@@ -2414,11 +2438,13 @@ export class TasksService {
         res &&
           (await this.sendImportedNotification(
             user,
-            'Project Synced Successfully!',
+            'Calendar Synced Successfully!',
             res,
           )),
       ]);
-      return { Message: 'Project Synced Successfully!' };
+      return res
+        ? res.send({ Message: 'Calendar Synced Successfully!' })
+        : { Message: 'Calendar Synced Successfully!' };
     } catch (err) {
       console.log(
         '🚀 ~ file: tasks.service.ts:1511 ~ TasksService ~ syncTasks ~ err:',
@@ -2429,7 +2455,7 @@ export class TasksService {
         await this.syncCall(StatusEnum.FAILED, user),
       ]);
       throw new APIException(
-        'Could not Sync project tasks!',
+        'Could not Sync Calendar Events!',
         HttpStatus.BAD_REQUEST,
       );
     }

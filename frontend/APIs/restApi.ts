@@ -34,6 +34,7 @@ import {
   updateApprovalUserDto,
   updateOnboardingUserDto,
   WorkspaceMemberDto,
+  WorkspaceMemberStatus,
 } from "models/user";
 import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
@@ -826,6 +827,20 @@ export async function rejectWorkspaceInvitationRest(id: number) {
   }
 }
 
+export async function updateMemberStatusRest(
+  id: number,
+  status: WorkspaceMemberStatus
+) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.invitation}/response/${id}`, {
+      status: status,
+    });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
 export async function getWorkspaceSettingsRest() {
   try {
     const res = await axios.get(`${apiEndPoints.workspaceSettings}`);
@@ -1452,264 +1467,10 @@ export async function getSprintViewTimelineReportRest({
   endDate,
 }: SprintReportParamsModel): Promise<SprintViewTimelineReportDto | false> {
   try {
-    // TODO: Replace with original implementation when API ready
-    const data: SprintViewTimelineReportDto = {
-      columns: [
-        {
-          key: "AssignTasks",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          key: "2024-01-08T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          key: "2024-01-09T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          key: "2024-01-10T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          key: "2024-01-11T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          key: "2024-01-12T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          key: "2024-01-13T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          key: "2024-01-14T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          key: "2024-01-15T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          key: "2024-01-16T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-        {
-          key: "2024-01-17T08:24:18.123Z",
-          value: { devProgress: { estimatedTime: 10, spentTime: 7 } },
-        },
-      ],
-      rows: [
-        {
-          userId: 101,
-          name: "John Doe",
-          picture: "https://example.com/johndoe.jpg",
-          email: "john.doe@example.com",
-          data: [
-            {
-              key: "AssignTasks",
-              value: {
-                devProgress: { estimatedTime: 10, spentTime: 7 },
-                tasks: [
-                  {
-                    title: "Feature A",
-                    key: "PROJ-123",
-                    status: "In Progress",
-                    statusCategoryName: "IN_PROGRESS",
-                  },
-                  {
-                    title: "Bug Fix B",
-                    key: "PROJ-124",
-                    status: "To Do",
-                    statusCategoryName: "TO_DO",
-                  },
-                  {
-                    title: "Refactor C",
-                    key: "PROJ-125",
-                    status: "Done",
-                    statusCategoryName: "DONE",
-                  },
-                ],
-              },
-            },
-            {
-              key: "2024-01-08T08:24:18.123Z",
-              value: {
-                devProgress: { estimatedTime: 10, spentTime: 7 },
-                tasks: [
-                  {
-                    title: "Feature A",
-                    key: "PROJ-123",
-                    status: "In Progress",
-                    statusCategoryName: "IN_PROGRESS",
-                    timeRange: {
-                      start: "2024-01-08T08:24:18.123Z",
-                      end: "2024-01-08T08:24:18.123Z",
-                    },
-                  },
-                ],
-              },
-            },
-            {
-              key: "2024-01-09T08:24:18.123Z",
-              value: {
-                devProgress: { estimatedTime: 10, spentTime: 7 },
-                tasks: [
-                  {
-                    title: "Bug Fix B",
-                    key: "PROJ-124",
-                    status: "In Review",
-                    statusCategoryName: "IN_PROGRESS",
-                    timeRange: {
-                      start: "2024-01-09T08:24:18.123Z",
-                      end: "2024-01-09T08:24:18.123Z",
-                    },
-                  },
-                ],
-              },
-            },
-            {
-              key: "2024-01-10T08:24:18.123Z",
-              value: {
-                devProgress: { estimatedTime: 10, spentTime: 7 },
-                tasks: [
-                  {
-                    title: "Refactor C",
-                    key: "PROJ-125",
-                    status: "Done",
-                    statusCategoryName: "DONE",
-                    timeRange: {
-                      start: "2024-01-10T08:24:18.123Z",
-                      end: "2024-01-12T08:24:18.123Z",
-                    },
-                  },
-                ],
-              },
-            },
-            {
-              key: "2024-01-11T08:24:18.123Z",
-              value: {
-                devProgress: { estimatedTime: 10, spentTime: 7 },
-                tasks: [
-                  {
-                    title: "Refactor C",
-                    key: "PROJ-125",
-                    status: "Done",
-                    statusCategoryName: "DONE",
-                    timeRange: {
-                      start: "2024-01-10T08:24:18.123Z",
-                      end: "2024-01-12T08:24:18.123Z",
-                    },
-                  },
-                ],
-              },
-            },
-            {
-              key: "2024-01-12T08:24:18.123Z",
-              value: {
-                devProgress: { estimatedTime: 10, spentTime: 7 },
-                tasks: [
-                  {
-                    title: "Refactor C",
-                    key: "PROJ-125",
-                    status: "Done",
-                    statusCategoryName: "DONE",
-                    timeRange: {
-                      start: "2024-01-10T08:24:18.123Z",
-                      end: "2024-01-12T08:24:18.123Z",
-                    },
-                  },
-                ],
-              },
-            },
-            {
-              key: "2024-01-13T08:24:18.123Z",
-              value: {
-                devProgress: { estimatedTime: 10, spentTime: 7 },
-                tasks: [],
-              },
-            },
-            {
-              key: "2024-01-14T08:24:18.123Z",
-              value: {
-                devProgress: { estimatedTime: 10, spentTime: 7 },
-                tasks: [],
-              },
-            },
-            {
-              key: "2024-01-15T08:24:18.123Z",
-              value: {
-                devProgress: { estimatedTime: 10, spentTime: 7 },
-                tasks: [
-                  {
-                    title: "Feature A",
-                    key: "PROJ-123",
-                    status: "In Progress",
-                    statusCategoryName: "IN_PROGRESS",
-                    timeRange: {
-                      start: "2024-01-15T08:24:18.123Z",
-                      end: "2024-01-16T08:24:18.123Z",
-                    },
-                  },
-                ],
-              },
-            },
-            {
-              key: "2024-01-16T08:24:18.123Z",
-              value: {
-                devProgress: { estimatedTime: 10, spentTime: 7 },
-                tasks: [
-                  {
-                    title: "Feature A",
-                    key: "PROJ-123",
-                    status: "In Progress",
-                    statusCategoryName: "IN_PROGRESS",
-                    timeRange: {
-                      start: "2024-01-15T08:24:18.123Z",
-                      end: "2024-01-16T08:24:18.123Z",
-                    },
-                  },
-                ],
-              },
-            },
-            {
-              key: "2024-01-17T08:24:18.123Z",
-              value: {
-                devProgress: { estimatedTime: 10, spentTime: 7 },
-                tasks: [
-                  {
-                    title: "Feature A",
-                    key: "PROJ-123",
-                    status: "In Progress",
-                    statusCategoryName: "IN_PROGRESS",
-                    timeRange: {
-                      start: "2024-01-17T08:24:18.123Z",
-                      end: "2024-01-17T08:24:18.123Z",
-                    },
-                  },
-                  {
-                    title: "Bug Fix B",
-                    key: "PROJ-124",
-                    status: "In Review",
-                    statusCategoryName: "IN_PROGRESS",
-                    timeRange: {
-                      start: "2024-01-17T08:24:18.123Z",
-                      end: "2024-01-17T08:24:18.123Z",
-                    },
-                  },
-                ],
-              },
-            },
-          ],
-        },
-      ],
-    };
-    const res = await fakeAxiosRequest(
-      `${apiEndPoints.sprintReport}?` +
+    const res = await axios.get(
+      `${apiEndPoints.sprintTimelineReport}?` +
         (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
-        (sprintId ? `&sprintId=${sprintId}` : ""),
-      data
+        (sprintId ? `&sprintId=${sprintId}` : "")
     );
     // For now, just return the dummy response data
     return res.data;
@@ -1825,7 +1586,21 @@ export async function updateReportPageRest(
   data: UpdateReportPageDto
 ) {
   try {
-    const res = await axios.patch(`${apiEndPoints.reportPage}/${reportPageId}`, data);
+    const res = await axios.patch(
+      `${apiEndPoints.reportPage}/${reportPageId}`,
+      data
+    );
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function deleteReportPageRest(reportPageId: number) {
+  try {
+    const res = await axios.delete(
+      `${apiEndPoints.reportPage}/${reportPageId}`
+    );
     return res.data;
   } catch (error: any) {
     return false;

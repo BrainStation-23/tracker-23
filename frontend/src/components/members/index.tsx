@@ -22,6 +22,14 @@ const MembersComponent = () => {
     setLoading(false);
   };
 
+  const updateMember = (newMember: WorkspaceMemberDto) => {
+    setMemberList(
+      memberList.map((member) =>
+        member.id === newMember.id ? newMember : member
+      )
+    );
+  };
+
   useEffect(() => {
     getMemberList();
   }, []);
@@ -41,7 +49,7 @@ const MembersComponent = () => {
         {memberList.length === 0 && !loading ? (
           <Empty description="No members found" />
         ) : memberList.length > 0 ? (
-          <MemberList memberList={memberList} />
+          <MemberList memberList={memberList} updateMember={updateMember} />
         ) : loading ? (
           <Empty description="Getting members..." />
         ) : (
