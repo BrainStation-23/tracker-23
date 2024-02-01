@@ -1,3 +1,5 @@
+import { Avatar, Table, Typography } from "antd";
+import { ColumnsType } from "antd/es/table";
 import {
   WorkspaceMemberDto,
   WorkspaceMemberRoleBorderColorEnum,
@@ -6,8 +8,6 @@ import {
   WorkspaceMemberStatusBorderColorEnum,
   WorkspaceMemberStatusEnum,
 } from "models/user";
-import { ColumnsType } from "antd/es/table";
-import { Avatar, Table, Typography } from "antd";
 import {
   LuBadgeCheck,
   LuCheckCircle,
@@ -15,6 +15,7 @@ import {
   LuUser,
   LuUserCog,
 } from "react-icons/lu";
+
 import MoreFunctionMembersPageComponent from "./moreFunctionmMembersPage";
 
 const { Text } = Typography;
@@ -24,7 +25,6 @@ type Props = {
   updateMember: Function;
 };
 const MemberList = ({ memberList, updateMember }: Props) => {
-  console.log(memberList);
   const columns: ColumnsType<WorkspaceMemberDto> = [
     {
       title: (
@@ -222,7 +222,6 @@ const MemberList = ({ memberList, updateMember }: Props) => {
         columns={columns}
         dataSource={memberList}
         className="w-full"
-        // onChange={onChange}
         rowKey={"id"}
         bordered
         pagination={{
@@ -231,7 +230,6 @@ const MemberList = ({ memberList, updateMember }: Props) => {
           showSizeChanger: false,
           showLessItems: true,
           position: ["bottomRight", "bottomLeft"],
-          // total: 100,
         }}
         scroll={{ x: true }}
       />
