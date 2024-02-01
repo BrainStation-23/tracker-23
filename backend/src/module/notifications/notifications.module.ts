@@ -11,6 +11,7 @@ import { WorkspaceDatabase } from 'src/database/workspaces';
 import { UsersDatabase } from 'src/database/users';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { ProjectDatabase } from 'src/database/projects';
+import { TasksDatabase } from 'src/database/tasks';
 
 @Module({
   imports: [HttpModule.register({})],
@@ -26,6 +27,7 @@ import { ProjectDatabase } from 'src/database/projects';
     UsersDatabase,
     UserWorkspaceDatabase,
     ProjectDatabase,
+    TasksDatabase,
   ],
   exports: [MyGateway],
 })

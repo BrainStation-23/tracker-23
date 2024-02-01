@@ -497,4 +497,60 @@ export class WorkspaceDatabase {
       return [];
     }
   }
+
+  async deleteCallSync(query: Record<string, any>, prisma = this.prisma) {
+    try {
+      return await prisma.callSync.deleteMany({
+        where: query,
+      });
+    } catch (error) {
+      console.log('🚀 ~ file: index.ts:507 ~ deleteCallSync ~ error:', error);
+      return null;
+    }
+  }
+
+  async deletePages(query: Record<string, any>, prisma = this.prisma) {
+    try {
+      return await prisma.page.deleteMany({
+        where: query,
+      });
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: index.ts:518 ~ WorkspaceDatabase ~ deletePages ~ error:',
+        error,
+      );
+      return null;
+    }
+  }
+
+  async deleteUserIntegrations(
+    query: Record<string, any>,
+    prisma = this.prisma,
+  ) {
+    try {
+      return await prisma.userIntegration.deleteMany({
+        where: query,
+      });
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: index.ts:532 ~ WorkspaceDatabase ~ deleteUserIntegrations ~ error:',
+        error,
+      );
+      return null;
+    }
+  }
+
+  async deleteUserWorkspace(query: Record<string, any>, prisma = this.prisma) {
+    try {
+      return await prisma.userWorkspace.delete({
+        where: query,
+      });
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: index.ts:549 ~ WorkspaceDatabase ~ deleteUserWorkspace ~ error:',
+        error,
+      );
+      return null;
+    }
+  }
 }
