@@ -5,7 +5,9 @@ import { LuDownload } from "react-icons/lu";
 import { useDispatch } from "react-redux";
 
 import PrimaryButton from "@/components/common/buttons/primaryButton";
-import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
+import DateRangePicker, {
+  getDateRangeArray,
+} from "@/components/common/datePicker";
 
 import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
 

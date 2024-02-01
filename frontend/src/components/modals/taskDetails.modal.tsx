@@ -13,7 +13,7 @@ import {
   getTotalSpentTime,
 } from "@/services/timeActions";
 
-import { localFormat, timeFormat } from "../datePicker";
+import { localFormat, timeFormat } from "../common/datePicker";
 import Sessions from "./components/sessions";
 import OpenLinkInNewTab from "../common/link/OpenLinkInNewTab";
 

@@ -9,7 +9,7 @@ import XYChart from "@/components/dashboard/charts/xyChart";
 import { getFormattedTasks } from "@/services/taskActions";
 import { getDayWithMonth, getTotalSpentTime } from "@/services/timeActions";
 
-import { getDateRangeArray } from "../datePicker";
+import { getDateRangeArray } from "../common/datePicker";
 import GlobalModal from "../modals/globalModal";
 import SessionStartWarning from "../tasks/components/warning";
 import DonutChart from "./charts/donutChart";

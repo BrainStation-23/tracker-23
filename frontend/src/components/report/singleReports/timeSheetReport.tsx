@@ -8,7 +8,9 @@ import { useDispatch } from "react-redux";
 
 import PrimaryButton from "@/components/common/buttons/primaryButton";
 import UsersSelectorComponent from "@/components/common/topPanels/components/usersSelector";
-import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
+import DateRangePicker, {
+  getDateRangeArray,
+} from "@/components/common/datePicker";
 import { ExcelExport } from "@/services/exportHelpers";
 import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
 

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 
 import ProjectSelectorComponent from "@/components/common/topPanels/components/projectSelector";
 import SprintSelectorComponent from "@/components/common/topPanels/components/sprintSelector";
-import DateRangePicker from "@/components/datePicker";
+import DateRangePicker from "@/components/common/datePicker";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { useRouter } from "next/router";
