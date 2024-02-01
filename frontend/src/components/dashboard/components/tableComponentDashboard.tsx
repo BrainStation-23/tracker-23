@@ -56,10 +56,8 @@ const DashboardTableComponent = ({
             ) : (
               <div className="h-1 p-4"></div>
             )}
-            {/* {task.status === "DONE" && <div className="w-[34px]"></div>} */}
             <div className="flex flex-col gap-2">
               <Text className="w-[200px] " ellipsis={{ tooltip: task?.title }}>
-                {/* <div>{task?.title}</div> */}
                 {task?.title}
               </Text>
               <div className="flex cursor-pointer gap-2">
@@ -85,7 +83,6 @@ const DashboardTableComponent = ({
       title: "Source",
       dataIndex: "dataSource",
       key: "dataSource",
-      // align: "center",
       render: (dataSource: any, task: TaskDto) => (
         <div className="flex max-w-[150px] items-center gap-2 ">
           <div>{integrationIcons[task.source]} </div>
@@ -98,63 +95,16 @@ const DashboardTableComponent = ({
         </div>
       ),
     },
-    // {
-    //   title: "Status",
-    //   dataIndex: "status",
-    //   key: "status",
-    //   // align: "center",
-    //   render: (_: any, task: TaskDto) => (
-    //     <div
-    //       style={{
-    //         backgroundColor: statusBGColorEnum[task.statusCategoryName],
-    //         border: `1px solid ${
-    //           statusBorderColorEnum[task.statusCategoryName]
-    //         }`,
-    //         borderRadius: "36px",
-    //       }}
-    //       className="relative flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
-    //     >
-    //       <div
-    //         className="h-2 w-2 rounded-full"
-    //         style={{
-    //           backgroundColor: statusBorderColorEnum[task.statusCategoryName],
-    //         }}
-    //       />
 
-    //       <div>{task.status}</div>
-    //     </div>
-    //   ),
-    // },
     {
       title: "Created",
       dataIndex: "createdAt",
       key: "createdAt",
-      // align: "center",
       render: (createdAt: any, task: TaskDto) => {
         console.log("****", createdAt, task);
         return <>{getFormattedTime(formatDate(task.createdAt))}</>;
       },
     },
-    // {
-    //   title: "Priority",
-    //   dataIndex: "priority",
-    //   key: "priority",
-    //   render: (_: any, task: TaskDto) => <TablePriorityComponent task={task} />,
-    // },
-
-    // {
-    //   title: "Progress",
-    //   dataIndex: "percentage",
-    //   key: "percentage",
-
-    //   // align: "center",
-    //   render: (_: any, task: TaskDto) =>
-    //     runningTask?.id != task.id ? (
-    //       <StaticProgressComponent task={task} />
-    //     ) : (
-    //       <ProgressComponent task={task} />
-    //     ),
-    // },
     {
       title: "Started",
       dataIndex: "started",
@@ -192,7 +142,6 @@ const DashboardTableComponent = ({
       title: "Total Spent",
       dataIndex: "total",
       key: "total",
-      // align: "center",
       render: (_: any, task: TaskDto) =>
         runningTask?.id !== task.id ? (
           <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
@@ -200,19 +149,6 @@ const DashboardTableComponent = ({
           <Stopwatch milliseconds={getTotalSpentTime(task.sessions)} />
         ),
     },
-    // {
-    //   title: "Estimation",
-    //   dataIndex: "estimation",
-    //   key: "estimation",
-    //   render: (_: any, task: TaskDto) =>
-    //     task.estimation ? (
-    //       <div className="text-center">
-    //         <FormatTimeForSettings time={task.estimation} />
-    //       </div>
-    //     ) : (
-    //       <div className="text-center">---</div>
-    //     ),
-    // },
   ];
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {
@@ -221,8 +157,6 @@ const DashboardTableComponent = ({
       showSizeChanger: true,
       showLessItems: true,
       position: ["bottomRight", "bottomLeft"],
-
-      // total: 100,
     },
   });
   const handlePin = (task: TaskDto) => {
@@ -260,18 +194,12 @@ const DashboardTableComponent = ({
       filters,
       ...sorter,
     });
-
-    // `dataSource` is useless since `pageSize` changed
-    // if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-    //   setData([]);
-    // }
   };
   return (
     <div className="w-full">
       <Table
         columns={columns}
         dataSource={tasks}
-        // onChange={onChange}
         rowKey={(task) => task.id}
         pagination={tableParams.pagination}
         rowClassName={getRowClassName}
