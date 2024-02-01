@@ -12,12 +12,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as fs from 'fs';
 import * as ejs from 'ejs';
 import { coreConfig } from 'config/core';
+import { TasksDatabase } from 'src/database/tasks';
 @Injectable()
 export class WorkspacesService {
   constructor(
     private workspaceDatabase: WorkspaceDatabase,
     private projectDatabase: ProjectDatabase,
     private emailService: EmailService,
+    private tasksDatabase: TasksDatabase,
     private prisma: PrismaService,
   ) {}
 
@@ -333,6 +335,41 @@ export class WorkspacesService {
     userWorkspaceId: number,
     reqStatus: UserWorkspaceStatus,
   ) {
+    if (reqStatus === UserWorkspaceStatus.DELETED) {
+      try {
+        await this.prisma.$transaction(async (prisma: any) => {
+          await Promise.all([
+            this.tasksDatabase.updateManyTask(
+              {
+                userWorkspaceId,
+              },
+              { userWorkspaceId: null },
+              prisma,
+            ),
+
+            this.tasksDatabase.updateManyTaskSessions(
+              { userWorkspaceId },
+              { userWorkspaceId: null },
+              prisma,
+            ),
+            this.workspaceDatabase.deleteCallSync({ userWorkspaceId }, prisma),
+            this.workspaceDatabase.deletePages({ userWorkspaceId }, prisma),
+            this.workspaceDatabase.deleteUserIntegrations(
+              {
+                userWorkspaceId,
+              },
+              prisma,
+            ),
+            this.workspaceDatabase.deleteUserWorkspace({ id: userWorkspaceId }),
+          ]);
+        });
+      } catch (err) {
+        throw new APIException(
+          'Error to delete this member ',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
     const updatedUserWorkspace =
       await this.workspaceDatabase.updateUserWorkspace(
         userWorkspaceId,

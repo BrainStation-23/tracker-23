@@ -247,9 +247,10 @@ export class TasksDatabase {
   async updateManyTask(
     query: Record<string, any>,
     reqData: Record<string, any>,
+    prisma = this.prisma,
   ) {
     try {
-      return await this.prisma.task.updateMany({
+      return await prisma.task.updateMany({
         where: query,
         data: reqData,
       });
@@ -273,9 +274,10 @@ export class TasksDatabase {
   async updateManyTaskSessions(
     query: Record<string, any>,
     reqData: Record<string, any>,
+    prisma = this.prisma,
   ) {
     try {
-      return await this.prisma.session.updateMany({
+      return await prisma.session.updateMany({
         where: query,
         data: reqData,
       });
