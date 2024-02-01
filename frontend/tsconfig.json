@@ -17,7 +17,10 @@
     "baseUrl": ".",
     "strictNullChecks": false,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/pages/*": ["src/pages/*"],
+      "@utils/*": ["./utils/*"],   
+      "@/utils/*": ["./utils/*"],   
+      "@/*": ["./src/*"], 
     }
   },
   "include": [
@@ -26,6 +29,6 @@
     "**/*.tsx",
     "src/icons/stopIcon.jsx",
     "public/assets/icons/index.js"
-  ],
+, "__tests__/pages/homePage/index.test.tsx"  ],
   "exclude": ["node_modules"]
 }
