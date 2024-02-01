@@ -1,6 +1,7 @@
-import { ProjectDto } from "models/projects";
-import ImportProject from "./importProject";
 import { Empty } from "antd";
+import { ProjectDto } from "models/projects";
+
+import ImportProject from "./importProject";
 
 type Props = {
   importableProjects: ProjectDto[];

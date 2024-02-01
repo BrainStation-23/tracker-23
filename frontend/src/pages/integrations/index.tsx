@@ -1,11 +1,7 @@
-import ImportSection from "@/components/importSection";
+import IntegrationsPageComponent from "@/components/integrations";
 
-const ImportData = () => {
-  return (
-    <>
-      <ImportSection />
-    </>
-  );
+const IntegrationsPage = () => {
+  return <IntegrationsPageComponent />;
 };
 
-export default ImportData;
+export default IntegrationsPage;

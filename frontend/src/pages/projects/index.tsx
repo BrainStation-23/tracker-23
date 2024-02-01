@@ -1,4 +1,4 @@
-import ProjectImport from "@/components/importSection/projectImport";
+import ProjectImport from "@/components/integrations/projectImport";
 
 const ProjectImportPage = () => {
   return <ProjectImport />;

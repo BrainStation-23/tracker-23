@@ -1,12 +1,13 @@
 import { Button, Collapse } from "antd";
 import { userAPI } from "APIs";
+import { integrationName, IntegrationType } from "models/integration";
 import { GroupProjects } from "models/projects";
 import { Dispatch, SetStateAction, useState } from "react";
 
+import PlusIconSvg from "@/assets/svg/PlusIconSvg";
+
 import AddLocalProject from "./addLocalProject";
 import AddProjectList from "./addProjectList";
-import { integrationName, IntegrationType } from "models/integration";
-import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 
 const AddNewProject = ({
   groupProjects,

@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
-import { integrationIcons } from "@/components/importSection/importCard";
+import { integrationIcons } from "@/components/integrations/components/importCard";
 import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
 import TimeDisplayComponent from "@/components/tasks/components/timeDisplayComponent";
 import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";

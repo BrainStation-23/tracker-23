@@ -11,7 +11,7 @@ import {
   getFormattedTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
-import { integrationIcons } from "@/components/importSection/importCard";
+import { integrationIcons } from "@/components/integrations/components/importCard";
 
 const { Text } = Typography;
 const TaskListReportComponent = ({ tasks }: any) => {

@@ -1,9 +1,9 @@
-import { Spin, Switch } from "antd";
+import { Spin } from "antd";
 import { userAPI } from "APIs";
 import { IntegrationDto } from "models/integration";
 import { useEffect, useState } from "react";
+import { Roles } from "utils/constants";
 
-import ImportSelect from "./importSelect";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import {
   deleteIntegrationsSlice,
@@ -11,10 +11,10 @@ import {
 } from "@/storage/redux/integrationsSlice";
 import { resetProjectsSlice } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
-import { Roles } from "utils/constants";
-import AdminModeSwitch from "../common/adminMode/adminModeSwitch";
 
-const ImportSection = () => {
+import ImportSelect from "./components/importSelect";
+
+const IntegrationsPageComponent = () => {
   const dispatch = useAppDispatch();
   const [integratedTypes, setIntegratedTypes] = useState<string[] | null>(null);
   const [integrations, setIntegrations] = useState<IntegrationDto[] | null>(
@@ -30,10 +30,6 @@ const ImportSection = () => {
     setLoading(true);
     const tmp: string[] = [];
     const integrations = await userAPI.getIntegrations();
-    console.log(
-      "🚀 ~ file: index.tsx:29 ~ getIntegrations ~ integrations:",
-      integrations
-    );
     if (integrations) {
       dispatch(setIntegrationsSlice(integrations));
       setIntegrations(integrations);
@@ -46,10 +42,6 @@ const ImportSection = () => {
   };
   const handleUninstallIntegration = async (id: number) => {
     setLoadingTip("Uninstalling IntegrationDto");
-    console.log(
-      "🚀 ~ file: index.tsx:46 ~ handleUninstallIntegration ~ :",
-      "Uninstalling IntegrationDto"
-    );
     setLoading(true);
     const res = await userAPI.uninstallIntegration(id);
     if (res) {
@@ -62,10 +54,7 @@ const ImportSection = () => {
   };
   const handleDeleteIntegration = async (id: number) => {
     setLoadingTip("Deleting IntegrationDto");
-    console.log(
-      "🚀 ~ file: index.tsx:58 ~ handleDeleteIntegration ~ :",
-      "Deleting IntegrationDto"
-    );
+
     setLoading(true);
     const res = await userAPI.deleteIntegration(id);
     if (res) {
@@ -82,7 +71,6 @@ const ImportSection = () => {
 
   useEffect(() => {
     getIntegrations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -90,9 +78,6 @@ const ImportSection = () => {
       <div className="flex flex-col gap-2">
         <div className="flex justify-between">
           <div className="text-2xl font-semibold">Select Source of Import</div>
-          {/* {userInfo.role === Roles.ADMIN && (
-                        <AdminModeSwitch adminMode={adminMode} changeAdminMode={changeAdminMode} />
-                    )} */}
         </div>
         <Spin spinning={loading} tip={loadingTip} className="h-full">
           {integratedTypes ? (
@@ -116,4 +101,4 @@ const ImportSection = () => {
   );
 };
 
-export default ImportSection;
+export default IntegrationsPageComponent;

@@ -1,18 +1,18 @@
+import { message } from "antd";
+import { userAPI } from "APIs";
+import { integrationName } from "models/integration";
 import { ProjectDto } from "models/projects";
+import { useDispatch } from "react-redux";
+import { outlookSourceUrl } from "utils/constants";
 
 import DeleteButton from "@/components/common/buttons/deleteButton";
 import SyncButtonComponent from "@/components/common/buttons/syncButton";
-import { useDispatch } from "react-redux";
+import OpenLinkInNewTab from "@/components/common/link/OpenLinkInNewTab";
 import {
+  setSyncingProjectReducer,
   setSyncRunning,
   setSyncStatus,
-  setSyncingProjectReducer,
 } from "@/storage/redux/syncSlice";
-import { userAPI } from "APIs";
-import { message } from "antd";
-import OpenLinkInNewTab from "@/components/common/link/OpenLinkInNewTab";
-import { integrationName } from "models/integration";
-import { outlookSourceUrl } from "utils/constants";
 
 type Props = {
   project: ProjectDto;

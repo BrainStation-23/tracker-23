@@ -1,4 +1,4 @@
-import JiraCallBack from "@/components/importSection/callbacks/jiraCallback";
+import JiraCallBack from "@/components/integrations/callbacks/jiraCallback";
 
 const CallbackPage = () => {
   return <JiraCallBack />;

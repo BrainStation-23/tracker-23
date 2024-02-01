@@ -1,5 +1,6 @@
 import { message, Spin } from "antd";
 import { userAPI } from "APIs";
+import { IntegrationType } from "models/integration";
 import { ProjectDto } from "models/projects";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -8,8 +9,7 @@ import GlobalModal from "@/components/modals/globalModal";
 
 import NewIntegrationProjectImportComponent from "./components/newIntegrationProjectImport";
 
-// TODO: Refactor needed later
-const OutlookCallBack = () => {
+const JiraCallBack = () => {
   const router = useRouter();
   const [newIntegrationProjects, setNewIntegrationProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,20 +17,30 @@ const OutlookCallBack = () => {
   const [spinning, setSpinning] = useState(false);
 
   const codeFound = async (code: string) => {
-    const res = await userAPI.sendOutlookCode(code);
-    console.log("sendOutlookCode", res);
+    const res = await userAPI.sendJiraCode(code);
 
     if (res && res[0]) {
       setIsModalOpen(true);
-      setNewIntegrationProjects(res);
+      // TODO: We should do this step in Backend API to keep consistent response for all kinds of integrations responses
+      const jiraProjects = res
+        .map(
+          (tmp: {
+            projects: ProjectDto[];
+            integrationType: IntegrationType;
+          }) => {
+            return tmp.projects.map((project: ProjectDto) => {
+              return { ...project, integrationType: res.integrationType };
+            });
+          }
+        )
+        .flat();
+      setNewIntegrationProjects(jiraProjects);
     } else router.push("/projects");
   };
 
   const importIntegrationTasks = async (project: ProjectDto) => {
     setSpinning(true);
-    const res = await userAPI.importCalendar([project.id]);
-    console.log("importProject", res);
-
+    const res = await userAPI.importProject(project.id);
     if (res) {
       message.success(res.message);
       router.push("/projects");
@@ -41,16 +51,14 @@ const OutlookCallBack = () => {
 
   useEffect(() => {
     const code = router.query.code;
-    console.log(`importing ${code}`);
     if (typeof code === "string") codeFound(code);
     if (router.query.error) router.push("/projects");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.isReady]);
+  }, [router]);
   const handleCancel = () => {
     router.push("/integrations");
   };
   let tip = "";
-  if (router.query.code) tip = "Integrating Outlook";
+  if (router.query.code) tip = "Integrating Jira";
   if (router.query.error) tip = "Cancelling Integration";
   return (
     <>
@@ -65,12 +73,14 @@ const OutlookCallBack = () => {
 
       <GlobalModal
         {...{ isModalOpen, setIsModalOpen, handleCancel }}
-        title="Select Calendar"
+        title="Select Project"
       >
         <Spin spinning={spinning}>
           <NewIntegrationProjectImportComponent
-            newIntegrationProjects={newIntegrationProjects}
-            importIntegrationTasks={importIntegrationTasks}
+            {...{
+              newIntegrationProjects,
+              importIntegrationTasks,
+            }}
           />
         </Spin>
       </GlobalModal>
@@ -78,4 +88,4 @@ const OutlookCallBack = () => {
   );
 };
 
-export default OutlookCallBack;
+export default JiraCallBack;
