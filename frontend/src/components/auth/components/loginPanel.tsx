@@ -1,11 +1,13 @@
-import { Divider, Modal, Spin } from "antd";
+import { Modal, Spin } from "antd";
+import { useState } from "react";
+
+import BSLogoSvg from "@/assets/svg/BSLogoSvg";
+import MyDivider from "@/components/common/MyDivider";
+import { LoadingOutlined } from "@ant-design/icons";
+
 import LoginForm from "../forms/loginForm";
 import AuthHeader from "./authHeader";
 import GoogleLogin from "./googleLogin";
-import MyDivider from "../../common/MyDivider";
-import { useState } from "react";
-import { LoadingOutlined } from "@ant-design/icons";
-import BSLogoSvg from "@/assets/svg/BSLogoSvg";
 
 const LoginPanel = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,7 +36,7 @@ const LoginPanel = () => {
             indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
             size="large"
           />
-          <h1>Logging In</h1>
+          <h1>Logging In...</h1>
         </div>
       </Modal>
     </div>

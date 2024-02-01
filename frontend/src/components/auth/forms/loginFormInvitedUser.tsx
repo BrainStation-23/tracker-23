@@ -3,12 +3,11 @@ import { userAPI } from "APIs";
 import { useRouter } from "next/router";
 import React from "react";
 
+import MyFormItem from "@/components/common/form/MyFormItem";
+import MyInput from "@/components/common/form/MyInput";
+import MyPasswordInput from "@/components/common/form/MyPasswordInput";
+import MyLink from "@/components/common/link/MyLink";
 import { GetCookie } from "@/services/cookie.service";
-
-import MyFormItem from "../../common/form/MyFormItem";
-import MyInput from "../../common/form/MyInput";
-import MyPasswordInput from "../../common/form/MyPasswordInput";
-import MyLink from "../../common/link/MyLink";
 
 type Props = {
   setIsModalOpen: Function;
@@ -20,25 +19,14 @@ const LoginFormInvitedUser = ({ setIsModalOpen, email }: Props) => {
   const code = router?.query?.code;
 
   const signIn = async (values: any) => {
-    console.log(values);
     const data = await userAPI.loginFromInvite({ ...values, code });
-    console.log(
-      "🚀 ~ file: loginFormInvitedUser.tsx:23 ~ signIn ~ data:",
-      data
-    );
     if (GetCookie("access_token")) router.push("/taskList");
     !data && setIsModalOpen(false);
   };
 
   const onFinish = async (values: any) => {
-    console.log("Success:", values);
     setIsModalOpen(true);
-    const res = await signIn(values);
-    console.log(
-      "🚀 ~ file: loginFormInvitedUser.tsx:32 ~ onFinish ~ res:",
-      res
-    );
-    // router.push("/taskList");
+    await signIn(values);
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -48,12 +36,9 @@ const LoginFormInvitedUser = ({ setIsModalOpen, email }: Props) => {
   return (
     <Form
       name="basic"
-      // labelCol={{ span: 8 }}
-      // wrapperCol={{ span: 16 }}
       initialValues={{ remember: true, email }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
-      // autoComplete="off"
       layout="vertical"
       labelAlign="left"
       requiredMark={false}
@@ -91,12 +76,7 @@ const LoginFormInvitedUser = ({ setIsModalOpen, email }: Props) => {
       </div>
 
       <div className="flex items-center justify-between">
-        <MyFormItem
-          name="remember"
-          valuePropName="checked"
-          // wrapperCol={{ offset: 8, span: 16 }}
-          className="m-0"
-        >
+        <MyFormItem name="remember" valuePropName="checked" className="m-0">
           <Checkbox>
             <span className="2xl:text-lg">Remember me for 30 days</span>
           </Checkbox>

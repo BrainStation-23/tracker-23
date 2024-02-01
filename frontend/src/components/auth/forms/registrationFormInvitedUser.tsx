@@ -1,11 +1,10 @@
 import { Form, Input, message } from "antd";
+import { userAPI } from "APIs/index";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 
 import MyFormItem from "@/components/common/form/MyFormItem";
 import MyLink from "@/components/common/link/MyLink";
-
-import { userAPI } from "../../../../APIs/index";
 
 type Props = {
   setIsModalOpen: Function;
@@ -15,14 +14,7 @@ const RegistrationFormInvitedUser = ({ setIsModalOpen, email }: Props) => {
   const router = useRouter();
   const code: any = router?.query?.code;
 
-  const [emailStatus, setEmailStatus] = useState<
-    "" | "success" | "warning" | "error" | "validating" | undefined
-  >("");
   const onFinish = async (values: any) => {
-    console.log(
-      "🚀 ~ file: registrationFormInvitedUser.tsx:11 ~ onFinish ~ values",
-      values
-    );
     const temp = {
       email: values.email,
       firstName: values.firstName,
@@ -54,7 +46,6 @@ const RegistrationFormInvitedUser = ({ setIsModalOpen, email }: Props) => {
       name="basic"
       initialValues={{ remember: true, email }}
       onFinish={onFinish}
-      onValuesChange={(e) => setEmailStatus("validating")}
       onFinishFailed={onFinishFailed}
       layout="vertical"
       labelAlign="left"
@@ -96,7 +87,6 @@ const RegistrationFormInvitedUser = ({ setIsModalOpen, email }: Props) => {
             message: `Please input a valid email.`,
           },
         ]}
-        // help="Something breaks the rule."
       >
         <Input
           type="email"
