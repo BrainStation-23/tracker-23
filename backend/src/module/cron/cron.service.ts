@@ -36,6 +36,16 @@ export class CronService {
         for (const user of users) {
           await this.tasksService.syncAll(user);
         }
+
+        // Delete all expired otp
+        const currentDate = new Date();
+        await this.prisma.oTP.deleteMany({
+          where: {
+            expireTime: {
+              lt: currentDate,
+            },
+          },
+        });
       } catch (error) {
         throw new APIException(
           `Error in syncTasks: ${error.message}`,
