@@ -12,7 +12,7 @@ import React from "react";
 import { useDispatch } from "react-redux";
 
 import BellIconSvg from "@/assets/svg/BellIconSvg";
-import { getElapsedTime, getPassedTime } from "@/services/timeActions";
+import { getElapsedTime } from "@/services/timeActions";
 import { useAppSelector } from "@/storage/redux";
 import {
   markAllNotificationsAsSeen,
@@ -37,10 +37,6 @@ const NotificationSection = () => {
     (notification) => !notification.seen
   ).length;
   const handleClickNotification = async (notification: any) => {
-    console.log(
-      "🚀 ~ file: notificationSection.tsx:34 ~ handleClickNotification ~ notification:",
-      notification
-    );
     const res = await userAPI.markNotificationSeen(notification.key);
     res && dispatch(markNotificationAsSeen(notification.key));
   };
@@ -77,9 +73,6 @@ const NotificationSection = () => {
     items,
     onClick: (item: any) => {},
   };
-  const dropdownRender = (menu: React.ReactNode) => (
-    <div className="float-right">{menu}</div>
-  );
 
   const { token } = useToken();
   const contentStyle = {
@@ -95,7 +88,6 @@ const NotificationSection = () => {
       <Dropdown
         menu={menuProps}
         placement="bottomRight"
-        // dropdownRender={dropdownRender}
         onOpenChange={(open) => {
           !open && handleMarkAllSeen();
         }}
