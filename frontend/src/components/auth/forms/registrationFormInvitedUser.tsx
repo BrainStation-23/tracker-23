@@ -1,7 +1,7 @@
 import { Form, Input, message } from "antd";
 import { userAPI } from "APIs/index";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React from "react";
 
 import MyFormItem from "@/components/common/form/MyFormItem";
 import MyLink from "@/components/common/link/MyLink";

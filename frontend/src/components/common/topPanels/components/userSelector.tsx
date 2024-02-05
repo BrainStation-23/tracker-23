@@ -38,10 +38,6 @@ const UserSelectorComponent = ({
   const tagRender = (props: TagProps) => {
     const { label, value, closable, onClose } = props;
 
-    const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-    };
     return (
       <div
         onClick={onClose}

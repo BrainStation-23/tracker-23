@@ -62,9 +62,9 @@ export enum WorkspaceMemberRoleBorderColorEnum {
   USER = "#56A2E9",
 }
 
-type WorkspaceMemberRoleBorderColorMap = {
-  [K in keyof typeof WorkspaceMemberRoleBorderColorEnum]: (typeof WorkspaceMemberRoleBorderColorEnum)[K];
-};
+// type WorkspaceMemberRoleBorderColorMap = {
+//   [K in keyof typeof WorkspaceMemberRoleBorderColorEnum]: (typeof WorkspaceMemberRoleBorderColorEnum)[K];
+// };
 
 export enum WorkspaceMemberStatusBGColorEnum {
   ACTIVE = "#F0FFE2",
