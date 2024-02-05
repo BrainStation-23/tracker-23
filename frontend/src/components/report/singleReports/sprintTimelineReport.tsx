@@ -1,5 +1,6 @@
 import { Button, message, Spin } from "antd";
 import { userAPI } from "APIs";
+import { SprintViewTimelineReportDto } from "models/reports";
 import React, { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
 import { useDispatch } from "react-redux";
@@ -8,13 +9,11 @@ import PrimaryButton from "@/components/common/buttons/primaryButton";
 import DateRangePicker, {
   getDateRangeArray,
 } from "@/components/common/datePicker";
-
 import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
-import TypeDependentSection from "../components/typeDependentSection";
 import SprintViewTimelineReportComponent from "../components/sprintViewTimelineReportComponent";
-import { SprintViewTimelineReportDto } from "models/reports";
+import TypeDependentSection from "../components/typeDependentSection";
 
 type Props = {
   reportData: ReportData;

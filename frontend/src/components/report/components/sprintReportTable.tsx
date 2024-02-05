@@ -201,7 +201,6 @@ const SprintReportTabel = ({ data }: Props) => {
           <Table
             columns={columns}
             dataSource={data}
-            // onChange={onChange}
             rowKey={"id"}
             bordered
             pagination={{
@@ -210,8 +209,6 @@ const SprintReportTabel = ({ data }: Props) => {
               showSizeChanger: false,
               showLessItems: true,
               position: ["bottomRight", "bottomLeft"],
-
-              // total: 100,
             }}
             scroll={{ y: 600 }}
           />

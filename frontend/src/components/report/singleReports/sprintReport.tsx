@@ -9,11 +9,7 @@ import PrimaryButton from "@/components/common/buttons/primaryButton";
 import DateRangePicker, {
   getDateRangeArray,
 } from "@/components/common/datePicker";
-import {
-  deleteReportSlice,
-  ReportData,
-  updateReportSlice,
-} from "@/storage/redux/reportsSlice";
+import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SprintReportComponent from "../components/sprintReportComponents";
@@ -100,7 +96,6 @@ const SprintReport = ({ reportData }: Props) => {
             selectedDate={dateRange}
             setSelectedDate={setDateRange}
           />
-
           <TypeDependentSection
             config={reportData?.config}
             {...{

@@ -4,6 +4,7 @@ import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 
 import TablePriorityComponent from "@/components/common/tableComponents/tablePriorityComponent";
 import FormatTimeForSettings from "@/components/common/time/formatTimeForSettings";
+import { integrationIcons } from "@/components/integrations/components/importCard";
 import TimeDisplayComponent from "@/components/tasks/components/timeDisplayComponent";
 import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";
 import {
@@ -11,7 +12,6 @@ import {
   getFormattedTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
-import { integrationIcons } from "@/components/integrations/components/importCard";
 
 const { Text } = Typography;
 const TaskListReportComponent = ({ tasks }: any) => {
@@ -32,7 +32,6 @@ const TaskListReportComponent = ({ tasks }: any) => {
           </Text>
         </div>
       ),
-      // defaultSortOrder: "descend",
       sorter: (a: any, b: any) => {
         if (a.title === b.title) {
           return 0;
@@ -43,7 +42,6 @@ const TaskListReportComponent = ({ tasks }: any) => {
         return -1;
       },
       align: "center",
-      // render: (text) => <a>{text}</a>,
     },
     {
       title: "Project / Calendar",
@@ -55,13 +53,11 @@ const TaskListReportComponent = ({ tasks }: any) => {
         </div>
       ),
       align: "center",
-      // render: (text) => <a>{text}</a>,
     },
     {
       title: "Source",
       dataIndex: "dataSource",
       key: "dataSource",
-      // align: "center",
       render: (dataSource: any, task: TaskDto) => (
         <div className="flex max-w-[150px] items-center gap-2 ">
           <div>{integrationIcons[task.source]} </div>
@@ -107,7 +103,6 @@ const TaskListReportComponent = ({ tasks }: any) => {
       title: "Estimation",
       dataIndex: "estimation",
       key: "estimation",
-      // defaultSortOrder: "descend",
       render: (_: any, { estimation }: TaskDto) => (
         <FormatTimeForSettings time={estimation} />
       ),
@@ -172,7 +167,6 @@ const TaskListReportComponent = ({ tasks }: any) => {
         <Table
           columns={columns}
           dataSource={tasks}
-          // onChange={onChange}
           rowKey={"id"}
           pagination={{ position: ["bottomCenter"] }}
         />

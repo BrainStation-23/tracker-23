@@ -1,10 +1,12 @@
+import { Form, Input, Spin } from "antd";
+import { userAPI } from "APIs";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+
 import PrimaryButton from "@/components/common/buttons/primaryButton";
 import GlobalModal from "@/components/modals/globalModal";
 import { addReportPage } from "@/storage/redux/reportsSlice";
-import { userAPI } from "APIs";
-import { Form, Input, Spin } from "antd";
-import { useState } from "react";
-import { useDispatch } from "react-redux";
+
 type Props = {
   setIsModalOpen: Function;
   isModalOpen: boolean;
@@ -18,7 +20,6 @@ const AddNewReportPage = ({ isModalOpen, setIsModalOpen }: Props) => {
     setSpinning(true);
     const res = await userAPI.createReportPage(data);
     if (res) {
-      console.log(res);
       dispatch(addReportPage(res));
       setIsModalOpen(false);
     }

@@ -7,10 +7,10 @@ import { LuDownload } from "react-icons/lu";
 import { useDispatch } from "react-redux";
 
 import PrimaryButton from "@/components/common/buttons/primaryButton";
-import UsersSelectorComponent from "@/components/common/topPanels/components/usersSelector";
 import DateRangePicker, {
   getDateRangeArray,
 } from "@/components/common/datePicker";
+import UsersSelectorComponent from "@/components/common/topPanels/components/usersSelector";
 import { ExcelExport } from "@/services/exportHelpers";
 import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
 
@@ -58,10 +58,6 @@ const TimeSheetReport = ({ reportData }: Props) => {
         projectIds: projects,
         calendarIds,
       });
-      console.log(
-        "🚀 ~ file: topPanelExportPage.tsx:54 ~ excelExport ~ res:",
-        res
-      );
       if (!res) {
         message.error(
           res?.error?.message ? res?.error?.message : "Export Failed"
