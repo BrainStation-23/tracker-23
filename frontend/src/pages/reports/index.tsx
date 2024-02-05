@@ -1,7 +1,8 @@
-import ReportComponent from "@/components/report";
+import ReportPage from "@/components/report";
+
 
 const ReportSection = () => {
-  return <ReportComponent />;
+  return <ReportPage />;
 };
 
 export default ReportSection;
