@@ -28,8 +28,7 @@ const OnboardingSteps: React.FC = () => {
   };
   const [current, setCurrent] = useState(findCurrentStep());
   const [emails, setEmails] = useState<string[]>([]);
-  console.log("🚀 ~ file: onboardingSteps.tsx:27 ~ emails:", emails);
-  const [accountName, setAccountName] = useState(null);
+
   const data: OnBoardingQuestionDto[] = [
     {
       question: "What is your profession?",
@@ -108,10 +107,6 @@ const OnboardingSteps: React.FC = () => {
       title: "Purpose",
       content: <AccessSelectionStep data={data} />,
     },
-    // {
-    //   title: "Name",
-    //   content: <NamingStep />,
-    // },
     {
       title: "Invite Your TeamMates",
       content: <InviteSection {...{ emails, setEmails }} />,
@@ -121,11 +116,8 @@ const OnboardingSteps: React.FC = () => {
   const items = steps.map((item) => ({ key: item.title, title: item.title }));
 
   const contentStyle: React.CSSProperties = {
-    // textAlign: "center",
     color: token.colorTextTertiary,
-    // backgroundColor: token.colorFillAlter,
     borderRadius: token.borderRadiusLG,
-    // border: `1px dashed ${token.colorBorder}`,
     marginTop: 16,
     padding: 30,
   };
@@ -144,8 +136,6 @@ const OnboardingSteps: React.FC = () => {
   };
 
   const onFinish = async (value: any) => {
-    console.log("🚀 ~ file: namingSection.tsx:7 ~ onFinish ~ value:", value);
-    setAccountName(value.account);
     let res: any;
     if (current === 0) {
       const formattedData = formateData(value);
@@ -167,7 +157,6 @@ const OnboardingSteps: React.FC = () => {
   };
   const onFinishFailed = (value: any) => {
     console.log("🚀 ~ file: namingSection.tsx:7 ~ onFinish ~ value:", value);
-    // setAccountName();
   };
   return (
     <Form
@@ -176,21 +165,9 @@ const OnboardingSteps: React.FC = () => {
       onFinishFailed={onFinishFailed}
       autoComplete="off"
       layout="vertical"
-      // className="mx-auto w-60"
       requiredMark={false}
     >
       <div className="mt-[110px] ml-[96px] w-[560px]">
-        {/* <div className="h-[70px]">
-          {current > 0 && (
-            <div
-              className="flex cursor-pointer items-center gap-2"
-              onClick={() => prev()}
-              // htmlType="submit"
-            >
-              <PreviousIconSvg /> Back
-            </div>
-          )}
-        </div> */}
         <Steps current={current} items={items} />
         <div style={contentStyle}>{steps[current]?.content}</div>
         <div style={{ marginTop: 24 }}>

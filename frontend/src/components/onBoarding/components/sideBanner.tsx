@@ -1,4 +1,4 @@
-import LeftPanelTopPicture from "../../auth/components/leftPanelTopPicture";
+import LeftPanelTopPicture from "@/components/auth/components/leftPanelTopPicture";
 
 const SideBanner = () => {
   return (
