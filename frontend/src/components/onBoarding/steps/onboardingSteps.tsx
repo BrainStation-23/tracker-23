@@ -119,7 +119,7 @@ const OnboardingSteps: React.FC = () => {
     color: token.colorTextTertiary,
     borderRadius: token.borderRadiusLG,
     marginTop: 16,
-    padding: 30,
+    // padding : 30,
   };
 
   const updateOnboarding = async (data: any) => {
@@ -169,7 +169,9 @@ const OnboardingSteps: React.FC = () => {
     >
       <div className="mt-[110px] ml-[96px] w-[560px]">
         <Steps current={current} items={items} />
-        <div style={contentStyle}>{steps[current]?.content}</div>
+        <div style={contentStyle} className="py-2">
+          {steps[current]?.content}
+        </div>
         <div style={{ marginTop: 24 }}>
           {current < steps.length - 1 && (
             <PrimaryButton htmlType="submit">Continue</PrimaryButton>
