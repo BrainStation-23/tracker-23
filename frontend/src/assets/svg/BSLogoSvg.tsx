@@ -1,11 +1,10 @@
 const BSLogoSvg = ({ height }: any) => {
   return (
     <svg
-      // width="248"
       height={height ? height : "32"}
-      viewBox="0 0 248 32"
+      viewBox="0 0 130 32"
       fill="none"
-      className="w-fit"
+      className="w-min"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path

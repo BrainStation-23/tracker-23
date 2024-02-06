@@ -14,7 +14,10 @@ import NoActiveWorkspace from "@/components/workspaces/noActiveWorkSpace";
 import { GetCookie } from "@/services/cookie.service";
 import { initializeSocket } from "@/services/socket.service";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
-import { setIntegrationsSlice, setIntegrationTypesSlice } from "@/storage/redux/integrationsSlice";
+import {
+  setIntegrationsSlice,
+  setIntegrationTypesSlice,
+} from "@/storage/redux/integrationsSlice";
 import { setNotifications } from "@/storage/redux/notificationsSlice";
 import { setPriorities } from "@/storage/redux/prioritySlice";
 import { setProjectsSlice } from "@/storage/redux/projectsSlice";
@@ -273,7 +276,7 @@ const CustomLayout = ({ children }: any) => {
         <div className="flex">
           {!publicRoutes.some((route) => path.includes(route)) &&
             !path.includes("onBoarding") && (
-              <div className="mr-6 h-screen min-w-[280px]">
+              <div className="h-screen min-w-[250px] max-w-[250px]">
                 <div className="fixed">
                   <SideMenu />
                 </div>

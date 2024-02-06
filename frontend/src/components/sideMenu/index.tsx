@@ -98,11 +98,11 @@ const SideMenu = () => {
     );
   };
   return (
-    <div className="flex h-screen w-[280px] items-center justify-center bg-[#F8F8F8] px-5">
+    <div className="flex h-screen w-full items-center justify-center bg-[#F8F8F8]">
       <div className="flex h-full w-full flex-col justify-between">
         <div className="flex w-full flex-col gap-6">
           <div
-            className="flex w-full gap-2 pt-8 text-left"
+            className="flex w-full gap-2 px-5 pt-8 text-left"
             onClick={() => {
               router.push("/");
             }}
@@ -111,7 +111,7 @@ const SideMenu = () => {
               <BSLogoSvg />
             </div>
           </div>
-          <div className="flex max-h-[450px] w-full flex-col gap-6 overflow-y-auto">
+          <div className="flex max-h-[450px] w-full flex-col gap-6 overflow-y-auto px-5">
             <div className="flex flex-col gap-1">
               <div
                 className={`flex w-min cursor-pointer items-center gap-2 rounded-sm  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
@@ -292,6 +292,7 @@ const SideMenu = () => {
         title="Deleting Report Page"
         isModalOpen={isDeleteModalOpen}
         setIsModalOpen={setIsDeleteModalOpen}
+        width={400}
       >
         <DeleteReportPageWarning
           page={deletePage}
