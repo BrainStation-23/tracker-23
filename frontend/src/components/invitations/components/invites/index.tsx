@@ -1,7 +1,6 @@
 import { Empty, message, Spin } from "antd";
 import { userAPI } from "APIs";
 import { InviteUserWorkspaceDto } from "models/invitations";
-import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { addWorkspaceSlice } from "@/storage/redux/workspacesSlice";

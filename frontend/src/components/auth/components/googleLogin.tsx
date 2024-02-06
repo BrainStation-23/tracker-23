@@ -1,4 +1,5 @@
 import { config } from "config";
+
 type Props = {
   setIsModalOpen: Function;
 };

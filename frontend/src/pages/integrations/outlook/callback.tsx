@@ -1,4 +1,4 @@
-import OutlookCallBack from "@/components/importSection/callbacks/outlookCallback";
+import OutlookCallBack from "@/components/integrations/callbacks/outlookCallback";
 
 const CallbackPage = () => {
   return <OutlookCallBack />;

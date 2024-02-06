@@ -251,7 +251,6 @@ const InvitationList = ({
         columns={columns}
         dataSource={invitationList}
         className="w-full"
-        // onChange={onChange}
         rowKey={"id"}
         bordered
         pagination={{
@@ -260,7 +259,6 @@ const InvitationList = ({
           showSizeChanger: false,
           showLessItems: true,
           position: ["bottomRight", "bottomLeft"],
-          // total: 100,
         }}
         scroll={{ x: true }}
       />

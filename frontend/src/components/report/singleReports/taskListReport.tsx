@@ -9,7 +9,9 @@ import { useDispatch } from "react-redux";
 
 import PrimaryButton from "@/components/common/buttons/primaryButton";
 import UserSelectorComponent from "@/components/common/topPanels/components/userSelector";
-import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
+import DateRangePicker, {
+  getDateRangeArray,
+} from "@/components/common/datePicker";
 import { ExcelExport } from "@/services/exportHelpers";
 import { getFormattedTasks } from "@/services/taskActions";
 import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
@@ -52,8 +54,6 @@ export default function TaskListReport({ reportData }: Props) {
       : getDateRangeArray("this-week")
   );
   const [searchText, setSearchText] = useState("");
-  const [status, setStatus] = useState([]);
-  const [priority, setPriority] = useState([]);
   const activeTab = "Task List";
 
   const getTaskListReport = async () => {
@@ -61,8 +61,6 @@ export default function TaskListReport({ reportData }: Props) {
     const res = await userAPI.getTaskListReport({
       searchText,
       selectedDate: dateRange,
-      priority,
-      status,
       sprints,
       projectIds: projects,
       calendarIds,
@@ -96,8 +94,6 @@ export default function TaskListReport({ reportData }: Props) {
       const res = await userAPI.exportTasks({
         searchText,
         selectedDate: dateRange,
-        priority,
-        status,
         sprints,
         types: selectedSource,
         projectIds: projects,
@@ -127,8 +123,6 @@ export default function TaskListReport({ reportData }: Props) {
   }, [
     searchText,
     dateRange,
-    priority,
-    status,
     sprints,
     projects,
     selectedUser,
@@ -185,12 +179,7 @@ export default function TaskListReport({ reportData }: Props) {
           />
           <TopPanelTaskListComponents
             {...{
-              searchText,
               setSearchText,
-              status,
-              setStatus,
-              priority,
-              setPriority,
             }}
           />
 

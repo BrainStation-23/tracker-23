@@ -14,9 +14,8 @@ import {
 import JiraIconSvg from "@/assets/svg/JiraIconSvg";
 import OutlookLogoSvg from "@/assets/svg/OutlookLogoSvg";
 import TrelloLogoSvg from "@/assets/svg/TrelloLogoSvg";
-
-import DeleteButton from "../common/buttons/deleteButton";
-import OpenLinkInNewTab from "../common/link/OpenLinkInNewTab";
+import DeleteButton from "@/components/common/buttons/deleteButton";
+import OpenLinkInNewTab from "@/components/common/link/OpenLinkInNewTab";
 
 type Props = {
   data: IntegrationDto;
@@ -78,22 +77,16 @@ const ImportCard = ({
               } else {
                 try {
                   const response = await userAPI.getJiraLink();
-
                   window.open(response, "_self");
                 } catch (error) {}
               }
             } else if (data.type === "OUTLOOK") {
-              // TODO: Refactor needed later
               if (installed) {
                 await handleUninstallIntegration(data.id);
               } else {
                 try {
                   const response = await userAPI.getOutlookLink();
-
                   window.open(response, "_self");
-                  console.log("response", response);
-
-                  // https://login.microsoftonline.com/common/oauth2/v2.0/authorize?&scope=offline_access user.read Calendars.ReadWrite Calendars.Read&response_type=code&response_mode=query&state=testing&redirect_uri=http://localhost:3001/integrations/outlook/callback/&client_id=872cd7ddadkasj-430c-bcc3-9ee4d568cdfb&prompt=consent
                 } catch (error) {
                   console.log("OUTLOOK getOutlookLink error:", error);
                 }
@@ -102,7 +95,6 @@ const ImportCard = ({
           }}
           type="default"
           disabled={!supportedIntegrations.includes(data.type)}
-          // disabled={installed || !supportedIntegrations.includes(data.type)}
           className={`w-full cursor-pointer bg-[#F1F1F1] text-sm font-semibold
           ${
             installed || !supportedIntegrations.includes(data.type)
@@ -113,8 +105,7 @@ const ImportCard = ({
         >
           {installed
             ? "Uninstall"
-            : // ? "Installed"
-            supportedIntegrations.includes(data.type)
+            : supportedIntegrations.includes(data.type)
             ? "Install"
             : "Coming Soon"}
         </Button>

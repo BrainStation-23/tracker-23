@@ -1,19 +1,15 @@
-import ALertCircleIconSvg from "@/assets/svg/ALertCircleIconSvg";
-import { getLocalStorage } from "@/storage/storage";
-import LogOutButton from "../logout/logOutButton";
-import { useEffect } from "react";
-import { useState } from "react";
-import { logOutFunction } from "../logout/logoutFunction";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+
+import ALertCircleIconSvg from "@/assets/svg/ALertCircleIconSvg";
+import LogOutButton from "@/components/logout/logOutButton";
+import { logOutFunction } from "@/components/logout/logoutFunction";
+import { getLocalStorage } from "@/storage/storage";
 
 const InvalidUserPage = () => {
   const router = useRouter();
   const [userDetails, setUserDetails] = useState(
     getLocalStorage("userDetails")
-  );
-  console.log(
-    "🚀 ~ file: index.tsx:11 ~ InvalidUserPage ~ userDetails:",
-    userDetails
   );
   useEffect(() => {
     if (!getLocalStorage("userDetails")) {

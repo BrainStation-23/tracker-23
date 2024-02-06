@@ -7,7 +7,9 @@ import { useEffect, useState } from "react";
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
 import MyActiveTab from "@/components/common/tabs/MyActiveTab";
 import MyInactiveTab from "@/components/common/tabs/MyInactiveTab";
-import DateRangePicker, { getDateRangeArray } from "@/components/datePicker";
+import DateRangePicker, {
+  getDateRangeArray,
+} from "@/components/common/datePicker";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 

@@ -6,7 +6,7 @@ import { useState } from "react";
 import JiraIconSvg from "@/assets/svg/JiraIconSvg";
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
-import { integrationIcons } from "@/components/importSection/importCard";
+import { integrationIcons } from "@/components/integrations/components/importCard";
 import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
 import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";
 import {

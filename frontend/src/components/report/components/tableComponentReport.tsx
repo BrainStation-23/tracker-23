@@ -125,10 +125,8 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
     <Table
       columns={columns}
       dataSource={data}
-      // onChange={onChange}
       rowKey={(d) => d.user}
       pagination={tableParams.pagination}
-      // rowClassName={getRowClassName}
       onChange={handleTableChange}
       className="w-full"
       scroll={{ x: 1500 }}

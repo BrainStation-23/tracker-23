@@ -1,5 +1,7 @@
 import { message, Spin } from "antd";
 import { userAPI } from "APIs";
+import { integrationName, IntegrationType } from "models/integration";
+import { GroupProjects, ProjectDto } from "models/projects";
 import { useEffect, useState } from "react";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
@@ -8,8 +10,6 @@ import GlobalModal from "@/components/modals/globalModal";
 
 import AddNewProject from "./components/addNewProject";
 import ImportedProjectsSection from "./components/importedProjectsSections";
-import { GroupProjects, ProjectDto } from "models/projects";
-import { IntegrationType, integrationName } from "models/integration";
 
 const ProjectImport = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,7 +25,6 @@ const ProjectImport = () => {
 
   const getAllProjects = async () => {
     const res = await userAPI.getAllProjects();
-    console.log("🚀 ~ file: index.tsx:15 ~ getAllProjects ~ res:", res);
     if (res) {
       const groupProjects: GroupProjects = {
         JIRA: [],
@@ -45,10 +44,6 @@ const ProjectImport = () => {
   const deleteProject = async (project: ProjectDto) => {
     setRootSpinning(true);
     const res = await userAPI.deleteProjectTasks(project.id);
-    console.log(
-      "🚀 ~ file: importProject.tsx:12 ~ deleteProjectTasks ~ res:",
-      res
-    );
     if (res) {
       message.success(res.message);
       const tmp = {
@@ -62,10 +57,8 @@ const ProjectImport = () => {
                 p.id != project.id ? p : { ...p, integrated: false }
               ),
       };
-      console.log("🚀 ~ file: index.tsx:35 ~ deleteProject ~ tmp:", tmp);
       setAllProjects(tmp);
     }
-
     setRootSpinning(false);
   };
 

@@ -46,6 +46,9 @@ export enum ReportTypesEnum {
 }
 
 export type ReportTypesDto = keyof typeof ReportTypesEnum;
+export const ReportTypes: ReportTypesDto[] = Object.keys(
+  ReportTypesEnum
+) as ReportTypesDto[];
 
 // Define models for tasks
 export interface SprintReportTask {

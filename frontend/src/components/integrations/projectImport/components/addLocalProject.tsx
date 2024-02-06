@@ -32,7 +32,6 @@ const AddLocalProject = ({
       setIsModalOpen(false);
       dispatch(addNewProjectSlice(res));
       dispatch(addPrioritiesSlice(res));
-
       closeDropdowns();
       formRef.current && formRef.current.resetFields();
     }

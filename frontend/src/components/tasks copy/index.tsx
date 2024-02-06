@@ -18,7 +18,7 @@ import { setSprintListReducer } from "@/storage/redux/tasksSlice";
 import PrimaryButton from "../common/buttons/primaryButton";
 import TopPanel from "../common/topPanels/topPanel";
 import TopPanelActiveSprint from "../common/topPanels/topPanelActiveSprint";
-import { getDateRangeArray } from "../datePicker";
+import { getDateRangeArray } from "../common/datePicker";
 import GlobalModal from "../modals/globalModal";
 import TaskDetailsModal from "../modals/taskDetails.modal";
 import Navbar from "../navbar";

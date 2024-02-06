@@ -1,5 +1,4 @@
 import { IntegrationDto, IntegrationType } from "models/integration";
-import { useState } from "react";
 import { allIntegrations } from "utils/constants";
 
 import IntegrationCard from "./importSections";
