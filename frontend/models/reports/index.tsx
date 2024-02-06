@@ -269,5 +269,5 @@ export interface UpdateReportDto {
   types?: IntegrationType[];
 }
 export interface UpdateReportPageDto {
-  name: String;
+  name: string;
 }

@@ -1,4 +1,5 @@
-import { Button, Typography } from "antd";
+import { Button, Dropdown, MenuProps, Typography } from "antd";
+import { userAPI } from "APIs";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import {
@@ -8,22 +9,24 @@ import {
   LuHelpCircle,
   LuLayoutDashboard,
   LuMail,
+  LuMoreVertical,
   LuNewspaper,
   LuPlug,
   LuPlus,
   LuSettings,
   LuUserCircle2,
 } from "react-icons/lu";
+import { useDispatch } from "react-redux";
 
 import BSLogoSvg from "@/assets/svg/BSLogoSvg";
 import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
+import MyLink from "@/components/common/link/MyLink";
+import GlobalModal from "@/components/modals/globalModal";
 import { useAppSelector } from "@/storage/redux";
-import { ReportPageDto } from "@/storage/redux/reportsSlice";
+import { addReportPage, ReportPageDto } from "@/storage/redux/reportsSlice";
 import { RootState } from "@/storage/redux/store";
+import { LoadingOutlined } from "@ant-design/icons";
 
-import MyLink from "../common/link/MyLink";
-import GlobalModal from "../modals/globalModal";
-import AddNewReportPage from "../report/components/addNewReportPage";
 import DeleteReportPageWarning from "./components/deletePageWarning";
 import WorkspaceNav from "./components/workspaceNav";
 
@@ -35,6 +38,7 @@ const { Text } = Typography;
 
 const SideMenu = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [manageDropdownOpen, setManageDropdownOpen] = useState(true);
   const [reportDropdownOpen, setReportDropdownOpen] = useState(true);
   const [functionDropdownOpen, setFunctionDropdownOpen] = useState(true);
@@ -44,12 +48,23 @@ const SideMenu = () => {
   const pageId = router.query?.reportPageId
     ? parseInt(router.query?.reportPageId as string)
     : -1;
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isCreatingPage, setIsCreatingPage] = useState(false);
   const [deletePage, setDeletePage] = useState<ReportPageDto>();
   const handleDeletePage = (page: ReportPageDto) => {
     setDeletePage(page);
     setIsDeleteModalOpen(true);
+  };
+  const handleCreatePage = async () => {
+    setIsCreatingPage(true);
+    const res = await userAPI.createReportPage({
+      name: "Untitled",
+    });
+    if (res) {
+      dispatch(addReportPage(res));
+      router.push("/reports/" + res.id);
+    }
+    setIsCreatingPage(false);
   };
   const SideMenuOption = ({ option, active }: SideMenuProps) => {
     const router = useRouter();
@@ -99,9 +114,7 @@ const SideMenu = () => {
           <div className="flex max-h-[450px] w-full flex-col gap-6 overflow-y-auto">
             <div className="flex flex-col gap-1">
               <div
-                className={`flex w-min items-center gap-2 rounded-sm hover:bg-gray-200 ${
-                  functionDropdownOpen ? "bg-gray-200" : "bg-gray-100"
-                } p-1 pr-2 text-xs`}
+                className={`flex w-min cursor-pointer items-center gap-2 rounded-sm  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
                 onClick={() => setFunctionDropdownOpen(!functionDropdownOpen)}
               >
                 <LuChevronRight
@@ -129,9 +142,7 @@ const SideMenu = () => {
             </div>
             <div className="flex flex-col gap-1">
               <div
-                className={`flex w-min items-center gap-2 rounded-sm hover:bg-gray-200 ${
-                  manageDropdownOpen ? "bg-gray-200" : "bg-gray-100"
-                } p-1 pr-2 text-xs`}
+                className={`flex w-min cursor-pointer items-center gap-2 rounded-sm  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
                 onClick={() => setManageDropdownOpen(!manageDropdownOpen)}
               >
                 <LuChevronRight
@@ -160,9 +171,7 @@ const SideMenu = () => {
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <div
-                  className={`flex w-min items-center gap-2 rounded-sm hover:bg-gray-200 ${
-                    reportDropdownOpen ? "bg-gray-200" : "bg-gray-100"
-                  } p-1 pr-2 text-xs`}
+                  className={`flex w-min cursor-pointer items-center gap-2 rounded-sm  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
                   onClick={() => setReportDropdownOpen(!reportDropdownOpen)}
                 >
                   <LuChevronRight
@@ -172,16 +181,21 @@ const SideMenu = () => {
                   />{" "}
                   Reports
                 </div>{" "}
-                {reportDropdownOpen && (
-                  <div
-                    className="w-min rounded border p-[1px] group-hover:border-secondary "
-                    onClick={() => {
-                      setIsModalOpen(true);
-                    }}
-                  >
-                    <LuPlus />
-                  </div>
-                )}
+                {reportDropdownOpen &&
+                  (isCreatingPage ? (
+                    <div className="flex h-[18px] w-[18px] flex-col items-center justify-center overflow-hidden">
+                      <LoadingOutlined style={{ fontSize: 12 }} spin />
+                    </div>
+                  ) : (
+                    <div
+                      className="w-min cursor-pointer rounded border p-[1px] group-hover:border-secondary"
+                      onClick={() => {
+                        handleCreatePage();
+                      }}
+                    >
+                      <LuPlus />
+                    </div>
+                  ))}
               </div>
               <div
                 className={`${
@@ -192,6 +206,27 @@ const SideMenu = () => {
                   {reportPages?.length > 0 && (
                     <div className="flex max-h-[130px] flex-col gap-2 overflow-y-auto">
                       {reportPages?.map((reportPage) => {
+                        const items: MenuProps["items"] = [
+                          {
+                            key: "1",
+                            label: (
+                              <div
+                                aria-disabled={"true"}
+                                className={`${
+                                  pageId === reportPage.id
+                                    ? " cursor-not-allowed"
+                                    : "cursor-pointer"
+                                }`}
+                                onClick={() =>
+                                  pageId !== reportPage.id &&
+                                  handleDeletePage(reportPage)
+                                }
+                              >
+                                <DeleteIconSvg />
+                              </div>
+                            ),
+                          },
+                        ];
                         return (
                           <>
                             <div
@@ -223,22 +258,21 @@ const SideMenu = () => {
                                     {reportPage.name}
                                   </Text>
                                 </div>
-                                {/* <MoreOutlined /> */}
                               </MyLink>
-                              <div
-                                aria-disabled={"true"}
-                                className={`${
-                                  pageId === reportPage.id
-                                    ? " cursor-not-allowed"
-                                    : "cursor-pointer"
-                                }`}
-                                onClick={() =>
-                                  pageId !== reportPage.id &&
-                                  handleDeletePage(reportPage)
-                                }
+                              <Dropdown
+                                menu={{
+                                  items,
+                                  onClick: () => {},
+                                }}
+                                trigger={["click"]}
+                                className="relative "
+                                overlayClassName="absolute left-[-200px] "
+                                placement="bottomRight"
                               >
-                                <DeleteIconSvg />
-                              </div>
+                                <Button className="relative flex h-4 w-4 items-center justify-center p-0">
+                                  <LuMoreVertical size={10} />
+                                </Button>
+                              </Dropdown>
                             </div>
                           </>
                         );
@@ -254,7 +288,6 @@ const SideMenu = () => {
           <WorkspaceNav />
         </div>
       </div>
-      <AddNewReportPage {...{ isModalOpen, setIsModalOpen }} />
       <GlobalModal
         title="Deleting Report Page"
         isModalOpen={isDeleteModalOpen}
@@ -318,8 +351,16 @@ export const sideMenuOptions = [
 ];
 
 export const sideMenuFucntionOptions = [
-  { link: "/dashboard", title: "Dashboard", icon: <LuLayoutDashboard /> },
-  { link: "/taskList", title: "All Tasks", icon: <LuClipboardList /> },
+  {
+    link: "/dashboard",
+    title: "Dashboard",
+    icon: <LuLayoutDashboard size={16} />,
+  },
+  {
+    link: "/taskList",
+    title: "All Tasks",
+    icon: <LuClipboardList size={16} />,
+  },
 ];
 
 export const sideMenuManageOptions = [
