@@ -9,6 +9,7 @@ import PrimaryButton from "@/components/common/buttons/primaryButton";
 import {
   deleteReportSlice,
   ReportData,
+  setReportInEditSlice,
   updateReportSlice,
 } from "@/storage/redux/reportsSlice";
 
@@ -17,19 +18,14 @@ import { ReportIcons } from "../reportPage";
 import type { PropsWithChildren } from "react";
 export default function ReportHeaderComponent({
   title,
-  children,
   className,
-  innerClassName,
   exportButton,
   reportData,
   setIsLoading,
-  saveCofigButton,
 }: PropsWithChildren<{
   title?: string;
   className?: string;
-  innerClassName?: string;
   exportButton?: React.ReactNode;
-  saveCofigButton?: React.ReactNode;
   reportData: ReportData;
   setIsLoading: Function;
 }>) {
@@ -55,7 +51,9 @@ export default function ReportHeaderComponent({
     }
     setIsLoading(false);
   };
-
+  const handleEdit = () => {
+    dispatch(setReportInEditSlice(reportData));
+  };
   const onFinish = (values: { name: string }) => {
     if (values.name !== title) {
       updateTitle(values);
@@ -115,18 +113,8 @@ export default function ReportHeaderComponent({
         </div>
         <div className="flex items-center gap-2">
           {exportButton}
-          {saveCofigButton}
           <PrimaryButton onClick={() => deleteReprot()}>Delete</PrimaryButton>
-        </div>
-      </div>
-      <div className="flex h-auto w-full">
-        <div
-          className={classNames(
-            "flex h-auto w-full flex-wrap items-center justify-end gap-6",
-            innerClassName
-          )}
-        >
-          {children}
+          <PrimaryButton onClick={() => handleEdit()}>Edit</PrimaryButton>
         </div>
       </div>
     </div>

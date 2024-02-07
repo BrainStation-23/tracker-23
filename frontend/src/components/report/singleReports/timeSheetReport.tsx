@@ -1,44 +1,22 @@
 import { Button, message, Spin } from "antd";
 import { userAPI } from "APIs";
-import { IntegrationType } from "models/integration";
-import { SprintUser } from "models/reports";
 import { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
-import { useDispatch } from "react-redux";
 
-import PrimaryButton from "@/components/common/buttons/primaryButton";
-import DateRangePicker, {
-  getDateRangeArray,
-} from "@/components/common/datePicker";
-import UsersSelectorComponent from "@/components/common/topPanels/components/usersSelector";
+import { getDateRangeArray } from "@/components/common/datePicker";
 import { ExcelExport } from "@/services/exportHelpers";
-import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
+import { ReportData } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import TableComponent from "../components/tableComponentReport";
-import TypeDependentSection from "../components/typeDependentSection";
 
 type Props = {
   reportData: ReportData;
 };
 const TimeSheetReport = ({ reportData }: Props) => {
-  const dispatch = useDispatch();
-  const [selectedSource, setSelectedSource] = useState<IntegrationType[]>(
-    reportData?.config?.types ?? []
-  );
-  const [sprints, setSprints] = useState<number[]>([]);
   const [data, setData] = useState([]);
-  const [projects, setProjects] = useState<number[]>(
-    reportData?.config?.projectIds ? reportData?.config?.projectIds : []
-  );
-  const [calendarIds, setCalendarIds] = useState<number[]>(
-    reportData?.config?.calendarIds ? reportData?.config?.calendarIds : []
-  );
   const [column, setColumns] = useState([]);
-  const [users, setUsers] = useState<SprintUser[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<number[]>(
-    reportData?.config?.userIds ? reportData?.config?.userIds : []
-  );
+  //@ts-ignore
   const [dateRange, setDateRange] = useState(
     reportData?.config?.startDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
@@ -51,12 +29,20 @@ const TimeSheetReport = ({ reportData }: Props) => {
     setDownloading(true);
     try {
       const res = await userAPI.exportTimeSheetReport({
-        startDate: dateRange[0],
-        endDate: dateRange[1],
-        userIds: selectedUsers,
-        types: selectedSource,
-        projectIds: projects,
-        calendarIds,
+        startDate: reportData?.config?.startDate
+          ? reportData?.config?.startDate
+          : dateRange[0],
+        endDate: reportData?.config?.endDate
+          ? reportData?.config?.endDate
+          : dateRange[1],
+        userIds: reportData?.config?.userIds ? reportData?.config?.userIds : [],
+        projectIds: reportData?.config?.projectIds
+          ? reportData?.config?.projectIds
+          : [],
+        calendarIds: reportData?.config?.calendarIds
+          ? reportData?.config?.calendarIds
+          : [],
+        types: reportData?.config?.types ?? [],
       });
       if (!res) {
         message.error(
@@ -71,29 +57,23 @@ const TimeSheetReport = ({ reportData }: Props) => {
     setDownloading(false);
   };
 
-  const saveConfig = async () => {
-    const res = await userAPI.updateReport(reportData.id, {
-      startDate: dateRange[0],
-      endDate: dateRange[1],
-      userIds: selectedUsers,
-      projectIds: projects,
-      calendarIds,
-      types: selectedSource,
-    });
-    if (res) {
-      dispatch(updateReportSlice(res));
-      message.success("Saved Successfully");
-    }
-  };
   const getTimeSheetReport = async () => {
     setIsLoading(true);
     const res = await userAPI.getTimeSheetReport({
-      startDate: dateRange[0],
-      endDate: dateRange[1],
-      userIds: selectedUsers,
-      projectIds: projects,
-      calendarIds,
-      types: selectedSource,
+      startDate: reportData?.config?.startDate
+        ? reportData?.config?.startDate
+        : dateRange[0],
+      endDate: reportData?.config?.endDate
+        ? reportData?.config?.endDate
+        : dateRange[1],
+      userIds: reportData?.config?.userIds ? reportData?.config?.userIds : [],
+      projectIds: reportData?.config?.projectIds
+        ? reportData?.config?.projectIds
+        : [],
+      calendarIds: reportData?.config?.calendarIds
+        ? reportData?.config?.calendarIds
+        : [],
+      types: reportData?.config?.types ?? [],
     });
     res.columns && setColumns(res.columns);
 
@@ -101,16 +81,9 @@ const TimeSheetReport = ({ reportData }: Props) => {
     setDateRangeArray(res.dateRange);
     setIsLoading(false);
   };
-  const getUserListByProject = async () => {
-    const res = await userAPI.userListByProject(projects);
-    res && setUsers(res);
-  };
   useEffect(() => {
     getTimeSheetReport();
-  }, [dateRange, selectedUsers, projects, selectedSource]);
-  useEffect(() => {
-    getUserListByProject();
-  }, [projects]);
+  }, [reportData?.config]);
   return (
     <>
       <ReportHeaderComponent
@@ -128,37 +101,7 @@ const TimeSheetReport = ({ reportData }: Props) => {
             Export to Excel
           </Button>
         }
-        saveCofigButton={
-          <PrimaryButton onClick={() => saveConfig()}> Save</PrimaryButton>
-        }
-      >
-        <>
-          <DateRangePicker
-            selectedDate={dateRange}
-            setSelectedDate={setDateRange}
-          />
-
-          <TypeDependentSection
-            config={reportData?.config}
-            {...{
-              activeTab: "Time Sheet",
-              selectedSource,
-              setSelectedSource,
-              projects,
-              setProjects,
-              sprints,
-              setSprints,
-              calendarIds,
-              setCalendarIds,
-            }}
-          />
-
-          <UsersSelectorComponent
-            {...{ userList: users, selectedUsers, setSelectedUsers }}
-            className="w-[210px]"
-          />
-        </>
-      </ReportHeaderComponent>
+      />
       <Spin className="custom-spin" spinning={isLoading}>
         <TableComponent
           data={data}

@@ -111,7 +111,12 @@ const SideMenu = () => {
               <BSLogoSvg />
             </div>
           </div>
-          <div className="flex max-h-[450px] w-full flex-col gap-6 overflow-y-auto px-5">
+          <div
+            style={{
+              maxHeight: "calc(100vh - 220px)",
+            }}
+            className="flex w-full flex-col gap-6 overflow-y-auto px-5"
+          >
             <div className="flex flex-col gap-1">
               <div
                 className={`flex w-min cursor-pointer items-center gap-2 rounded-sm  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
@@ -204,7 +209,7 @@ const SideMenu = () => {
               >
                 <div className="flex flex-col gap-1">
                   {reportPages?.length > 0 && (
-                    <div className="flex max-h-[130px] flex-col gap-2 overflow-y-auto">
+                    <div className="flex flex-col gap-2 overflow-y-auto">
                       {reportPages?.map((reportPage) => {
                         const items: MenuProps["items"] = [
                           {
