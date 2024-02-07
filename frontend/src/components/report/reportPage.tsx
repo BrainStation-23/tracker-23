@@ -1,7 +1,5 @@
-import { Form, Input } from "antd";
 import { userAPI } from "APIs";
 import { IntegrationType } from "models/integration";
-import { UpdateReportPageDto } from "models/reports";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FaChartBar } from "react-icons/fa";
@@ -11,6 +9,8 @@ import { MdChecklist } from "react-icons/md";
 import { useDispatch } from "react-redux";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
+import PrimaryButton from "@/components/common/buttons/primaryButton";
+import GlobalModal from "@/components/modals/globalModal";
 import { useAppSelector } from "@/storage/redux";
 import {
   setReportProjectsSlice,
@@ -19,12 +19,9 @@ import {
 import {
   ReportData,
   setReportIntegrationTypesSlice,
-  updateReportPageNameSlice,
 } from "@/storage/redux/reportsSlice";
 import { RootState } from "@/storage/redux/store";
 
-import PrimaryButton from "../common/buttons/primaryButton";
-import GlobalModal from "../modals/globalModal";
 import AddNewReport from "./components/addNewReport";
 import SprintEstimateReport from "./singleReports/sprintEstimateReport";
 import SprintReport from "./singleReports/sprintReport";
@@ -35,9 +32,7 @@ import TimeSheetReport from "./singleReports/timeSheetReport";
 const ReportPageComponent = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editing, setEditing] = useState(false);
   const pageId = router.query?.reportPageId
     ? parseInt(router.query?.reportPageId as string)
     : -1;
@@ -78,19 +73,6 @@ const ReportPageComponent = () => {
         return <div>No report found</div>;
     }
   };
-  const updatePageName = async (data: UpdateReportPageDto) => {
-    if (!reportPageData?.id) return;
-    const res = await userAPI.updateReportPage(reportPageData.id, data);
-    if (res) {
-      dispatch(updateReportPageNameSlice(res));
-    }
-  };
-  const onFinish = (values: { name: string }) => {
-    if (values.name !== reportPageData.name) {
-      updatePageName(values);
-    }
-    setEditing(false);
-  };
   useEffect(() => {
     getIntegrationTypes();
     getSprintList();
@@ -98,51 +80,7 @@ const ReportPageComponent = () => {
   }, []);
   return (
     <div className="flex flex-col gap-7 pb-5">
-      <div className="flex items-center justify-between">
-        <div onClick={() => setEditing(true)}>
-          {!editing ? (
-            <div className="flex items-center gap-2 text-2xl font-bold">
-              {reportPageData?.name}
-            </div>
-          ) : (
-            <Form
-              name="titleEdit"
-              onFinish={onFinish}
-              initialValues={{ name: reportPageData?.name }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  form.submit();
-                }
-                if (e.key === "Escape") {
-                  setEditing(false);
-                }
-              }}
-            >
-              <div className="flex items-center gap-2 text-2xl font-semibold">
-                <Form.Item
-                  name="name"
-                  className="m-0"
-                  rules={[
-                    { required: true, message: "Please input something!" },
-                  ]}
-                >
-                  <Input
-                    placeholder="Type something and press Enter"
-                    className="m-0 p-0 px-1 text-2xl focus:shadow-none"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        form.submit();
-                      }
-                      if (e.key === "Escape") {
-                        setEditing(false);
-                      }
-                    }}
-                  />
-                </Form.Item>
-              </div>
-            </Form>
-          )}
-        </div>
+      <div className="flex items-center justify-end">
         <PrimaryButton onClick={() => setIsModalOpen(true)}>
           <PlusIconSvg /> Add New Report
         </PrimaryButton>

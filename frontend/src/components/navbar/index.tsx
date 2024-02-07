@@ -1,9 +1,13 @@
-import { Tooltip } from "antd";
+import { Form, Input, message, Tooltip } from "antd";
+import { userAPI } from "APIs";
 import { LoginResponseDto } from "models/auth";
+import { UpdateReportPageDto } from "models/reports";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "@/storage/redux";
+import { updateReportPageNameSlice } from "@/storage/redux/reportsSlice";
 import { RootState } from "@/storage/redux/store";
 import { getLocalStorage } from "@/storage/storage";
 import { SyncOutlined } from "@ant-design/icons";
@@ -17,7 +21,10 @@ type Props = {
 
 const Navbar = ({ extraComponent }: Props) => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [userDetails, setUserDetails] = useState<LoginResponseDto>();
+  const [editing, setEditing] = useState(false);
+  const [form] = Form.useForm();
 
   const path = router.asPath;
   const pageId = router.query?.reportPageId
@@ -30,7 +37,22 @@ const Navbar = ({ extraComponent }: Props) => {
   const reportPageData = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages
   ).find((reportPage) => reportPage.id === pageId);
-
+  const updatePageName = async (data: UpdateReportPageDto) => {
+    if (!reportPageData?.id) return;
+    const oldPage = { ...reportPageData };
+    dispatch(updateReportPageNameSlice({ ...reportPageData, name: data.name }));
+    const res = await userAPI.updateReportPage(reportPageData.id, data);
+    if (!res) {
+      message.error("Failed to update");
+      dispatch(updateReportPageNameSlice(oldPage));
+    }
+  };
+  const onFinish = (values: { name: string }) => {
+    if (values.name !== reportPageData.name) {
+      updatePageName(values);
+    }
+    setEditing(false);
+  };
   useEffect(() => {
     const tmp = getLocalStorage("userDetails");
     if (!userDetails && tmp) setUserDetails(tmp);
@@ -47,10 +69,61 @@ const Navbar = ({ extraComponent }: Props) => {
                 className={`flex items-center gap-2 rounded-lg text-black `}
               >
                 <div className=" stroke-black">{option.icon}</div>
-                <div className={`text-base font-semibold`}>
-                  {option.title}
+                <div
+                  className={`flex items-center gap-1 text-base font-semibold`}
+                >
+                  <div>{option.title}</div>
+                  {router.asPath.includes("report") && reportPageData?.name && (
+                    <div>/</div>
+                  )}
                   {router.asPath.includes("report") && reportPageData?.name ? (
-                    "/" + reportPageData?.name
+                    <div onClick={() => setEditing(true)}>
+                      {!editing ? (
+                        <div className="flex items-center gap-2">
+                          {reportPageData?.name}
+                        </div>
+                      ) : (
+                        <Form
+                          name="titleEdit"
+                          onFinish={onFinish}
+                          initialValues={{ name: reportPageData?.name }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              form.submit();
+                            }
+                            if (e.key === "Escape") {
+                              setEditing(false);
+                            }
+                          }}
+                        >
+                          <div className="flex items-center gap-2  text-base font-semibold">
+                            <Form.Item
+                              name="name"
+                              className="m-0"
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please input something!",
+                                },
+                              ]}
+                            >
+                              <Input
+                                placeholder="Type something and press Enter"
+                                className="m-0 p-0 px-1  text-base font-semibold focus:shadow-none"
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    form.submit();
+                                  }
+                                  if (e.key === "Escape") {
+                                    setEditing(false);
+                                  }
+                                }}
+                              />
+                            </Form.Item>
+                          </div>
+                        </Form>
+                      )}
+                    </div>
                   ) : (
                     <></>
                   )}

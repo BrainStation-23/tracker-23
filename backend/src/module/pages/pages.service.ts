@@ -12,11 +12,6 @@ export class PagesService {
     private workspacesService: WorkspacesService,
   ) {}
   async createPage(user: User, createPageDto: CreatePageDto) {
-    const doesExistPage = await this.pageDatabase.findPage(createPageDto.name);
-    if (doesExistPage) {
-      throw new APIException('Page already exists', HttpStatus.BAD_REQUEST);
-    }
-
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     const page = {
       userWorkspaceId: userWorkspace.id,
