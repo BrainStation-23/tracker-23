@@ -1,14 +1,14 @@
 import { Empty, Spin } from "antd";
+import { userAPI } from "APIs";
+import { WorkspaceMemberDto } from "models/user";
 import { useEffect, useState } from "react";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
+import PrimaryButton from "@/components/common/buttons/primaryButton";
+import InviteToWorkspace from "@/components/invitations/components/inviteToWorkspace";
+import GlobalModal from "@/components/modals/globalModal";
 
-import GlobalModal from "../modals/globalModal";
-import { userAPI } from "APIs";
-import InviteToWorkspace from "../invitations/components/inviteToWorkspace";
 import MemberList from "./components/memberList";
-import PrimaryButton from "../common/buttons/primaryButton";
-import { WorkspaceMemberDto } from "models/user";
 
 const MembersComponent = () => {
   const [loading, setLoading] = useState(false);
@@ -20,6 +20,14 @@ const MembersComponent = () => {
     const res = await userAPI.getWorkspaceMembers();
     if (res) setMemberList(res);
     setLoading(false);
+  };
+
+  const updateMember = (newMember: WorkspaceMemberDto) => {
+    setMemberList(
+      memberList.map((member) =>
+        member.id === newMember.id ? newMember : member
+      )
+    );
   };
 
   useEffect(() => {
@@ -41,7 +49,7 @@ const MembersComponent = () => {
         {memberList.length === 0 && !loading ? (
           <Empty description="No members found" />
         ) : memberList.length > 0 ? (
-          <MemberList memberList={memberList} />
+          <MemberList memberList={memberList} updateMember={updateMember} />
         ) : loading ? (
           <Empty description="Getting members..." />
         ) : (

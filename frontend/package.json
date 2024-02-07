@@ -6,7 +6,8 @@
     "dev": "next dev -p 3001",
     "build": "next build && next export",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "ts": "tsc --noEmit --incremental"
   },
   "dependencies": {
     "@amcharts/amcharts4": "^4.10.34",

@@ -1,7 +1,6 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { APIException } from '../exception/api.exception';
 
 @Injectable()
 export class NotificationsService {

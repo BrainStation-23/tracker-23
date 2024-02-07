@@ -1,5 +1,3 @@
-import { useDispatch } from "react-redux";
-
 import LogoutIconSvg from "@/assets/svg/LogoutIconSvg";
 
 import { logOutFunction } from "./logoutFunction";

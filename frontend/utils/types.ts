@@ -28,7 +28,7 @@ import {
   UpdateTaskEstimationParams,
   UpdateTaskStatusParams,
 } from "models/tasks";
-import { updateApprovalUserDto } from "models/user";
+import { updateApprovalUserDto, WorkspaceMemberStatus } from "models/user";
 
 import { RegisterDto } from "../models/auth/index";
 import { TaskDto } from "../models/tasks/index";
@@ -102,6 +102,10 @@ export interface apiFunction {
   sendWorkspaceInvitation: (data: SendWorkspaceInviteDto) => Promise<any>;
   acceptWorkspaceInvitation: (id: number) => Promise<any>;
   rejectWorkspaceInvitation: (id: number) => Promise<any>;
+  updateMemberStatus: (
+    id: number,
+    status: WorkspaceMemberStatus
+  ) => Promise<any>;
   importProject: (id: number) => Promise<any>;
   importCalendar: (ids: number[]) => Promise<any>;
   createProject: (data: CreateLocalProjectModel) => Promise<any>;

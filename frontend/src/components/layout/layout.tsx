@@ -1,12 +1,16 @@
 import { message, Spin } from "antd";
 import { userAPI } from "APIs";
 import classNames from "classnames";
+import { IntegrationDto, IntegrationType } from "models/integration";
 import { GetWorkspaceListWithUserDto } from "models/workspaces";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import { noNavbar, publicRoutes } from "utils/constants";
 
+import Navbar from "@/components/navbar";
+import SideMenu from "@/components/sideMenu";
+import NoActiveWorkspace from "@/components/workspaces/noActiveWorkSpace";
 import { GetCookie } from "@/services/cookie.service";
 import { initializeSocket } from "@/services/socket.service";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
@@ -17,18 +21,13 @@ import {
 import { setNotifications } from "@/storage/redux/notificationsSlice";
 import { setPriorities } from "@/storage/redux/prioritySlice";
 import { setProjectsSlice } from "@/storage/redux/projectsSlice";
+import { setReportPages } from "@/storage/redux/reportsSlice";
 import { setSettingsReducer } from "@/storage/redux/settingsSlice";
 import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 import { setUserSlice } from "@/storage/redux/userSlice";
 import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
-
-import Navbar from "../navbar";
-import SideMenu from "../sideMenu";
-import NoActiveWorkspace from "../workspaces/noActiveWorkSpace";
 import { deleteFromLocalStorage } from "@/storage/storage";
-import { setReportPages } from "@/storage/redux/reportsSlice";
-import { IntegrationDto, IntegrationType } from "models/integration";
 
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
@@ -218,7 +217,6 @@ const CustomLayout = ({ children }: any) => {
     } else {
       const errorRes: any = res;
       errorRes?.error?.message && message.error(errorRes?.error?.message);
-      // logOutFunction();
     }
     if (res.pages) {
       dispatch(setReportPages(res.pages));
@@ -253,16 +251,6 @@ const CustomLayout = ({ children }: any) => {
       path.includes("onBoarding") && router.push("/taskList");
     }
   }, [router, path, userInfo]);
-
-  // useEffect(() => {
-  //   if (
-  //     !publicRoutes.some((route) => path.includes(route)) &&
-  //     !path.includes("socialLogin")
-  //   ) {
-  //     setLoading(true);
-  //     getWorkspaces();
-  //   }
-  // }, [reloadWorkspace]);
   useEffect(() => {
     !["/inviteLink", "/socialLogin/redirect"].some((route) =>
       path.includes(route)
@@ -288,7 +276,7 @@ const CustomLayout = ({ children }: any) => {
         <div className="flex">
           {!publicRoutes.some((route) => path.includes(route)) &&
             !path.includes("onBoarding") && (
-              <div className="mr-6 w-[300px]">
+              <div className="h-screen min-w-[250px] max-w-[250px]">
                 <div className="fixed">
                   <SideMenu />
                 </div>
@@ -298,9 +286,12 @@ const CustomLayout = ({ children }: any) => {
           path.includes("socialLogin") ||
           publicRoutes.some((route) => path.includes(route)) ? (
             <div
-              className={classNames("flex w-full flex-col overflow-y-auto", {
-                "px-8": !isPublicRoute && !path.includes("onBoarding"),
-              })}
+              className={classNames(
+                "flex w-full flex-col overflow-auto overflow-y-auto",
+                {
+                  "px-8": !isPublicRoute && !path.includes("onBoarding"),
+                }
+              )}
             >
               {!isPublicRoute &&
                 !path.includes("onBoarding") &&

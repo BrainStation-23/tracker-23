@@ -1,3 +1,5 @@
+import { Avatar, Table, Typography } from "antd";
+import { ColumnsType } from "antd/es/table";
 import {
   WorkspaceMemberDto,
   WorkspaceMemberRoleBorderColorEnum,
@@ -6,8 +8,6 @@ import {
   WorkspaceMemberStatusBorderColorEnum,
   WorkspaceMemberStatusEnum,
 } from "models/user";
-import { ColumnsType } from "antd/es/table";
-import { Avatar, Table, Typography } from "antd";
 import {
   LuBadgeCheck,
   LuCheckCircle,
@@ -16,13 +16,15 @@ import {
   LuUserCog,
 } from "react-icons/lu";
 
+import MoreFunctionMembersPageComponent from "./moreFunctionmMembersPage";
+
 const { Text } = Typography;
 
 type Props = {
   memberList: WorkspaceMemberDto[];
+  updateMember: Function;
 };
-const MemberList = ({ memberList }: Props) => {
-  console.log(memberList);
+const MemberList = ({ memberList, updateMember }: Props) => {
   const columns: ColumnsType<WorkspaceMemberDto> = [
     {
       title: (
@@ -58,7 +60,11 @@ const MemberList = ({ memberList }: Props) => {
               className="w-[200px] cursor-pointer"
               ellipsis={{ tooltip: `${record.firstName} ${record.lastName}` }}
             >
-              {`${record.firstName} ${record.lastName}`}
+              {record.firstName ? (
+                <>{`${record.firstName} ${record.lastName}`}</>
+              ) : (
+                "----"
+              )}
             </Text>
           </div>
         );
@@ -194,6 +200,20 @@ const MemberList = ({ memberList }: Props) => {
       },
       align: "center",
     },
+    {
+      title: <>Actions</>,
+      dataIndex: "",
+      key: "",
+      width: "1px",
+      render: (text: string, record: WorkspaceMemberDto, index: number) => (
+        <div className="bgs-red-300 flex justify-center gap-2">
+          <MoreFunctionMembersPageComponent
+            {...{ member: record, updateMember }}
+          />
+        </div>
+      ),
+      align: "center",
+    },
   ];
 
   return (
@@ -202,7 +222,6 @@ const MemberList = ({ memberList }: Props) => {
         columns={columns}
         dataSource={memberList}
         className="w-full"
-        // onChange={onChange}
         rowKey={"id"}
         bordered
         pagination={{
@@ -211,7 +230,6 @@ const MemberList = ({ memberList }: Props) => {
           showSizeChanger: false,
           showLessItems: true,
           position: ["bottomRight", "bottomLeft"],
-          // total: 100,
         }}
         scroll={{ x: true }}
       />

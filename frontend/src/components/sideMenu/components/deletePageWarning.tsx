@@ -1,4 +1,4 @@
-import { Button, Spin } from "antd";
+import { message, Spin } from "antd";
 import { userAPI } from "APIs";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -7,6 +7,8 @@ import {
   deleteReportPageSlice,
   ReportPageDto,
 } from "@/storage/redux/reportsSlice";
+import PrimaryButton from "@/components/common/buttons/primaryButton";
+import SecondaryButton from "@/components/common/buttons/secondaryButton";
 
 const DeleteReportPageWarning = ({
   page,
@@ -23,7 +25,8 @@ const DeleteReportPageWarning = ({
       const res = await userAPI.deleteReportPage(page.id);
       if (res) {
         dispatch(deleteReportPageSlice(page));
-      }
+        message.success("Page deleted successfully");
+      } else message.error("Failed to delete report page");
     }
     setIsModalOpen(false);
     setSpinning(false);
@@ -37,27 +40,27 @@ const DeleteReportPageWarning = ({
           </Spin>
         </div>
       ) : (
-        <div className="flex flex-col items-center gap-3 py-12">
+        <div className="flex flex-col items-center gap-5 py-12">
           <div>
             Do you want to Delete{" "}
             <span className="font-bold">{page?.name}</span> Page
           </div>
           <div className="flex w-40 justify-between">
-            <Button
+            <PrimaryButton
               onClick={() => {
                 handleWarningClick(true);
               }}
             >
               Yes
-            </Button>
-            <Button
-              danger
+            </PrimaryButton>
+            <SecondaryButton
+              // danger
               onClick={() => {
                 handleWarningClick(false);
               }}
             >
-              no
-            </Button>
+              Cancel
+            </SecondaryButton>
           </div>
         </div>
       )}

@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class extendWebhookLifeReqDto {
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  webhookId: number;
+  webhookId: string;
 
   @IsNumber()
   @IsNotEmpty()

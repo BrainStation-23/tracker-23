@@ -1,12 +1,11 @@
-import { Divider, Modal, Spin } from "antd";
-import LoginForm from "../forms/loginForm";
-import AuthHeader from "./authHeader";
-import GoogleLogin from "./googleLogin";
-import MyDivider from "../../common/MyDivider";
+import { Modal, Spin } from "antd";
 import { useState } from "react";
-import { LoadingOutlined } from "@ant-design/icons";
-import ForgotPasswordForm from "@/components/auth/forms/forgotPasswordForm";
+
 import BSLogoSvg from "@/assets/svg/BSLogoSvg";
+import ForgotPasswordForm from "@/components/auth/forms/forgotPasswordForm";
+import { LoadingOutlined } from "@ant-design/icons";
+
+import AuthHeader from "./authHeader";
 
 const ForgotPasswordPanel = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

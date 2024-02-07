@@ -12,7 +12,6 @@ const InviteSection = ({ emails, setEmails }: Props) => {
   }
 
   const handleChange = (value: string[]) => {
-    console.log(`Selected: ${value}`);
     const validEmails = value.filter((email) => isValidEmail(email));
     if (validEmails.length !== value.length) message.warning("Invalid email");
     setEmails(validEmails);
@@ -27,11 +26,9 @@ const InviteSection = ({ emails, setEmails }: Props) => {
           mode="tags"
           size={"middle"}
           placeholder="Enter your team members email address"
-          // defaultValue={["Bug Fix"]}
           value={emails}
           onChange={handleChange}
           style={{ width: "100%" }}
-          // options={options}
         />
       </div>
     </div>

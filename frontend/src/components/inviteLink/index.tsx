@@ -1,16 +1,16 @@
+import { Spin } from "antd";
+import { userAPI } from "APIs";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import AuthLeftPanel from "../auth/components/authLeftPanel";
+import AuthLeftPanel from "@/components/auth/components/authLeftPanel";
+import { setLocalStorage } from "@/storage/storage";
+
 import LoginPanelInviteLink from "./components/loginPanelInviteLink";
 import RegistrationPanelInviteLink from "./components/registrationPanelInviteLink";
-import { userAPI } from "APIs";
-import { Spin } from "antd";
-import { setLocalStorage } from "@/storage/storage";
 
 const InviteLinkComponent = () => {
   const router = useRouter();
-  const path = router.asPath;
   const [validUser, setValidUser] = useState(true);
   const [onlySocialLogin, setOnlySocialLogin] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -29,10 +29,6 @@ const InviteLinkComponent = () => {
   };
   useEffect(() => {
     router.isReady && getUserInfoFromCode();
-    console.log(
-      "🚀 ~ file: index.tsx:30 ~ useEffect ~ router.isReady:",
-      router.isReady
-    );
   }, [router.isReady]);
   return (
     <Spin spinning={!dataLoaded}>

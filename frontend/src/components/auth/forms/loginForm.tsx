@@ -3,13 +3,11 @@ import { userAPI } from "APIs";
 import { useRouter } from "next/router";
 import React from "react";
 
+import MyFormItem from "@/components/common/form/MyFormItem";
+import MyInput from "@/components/common/form/MyInput";
+import MyPasswordInput from "@/components/common/form/MyPasswordInput";
+import MyLink from "@/components/common/link/MyLink";
 import { GetCookie } from "@/services/cookie.service";
-
-import MyFormItem from "../../common/form/MyFormItem";
-import MyInput from "../../common/form/MyInput";
-import MyPasswordInput from "../../common/form/MyPasswordInput";
-import MyLink from "../../common/link/MyLink";
-import Line from "../../dashboard/charts/lineChart";
 
 type Props = {
   setIsModalOpen: Function;
@@ -21,7 +19,6 @@ const LoginForm = ({ setIsModalOpen, email }: Props) => {
   const signIn = async (values: any) => {
     console.log(values);
     const data = await userAPI.login(values);
-    console.log("🚀 ~ file: loginForm.tsx:23 ~ signIn ~ data:", data);
     if (data?.status === "ONBOARD" && GetCookie("access_token"))
       router.push("/onBoarding");
     else if (GetCookie("access_token")) router.push("/onBoarding");
@@ -29,11 +26,8 @@ const LoginForm = ({ setIsModalOpen, email }: Props) => {
   };
 
   const onFinish = async (values: any) => {
-    console.log("Success:", values);
     setIsModalOpen(true);
-    const res = await signIn(values);
-    console.log("🚀 ~ file: loginForm.tsx:32 ~ onFinish ~ res:", res);
-    // router.push("/taskList");
+    await signIn(values);
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -43,12 +37,9 @@ const LoginForm = ({ setIsModalOpen, email }: Props) => {
   return (
     <Form
       name="basic"
-      // labelCol={{ span: 8 }}
-      // wrapperCol={{ span: 16 }}
       initialValues={{ remember: true, email }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
-      // autoComplete="off"
       layout="vertical"
       labelAlign="left"
       requiredMark={false}

@@ -9,7 +9,7 @@ import XYChart from "@/components/dashboard/charts/xyChart";
 import { getFormattedTasks } from "@/services/taskActions";
 import { getDayWithMonth, getTotalSpentTime } from "@/services/timeActions";
 
-import { getDateRangeArray } from "../datePicker";
+import { getDateRangeArray } from "../common/datePicker";
 import GlobalModal from "../modals/globalModal";
 import SessionStartWarning from "../tasks/components/warning";
 import DonutChart from "./charts/donutChart";
@@ -19,8 +19,6 @@ import DashboardTableComponent from "./components/tableComponentDashboard";
 const { Text } = Typography;
 
 const Dashboard = () => {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [dataDonutTotal, setDataDonutTotal] = useState(0);
   const [dataDonut, setDataDonut] = useState(null);
@@ -37,11 +35,6 @@ const Dashboard = () => {
       filters,
       ...sorter,
     });
-
-    // `dataSource` is useless since `pageSize` changed
-    // if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-    //   setData([]);
-    // }
   };
   const [reload, setReload] = useState(false);
 
@@ -69,7 +62,6 @@ const Dashboard = () => {
     return runningTask?.id === task.id ? "bg-[#F3FCFF]" : "";
   };
   const getTasks = async () => {
-    setLoading(true);
     try {
       const res = await userAPI.getTasks();
       if (res) {
@@ -87,15 +79,12 @@ const Dashboard = () => {
           pagination: {
             ...tableParamsPinned.pagination,
             total: pinnedTaskList.length,
-            // total: data.totalCount,
           },
         });
       }
     } catch (error) {
       console.log("🚀 ~ file: index.tsx:238 ~ getTasks ~ error:", error);
-      // message.error("Error getting tasks");
     } finally {
-      setLoading(false);
     }
   };
 

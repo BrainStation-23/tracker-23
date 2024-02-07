@@ -1,14 +1,15 @@
 import { Avatar, Empty, Table, Typography } from "antd";
 import { ColumnsType } from "antd/es/table";
+import classNames from "classnames";
+import dayjs from "dayjs";
 import {
-  SprintViewTimelineReportTableRow,
   SprintViewTimelineReportColumn,
+  SprintViewTimelineReportTableRow,
   SprintViewTimelineReportTask,
 } from "models/reports";
-import dayjs from "dayjs";
-import TimeProgressComponent from "./timeProgressComponent";
-import classNames from "classnames";
 import { TaskStatusEnum } from "models/tasks";
+
+import TimeProgressComponent from "./timeProgressComponent";
 
 const { Text } = Typography;
 type Props = {
@@ -19,7 +20,6 @@ type Props = {
 };
 
 const SprintViewTimelineReportTabel = ({ data }: Props) => {
-  console.log("data:", data);
   const renderTableTaskCell = (
     record: SprintViewTimelineReportTableRow,
     column: SprintViewTimelineReportColumn,
@@ -352,7 +352,6 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
       <Table
         columns={columns}
         dataSource={data.rows}
-        // onChange={onChange}
         rowKey={"id"}
         bordered
         pagination={{
@@ -361,7 +360,6 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
           showSizeChanger: false,
           showLessItems: true,
           position: ["bottomRight", "bottomLeft"],
-          // total: 100,
         }}
         scroll={{ x: true }}
       />

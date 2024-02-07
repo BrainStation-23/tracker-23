@@ -236,6 +236,29 @@ export class JiraApiCalls {
     }
   }
 
+  async registerOutlookWebhook(
+    userIntegration: UserIntegration,
+    url: string,
+    formateReqBody: any,
+  ) {
+    try {
+      const config = {
+        method: 'post',
+        url,
+        headers: {
+          Authorization: `Bearer ${userIntegration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        data: formateReqBody,
+      };
+      const webhook = await (await axios(config)).data;
+      return webhook;
+    } catch (err) {
+      console.log('🚀 ~ file: api.ts:69 ~ JiraApiCalls ~ err:', err);
+      return null;
+    }
+  }
+
   async getCalendarEvents(userIntegration: UserIntegration, url: string) {
     try {
       const headers: any = {

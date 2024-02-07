@@ -67,9 +67,11 @@ export default function ReportHeaderComponent({
       <div className="flex items-center justify-between gap-3 ">
         <div onClick={() => setEditing(true)}>
           {!editing ? (
-            <div className="flex items-center gap-2 text-2xl font-semibold">
-              {ReportIcons[reportData.reportType]}
-              {title}
+            <div className="flex items-center gap-2 text-lg font-semibold">
+              <div className="flex items-center text-sm">
+                {ReportIcons[reportData.reportType]}
+              </div>
+              <div>{title}</div>
             </div>
           ) : (
             <Form
@@ -85,7 +87,7 @@ export default function ReportHeaderComponent({
                 }
               }}
             >
-              <div className="flex items-center gap-2 text-2xl font-semibold">
+              <div className="flex items-center gap-2 text-lg font-semibold">
                 {ReportIcons[reportData.reportType]}
                 <Form.Item
                   name="name"
@@ -96,7 +98,7 @@ export default function ReportHeaderComponent({
                 >
                   <Input
                     placeholder="Type something and press Enter"
-                    className="m-0 p-0 px-1 text-xl focus:shadow-none"
+                    className="m-0 p-0 px-1 text-base focus:shadow-none"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         form.submit();

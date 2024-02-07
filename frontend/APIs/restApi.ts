@@ -34,6 +34,7 @@ import {
   updateApprovalUserDto,
   updateOnboardingUserDto,
   WorkspaceMemberDto,
+  WorkspaceMemberStatus,
 } from "models/user";
 import Router from "next/router";
 import { apiEndPoints } from "utils/apiEndPoints";
@@ -179,7 +180,7 @@ export async function createTaskRest(data: CreateTaskDto) {
 
 export async function deleteTaskRest(taskId: any) {
   try {
-    const res = await axios.delete(`${apiEndPoints.tasks}/${taskId}`);
+    await axios.delete(`${apiEndPoints.tasks}/${taskId}`);
     message.success("Task Deleted");
     return true;
   } catch (error: any) {
@@ -819,6 +820,20 @@ export async function rejectWorkspaceInvitationRest(id: number) {
   try {
     const res = await axios.patch(`${apiEndPoints.invitation}/response/${id}`, {
       status: "REJECTED",
+    });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function updateMemberStatusRest(
+  id: number,
+  status: WorkspaceMemberStatus
+) {
+  try {
+    const res = await axios.patch(`${apiEndPoints.invitation}/response/${id}`, {
+      status: status,
     });
     return res.data;
   } catch (error: any) {

@@ -110,7 +110,6 @@ const SprintEstimateReport = ({ reportData }: Props) => {
       >
         <>
           <TypeDependentSection
-            config={reportData?.config}
             {...{
               activeTab: "Sprint Estimate",
               projects,

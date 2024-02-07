@@ -4,7 +4,7 @@ import { StatusDto } from "models/tasks";
 import { LuBringToFront } from "react-icons/lu";
 
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
-import { integrationIcons } from "@/components/importSection/importCard";
+import { integrationIcons } from "@/components/integrations/components/importCard";
 import { useRouter } from "next/router";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";

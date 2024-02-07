@@ -6,6 +6,11 @@ import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
 import { IntegrationsModule } from '../integrations/integrations.module';
 import { SessionsModule } from '../sessions/sessions.module';
 import { HelperModule } from '../helper/helper.module';
+import { WorkspacesModule } from '../workspaces/workspaces.module';
+import { OutlookApiCalls } from 'src/utils/outlookApiCall/api';
+import { WebhookDatabase } from 'src/database/webhook';
+import { ProjectDatabase } from 'src/database/projects';
+import { TasksDatabase } from 'src/database/tasks';
 
 @Module({
   imports: [
@@ -13,8 +18,16 @@ import { HelperModule } from '../helper/helper.module';
     IntegrationsModule,
     SessionsModule,
     HelperModule,
+    WorkspacesModule,
   ],
-  providers: [WebhooksService, JiraApiCalls],
+  providers: [
+    WebhooksService,
+    WebhookDatabase,
+    JiraApiCalls,
+    OutlookApiCalls,
+    ProjectDatabase,
+    TasksDatabase,
+  ],
   controllers: [WebhooksController],
   exports: [WebhooksService],
 })

@@ -1,14 +1,12 @@
-import { Button } from "antd";
 import { userAPI } from "APIs";
-import { InviteUserWorkspaceDto } from "models/invitations";
 import { useEffect, useState } from "react";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
+import PrimaryButton from "@/components/common/buttons/primaryButton";
+import MyActiveTab from "@/components/common/tabs/MyActiveTab";
+import MyInactiveTab from "@/components/common/tabs/MyInactiveTab";
+import GlobalModal from "@/components/modals/globalModal";
 
-import PrimaryButton from "../common/buttons/primaryButton";
-import MyActiveTab from "../common/tabs/MyActiveTab";
-import MyInactiveTab from "../common/tabs/MyInactiveTab";
-import GlobalModal from "../modals/globalModal";
 import InvitesList from "./components/invites";
 import InviteToWorkspace from "./components/inviteToWorkspace";
 

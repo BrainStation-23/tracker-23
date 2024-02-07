@@ -110,7 +110,7 @@ export class SessionsService {
     if (task.integratedTaskId) {
       const project =
         task.projectId &&
-        (await this.projectDatabase.getProject(
+        (await this.projectDatabase.getProjectWithRes(
           { id: task.projectId },
           { integration: true },
         ));
@@ -309,7 +309,7 @@ export class SessionsService {
 
       const project =
         projectId &&
-        (await this.projectDatabase.getProject(
+        (await this.projectDatabase.getProjectWithRes(
           { id: projectId },
           { integration: true },
         ));
@@ -417,7 +417,7 @@ export class SessionsService {
 
       const project =
         task.projectId &&
-        (await this.projectDatabase.getProject(
+        (await this.projectDatabase.getProjectWithRes(
           { id: task.projectId },
           { integration: true },
         ));
@@ -547,7 +547,7 @@ export class SessionsService {
 
       const project =
         task.projectId &&
-        (await this.projectDatabase.getProject(
+        (await this.projectDatabase.getProjectWithRes(
           { id: task.projectId },
           { integration: true },
         ));

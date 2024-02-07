@@ -75,7 +75,8 @@ export class JiraClientService {
     if (userIntegration.expiration_time.getTime() > Date.now()) {
       return await apiCaller(userIntegration, ...rest);
     } else {
-      const url = 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
+      const url = outLookConfig.outlookAuthUrl;
+      console.log('🚀 ~ file: client.ts:79 ~ JiraClientService ~ url:', url);
       const data = {
         client_id: outLookConfig.clientId,
         grant_type: 'refresh_token',

@@ -1,14 +1,24 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { IntegrationType, SessionStatus, User } from '@prisma/client';
 import axios from 'axios';
-import { RegisterWebhookDto, extendWebhookLifeReqDto } from './dto/index.js';
-import { deleteWebhookDto } from './dto/deleteWebhook.dto.js';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { SessionsService } from '../sessions/sessions.service.js';
-import { IntegrationsService } from '../integrations/integrations.service.js';
-import { APIException } from '../exception/api.exception.js';
+import {
+  RegisterWebhookDto,
+  deleteWebhookDto,
+  extendWebhookLifeReqDto,
+} from './dto/index';
+import { PrismaService } from 'src/module/prisma/prisma.service';
+import { SessionsService } from 'src/module/sessions/sessions.service';
+import { IntegrationsService } from 'src/module/integrations/integrations.service';
+import { APIException } from 'src/module/exception/api.exception';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
-import { JiraClientService } from '../helper/client';
+import { OutlookApiCalls } from 'src/utils/outlookApiCall/api';
+import { JiraClientService } from 'src/module/helper/client';
+import { outLookConfig } from '../../../config/outlook';
+import { WorkspacesService } from 'src/module/workspaces/workspaces.service';
+import { WebhookDatabase } from 'src/database/webhook';
+import { ProjectDatabase } from 'src/database/projects';
+import { TasksDatabase } from 'src/database/tasks';
+import { IntegrationDatabase } from 'src/database/integrations';
 @Injectable()
 export class WebhooksService {
   constructor(
@@ -16,7 +26,13 @@ export class WebhooksService {
     private sessionService: SessionsService, // private tasksService: TasksService,
     private integrationsService: IntegrationsService,
     private jiraApiCalls: JiraApiCalls,
+    private outlookApiCalls: OutlookApiCalls,
     private jiraClient: JiraClientService,
+    private workspaceService: WorkspacesService,
+    private webhookDatabase: WebhookDatabase,
+    private projectDatabase: ProjectDatabase,
+    private tasksDatabase: TasksDatabase,
+    private integrationDatabase: IntegrationDatabase,
   ) {}
 
   async getWebhooks(user: User) {
@@ -27,6 +43,80 @@ export class WebhooksService {
       userIntegrationIds.push(userIntegration.id);
     });
     return await this.getAllWebhooks(user, userIntegrationIds);
+  }
+  async getOutlookWebhooks(user: User) {
+    const userWorkspace = await this.workspaceService.getUserWorkspace(user);
+    const userIntegration =
+      user?.activeWorkspaceId &&
+      (await this.prisma.userIntegration.findFirst({
+        where: {
+          workspaceId: user.activeWorkspaceId,
+          userWorkspaceId: userWorkspace.id,
+          integration: {
+            type: IntegrationType.OUTLOOK,
+          },
+        },
+      }));
+    if (!userIntegration) {
+      throw new APIException(
+        'User integration not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const getSubscriptionUrl = `${outLookConfig.outlookWebhookRegisterEndPoint}`;
+    let webhooks;
+    try {
+      webhooks = await this.jiraClient.CallOutlook(
+        userIntegration,
+        this.outlookApiCalls.getOutlookWebhooks,
+        getSubscriptionUrl,
+      );
+    } catch (err) {
+      console.log(err);
+      throw new APIException(
+        'Fetching problem to register webhook in outlook!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return [...webhooks.value];
+  }
+
+  async deleteOutlookWebhook(user: User, webhookId: number) {
+    const userWorkspace = await this.workspaceService.getUserWorkspace(user);
+    const userIntegration =
+      user?.activeWorkspaceId &&
+      (await this.prisma.userIntegration.findFirst({
+        where: {
+          workspaceId: user.activeWorkspaceId,
+          userWorkspaceId: userWorkspace.id,
+          integration: {
+            type: IntegrationType.OUTLOOK,
+          },
+        },
+      }));
+
+    if (!userIntegration) {
+      throw new APIException(
+        'User integration not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const deletedWebhook = await this.webhookDatabase.deleteOutlookWebhook({
+      id: webhookId,
+    });
+
+    const deleteSubscriptionUrl = `${outLookConfig.outlookWebhookRegisterEndPoint}/${deletedWebhook?.webhookId}`;
+
+    deletedWebhook &&
+      (await this.jiraClient.CallOutlook(
+        userIntegration,
+        this.outlookApiCalls.deleteOutlookWebhook,
+        deleteSubscriptionUrl,
+      ));
+
+    return deletedWebhook;
   }
 
   async getAllWebhooks(user: User, userIntegrationIds: number[]) {
@@ -73,7 +163,7 @@ export class WebhooksService {
       (await this.prisma.webhook.findUnique({
         where: {
           webhookIdentifier: {
-            webhookId: webhookId[0],
+            webhookId: String(webhookId[0]),
             siteId,
           },
         },
@@ -200,6 +290,144 @@ export class WebhooksService {
         },
       });
     }
+  }
+
+  async handleOutlookWebhook(valid: any, payload: any) {
+    if (valid) return valid;
+    let flag = false;
+    const webhook = await this.webhookDatabase.getWebhook({
+      webhookId: payload.value[0].subscriptionId,
+    });
+    const eventId = payload.value[0].resourceData.id;
+    if (!(webhook && eventId)) {
+      return;
+    }
+
+    const projects = await this.projectDatabase.getProjects({
+      calendarId: webhook.calendarId,
+    });
+    if (payload.value[0].changeType === 'created') {
+      const userIntegration =
+        projects[0]?.userWorkspaceId &&
+        (await this.integrationDatabase.getIntegration({
+          userWorkspaceId: projects[0].userWorkspaceId,
+          siteId: webhook.siteId,
+        }));
+      if (!userIntegration) {
+        return false;
+      }
+      const eventUrl = `${outLookConfig.outlookGetEventByEventIdUrl}${eventId}`;
+      const outlookEvent = await this.jiraClient.CallOutlook(
+        userIntegration,
+        this.outlookApiCalls.getOutlookEvent,
+        eventUrl,
+      );
+      for (let index = 0; index < projects.length; index++) {
+        const project = projects[index];
+        const session = {
+          startTime: new Date(outlookEvent.start.dateTime),
+          endTime: new Date(outlookEvent.end.dateTime),
+          status: SessionStatus.STOPPED,
+          userWorkspaceId: project?.userWorkspaceId,
+          integratedEventId: outlookEvent.id,
+        };
+        const data = {
+          userWorkspaceId: project?.userWorkspaceId,
+          workspaceId: project.workspaceId,
+          title: outlookEvent.subject,
+          projectName: project.projectName,
+          projectId: project.id,
+          integratedEventId: outlookEvent.id,
+          createdAt: new Date(outlookEvent.createdDateTime),
+          updatedAt: new Date(outlookEvent.end.dateTime),
+          jiraUpdatedAt: new Date(outlookEvent.lastModifiedDateTime),
+          source: IntegrationType.OUTLOOK,
+          dataSource: project.source,
+          url: outlookEvent.webLink,
+          sessions: {
+            createMany: {
+              data: [session],
+            },
+          },
+        };
+        await this.tasksDatabase.createTask(data);
+      }
+      flag = true;
+    } else if (payload.value[0].changeType === 'deleted') {
+      const projectIds: number[] = [];
+      for (let index = 0; index < projects.length; index++) {
+        projectIds.push(projects[index].id);
+      }
+      const tasks = await this.tasksDatabase.getTasks({
+        projectId: { in: projectIds },
+        integratedEventId: eventId,
+      });
+      const taskIds: number[] = [];
+      for (let index = 0; index < tasks.length; index++) {
+        taskIds.push(Number(tasks[index].id));
+      }
+      await this.tasksDatabase.deleteTasks({
+        id: { in: taskIds },
+      });
+
+      flag = true;
+    } else if (payload.value[0].changeType === 'updated') {
+      const projectIds: number[] = [];
+      for (let index = 0; index < projects.length; index++) {
+        projectIds.push(projects[index].id);
+      }
+      const tasks = await this.tasksDatabase.getTasks({
+        projectId: { in: projectIds },
+        integratedEventId: eventId,
+      });
+
+      const taskIds: number[] = [];
+      let tempFlag = true,
+        userWorkspaceId;
+      for (let index = 0; index < tasks.length; index++) {
+        taskIds.push(Number(tasks[index].id));
+        if (tempFlag) {
+          userWorkspaceId = tasks[index].userWorkspaceId;
+          tempFlag = false;
+        }
+      }
+      const userIntegration =
+        userWorkspaceId &&
+        (await this.integrationDatabase.getIntegration({
+          userWorkspaceId,
+          siteId: webhook.siteId,
+        }));
+      if (!userIntegration) {
+        return false;
+      }
+
+      const eventUrl = `${outLookConfig.outlookGetEventByEventIdUrl}${eventId}`;
+      const outlookEvent = await this.jiraClient.CallOutlook(
+        userIntegration,
+        this.outlookApiCalls.getOutlookEvent,
+        eventUrl,
+      );
+
+      if (outlookEvent) {
+        const session = {
+          startTime: new Date(outlookEvent.start.dateTime),
+          endTime: new Date(outlookEvent.end.dateTime),
+        };
+        const data = {
+          title: outlookEvent.subject,
+          createdAt: new Date(outlookEvent.createdDateTime),
+          updatedAt: new Date(outlookEvent.end.dateTime),
+          jiraUpdatedAt: new Date(outlookEvent.lastModifiedDateTime),
+        };
+        await this.tasksDatabase.updateManyTaskSessions(
+          { taskId: { in: taskIds } },
+          session,
+        );
+        await this.tasksDatabase.updateManyTask({ id: { in: taskIds } }, data);
+        flag = true;
+      }
+    }
+    return flag;
   }
 
   private async mappingUserWorkspaceAndJiraAccountId(workspaceId: number) {
@@ -338,7 +566,7 @@ export class WebhooksService {
         (await this.prisma.webhook.create({
           data: {
             projectKey: reqBody.projectName,
-            webhookId: Number(
+            webhookId: String(
               webhook.webhookRegistrationResult[0].createdWebhookId,
             ),
             siteId: userIntegration.siteId,
@@ -353,6 +581,76 @@ export class WebhooksService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async registerOutlookWebhook(user: User, calendarId: string) {
+    const userWorkspace = await this.workspaceService.getUserWorkspace(user);
+    const userIntegration =
+      user?.activeWorkspaceId &&
+      (await this.prisma.userIntegration.findFirst({
+        where: {
+          workspaceId: user.activeWorkspaceId,
+          userWorkspaceId: userWorkspace.id,
+          integration: {
+            type: IntegrationType.OUTLOOK,
+          },
+        },
+      }));
+    if (!userIntegration) {
+      throw new APIException(
+        'User integration not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const doesExistWebhook = await this.webhookDatabase.doesExistWebhook({
+      siteId: userIntegration.siteId,
+      calendarId: calendarId,
+    });
+    if (doesExistWebhook) {
+      // throw new APIException(
+      //   'Webhook already exist! Please renew.',
+      //   HttpStatus.BAD_REQUEST,
+      // );
+      return null;
+    }
+    const subscriptionConfig = {
+      changeType: outLookConfig.outlookWebhookChangeType,
+      notificationUrl: outLookConfig.webhookUrl,
+      resource: `/me/calendars/${calendarId}/events`,
+      expirationDateTime: new Date(Date.now() + 2.5 * 3600 * 24 * 1000),
+      clientState: outLookConfig.clientState,
+    };
+    let webhook;
+    const webhookUrl = outLookConfig.outlookWebhookRegisterEndPoint;
+    try {
+      webhook = await this.jiraClient.CallOutlook(
+        userIntegration,
+        this.outlookApiCalls.registerOutlookWebhook,
+        webhookUrl,
+        subscriptionConfig,
+      );
+    } catch (err) {
+      console.log(err);
+      throw new APIException(
+        'Fetching problem to register webhook in outlook!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const data = {
+      webhookId: webhook.id,
+      siteId: userIntegration.siteId,
+      calendarId: calendarId,
+      expirationDate: webhook.expirationDateTime,
+    };
+    const localWebhook = await this.webhookDatabase.createWebhook(data);
+    if (!localWebhook) {
+      throw new APIException(
+        'Fetching problem to register webhook!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return localWebhook;
   }
 
   async deleteWebhook(user: User, reqBody: deleteWebhookDto) {

@@ -147,8 +147,8 @@ export class ProjectsService {
         ),
         await this.sprintService.createSprintAndTask(
           user,
-          projId,
-          updatedUserIntegration.id,
+          project,
+          updatedUserIntegration,
         ),
         await this.tasksService.updateProjectIntegrationStatus(projId),
         res && (await this.tasksService.syncCall(StatusEnum.DONE, user)),
@@ -234,6 +234,11 @@ export class ProjectsService {
 
       for (let index = 0, len = projects.length; index < len; index++) {
         const project = projects[index];
+        project?.calendarId &&
+          (await this.webhooksService.registerOutlookWebhook(
+            user,
+            project.calendarId,
+          ));
         Promise.allSettled([
           await this.fetchCalendarEvents(
             user,
@@ -270,7 +275,7 @@ export class ProjectsService {
   }
 
   async deleteProject(user: User, id: number, res: Response) {
-    const project = await this.projectDatabase.getProject(
+    const project = await this.projectDatabase.getProjectWithRes(
       { id },
       { integration: true },
     );
@@ -360,7 +365,7 @@ export class ProjectsService {
         HttpStatus.BAD_REQUEST,
       );
 
-    const projectExists = await this.projectDatabase.getProject(
+    const projectExists = await this.projectDatabase.getProjectWithRes(
       {
         projectName,
         source: 'T23',
@@ -414,7 +419,7 @@ export class ProjectsService {
       }
       return projectCreated;
     });
-    return await this.projectDatabase.getProject(
+    return await this.projectDatabase.getProjectWithRes(
       {
         id: newProject.id,
         workspaceId: user?.activeWorkspaceId,
@@ -436,7 +441,7 @@ export class ProjectsService {
 
     const existingProject =
       user?.activeWorkspaceId &&
-      (await this.projectDatabase.getProject({
+      (await this.projectDatabase.getProjectWithRes({
         id: id,
         workspaceId: user?.activeWorkspaceId,
       }));
@@ -486,10 +491,12 @@ export class ProjectsService {
     const settings = await this.tasksDatabase.getSettings(user);
     const givenTime: number = settings ? settings.syncTime : 6;
     const currentTime = dayjs();
-    const syncTime = currentTime.subtract(givenTime, 'month');
-    const iso8601SyncTime = syncTime.toISOString();
-    const iso861CurrentTime = currentTime.toISOString();
-    let url = `https://graph.microsoft.com/v1.0//me/calendars/${project.calendarId}/calendarView?startDateTime=${iso8601SyncTime}&endDateTime=${iso861CurrentTime}`;
+    const syncPreviousTime = currentTime.subtract(givenTime, 'month');
+    const syncNextTime = currentTime.add(givenTime, 'month');
+
+    const iso8601SyncTime = syncPreviousTime.toISOString();
+    const iso861CurrentTime = syncNextTime.toISOString();
+    let url = `https://graph.microsoft.com/v1.0/me/calendars/${project.calendarId}/calendarView?startDateTime=${iso8601SyncTime}&endDateTime=${iso861CurrentTime}`;
     const mappedIssues = new Map<string, any>();
     const taskList: any[] = [],
       sessionArray: any[] = [];
