@@ -1,11 +1,12 @@
-import { Form, Input, message } from "antd";
+import { Form, Input, MenuProps, message } from "antd";
 import { userAPI } from "APIs";
 import classNames from "classnames";
 import { UpdateReportDto } from "models/reports";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 
-import PrimaryButton from "@/components/common/buttons/primaryButton";
+import SecondaryButton from "@/components/common/buttons/secondaryButton";
+import MoreButtonTopPanel from "@/components/common/topPanels/components/moreButtonTopPanel";
 import {
   deleteReportSlice,
   ReportData,
@@ -22,16 +23,38 @@ export default function ReportHeaderComponent({
   exportButton,
   reportData,
   setIsLoading,
+  extraFilterComponent,
 }: PropsWithChildren<{
   title?: string;
   className?: string;
   exportButton?: React.ReactNode;
+  extraFilterComponent?: React.ReactNode;
   reportData: ReportData;
   setIsLoading: Function;
 }>) {
   const [editing, setEditing] = useState(false);
   const dispatch = useDispatch();
   const [form] = Form.useForm();
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const filterOptions = [
+    <SecondaryButton onClick={() => deleteReprot()}>Delete</SecondaryButton>,
+    <SecondaryButton className="w-full" onClick={() => handleEdit()}>
+      Edit
+    </SecondaryButton>,
+  ];
+  const items: MenuProps["items"] = filterOptions.map((option, index) => {
+    return {
+      label: option,
+      key: index,
+    };
+  });
+  const menuProps = {
+    items,
+    onClick: (item: any) => {
+      setDropdownOpen(false);
+    },
+  };
 
   const updateTitle = async (data: UpdateReportDto) => {
     if (!reportData?.id) return;
@@ -112,9 +135,13 @@ export default function ReportHeaderComponent({
           )}
         </div>
         <div className="flex items-center gap-2">
+          {extraFilterComponent}
           {exportButton}
-          <PrimaryButton onClick={() => deleteReprot()}>Delete</PrimaryButton>
-          <PrimaryButton onClick={() => handleEdit()}>Edit</PrimaryButton>
+          <MoreButtonTopPanel
+            {...{ menuProps, dropdownOpen, setDropdownOpen }}
+          />
+          {/* <PrimaryButton onClick={() => deleteReprot()}>Delete</PrimaryButton>
+          <PrimaryButton onClick={() => handleEdit()}>Edit</PrimaryButton> */}
         </div>
       </div>
     </div>

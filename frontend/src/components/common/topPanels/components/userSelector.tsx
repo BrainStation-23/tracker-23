@@ -36,6 +36,7 @@ const UserSelectorComponent = ({
   });
 
   const tagRender = (props: TagProps) => {
+    //@ts-ignore
     const { label, value, closable, onClose } = props;
 
     return (
