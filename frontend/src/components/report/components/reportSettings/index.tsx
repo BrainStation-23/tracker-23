@@ -4,6 +4,7 @@ import { RootState } from "@/storage/redux/store";
 import SprintEstimationReportSettings from "./components/sprintEstimationReportSettings";
 import TaskListReportSettings from "./components/taskListReportSettings";
 import TimeSheetReportSettings from "./components/timeSheetReportSettings";
+import SprintReportSettings from "./components/sprintReportSettings";
 
 const ReportSettings = () => {
   const reportInEdit = useAppSelector(
@@ -17,8 +18,8 @@ const ReportSettings = () => {
         return <SprintEstimationReportSettings reportData={reportInEdit} />;
       case "TASK_LIST":
         return <TaskListReportSettings reportData={reportInEdit} />;
-      // case "SPRINT_REPORT":
-      //   return <SprintReport reportData={reportInEdit} />;
+      case "SPRINT_REPORT":
+        return <SprintReportSettings reportData={reportInEdit} />;
       // case "SPRINT_TIMELINE":
       //   return <SprintTimelineReport reportData={reportInEdit} />;
       default:
