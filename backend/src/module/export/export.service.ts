@@ -17,6 +17,11 @@ import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { ExportDatabase } from 'src/database/exports';
 import { SprintReportFilterDto } from '../sessions/dto/sprint-report.dto';
 import { SessionsService } from '../sessions/sessions.service';
+import {
+  NewSprintViewQueryDto,
+  SprintViewReqBodyDto,
+} from '../sprints/dto/sprintView.dto';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class ExportService {
@@ -503,5 +508,305 @@ export class ExportService {
       text,
       types,
     });
+  }
+
+  async exportTimeLineSheetToExcel(
+    user: User,
+    query: NewSprintViewQueryDto,
+    res: Response,
+  ) {
+    const data: any = await this.sprintService.newSprintView(user, query);
+    if (!data) {
+      throw new NotFoundException('No data to download');
+    }
+
+    const overallProgress: any[] = [' '];
+    const headers = ['Developer Name'];
+    data.columns.forEach((element: any) => {
+      const calculatedProgress = this.calculateProgress(
+        element.value.devProgress.spentTime,
+        element.value.devProgress.estimatedTime,
+      );
+      if (element.key === 'AssignTasks') {
+        overallProgress.push(`Sprint Overall Progress ${calculatedProgress} %`);
+        headers.push(`${element.key}`);
+      } else {
+        const date = dayjs(element.key);
+        const formattedDate = date.format('DD MMM');
+        const headerDate = date.format('DD/MM/YYYY');
+        overallProgress.push(
+          `${formattedDate} Progress ${calculatedProgress} %`,
+        );
+        headers.push(headerDate);
+      }
+    });
+    overallProgress.sort((a, b) => a - b);
+
+    const workbook = new Workbook();
+    const worksheet = workbook.addWorksheet('Time-line sheet sprint report');
+    const topRow = worksheet.addRow(overallProgress);
+    const topSecondRow = worksheet.addRow(headers);
+    for (let index = 0; index < data.rows.length; index++) {
+      const mappedUserData = new Map<string, any[]>();
+      const row = data.rows[index];
+
+      const assignRow = row.data.find(
+        (item: any) => item.key === 'AssignTasks',
+      );
+      const calculatedAssignProgress = this.calculateProgress(
+        assignRow.value.devProgress.spentTime,
+        assignRow.value.devProgress.estimatedTime,
+      );
+      if (assignRow.key === 'AssignTasks') {
+        mappedUserData.set(assignRow.key, [
+          `Overall Progress ${calculatedAssignProgress} %`,
+          ...assignRow.value.tasks.map((task: any) => task.title),
+        ]);
+      }
+      for (let idx = 0; idx < data.columns.length; idx++) {
+        const columnKey = data.columns[idx].key;
+        if (columnKey === 'AssignTasks') continue;
+        const AssignTasks = row.data.find((item: any) => {
+          if (new Date(item.key).getTime() === new Date(columnKey).getTime())
+            return true;
+          return false;
+        });
+        const calculatedUserProgress = this.calculateProgress(
+          AssignTasks.value.devProgress.spentTime,
+          AssignTasks.value.devProgress.estimatedTime,
+        );
+        const dayjsDate = dayjs(AssignTasks.key);
+        const formattedDate = dayjsDate.format('DD MMM');
+        mappedUserData.set(AssignTasks.key, [
+          `${formattedDate} Progress ${calculatedUserProgress} %`,
+          ...AssignTasks.value.tasks.map((task: any) => task.title),
+        ]);
+      }
+      const len = mappedUserData.get('AssignTasks')?.length ?? 0;
+      for (let index = 0; index < len; index++) {
+        let rowData = [''];
+        if (index === len / 2) {
+          rowData = [row.name];
+        }
+        for (const value of mappedUserData.values()) {
+          rowData.push(value[index] ?? ' ');
+        }
+        worksheet.addRow(rowData);
+      }
+      worksheet.addRow('');
+    }
+
+    worksheet.columns.forEach((column) => {
+      column.width = 35;
+      column.alignment = { vertical: 'middle', horizontal: 'left' }; // Align cells to the middle and center
+    });
+    worksheet.eachRow((row) => {
+      row.height = 25;
+      row.alignment = { vertical: 'middle', horizontal: 'left' }; // Align cells to the middle and center
+    });
+
+    topRow.eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+
+    topSecondRow.eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+
+    const file: any = await new Promise((resolve) => {
+      tmp.file(
+        {
+          discardDescriptor: true,
+          prefix: `time_line`,
+          postfix: '.xlsx',
+          mode: parseInt('0600', 8),
+        },
+        (err, file) => {
+          if (err) {
+            throw new BadRequestException(err);
+          }
+          workbook.xlsx
+            .writeFile(file)
+            .then(() => {
+              resolve(file);
+            })
+            .catch((err) => {
+              throw new BadRequestException(err);
+            });
+        },
+      );
+    });
+
+    console.log(
+      '🚀 ~ file: export.service.ts:585 ~ ExportService ~ res:',
+      file,
+    );
+    res.download(file);
+  }
+
+  private calculateProgress(spent: number, estimatedTime: number) {
+    if (!estimatedTime) return 0;
+    const exceededTime =
+      spent > estimatedTime ? Math.abs(spent - estimatedTime) : 0;
+    const value = Math.round(
+      exceededTime > 0 ? 100 : (spent * 100) / estimatedTime,
+    );
+    return value;
+  }
+
+  async exportSprintViewSheetToExcel(
+    user: User,
+    query: SprintViewReqBodyDto,
+    res: Response,
+  ) {
+    const { data, sprintInfo } = await this.sprintService.sprintView(
+      user,
+      query,
+    );
+    if (!data.length) {
+      throw new NotFoundException('No data to download');
+    }
+
+    const headers = [
+      'Date',
+      'Developer name',
+      'Sprint Assign Task',
+      'Yesterday Task',
+      'Today Task',
+    ];
+    const workbook = new Workbook();
+    const worksheet = workbook.addWorksheet('Sprint View Sheet');
+    const sprintProgress = Number(
+      (sprintInfo.total * 100) / sprintInfo.done,
+    ).toFixed(2);
+    const topRow = worksheet.addRow([
+      '',
+      '',
+      `Sprint Progress ${sprintProgress} %`,
+    ]);
+    const headerRow = worksheet.addRow(headers);
+    topRow.eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+    worksheet.columns.forEach((column) => {
+      column.width = 50;
+    });
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+
+    data.forEach((dateData: any) => {
+      const { date, users } = dateData;
+      if (!users.length) {
+        return;
+      }
+      let isFirstDateRow = true;
+      let userRowIndex = worksheet.rowCount + 1;
+      let dateRowIndex = worksheet.rowCount + 1;
+      let dateMaxTasks: any = 0;
+      users.forEach((user: any) => {
+        const { name, assignedTasks, devProgress, todayTasks, yesterdayTasks } =
+          user;
+        const maxTasks = Math.max(
+          assignedTasks.length,
+          todayTasks.length,
+          yesterdayTasks.length,
+        );
+        dateMaxTasks += maxTasks;
+        const progress = Number(
+          (devProgress.total * 100) / devProgress.done,
+        ).toFixed(2);
+        assignedTasks.unshift({ title: `Dev Progress ${progress}%` });
+        todayTasks.unshift({ title: '' });
+        yesterdayTasks.unshift({ title: '' });
+
+        for (let i = 0; i < maxTasks; i++) {
+          const taskRow = [
+            isFirstDateRow ? date : '',
+            i === 0 ? name : '',
+            assignedTasks[i]?.title || '',
+            todayTasks[i]?.title || '',
+            yesterdayTasks[i]?.title || '',
+          ];
+          const row = worksheet.addRow(taskRow);
+
+          row.eachCell((cell) => {
+            cell.alignment = { vertical: 'middle', horizontal: 'center' }; // Align cells to the middle and center
+          });
+          for (let index = 3; index <= row.cellCount; index++) {
+            const cell = row.findCell(index);
+            if (cell) {
+              cell.alignment = { vertical: 'middle', horizontal: 'left' };
+            }
+          }
+          if (i === 0 && assignedTasks[i]?.title.startsWith('Dev Progress')) {
+            const cell = row.findCell(3);
+            if (cell) {
+              cell.font = { bold: true };
+              cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            }
+          }
+          isFirstDateRow = false;
+        }
+        const startRowIndex = userRowIndex;
+        const endRowIndex = startRowIndex + maxTasks - 1;
+        worksheet.mergeCells(startRowIndex, 2, endRowIndex, 2);
+        userRowIndex = endRowIndex + 1;
+
+        worksheet.columns.forEach((column) => {
+          column.width = 20;
+        });
+        worksheet.eachRow((row) => {
+          row.height = 25;
+        });
+
+        for (
+          let columnIndex = 3;
+          columnIndex <= worksheet.columns.length;
+          columnIndex++
+        ) {
+          worksheet.getColumn(columnIndex).width = 50;
+        }
+      });
+
+      const startDateRowIndex = dateRowIndex;
+      const endDateRowIndex = startDateRowIndex + dateMaxTasks - 1;
+      worksheet.mergeCells(startDateRowIndex, 1, endDateRowIndex, 1);
+      dateRowIndex = endDateRowIndex + 1;
+    });
+
+    const file: any = await new Promise((resolve) => {
+      tmp.file(
+        {
+          discardDescriptor: true,
+          prefix: `sprintViewSheet`,
+          postfix: '.xlsx',
+          mode: parseInt('0600', 8),
+        },
+        (err, file) => {
+          if (err) {
+            throw new BadRequestException(err);
+          }
+          workbook.xlsx
+            .writeFile(file)
+            .then(() => {
+              resolve(file);
+            })
+            .catch((err) => {
+              throw new BadRequestException(err);
+            });
+        },
+      );
+    });
+
+    console.log(
+      '🚀 ~ file: export.service.ts:585 ~ ExportService ~ res:',
+      file,
+    );
+    res.download(file);
   }
 }
