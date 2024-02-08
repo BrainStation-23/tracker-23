@@ -475,95 +475,117 @@ export class SprintsService {
   }
 
   async newSprintView(user: User, query: NewSprintViewQueryDto) {
-    const columns: any[] = [];
-    const mappedUserWDate = new Map<number, any[]>();
-    const tasks = await this.getSprintTasks(Number(query.sprintId));
-    const mappedUserWithWorkspaceId = await this.mapUserWorkspaces(query, user);
-    const {
-      mappedKeyAndValueForRow,
-      MappedEstimationAndSpentTimeForColumn,
-      mappedSpentTimeWithDateAndUserWorkspaceId,
-      dateArray,
-    } = this.updateUserData(tasks, mappedUserWithWorkspaceId, query);
-
-    //Push the real data into columns
-    for (const [key, value] of MappedEstimationAndSpentTimeForColumn) {
-      columns.push({
-        key: Number(key) ? new Date(Number(key)) : key,
-        value: {
-          devProgress: {
-            estimatedTime: Number(value.estimation.toFixed(2)),
-            spentTime: Number(value.spentTime.toFixed(2)),
-          },
-        },
-      });
-    }
-
-    //Push the real data into rows
-    for (const [key, value] of mappedKeyAndValueForRow.entries()) {
-      const { keyType, userW } = JSON.parse(key); // keyType string of date. example : "2023-12-18T18:00:00.000Z"
-      const data = mappedSpentTimeWithDateAndUserWorkspaceId.get(key); //if finds, that means date-wise spent-time otherwise assignTask spent-time
-
-      //mapping dates with every userWorkspaceIds -->start
-      mappedUserWDate.has(userW)
-        ? mappedUserWDate
-            .get(userW)
-            ?.push(
-              keyType === 'AssignTasks' ? keyType : new Date(keyType).getTime(),
-            )
-        : mappedUserWDate.set(userW, [
-            keyType === 'AssignTasks' ? keyType : new Date(keyType).getTime(),
-          ]);
-      //mapping dates with every userWorkspaceIds -->end
-
-      value.devProgress.estimatedTime = Number(
-        value.devProgress.estimatedTime?.toFixed(2),
-      );
-      value.devProgress.spentTime = data?.spentDateWiseTime
-        ? Number(data?.spentDateWiseTime.toFixed(2))
-        : Number(value.devProgress.spentTime?.toFixed(2));
-      mappedUserWithWorkspaceId.get(userW)?.data.push({
-        key: keyType === 'AssignTasks' ? keyType : new Date(keyType),
-        value,
-      });
-    }
-
-    // Push demo data in which dates do not belong any real value
-    for (let index = 0; index < dateArray.length; index++) {
-      const date = dateArray[index];
+    try {
+      const columns: any[] = [];
       const fixedVal = 0;
-      // Push demo data into columns
-      if (!MappedEstimationAndSpentTimeForColumn.has(String(date.getTime()))) {
+      const mappedUserWDate = new Map<number, any[]>();
+      const tasks = await this.getSprintTasks(Number(query.sprintId));
+      const mappedUserWithWorkspaceId = await this.mapUserWorkspaces(
+        query,
+        user,
+      );
+      const {
+        mappedKeyAndValueForRow,
+        MappedEstimationAndSpentTimeForColumn,
+        mappedSpentTimeWithDateAndUserWorkspaceId,
+        dateArray,
+      } = this.updateUserData(tasks, mappedUserWithWorkspaceId, query);
+
+      //Push the real data into columns
+      for (const [key, value] of MappedEstimationAndSpentTimeForColumn) {
         columns.push({
-          key: date,
+          key: Number(key) ? new Date(Number(key)) : key,
           value: {
             devProgress: {
-              estimatedTime: Number(fixedVal?.toFixed(2)),
-              spentTime: Number(fixedVal?.toFixed(2)),
+              estimatedTime: value?.estimation
+                ? Number(value?.estimation.toFixed(2))
+                : Number(fixedVal?.toFixed(2)),
+              spentTime: value?.spentTime
+                ? Number(value.spentTime.toFixed(2))
+                : Number(fixedVal?.toFixed(2)),
             },
           },
         });
       }
 
-      // Push demo data into rows
-      for (const userW of mappedUserWDate.keys()) {
-        if (!mappedUserWDate.get(userW)?.includes(date.getTime())) {
-          mappedUserWithWorkspaceId.get(userW)?.data.push({
+      //Push the real data into rows
+      for (const [key, value] of mappedKeyAndValueForRow.entries()) {
+        const { keyType, userW } = JSON.parse(key); // keyType string of date. example : "2023-12-18T18:00:00.000Z"
+        const data = mappedSpentTimeWithDateAndUserWorkspaceId.get(key); //if finds, that means date-wise spent-time otherwise assignTask spent-time
+
+        //mapping dates with every userWorkspaceIds -->start
+        mappedUserWDate.has(userW)
+          ? mappedUserWDate
+              .get(userW)
+              ?.push(
+                keyType === 'AssignTasks'
+                  ? keyType
+                  : new Date(keyType).getTime(),
+              )
+          : mappedUserWDate.set(userW, [
+              keyType === 'AssignTasks' ? keyType : new Date(keyType).getTime(),
+            ]);
+        //mapping dates with every userWorkspaceIds -->end
+
+        value.devProgress.estimatedTime = Number(
+          value.devProgress.estimatedTime?.toFixed(2),
+        );
+        value.devProgress.spentTime = data?.spentDateWiseTime
+          ? Number(data?.spentDateWiseTime.toFixed(2))
+          : Number(value?.devProgress?.spentTime?.toFixed(2));
+        mappedUserWithWorkspaceId.get(userW)?.data.push({
+          key: keyType === 'AssignTasks' ? keyType : new Date(keyType),
+          value,
+        });
+      }
+
+      // Push demo data in which dates do not belong any real value
+      for (let index = 0; index < dateArray.length; index++) {
+        const date = dateArray[index];
+        // Push demo data into columns
+        if (
+          !MappedEstimationAndSpentTimeForColumn.has(String(date.getTime()))
+        ) {
+          columns.push({
             key: date,
             value: {
               devProgress: {
                 estimatedTime: Number(fixedVal?.toFixed(2)),
                 spentTime: Number(fixedVal?.toFixed(2)),
               },
-              tasks: [],
             },
           });
-          mappedUserWDate.get(userW)?.push(date.getTime());
+        }
+
+        // Push demo data into rows
+        for (const userW of mappedUserWDate.keys()) {
+          if (!mappedUserWDate.get(userW)?.includes(date.getTime())) {
+            mappedUserWithWorkspaceId.get(userW)?.data.push({
+              key: date,
+              value: {
+                devProgress: {
+                  estimatedTime: Number(fixedVal?.toFixed(2)),
+                  spentTime: Number(fixedVal?.toFixed(2)),
+                },
+                tasks: [],
+              },
+            });
+            mappedUserWDate.get(userW)?.push(date.getTime());
+          }
         }
       }
+      const col = columns.sort(
+        (a: any, b: any) =>
+          new Date(a.key).getTime() - new Date(b.key).getTime(),
+      );
+      return { columns: col, rows: [...mappedUserWithWorkspaceId.values()] };
+    } catch (err) {
+      console.log(
+        '🚀 ~ file: sprints.service.ts:584 ~ SprintsService ~ newSprintView ~ err:',
+        err,
+      );
+      return { columns: [], rows: [] };
     }
-
-    return { columns, rows: [...mappedUserWithWorkspaceId.values()] };
   }
 
   private async mapUserWorkspaces(
@@ -662,12 +684,12 @@ export class SprintsService {
     for (const [key, value] of mappedKeyAndValueForRow.entries()) {
       const { userW } = JSON.parse(key);
       const sessionValue = mappedTimeSpentWithUserWorkspaceId.get(userW);
-      value.devProgress.spentTime = sessionValue.spentTime;
+      value.devProgress.spentTime = sessionValue?.spentTime ?? 0;
     }
     //find date wise task and spent time
     for (
-      let idx = new Date(query.startDate).getTime() + oneDayTime;
-      idx <= new Date(query.endDate).getTime() + oneDayTime;
+      let idx = new Date(query.startDate).getTime();
+      idx <= new Date(query.endDate).getTime();
       idx += oneDayTime
     ) {
       dateArray.push(new Date(idx));
@@ -686,13 +708,13 @@ export class SprintsService {
         ) {
           const data = MappedEstimationAndSpentTimeForColumn.get(String(idx));
           if (data) {
-            data.estimation += task.estimation;
-            data.spentTime += doesTodayTask.spentTime;
+            data.estimation += task?.estimation ?? 0;
+            data.spentTime += doesTodayTask?.spentTime ?? 0;
           }
         } else if (doesTodayTask.flag) {
           MappedEstimationAndSpentTimeForColumn.set(String(idx), {
-            estimation: task.estimation,
-            spentTime: doesTodayTask.spentTime,
+            estimation: task?.estimation ?? 0,
+            spentTime: doesTodayTask?.spentTime ?? 0,
           });
         }
         //Keep date wise devProgress for column end
