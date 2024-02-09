@@ -4,14 +4,11 @@ import { SprintViewTimelineReportDto } from "models/reports";
 import React, { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
 
-import DateRangePicker, {
-  getDateRangeArray,
-} from "@/components/common/datePicker";
+import { getDateRangeArray } from "@/components/common/datePicker";
 import { ReportData } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SprintViewTimelineReportComponent from "../components/sprintViewTimelineReportComponent";
-import TypeDependentSection from "../components/typeDependentSection";
 
 type Props = {
   reportData: ReportData;
@@ -19,20 +16,12 @@ type Props = {
 
 export default function SprintTimelineReport({ reportData }: Props) {
   const [isLoading, setIsLoading] = useState(false);
+
   const [downloading, setDownloading] = useState<boolean>(false);
-  const [sprint, setSprint] = useState<number>(
-    reportData?.config?.sprintIds?.length > 0
-      ? reportData?.config?.sprintIds[0]
-      : null
-  );
-  const [project, setProject] = useState<number>(
-    reportData?.config?.projectIds?.length > 0
-      ? reportData?.config?.projectIds[0]
-      : null
-  );
   const [sprintTimelineReportData, setSprintTimelineReportData] =
     useState<SprintViewTimelineReportDto>();
 
+  //@ts-ignore
   const [dateRange, setDateRange] = useState(
     reportData?.config?.startDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
@@ -40,15 +29,29 @@ export default function SprintTimelineReport({ reportData }: Props) {
   );
 
   const getSprintViewTimelineReport = async () => {
-    if (!(sprint && dateRange[0] && dateRange[0])) {
+    if (
+      !(
+        reportData?.config?.sprintIds?.length > 0 &&
+        reportData?.config?.sprintIds[0] &&
+        dateRange[0] &&
+        dateRange[1]
+      )
+    ) {
       setSprintTimelineReportData(null);
       return;
     }
     setIsLoading(true);
     const res = await userAPI.getSprintViewTimelineReport({
-      sprintId: sprint,
-      startDate: dateRange[0],
-      endDate: dateRange[1],
+      sprintId:
+        reportData?.config?.sprintIds?.length > 0
+          ? reportData?.config?.sprintIds[0]
+          : null,
+      startDate: reportData?.config?.startDate
+        ? reportData?.config?.startDate
+        : dateRange[0],
+      endDate: reportData?.config?.endDate
+        ? reportData?.config?.endDate
+        : dateRange[1],
     });
     console.log("res", res);
     res && setSprintTimelineReportData(res);
@@ -57,7 +60,7 @@ export default function SprintTimelineReport({ reportData }: Props) {
 
   useEffect(() => {
     getSprintViewTimelineReport();
-  }, [sprint, dateRange]);
+  }, [reportData?.config]);
 
   return (
     <>
@@ -77,24 +80,7 @@ export default function SprintTimelineReport({ reportData }: Props) {
             Export to Excel
           </Button>
         }
-      >
-        <>
-          <DateRangePicker
-            selectedDate={dateRange}
-            setSelectedDate={setDateRange}
-          />
-
-          <TypeDependentSection
-            {...{
-              activeTab: "Sprint View Timeline Report",
-              projects: [project],
-              setProjects: setProject,
-              sprints: [sprint],
-              setSprints: setSprint,
-            }}
-          />
-        </>
-      </ReportHeaderComponent>
+      />
       <Spin className="custom-spin" spinning={isLoading}>
         <SprintViewTimelineReportComponent data={sprintTimelineReportData} />
       </Spin>
