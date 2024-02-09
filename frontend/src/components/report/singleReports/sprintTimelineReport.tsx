@@ -1,15 +1,13 @@
-import { Button, message, Spin } from "antd";
+import { Button, Spin } from "antd";
 import { userAPI } from "APIs";
 import { SprintViewTimelineReportDto } from "models/reports";
 import React, { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
-import { useDispatch } from "react-redux";
 
-import PrimaryButton from "@/components/common/buttons/primaryButton";
 import DateRangePicker, {
   getDateRangeArray,
 } from "@/components/common/datePicker";
-import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
+import { ReportData } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SprintViewTimelineReportComponent from "../components/sprintViewTimelineReportComponent";
@@ -20,7 +18,6 @@ type Props = {
 };
 
 export default function SprintTimelineReport({ reportData }: Props) {
-  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
   const [sprint, setSprint] = useState<number>(
@@ -41,19 +38,6 @@ export default function SprintTimelineReport({ reportData }: Props) {
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
       : getDateRangeArray("this-week")
   );
-
-  const saveConfig = async () => {
-    const res = await userAPI.updateReport(reportData.id, {
-      projectIds: [project],
-      sprintIds: [sprint],
-      startDate: dateRange[0],
-      endDate: dateRange[1],
-    });
-    if (res) {
-      dispatch(updateReportSlice(res));
-      message.success("Saved Successfully");
-    }
-  };
 
   const getSprintViewTimelineReport = async () => {
     if (!(sprint && dateRange[0] && dateRange[0])) {
@@ -93,9 +77,6 @@ export default function SprintTimelineReport({ reportData }: Props) {
             Export to Excel
           </Button>
         }
-        saveCofigButton={
-          <PrimaryButton onClick={() => saveConfig()}> Save</PrimaryButton>
-        }
       >
         <>
           <DateRangePicker
@@ -104,7 +85,6 @@ export default function SprintTimelineReport({ reportData }: Props) {
           />
 
           <TypeDependentSection
-            config={reportData?.config}
             {...{
               activeTab: "Sprint View Timeline Report",
               projects: [project],
