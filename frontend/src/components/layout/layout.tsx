@@ -9,6 +9,7 @@ import { ToastContainer } from "react-toastify";
 import { noNavbar, publicRoutes } from "utils/constants";
 
 import Navbar from "@/components/navbar";
+import ReportSettings from "@/components/report/components/reportSettings";
 import SideMenu from "@/components/sideMenu";
 import NoActiveWorkspace from "@/components/workspaces/noActiveWorkSpace";
 import { GetCookie } from "@/services/cookie.service";
@@ -63,6 +64,9 @@ const CustomLayout = ({ children }: any) => {
   );
   const workspacesList = useAppSelector(
     (state: RootState) => state.workspacesSlice.workspaces
+  );
+  const reportInEdit = useAppSelector(
+    (state: RootState) => state.reportsSlice.reportInEdit
   );
   const getProjectWiseStatues = async () => {
     if (!projectStatuses) {
@@ -276,9 +280,13 @@ const CustomLayout = ({ children }: any) => {
         <div className="flex">
           {!publicRoutes.some((route) => path.includes(route)) &&
             !path.includes("onBoarding") && (
-              <div className="h-screen min-w-[250px] max-w-[250px]">
-                <div className="fixed">
-                  <SideMenu />
+              <div
+                className={`h-screen min-w-[${
+                  reportInEdit ? "350px" : "250px"
+                }] max-w-[${reportInEdit ? "350px" : "250px"}]`}
+              >
+                <div className="">
+                  {reportInEdit ? <ReportSettings /> : <SideMenu />}
                 </div>
               </div>
             )}
@@ -287,7 +295,7 @@ const CustomLayout = ({ children }: any) => {
           publicRoutes.some((route) => path.includes(route)) ? (
             <div
               className={classNames(
-                "flex w-full flex-col overflow-auto overflow-y-auto",
+                "flex max-h-screen w-full flex-col overflow-auto overflow-y-auto",
                 {
                   "px-8": !isPublicRoute && !path.includes("onBoarding"),
                 }

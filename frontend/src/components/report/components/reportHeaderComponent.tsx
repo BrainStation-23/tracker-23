@@ -1,14 +1,16 @@
-import { Form, Input, message } from "antd";
+import { Form, Input, MenuProps, message } from "antd";
 import { userAPI } from "APIs";
 import classNames from "classnames";
 import { UpdateReportDto } from "models/reports";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 
-import PrimaryButton from "@/components/common/buttons/primaryButton";
+import SecondaryButton from "@/components/common/buttons/secondaryButton";
+import MoreButtonTopPanel from "@/components/common/topPanels/components/moreButtonTopPanel";
 import {
   deleteReportSlice,
   ReportData,
+  setReportInEditSlice,
   updateReportSlice,
 } from "@/storage/redux/reportsSlice";
 
@@ -17,25 +19,42 @@ import { ReportIcons } from "../reportPage";
 import type { PropsWithChildren } from "react";
 export default function ReportHeaderComponent({
   title,
-  children,
   className,
-  innerClassName,
   exportButton,
   reportData,
   setIsLoading,
-  saveCofigButton,
+  extraFilterComponent,
 }: PropsWithChildren<{
   title?: string;
   className?: string;
-  innerClassName?: string;
   exportButton?: React.ReactNode;
-  saveCofigButton?: React.ReactNode;
+  extraFilterComponent?: React.ReactNode;
   reportData: ReportData;
   setIsLoading: Function;
 }>) {
   const [editing, setEditing] = useState(false);
   const dispatch = useDispatch();
   const [form] = Form.useForm();
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const filterOptions = [
+    <SecondaryButton onClick={() => deleteReprot()}>Delete</SecondaryButton>,
+    <SecondaryButton className="w-full" onClick={() => handleEdit()}>
+      Edit
+    </SecondaryButton>,
+  ];
+  const items: MenuProps["items"] = filterOptions.map((option, index) => {
+    return {
+      label: option,
+      key: index,
+    };
+  });
+  const menuProps = {
+    items,
+    onClick: (item: any) => {
+      setDropdownOpen(false);
+    },
+  };
 
   const updateTitle = async (data: UpdateReportDto) => {
     if (!reportData?.id) return;
@@ -55,7 +74,9 @@ export default function ReportHeaderComponent({
     }
     setIsLoading(false);
   };
-
+  const handleEdit = () => {
+    dispatch(setReportInEditSlice(reportData));
+  };
   const onFinish = (values: { name: string }) => {
     if (values.name !== title) {
       updateTitle(values);
@@ -114,19 +135,13 @@ export default function ReportHeaderComponent({
           )}
         </div>
         <div className="flex items-center gap-2">
+          {extraFilterComponent}
           {exportButton}
-          {saveCofigButton}
-          <PrimaryButton onClick={() => deleteReprot()}>Delete</PrimaryButton>
-        </div>
-      </div>
-      <div className="flex h-auto w-full">
-        <div
-          className={classNames(
-            "flex h-auto w-full flex-wrap items-center justify-end gap-6",
-            innerClassName
-          )}
-        >
-          {children}
+          <MoreButtonTopPanel
+            {...{ menuProps, dropdownOpen, setDropdownOpen }}
+          />
+          {/* <PrimaryButton onClick={() => deleteReprot()}>Delete</PrimaryButton>
+          <PrimaryButton onClick={() => handleEdit()}>Edit</PrimaryButton> */}
         </div>
       </div>
     </div>
