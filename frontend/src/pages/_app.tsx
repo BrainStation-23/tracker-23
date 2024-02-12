@@ -58,8 +58,7 @@ export default function App({ Component, pageProps }: AppProps) {
     if (!publicRoutes.some((route) => url.includes(route))) {
       if (typeof userDetails?.approved === "boolean")
         setValidUser(
-          userDetails?.approved ||
-            userDetails?.email === "seefathimel1@gmail.com"
+          userDetails?.approved || userDetails?.email === config.adminMail
         );
       else setValidUser(true);
       // const email = userDetails?.email?.toLowerCase();
