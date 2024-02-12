@@ -12,7 +12,8 @@ body {
 .ant-table-wrapper .ant-table,
 .ant-dropdown-menu-item .ant-dropdown-menu-title-content,
 .ant-btn,
-.ant-form-item-label {
+.ant-form-item-label,
+.ant-spin {
   font-family: "Inter", sans-serif;
 }
 

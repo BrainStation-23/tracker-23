@@ -198,16 +198,6 @@ const CustomLayout = ({ children }: any) => {
     const res: GetWorkspaceListWithUserDto = await userAPI.getWorkspaceList();
     console.log("🚀 ~ file: layout.tsx:159 ~ getWorkspaces ~ res:", res);
     if (res.user) {
-      // const activeWorkspace = res.user.activeWorkspace;
-      // const workspaces = res.workspaces.map((workspace) => {
-      //   return {
-      //     ...workspace,
-      //     active: workspace.id === res.user.activeWorkspaceId,
-      //   };
-      // });
-      // const activeUserWorkspace = activeWorkspace?.userWorkspaces.find(
-      //   (userWorkspace) => userWorkspace.userId === res.user.id
-      // );
       dispatch(
         setUserSlice({ ...res.user, role: res.user.activeUserWorkspace?.role })
       );
