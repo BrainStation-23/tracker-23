@@ -1,11 +1,8 @@
 type QuestionType =
+  | "usingPurpose"
+  | "purpose"
   | "profession"
-  | "role"
-  | "interests"
-  | "introducer"
-  | "pastExperience"
-  | "havePastExperience"
-  | "currentlyUsing";
+  | "pastExperiences";
 
 type QuestionOption = string[];
 

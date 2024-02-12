@@ -21,7 +21,7 @@ const InviteSection = ({ emails, setEmails }: Props) => {
       <div className="px-1 text-xl font-semibold text-black">
         Would you like to invite your team mates?
       </div>
-      <div className="max-w-[400px] pl-6">
+      <div className="max-w-[400px]">
         <Select
           mode="tags"
           size={"middle"}

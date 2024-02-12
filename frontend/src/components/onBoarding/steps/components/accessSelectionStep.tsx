@@ -22,20 +22,26 @@ const AccessSelectionStep = ({ data }: Props) => {
           (index === 0 || answers[data[index - 1].type]) && (
             <MyFormItem
               key={index}
+              noStar={true}
               label={obj.question}
               name={obj.type}
+              className="w-fit"
               rules={[
                 {
-                  required: index < 5,
+                  required: true,
                   message: `Please input your ${obj.type}`,
                 },
               ]}
             >
-              {index >= 5 ? (
+              {data[index].type === "pastExperiences" ? (
                 <Select
-                  mode="multiple"
+                  mode="tags"
+                  maxTagCount={2}
+                  className="min-w-[150px]"
                   onChange={(value) => handleSelectChange(obj.type, value)}
                   placeholder={obj.placeholder}
+                  allowClear={true}
+                  dropdownMatchSelectWidth={false}
                 >
                   {obj.options.map((option) => (
                     <Option key={option} value={option}>
@@ -47,6 +53,8 @@ const AccessSelectionStep = ({ data }: Props) => {
                 <Select
                   onChange={(value) => handleSelectChange(obj.type, value)}
                   placeholder={obj.placeholder}
+                  className="w-[300px]"
+                  dropdownMatchSelectWidth={false}
                 >
                   {obj.options.map((option) => (
                     <Option key={option} value={option}>

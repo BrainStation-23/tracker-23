@@ -1,17 +1,15 @@
-import LeftPanelTopPicture from "@/components/auth/components/leftPanelTopPicture";
+import LeftPanelTopPictureOnboarding from "../steps/leftPanelTopPicture";
 
 const SideBanner = () => {
   return (
-    <div className="col-span-1 w-full bg-[url('/images/bg_login.svg')] bg-cover bg-no-repeat">
-      <div className="relative ml-[8%] flex h-full w-full flex-col">
-        <div className="absolute right-0 top-[8%] flex h-1/2 w-full justify-end ">
-          <LeftPanelTopPicture />
+    <div className="h-screen w-full overflow-hidden bg-[url('/images/bg_login.svg')] bg-cover bg-no-repeat">
+      <div className="mx-auto flex h-full w-full flex-col items-center justify-center gap-5">
+        <div className="flex w-fit">
+          <LeftPanelTopPictureOnboarding />
         </div>
-        <div className=" z-10 mt-[32%] flex flex-col gap-20 lg:mt-[72%] 2xl:mt-[60%]">
-          <div className="flex flex-col gap-6">
-            <div className="w-full text-3xl font-semibold text-white xl:text-5xl">
-              Welcome To Tracker 23
-            </div>
+        <div className="flex flex-col gap-6">
+          <div className="w-full text-3xl font-semibold text-white xl:text-5xl">
+            Welcome To Tracker 23
           </div>
         </div>
       </div>
