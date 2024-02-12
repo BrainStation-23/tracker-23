@@ -70,7 +70,7 @@ const SideMenu = () => {
     const router = useRouter();
     return (
       <div
-        className={`group flex items-center gap-2 rounded-lg py-[4px] px-1 pl-[10px] hover:cursor-pointer hover:bg-[#ECECED] hover:text-primary ${
+        className={`group flex items-center gap-2 rounded-lg py-[6px] px-1 hover:cursor-pointer hover:bg-[#ECECED] hover:text-primary ${
           active ? "bg-[#ECECED] text-primary" : ""
         }`}
         onClick={() => {
@@ -119,7 +119,7 @@ const SideMenu = () => {
           >
             <div className="flex flex-col gap-1">
               <div
-                className={`flex w-min cursor-pointer items-center gap-2 rounded-sm  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
+                className={`flex w-min cursor-pointer items-center gap-2 rounded  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
                 onClick={() => setFunctionDropdownOpen(!functionDropdownOpen)}
               >
                 <LuChevronRight
@@ -147,7 +147,7 @@ const SideMenu = () => {
             </div>
             <div className="flex flex-col gap-1">
               <div
-                className={`flex w-min cursor-pointer items-center gap-2 rounded-sm  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
+                className={`flex w-min cursor-pointer items-center gap-2 rounded  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
                 onClick={() => setManageDropdownOpen(!manageDropdownOpen)}
               >
                 <LuChevronRight
@@ -174,9 +174,9 @@ const SideMenu = () => {
               </div>
             </div>
             <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between pr-2">
                 <div
-                  className={`flex w-min cursor-pointer items-center gap-2 rounded-sm  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
+                  className={`flex w-min cursor-pointer items-center gap-2 rounded  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
                   onClick={() => setReportDropdownOpen(!reportDropdownOpen)}
                 >
                   <LuChevronRight
@@ -209,7 +209,7 @@ const SideMenu = () => {
               >
                 <div className="flex flex-col gap-1">
                   {reportPages?.length > 0 && (
-                    <div className="flex flex-col gap-2 overflow-y-auto">
+                    <div className="flex flex-col gap-1 overflow-y-auto">
                       {reportPages?.map((reportPage) => {
                         const items: MenuProps["items"] = [
                           {
@@ -235,16 +235,16 @@ const SideMenu = () => {
                         return (
                           <>
                             <div
-                              className={`group flex w-full items-center justify-between gap-2 rounded px-2 text-black hover:bg-[#ECECED] hover:font-semibold hover:text-primary ${
+                              className={`group flex w-full items-center justify-between gap-2 rounded px-0 py-[6px] pr-2 text-black hover:bg-[#ECECED] hover:text-primary ${
                                 pageId === reportPage.id
-                                  ? "bg-[#ECECED] font-semibold text-primary"
+                                  ? "bg-[#ECECED] text-primary"
                                   : ""
                               }`}
                             >
                               {" "}
                               <MyLink
                                 href={"/reports/" + reportPage.id}
-                                className="flex items-center  gap-2 p-1"
+                                className="flex items-center gap-2"
                               >
                                 <div
                                   className={`flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
@@ -255,9 +255,16 @@ const SideMenu = () => {
                                 >
                                   <LuNewspaper size={16} />
                                 </div>
-                                <div className="flex w-[120px] items-center">
+                                <div
+                                  className={`flex w-[120px] items-center font-medium
+                                  ${
+                                    pageId === reportPage.id
+                                      ? "font-semibold text-primary"
+                                      : "font-medium text-[#4D4E55]"
+                                  }`}
+                                >
                                   <Text
-                                    className="m-0 p-0 text-xs "
+                                    className="m-0 p-0 text-xs"
                                     ellipsis={{ tooltip: reportPage.name }}
                                   >
                                     {reportPage.name}
