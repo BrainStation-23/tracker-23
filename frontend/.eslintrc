@@ -1,28 +1,9 @@
 {
-  "root": true,
-  "env": {
-    "browser": true,
-    "node": true
-  },
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "project": "./tsconfig.json",
-    "ecmaFeatures": {
-      "jsx": true
-    }
-  },
-  "plugins": ["@typescript-eslint", "react", "jsx-a11y", "prettier"],
   "extends": [
-    "next/babel",
     "next/core-web-vitals",
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended",
-    "plugin:jsx-a11y/recommended",
     "prettier",
-    "prettier/@typescript-eslint",
-    "prettier/react",
-    "prettier/standard"
+    "next"
   ],
   "rules": {
     "@typescript-eslint/explicit-module-boundary-types": "off",
@@ -37,10 +18,5 @@
       { "argsIgnorePattern": "^_" }
     ],
     "import/no-unused-modules": ""
-  },
-  "settings": {
-    "react": {
-      "version": "detect"
-    }
   }
 }

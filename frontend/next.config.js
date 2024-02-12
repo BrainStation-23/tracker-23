@@ -1,22 +1,14 @@
-const withTM = require("next-transpile-modules")(["@amcharts/amcharts4"]);
+/** @type {import('next').NextConfig} */
 
-module.exports = withTM({
-  webpack(config) {
-    config.module.rules.push({
-      test: /\.svg$/i,
-      issuer: /\.[jt]sx?$/,
-      use: ["@svgr/webpack"],
-    });
-
-    return config;
+module.exports = {
+  transpilePackages: ["@amcharts/amcharts4"],
+  images: {
+    unoptimized: true,
   },
   output: "standalone",
-  images: {
-    unoptimized: true, // Disable Image Optimization API for next export
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
   },
-  pageExtensions: ["ts", "tsx"],
-});
-
-// module.exports = {
-//   output: 'standalone',
-// };
+};

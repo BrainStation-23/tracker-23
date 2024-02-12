@@ -7,6 +7,7 @@ import { config } from "config";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { ConfigProvider } from "antd";
 import { publicRoutes, whiteListEmails } from "utils/constants";
 
 import InvalidUserPage from "@/components/invalidUser";
