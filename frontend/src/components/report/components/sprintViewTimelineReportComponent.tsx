@@ -11,8 +11,8 @@ type Props = {
 };
 
 const SprintViewTimelineReportComponent = ({ data }: Props) => {
-  const rows = data ? [...data?.rows] : [];
-  const modifiedColumns = data ? [...data?.columns] : [];
+  const rows = data?.rows ? [...data?.rows] : [];
+  const modifiedColumns = data?.columns ? [...data?.columns] : [];
 
   const modifiedRows: SprintViewTimelineReportTableRow[] = [];
 

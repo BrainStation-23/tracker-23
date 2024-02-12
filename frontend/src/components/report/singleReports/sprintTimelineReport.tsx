@@ -1,70 +1,57 @@
-import { Button, message, Spin } from "antd";
+import { Button, Spin } from "antd";
 import { userAPI } from "APIs";
 import { SprintViewTimelineReportDto } from "models/reports";
 import React, { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
-import { useDispatch } from "react-redux";
 
-import PrimaryButton from "@/components/common/buttons/primaryButton";
-import DateRangePicker, {
-  getDateRangeArray,
-} from "@/components/common/datePicker";
-import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
+import { getDateRangeArray } from "@/components/common/datePicker";
+import { ReportData } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SprintViewTimelineReportComponent from "../components/sprintViewTimelineReportComponent";
-import TypeDependentSection from "../components/typeDependentSection";
 
 type Props = {
   reportData: ReportData;
 };
 
 export default function SprintTimelineReport({ reportData }: Props) {
-  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
+
   const [downloading, setDownloading] = useState<boolean>(false);
-  const [sprint, setSprint] = useState<number>(
-    reportData?.config?.sprintIds?.length > 0
-      ? reportData?.config?.sprintIds[0]
-      : null
-  );
-  const [project, setProject] = useState<number>(
-    reportData?.config?.projectIds?.length > 0
-      ? reportData?.config?.projectIds[0]
-      : null
-  );
   const [sprintTimelineReportData, setSprintTimelineReportData] =
     useState<SprintViewTimelineReportDto>();
 
+  //@ts-ignore
   const [dateRange, setDateRange] = useState(
     reportData?.config?.startDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
       : getDateRangeArray("this-week")
   );
 
-  const saveConfig = async () => {
-    const res = await userAPI.updateReport(reportData.id, {
-      projectIds: [project],
-      sprintIds: [sprint],
-      startDate: dateRange[0],
-      endDate: dateRange[1],
-    });
-    if (res) {
-      dispatch(updateReportSlice(res));
-      message.success("Saved Successfully");
-    }
-  };
-
   const getSprintViewTimelineReport = async () => {
-    if (!(sprint && dateRange[0] && dateRange[0])) {
+    if (
+      !(
+        reportData?.config?.sprintIds?.length > 0 &&
+        reportData?.config?.sprintIds[0] &&
+        dateRange[0] &&
+        dateRange[1]
+      )
+    ) {
       setSprintTimelineReportData(null);
       return;
     }
     setIsLoading(true);
     const res = await userAPI.getSprintViewTimelineReport({
-      sprintId: sprint,
-      startDate: dateRange[0],
-      endDate: dateRange[1],
+      sprintId:
+        reportData?.config?.sprintIds?.length > 0
+          ? reportData?.config?.sprintIds[0]
+          : null,
+      startDate: reportData?.config?.startDate
+        ? reportData?.config?.startDate
+        : dateRange[0],
+      endDate: reportData?.config?.endDate
+        ? reportData?.config?.endDate
+        : dateRange[1],
     });
     console.log("res", res);
     res && setSprintTimelineReportData(res);
@@ -73,7 +60,7 @@ export default function SprintTimelineReport({ reportData }: Props) {
 
   useEffect(() => {
     getSprintViewTimelineReport();
-  }, [sprint, dateRange]);
+  }, [reportData?.config]);
 
   return (
     <>
@@ -93,28 +80,7 @@ export default function SprintTimelineReport({ reportData }: Props) {
             Export to Excel
           </Button>
         }
-        saveCofigButton={
-          <PrimaryButton onClick={() => saveConfig()}> Save</PrimaryButton>
-        }
-      >
-        <>
-          <DateRangePicker
-            selectedDate={dateRange}
-            setSelectedDate={setDateRange}
-          />
-
-          <TypeDependentSection
-            config={reportData?.config}
-            {...{
-              activeTab: "Sprint View Timeline Report",
-              projects: [project],
-              setProjects: setProject,
-              sprints: [sprint],
-              setSprints: setSprint,
-            }}
-          />
-        </>
-      </ReportHeaderComponent>
+      />
       <Spin className="custom-spin" spinning={isLoading}>
         <SprintViewTimelineReportComponent data={sprintTimelineReportData} />
       </Spin>

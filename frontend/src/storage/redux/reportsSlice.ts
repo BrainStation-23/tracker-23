@@ -7,7 +7,7 @@ export interface ReportConfig {
   id: number;
   projectIds?: number[];
   calendarIds?: number[];
-  userIds?: number[];
+  userIds?: any;
   types?: IntegrationType[];
   sprintIds?: number[];
   endDate?: string;
@@ -39,12 +39,13 @@ export interface ReportPageDto {
 interface ReportsSliceState {
   reportPages: ReportPageDto[];
   integrationTypes: IntegrationType[];
+  reportInEdit: ReportData | null;
 }
 
 const initialState: ReportsSliceState = {
   reportPages: [],
-
   integrationTypes: [],
+  reportInEdit: null,
 };
 
 const reportsSlice = createSlice({
@@ -125,6 +126,9 @@ const reportsSlice = createSlice({
     resetReportPages: (state) => {
       state.reportPages = [];
     },
+    setReportInEditSlice: (state, action: PayloadAction<ReportData | null>) => {
+      state.reportInEdit = action.payload;
+    },
   },
 });
 
@@ -139,6 +143,7 @@ export const {
   resetReportPages,
   setReportIntegrationTypesSlice,
   updateReportPageNameSlice,
+  setReportInEditSlice,
 } = reportsSlice.actions;
 
 export default reportsSlice.reducer;
