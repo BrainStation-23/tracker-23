@@ -40,6 +40,8 @@ const AccessSelectionStep = ({ data }: Props) => {
                   className="min-w-[150px]"
                   onChange={(value) => handleSelectChange(obj.type, value)}
                   placeholder={obj.placeholder}
+                  allowClear={true}
+                  dropdownMatchSelectWidth={false}
                 >
                   {obj.options.map((option) => (
                     <Option key={option} value={option}>
@@ -52,6 +54,7 @@ const AccessSelectionStep = ({ data }: Props) => {
                   onChange={(value) => handleSelectChange(obj.type, value)}
                   placeholder={obj.placeholder}
                   className="w-[300px]"
+                  dropdownMatchSelectWidth={false}
                 >
                   {obj.options.map((option) => (
                     <Option key={option} value={option}>
