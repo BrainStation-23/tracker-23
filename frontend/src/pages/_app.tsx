@@ -7,7 +7,7 @@ import { config } from "config";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { publicRoutes, whiteListEmails } from "utils/constants";
+import { publicRoutes } from "utils/constants";
 
 import InvalidUserPage from "@/components/invalidUser";
 import CustomLayout from "@/components/layout/layout";
@@ -61,8 +61,6 @@ export default function App({ Component, pageProps }: AppProps) {
           userDetails?.approved || userDetails?.email === config.adminMail
         );
       else setValidUser(true);
-      // const email = userDetails?.email?.toLowerCase();
-      // whiteListEmails.includes(email) ? "" : setValidUser(false);
     } else if (!validUser) {
       setValidUser(true);
     }
