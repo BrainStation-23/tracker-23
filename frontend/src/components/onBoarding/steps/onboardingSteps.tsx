@@ -1,4 +1,4 @@
-import { Form, message, Steps, theme } from "antd";
+import { Form, message, Spin, Steps, theme } from "antd";
 import { userAPI } from "APIs";
 import { OnBoardingQuestionDto } from "models/onboarding";
 import React, { useState } from "react";
@@ -28,78 +28,93 @@ const OnboardingSteps: React.FC = () => {
   };
   const [current, setCurrent] = useState(findCurrentStep());
   const [emails, setEmails] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const data: OnBoardingQuestionDto[] = [
     {
-      question: "What is your profession?",
+      question: "I am here for ",
+      type: "purpose",
+      options: [
+        "Work",
+        "Personal",
+        "Project",
+        "Client",
+        "Freelance Work",
+        "Team Collaboration",
+        "Task Management",
+        "Client Meetings",
+        "Event Planning",
+        "Research and Development",
+      ],
+      answer: "",
+      placeholder: "What are you here for?",
+    },
+    {
+      question: "I am working as a",
       type: "profession",
       options: [
         "Software Developer",
-        "Designer",
-        "Product Manager",
-        "Data Scientist",
+        "Project Manager",
+        "Freelancer",
+        "Graphic Designer",
+        "Marketing Specialist",
+        "Consultant",
+        "Event Planner",
+        "Researcher",
+        "Client Services Representative",
+        "Entrepreneur",
+        "Other",
       ],
       answer: "",
-      placeholder: "Select your profession",
+      placeholder: "What do you do?",
     },
     {
-      question: "What is your role?",
-      type: "role",
+      question: "Want to use it for ",
+      type: "usingPurpose",
       options: [
-        "Frontend Developer",
-        "Backend Developer",
-        "UI/UX Designer",
-        "Product Owner",
+        "Team Workload Analysis",
+        "Project & Client Tracking",
+        "Staff Scheduling",
+        "Staff Payroll",
+        "Task Management",
+        "Freelance Projects",
+        "Event Planning",
+        "Research and Development",
+        "Client Meetings",
+        "Personal Productivity",
       ],
       answer: "",
       placeholder: "Select your role",
     },
     {
-      question: "What are you interested in?",
-      type: "interests",
+      question: "Where did you manage your task management?",
+      type: "pastExperiences",
       options: [
-        "Web Development",
-        "Machine Learning",
-        "UI/UX Design",
-        "Project Management",
+        // Task Management
+        "Jira",
+        "Trello",
+        "Google Calendar",
+        "Teams Calendar",
+        // Additional Task Management Tools
+        "Asana",
+        "ClickUp",
+        "Monday.com",
+        "Basecamp",
+        "Todoist",
+        "Notion",
+        "Smartsheet",
+        "Airtable",
+        "Any.do",
+        // Additional Calendar Management Tools
+        "Outlook Calendar",
+        "Apple Calendar",
+        "Calendly",
+        "Doodle",
+        "Teamup",
+        "None",
       ],
       answer: "",
-      placeholder: "Select your interests",
-    },
-    {
-      question: "How did you know about this application?",
-      type: "introducer",
-      options: [
-        "Online Search",
-        "Friend/Colleague Recommendation",
-        "Social Media",
-        "Event/Conference",
-      ],
-      answer: "",
-      placeholder: "Select how you knew about the application",
-    },
-    {
-      question:
-        "Have you had any previous experience with similar task management tools?",
-      type: "pastExperience",
-      options: ["Yes", "No"],
-      answer: "",
-      placeholder: "Select Yes or No",
-    },
-    {
-      question:
-        "Which task management system have you used in the last 2 years?",
-      type: "havePastExperience",
-      options: ["Jira", "Trello", "Google Calendar", "Teams Calendar"],
-      answer: "",
-      placeholder: "Select task management system(s) used in the last 2 years",
-    },
-    {
-      question: "Which task management software are you currently using?",
-      type: "currentlyUsing",
-      options: ["Jira", "Trello", "Google Calendar", "Teams Calendar"],
-      answer: "",
-      placeholder: "Select current task management software(s)",
+      placeholder: "Select from these",
     },
   ];
   const steps = [
@@ -136,6 +151,7 @@ const OnboardingSteps: React.FC = () => {
   };
 
   const onFinish = async (value: any) => {
+    setLoading(true);
     let res: any;
     if (current === 0) {
       const formattedData = formateData(value);
@@ -154,39 +170,48 @@ const OnboardingSteps: React.FC = () => {
       res && dispatch(changeWorkspaceReloadStatusSlice());
     }
     res && setCurrent(current + 1);
+    setLoading(false);
   };
   const onFinishFailed = (value: any) => {
     console.log("🚀 ~ file: namingSection.tsx:7 ~ onFinish ~ value:", value);
   };
   return (
-    <Form
-      name="basic"
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      autoComplete="off"
-      layout="vertical"
-      requiredMark={false}
-    >
-      <div className="mt-[110px] ml-[96px] w-[560px]">
-        <Steps current={current} items={items} />
-        <div style={contentStyle} className="py-2">
-          {steps[current]?.content}
-        </div>
-        <div style={{ marginTop: 24 }}>
-          {current < steps.length - 1 && (
-            <PrimaryButton htmlType="submit">Continue</PrimaryButton>
-          )}
-          {current === steps.length - 1 && (
-            <PrimaryButton htmlType="submit">Done</PrimaryButton>
-          )}
-        </div>
-        {current > 1 && (
-          <div className="mx-auto mt-5 w-full p-5 text-lg font-semibold">
-            Onboarding Completed
-          </div>
-        )}
+    <div className="flex flex-col justify-center gap-12 p-20">
+      <div className="flex flex-col gap-2">
+        <div className="text-xl font-semibold">Hello {user.firstName}</div>
+        <div>Let's start with some basic questions to get you started</div>
       </div>
-    </Form>
+      <Spin spinning={loading}>
+        <Form
+          name="basic"
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
+          layout="horizontal"
+          requiredMark={false}
+        >
+          <div className="w-[560px]">
+            <Steps current={current} items={items} />
+            <div style={contentStyle} className="py-2">
+              {steps[current]?.content}
+            </div>
+            <div style={{ marginTop: 24 }}>
+              {current < steps.length - 1 && (
+                <PrimaryButton htmlType="submit">Continue</PrimaryButton>
+              )}
+              {current === steps.length - 1 && (
+                <PrimaryButton htmlType="submit">Done</PrimaryButton>
+              )}
+            </div>
+            {current > 1 && (
+              <div className="mx-auto mt-5 w-full p-5 text-lg font-semibold">
+                Onboarding Completed
+              </div>
+            )}
+          </div>
+        </Form>
+      </Spin>
+    </div>
   );
 };
 
