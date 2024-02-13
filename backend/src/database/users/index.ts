@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Role, User, UserStatus } from '@prisma/client';
+import { OTP, Role, User, UserStatus } from '@prisma/client';
 import {
   CreateUserData,
   GoogleLoginCreateUser,
@@ -148,6 +148,51 @@ export class UsersDatabase {
           approved: true,
           status: true,
         },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getUserOTP(email: string) {
+    try {
+      return await this.prisma.oTP.findUnique({
+        where: { email },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async addUserOTP(data: Omit<OTP, 'id'>) {
+    try {
+      return await this.prisma.oTP.create({
+        data,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async deleteUserOTP(email: string) {
+    try {
+      return await this.prisma.oTP.delete({
+        where: { email },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async updateUserOTP(email: string, data: Partial<OTP>) {
+    try {
+      return await this.prisma.oTP.update({
+        where: { email },
+        data: data,
       });
     } catch (error) {
       console.log(error);
