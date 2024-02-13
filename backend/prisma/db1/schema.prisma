@@ -472,3 +472,16 @@ enum ReportType {
 enum StaticContenttype {
   ONBOARDING
 }
+
+enum FilterDateType {
+  TODAY
+  YESTERDAY
+  TOMORROW
+  THIS_WEEK
+  PAST_WEEK
+  NEXT_WEEK
+  THIS_MONTH
+  PAST_MONTH
+  NEXT_MONTH
+  CUSTOM_DATE
+}
