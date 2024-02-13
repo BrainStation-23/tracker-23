@@ -1,4 +1,6 @@
+import { Spin } from "antd";
 import { userAPI } from "APIs";
+import { config } from "config";
 import { UserDto } from "models/user";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -7,7 +9,6 @@ import { RootState } from "@/storage/redux/store";
 
 import { useAppSelector } from "../../storage/redux/index";
 import UserList from "./components/userList";
-import { Spin } from "antd";
 
 const UsersComponent = () => {
   const router = useRouter();
@@ -25,9 +26,8 @@ const UsersComponent = () => {
     );
     setUserList([...newList]);
   };
-
   useEffect(() => {
-    if (user.email === "seefathimel1@gmail.com") {
+    if (user.email === config.adminMail) {
       getUserList();
     } else router.push("/");
   }, [user]);

@@ -15,6 +15,7 @@ import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { SendInvitationReqBody } from 'src/module/workspaces/dto';
 import { WorkspacesService } from 'src/module/workspaces/workspaces.service';
 import { OnboardingService } from 'src/module/onboarding/onboarding.service';
+import { coreConfig } from 'config/core';
 
 @Injectable()
 export class UsersService {
@@ -81,7 +82,7 @@ export class UsersService {
     return await this.tasksDatabase.getSettings(user);
   }
   async getUserList(user: User) {
-    if (user.email !== 'seefathimel1@gmail.com') {
+    if (user.email !== coreConfig.admin_mail) {
       throw new APIException('You are not authorized', HttpStatus.FORBIDDEN);
     }
     return await this.usersDatabase.getAllUsers();
@@ -91,7 +92,7 @@ export class UsersService {
     userId: any,
     req: UpdateApprovalUserRequest,
   ) {
-    if (user.email !== 'seefathimel1@gmail.com') {
+    if (user.email !== coreConfig.admin_mail) {
       throw new APIException('You are not authorized', HttpStatus.FORBIDDEN);
     }
     const updateUserId = parseInt(userId);

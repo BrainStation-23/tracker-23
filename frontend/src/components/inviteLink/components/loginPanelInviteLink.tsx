@@ -2,12 +2,11 @@ import { Modal, Spin } from "antd";
 import { useEffect, useState } from "react";
 
 import BSLogoSvg from "@/assets/svg/BSLogoSvg";
+import AuthHeader from "@/components/auth/components/authHeader";
+import GoogleLogin from "@/components/auth/components/googleLogin";
 import LoginFormInvitedUser from "@/components/auth/forms/loginFormInvitedUser";
+import MyDivider from "@/components/common/MyDivider";
 import { LoadingOutlined } from "@ant-design/icons";
-
-import AuthHeader from "../../auth/components/authHeader";
-import GoogleLogin from "../../auth/components/googleLogin";
-import MyDivider from "../../common/MyDivider";
 
 type Props = {
   email?: string;
@@ -27,7 +26,6 @@ const LoginPanelInviteLink = ({ email, onlySocialLogin }: Props) => {
         <GoogleLogin setIsModalOpen={setIsModalOpen} />
         {!onlySocialLogin && (
           <>
-            {" "}
             <MyDivider>or</MyDivider>
             <LoginFormInvitedUser
               setIsModalOpen={setIsModalOpen}

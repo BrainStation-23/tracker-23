@@ -10,6 +10,10 @@ import {
   GetTimeSheetQueryDto,
 } from '../tasks/dto';
 import { SprintReportFilterDto } from '../sessions/dto/sprint-report.dto';
+import {
+  NewSprintViewQueryDto,
+  SprintViewReqBodyDto,
+} from '../sprints/dto/sprintView.dto';
 
 @Controller('export')
 export class ExportController {
@@ -62,5 +66,25 @@ export class ExportController {
     @Query() query: GetTimeSheetQueryDto,
   ): Promise<void> {
     await this.exportService.exportTimeSheetDataToExcel(user, query, res);
+  }
+
+  @Get('time-line-sheet')
+  @UseGuards(JwtAuthGuard)
+  async exportTimeLineSheetToExcel(
+    @Res() res: Response,
+    @GetUser() user: User,
+    @Query() query: NewSprintViewQueryDto,
+  ): Promise<void> {
+    await this.exportService.exportTimeLineSheetToExcel(user, query, res);
+  }
+
+  @Get('sprint-view-sheet')
+  @UseGuards(JwtAuthGuard)
+  async exportSprintViewSheetToExcel(
+    @Res() res: Response,
+    @GetUser() user: User,
+    @Query() query: SprintViewReqBodyDto,
+  ): Promise<void> {
+    await this.exportService.exportSprintViewSheetToExcel(user, query, res);
   }
 }

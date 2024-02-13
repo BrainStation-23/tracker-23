@@ -1,6 +1,7 @@
-// Import react-circular-progressbar module and styles
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+
+// Import react-circular-progressbar module and styles
+import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
 
 type Props = {
   spentTime: number;
@@ -14,7 +15,6 @@ const TimeProgressComponent = ({
   exceedLimit = 2,
   isDonut = false,
 }: Props) => {
-  console.log("TimeProgressComponent", spentTime, estimatedTime);
   if (estimatedTime === 0) {
     return <></>;
   }

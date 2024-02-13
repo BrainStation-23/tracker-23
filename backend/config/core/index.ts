@@ -14,6 +14,7 @@ const {
   NODEMAILER_SERVICE,
   NODEMAILER_USER,
   NODEMAILER_PASS,
+  ADMIN_EMAIL,
 } = process.env;
 
 export const coreConfig = {
@@ -25,6 +26,7 @@ export const coreConfig = {
   promiseQuantity: Number(PROMISE_RESOLVE_QUANTITY) || 10,
   syncTaskQuantity: Number(SYNC_TASK_QUANTITY) || 10,
   ADMIN_URL: INVITE_URL || 'http://localhost:3001/inviteLink',
+  admin_mail: ADMIN_EMAIL || 'admin@example.com',
 };
 
 export const nodemailerConfig = {

@@ -11,18 +11,11 @@ import { userAPI } from "APIs";
 type Props = {
   member: WorkspaceMemberDto;
   updateMember: Function;
-  // rejectInvite: Function;
 };
 
-const MoreFunctionMembersPageComponent = ({
-  member,
-  updateMember,
-}: // acceptInvite,
-// rejectInvite,
-Props) => {
+const MoreFunctionMembersPageComponent = ({ member, updateMember }: Props) => {
   const [dropDownOpen, setDropdownOpen] = useState(false);
   const user = useAppSelector((state: RootState) => state.userSlice.user);
-  console.log("🚀 ~ user.role:", user.role);
 
   const items: MenuProps["items"] = [];
 

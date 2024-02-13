@@ -1,9 +1,7 @@
-import {
-  QuestionCircleFilled,
-  QuestionCircleOutlined,
-} from "@ant-design/icons";
 import { Spin, Tooltip } from "antd";
 import { useEffect, useState } from "react";
+
+import { QuestionCircleOutlined } from "@ant-design/icons";
 
 type Props = { children: any; title: string; tooltipMessage?: string };
 const DashboardSection = ({ children, title, tooltipMessage }: Props) => {
@@ -28,7 +26,6 @@ const DashboardSection = ({ children, title, tooltipMessage }: Props) => {
               </div>
             )}
           </div>
-          {/* <div className=" rounded-lg border-2 p-1 px-2 text-sm">This Week</div> */}
         </div>
         <Spin className="custom-spin" spinning={isLoading}>
           {<div className="flex w-full justify-center">{children}</div>}

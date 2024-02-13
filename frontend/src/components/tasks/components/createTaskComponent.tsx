@@ -26,7 +26,7 @@ import { RootState } from "@/storage/redux/store";
 
 import RecurrentTaskCreationComponent from "./recurrentTaskCreationComponent";
 import { PlusOutlined } from "@ant-design/icons";
-import AddLocalProject from "@/components/importSection/projectImport/components/addLocalProject";
+import AddLocalProject from "@/components/integrations/projectImport/components/addLocalProject";
 import { message } from "antd";
 
 const { RangePicker } = DatePicker;

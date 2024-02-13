@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpStatus,
   Param,
   Patch,
   Query,
@@ -13,7 +12,6 @@ import { GetUser } from 'src/decorator';
 import { User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/guard';
 import { UpdateSettingsReqDto } from './dto/create.settings.dto';
-import { APIException } from '../exception/api.exception';
 import {
   UpdateApprovalUserRequest,
   UpdateRoleRequest,
@@ -68,11 +66,6 @@ export class UsersController {
     @Param('userId') userId: number,
     @Body() req: UpdateApprovalUserRequest,
   ) {
-    console.log(
-      '🚀 ~ file: users.controller.ts:56 ~ UsersController ~ req:',
-      req,
-    );
-
     return await this.usersService.updateApprovalUser(user, userId, req);
   }
 

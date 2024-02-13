@@ -26,7 +26,7 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
       dataIndex: "name",
       key: "name",
       fixed: "left",
-      width: "100px",
+      width: "150px",
       render: (_: any, v: any) => (
         <div>
           <Text

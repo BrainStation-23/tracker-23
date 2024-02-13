@@ -1,8 +1,8 @@
 import { Form, Input, message, Select, Spin } from "antd";
 import { userAPI } from "APIs";
+import { useState } from "react";
 
 import PrimaryButton from "@/components/common/buttons/primaryButton";
-import { useState } from "react";
 
 const { Option } = Select;
 type Props = {
@@ -13,11 +13,7 @@ const InviteToWorkspace = ({ setIsModalOpen }: Props) => {
   const [loading, setLoading] = useState(false);
   const onFinish = async (values: any) => {
     setLoading(true);
-    console.log("Form values:", values);
-
     const res = await userAPI.sendWorkspaceInvitation(values);
-    console.log("🚀 ~ file: inviteToWorkspace.tsx:16 ~ onFinish ~ res:", res);
-
     res && message.success("Invitation sent successfully");
     setIsModalOpen(false);
     setLoading(false);

@@ -1,5 +1,7 @@
 import { Empty } from "antd";
+
 import TableComponentSprintReport from "./tableComponentSprintReport";
+
 type Props = {
   data: any;
 };

@@ -1,24 +1,17 @@
 import { Form, Input, Radio, Spin } from "antd";
+import { userAPI } from "APIs";
 import {
   CreateReportDto,
+  ReportTypes,
   ReportTypesDto,
   ReportTypesEnum,
 } from "models/reports";
+import { useRouter } from "next/router";
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 
 import PrimaryButton from "@/components/common/buttons/primaryButton";
-import { useRouter } from "next/router";
-import { userAPI } from "APIs";
-import { useDispatch } from "react-redux";
 import { addReport } from "@/storage/redux/reportsSlice";
-
-const options: ReportTypesDto[] = [
-  "TIME_SHEET",
-  "SPRINT_ESTIMATION",
-  "TASK_LIST",
-  "SPRINT_REPORT",
-  "SPRINT_TIMELINE",
-];
 
 const AddNewReport = ({ setIsModalOpen }: { setIsModalOpen: Function }) => {
   const router = useRouter();
@@ -33,7 +26,6 @@ const AddNewReport = ({ setIsModalOpen }: { setIsModalOpen: Function }) => {
     setIsLoading(true);
     const res = await userAPI.createReport(data);
     if (res) {
-      console.log("🚀 ~ createReport ~ res:", res);
       dispatch(addReport(res));
       setIsModalOpen(false);
     }
@@ -41,19 +33,15 @@ const AddNewReport = ({ setIsModalOpen }: { setIsModalOpen: Function }) => {
   };
 
   const onFinish = (values: any) => {
-    console.log({ ...values, pageId });
     createReport({ ...values, pageId });
-
-    // You can perform further actions here, such as submitting the form data.
   };
 
   return (
     <Spin spinning={isLoading}>
-      {" "}
       <Form
         onFinish={onFinish}
         layout="vertical"
-        initialValues={{ reportType: options[0] }}
+        initialValues={{ reportType: ReportTypes[0] }}
       >
         <Form.Item name="name" label="Name" rules={[{ required: true }]}>
           <Input />
@@ -64,7 +52,7 @@ const AddNewReport = ({ setIsModalOpen }: { setIsModalOpen: Function }) => {
           rules={[{ required: true }]}
         >
           <Radio.Group>
-            {options.map((option: ReportTypesDto) => (
+            {ReportTypes.map((option: ReportTypesDto) => (
               <Radio key={option} value={option}>
                 {ReportTypesEnum[option]}
               </Radio>

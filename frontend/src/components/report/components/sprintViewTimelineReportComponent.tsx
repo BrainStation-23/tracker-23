@@ -1,6 +1,6 @@
 import {
-  SprintViewTimelineReportTableRow,
   SprintViewTimelineReportDto,
+  SprintViewTimelineReportTableRow,
   SprintViewTimelineReportTask,
 } from "models/reports";
 
@@ -19,7 +19,6 @@ const SprintViewTimelineReportComponent = ({ data }: Props) => {
   for (let row of rows) {
     const AssignTasks = row.data.find((item) => item.key === "AssignTasks");
     const maxTasks = AssignTasks ? AssignTasks.value.tasks.length : 0;
-    console.log("maxTasks: ", maxTasks);
     for (let i = 0; i < maxTasks + 1; i++) {
       const tableRow: SprintViewTimelineReportTableRow = {
         userId: row.userId,
@@ -39,7 +38,6 @@ const SprintViewTimelineReportComponent = ({ data }: Props) => {
               const taskIndex = AssignTasks.value.tasks?.findIndex(
                 (task: SprintViewTimelineReportTask) => task.key === colTask.key
               );
-              console.log("taskIndex: " + taskIndex);
               if (taskIndex === i - 1) {
                 tableRow.task[rowData.key] = colTask;
                 tableRow.timeRange[rowData.key] = colTask.timeRange;
@@ -60,8 +58,6 @@ const SprintViewTimelineReportComponent = ({ data }: Props) => {
       modifiedRows.push(tableRow);
     }
   }
-
-  console.log("modifiedRows", modifiedRows);
 
   return (
     <div className="flex w-full flex-col gap-5">
