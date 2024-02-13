@@ -110,6 +110,13 @@ model User {
   // invitationsReceived WorkspaceInvitation[] @relation("InvitedUser")
 }
 
+model OTP {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  code       String
+  expireTime DateTime
+}
+
 model Notification {
   id          Int      @id @default(autoincrement())
   createdAt   DateTime @default(now())
@@ -193,10 +200,10 @@ model Project {
   sprints     Sprint[]
   priorities  PriorityScheme[]
 
-  integration   Integration? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
-  integrationId Int?
-  workspace     Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId   Int
+  integration     Integration? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  integrationId   Int?
+  workspace       Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId     Int
   userWorkspaceId Int?
 
   @@unique([calendarId, workspaceId, userWorkspaceId], name: "CalendarIdentifier")
