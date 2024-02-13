@@ -22,7 +22,7 @@ export const outLookConfig = {
     OUTLOOK_SCOPE ||
     'offline_access user.read Calendars.ReadWrite Calendars.Read',
 
-  webhookUrl: OUTLOOK_WEBHOOK_URL || '',
+  webhookUrl: OUTLOOK_WEBHOOK_URL,
   outlookWebhookChangeType: OUTLOOK_WEBHOOK_CHANGE_TYPE || 'created',
   clientState: OUTLOOK_CLIENT_STATE || 'client-state',
   outlookWebhookRegisterEndPoint:
