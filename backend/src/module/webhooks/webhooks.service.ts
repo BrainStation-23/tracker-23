@@ -606,7 +606,7 @@ export class WebhooksService {
       siteId: userIntegration.siteId,
       calendarId: calendarId,
     });
-    if (doesExistWebhook) {
+    if (doesExistWebhook || !outLookConfig?.webhookUrl) {
       // throw new APIException(
       //   'Webhook already exist! Please renew.',
       //   HttpStatus.BAD_REQUEST,
