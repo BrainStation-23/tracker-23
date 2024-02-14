@@ -12,8 +12,9 @@ import SprintReportComponent from "../components/sprintReportComponents";
 
 type Props = {
   reportData: ReportData;
+  inView: Boolean;
 };
-const SprintReport = ({ reportData }: Props) => {
+const SprintReport = ({ reportData, inView }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
@@ -21,7 +22,7 @@ const SprintReport = ({ reportData }: Props) => {
   const dateRange =
     reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray(reportData?.config.filterDateType);
+      : getDateRangeArray(reportData?.config?.filterDateType);
 
   const excelExport = async () => {
     setDownloading(true);
@@ -29,6 +30,7 @@ const SprintReport = ({ reportData }: Props) => {
   };
 
   const getSprintReport = async () => {
+    if (!inView) return;
     setIsLoading(true);
     if (reportData?.config?.sprintIds?.length > 0) {
       const res = await userAPI.getSprintReport({
@@ -42,7 +44,7 @@ const SprintReport = ({ reportData }: Props) => {
   };
   useEffect(() => {
     getSprintReport();
-  }, [reportData?.config]);
+  }, [reportData?.config, inView]);
   return (
     <>
       <ReportHeaderComponent

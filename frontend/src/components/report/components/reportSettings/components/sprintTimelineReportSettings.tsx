@@ -34,7 +34,7 @@ const SprintTimelineReportSettings = ({ reportData }: Props) => {
   const [dateRange, setDateRange] = useState(
     reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray(reportData?.config.filterDateType)
+      : getDateRangeArray(reportData?.config?.filterDateType)
   );
   const saveConfig = async () => {
     const res = await userAPI.updateReport(reportData.id, {

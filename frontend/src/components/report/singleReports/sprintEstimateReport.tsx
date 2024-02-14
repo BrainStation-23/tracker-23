@@ -12,8 +12,9 @@ import SpritEstimateReportComponent from "../components/sprintEstimateReportComp
 
 type Props = {
   reportData: ReportData;
+  inView: Boolean;
 };
-const SprintEstimateReport = ({ reportData }: Props) => {
+const SprintEstimateReport = ({ reportData, inView }: Props) => {
   const [sprintEstimateReportData, setSprintEstimateReportData] =
     useState<SprintUserReportDto>();
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +46,7 @@ const SprintEstimateReport = ({ reportData }: Props) => {
     setDownloading(false);
   };
   const getSprintUserReport = async () => {
+    if (!inView) return;
     setIsLoading(true);
     const res: SprintUserReportDto = await userAPI.getSprintUserReport({
       sprints: reportData?.config?.sprintIds
@@ -63,7 +65,7 @@ const SprintEstimateReport = ({ reportData }: Props) => {
 
   useEffect(() => {
     getSprintUserReport();
-  }, [reportData?.config]);
+  }, [reportData?.config, inView]);
 
   return (
     <>

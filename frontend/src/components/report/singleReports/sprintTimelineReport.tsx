@@ -12,19 +12,21 @@ import SprintViewTimelineReportComponent from "../components/sprintViewTimelineR
 
 type Props = {
   reportData: ReportData;
+  inView: Boolean;
 };
 
-export default function SprintTimelineReport({ reportData }: Props) {
+export default function SprintTimelineReport({ reportData, inView }: Props) {
   const dateRange =
     reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray(reportData?.config.filterDateType);
+      : getDateRangeArray(reportData?.config?.filterDateType);
 
   const [isLoading, setIsLoading] = useState(false);
   const [sprintTimelineReportData, setSprintTimelineReportData] =
     useState<SprintViewTimelineReportDto>();
 
   const getSprintViewTimelineReport = async () => {
+    if (!inView) return;
     if (
       !(
         reportData?.config?.sprintIds?.length > 0 &&
@@ -51,7 +53,7 @@ export default function SprintTimelineReport({ reportData }: Props) {
 
   useEffect(() => {
     getSprintViewTimelineReport();
-  }, [reportData?.config]);
+  }, [reportData?.config, inView]);
 
   return (
     <>

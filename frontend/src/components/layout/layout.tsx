@@ -196,7 +196,6 @@ const CustomLayout = ({ children }: any) => {
   }, [syncing, syncRunning]);
   const getWorkspaces = async () => {
     const res: GetWorkspaceListWithUserDto = await userAPI.getWorkspaceList();
-    // console.log("🚀 ~ file: layout.tsx:159 ~ getWorkspaces ~ res:", res);
     if (res.user) {
       dispatch(
         setUserSlice({ ...res.user, role: res.user.activeUserWorkspace?.role })

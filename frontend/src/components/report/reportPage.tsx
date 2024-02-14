@@ -23,6 +23,7 @@ import {
 import { RootState } from "@/storage/redux/store";
 
 import AddNewReport from "./components/addNewReport";
+import IntersectionWrapper from "./components/intersectionWrapper";
 import SprintEstimateReport from "./singleReports/sprintEstimateReport";
 import SprintReport from "./singleReports/sprintReport";
 import SprintTimelineReport from "./singleReports/sprintTimelineReport";
@@ -57,22 +58,23 @@ const ReportPageComponent = () => {
     const res = await userAPI.getAllReportProjects();
     res && dispatch(setReportProjectsSlice(res));
   };
-  const reportToRender = (report: ReportData) => {
+  const reportToRender = (report: ReportData, inView: Boolean) => {
     switch (report.reportType) {
       case "TIME_SHEET":
-        return <TimeSheetReport reportData={report} />;
+        return <TimeSheetReport reportData={report} inView={inView} />;
       case "SPRINT_ESTIMATION":
-        return <SprintEstimateReport reportData={report} />;
+        return <SprintEstimateReport reportData={report} inView={inView} />;
       case "TASK_LIST":
-        return <TaskListReport reportData={report} />;
+        return <TaskListReport reportData={report} inView={inView} />;
       case "SPRINT_REPORT":
-        return <SprintReport reportData={report} />;
+        return <SprintReport reportData={report} inView={inView} />;
       case "SPRINT_TIMELINE":
-        return <SprintTimelineReport reportData={report} />;
+        return <SprintTimelineReport reportData={report} inView={inView} />;
       default:
         return <div>No report found</div>;
     }
   };
+
   useEffect(() => {
     getIntegrationTypes();
     getSprintList();
@@ -86,12 +88,9 @@ const ReportPageComponent = () => {
         </PrimaryButton>
       </div>
       {reportPageData?.reports?.map((report) => {
-        return (
-          <div className="flex flex-col gap-5 rounded border-2 p-4">
-            {reportToRender(report)}
-          </div>
-        );
+        return <IntersectionWrapper {...{ report, reportToRender }} />;
       })}
+
       <GlobalModal title="Add New Report" {...{ isModalOpen, setIsModalOpen }}>
         <AddNewReport setIsModalOpen={setIsModalOpen} />
       </GlobalModal>

@@ -33,7 +33,7 @@ const SprintReportSettings = ({ reportData }: Props) => {
   const [dateRange, setDateRange] = useState(
     reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray(reportData?.config.filterDateType)
+      : getDateRangeArray(reportData?.config?.filterDateType)
   );
 
   const getFilterDateType = (type: string) => {

@@ -16,13 +16,14 @@ import { FilterDateType } from "models/reports";
 
 type Props = {
   reportData: ReportData;
+  inView: Boolean;
 };
 
-export default function TaskListReport({ reportData }: Props) {
+export default function TaskListReport({ reportData, inView }: Props) {
   const dateRange =
     reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray(reportData?.config.filterDateType);
+      : getDateRangeArray(reportData?.config?.filterDateType);
 
   const [searchText, setSearchText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +31,7 @@ export default function TaskListReport({ reportData }: Props) {
   const [downloading, setDownloading] = useState<boolean>(false);
 
   const getTaskListReport = async () => {
+    if (!inView) return;
     setIsLoading(true);
     const res = await userAPI.getTaskListReport({
       searchText,
@@ -94,7 +96,7 @@ export default function TaskListReport({ reportData }: Props) {
 
   useEffect(() => {
     getTaskListReport();
-  }, [reportData?.config, searchText]);
+  }, [reportData?.config, searchText, inView]);
   return (
     <>
       <ReportHeaderComponent

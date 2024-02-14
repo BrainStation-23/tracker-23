@@ -17,7 +17,6 @@ type Props = {
 const LoginForm = ({ setIsModalOpen, email }: Props) => {
   const router = useRouter();
   const signIn = async (values: any) => {
-    console.log(values);
     const data = await userAPI.login(values);
     if (data?.status === "ONBOARD" && GetCookie("access_token"))
       router.push("/onBoarding");

@@ -16,12 +16,13 @@ import { FilterDateType } from "models/reports";
 
 type Props = {
   reportData: ReportData;
+  inView: Boolean;
 };
-const TimeSheetReport = ({ reportData }: Props) => {
+const TimeSheetReport = ({ reportData, inView }: Props) => {
   const dateRange =
     reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray(reportData?.config.filterDateType);
+      : getDateRangeArray(reportData?.config?.filterDateType);
 
   const [data, setData] = useState([]);
   const [column, setColumns] = useState([]);
@@ -58,6 +59,7 @@ const TimeSheetReport = ({ reportData }: Props) => {
   };
 
   const getTimeSheetReport = async () => {
+    if (!inView) return;
     setIsLoading(true);
     const obj = {
       startDate: dateRange[0],
@@ -80,7 +82,7 @@ const TimeSheetReport = ({ reportData }: Props) => {
   };
   useEffect(() => {
     getTimeSheetReport();
-  }, [reportData?.config]);
+  }, [reportData?.config, inView]);
   return (
     <>
       <ReportHeaderComponent
