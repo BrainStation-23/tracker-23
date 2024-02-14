@@ -18,6 +18,7 @@ import { SendWorkspaceInviteDto } from "models/invitation";
 import {
   CreateReportDto,
   CreateReportPageDto,
+  FilterDateType,
   getTimeSheetReportDto,
   SprintViewReportDto,
   SprintViewTimelineReportDto,
@@ -45,6 +46,7 @@ import { getLabels, getStringFromArray } from "@/services/taskActions";
 import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 import { sortByStatus } from "../src/services/taskActions";
+import { ReportData } from "@/storage/redux/reportsSlice";
 
 export async function loginRest(
   data: LoginDto
@@ -733,6 +735,19 @@ export async function getWorkspaceListRest() {
         active: workspace.id === res.data.user.activeWorkspaceId,
       };
     });
+    res.data.pages = res.data.pages.map((page: any) => ({
+      ...page,
+      reports: page.reports.map((report: any) => ({
+        ...report,
+        config: {
+          ...report.config,
+          filterDateType:
+            //@ts-ignore
+            FilterDateType[report?.config?.filterDateType] ||
+            FilterDateType.CUSTOM_DATE,
+        },
+      })),
+    }));
     return res.data;
   } catch (error: any) {
     return false;
@@ -1575,7 +1590,13 @@ export async function updateReportRest(
   data: UpdateReportDto
 ) {
   try {
-    const res = await axios.patch(`${apiEndPoints.reports}/${reportId}`, data);
+    const res = await axios.patch<ReportData>(
+      `${apiEndPoints.reports}/${reportId}`,
+      data
+    );
+    res.data.config.filterDateType =
+      //@ts-ignore
+      FilterDateType[res.data.config.filterDateType];
     return res.data;
   } catch (error: any) {
     return false;

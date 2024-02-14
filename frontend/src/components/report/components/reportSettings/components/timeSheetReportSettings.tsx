@@ -1,7 +1,7 @@
 import { message } from "antd";
 import { userAPI } from "APIs";
 import { IntegrationType } from "models/integration";
-import { SprintUser } from "models/reports";
+import { FilterDateType, SprintUser } from "models/reports";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -23,6 +23,9 @@ type Props = {
 };
 const TimeSheetReportSettings = ({ reportData }: Props) => {
   const dispatch = useDispatch();
+  const [filterDateType, setFilterDateType] = useState(
+    FilterDateType.THIS_WEEK
+  );
   const [users, setUsers] = useState<SprintUser[]>([]);
   const [sprints, setSprints] = useState<number[]>([]);
   const [selectedSource, setSelectedSource] = useState<IntegrationType[]>(
@@ -38,9 +41,9 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
     reportData?.config?.userIds ? reportData?.config?.userIds : []
   );
   const [dateRange, setDateRange] = useState(
-    reportData?.config?.startDate
+    reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray("this-week")
+      : getDateRangeArray(reportData?.config.filterDateType)
   );
   const getUserListByProject = async () => {
     const res = await userAPI.userListByProject(projects);
@@ -55,12 +58,18 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
       projectIds: projects,
       calendarIds,
       types: selectedSource,
+      filterDateType,
     });
     if (res) {
+      console.log("res", res);
+
       dispatch(updateReportSlice(res));
       message.success("Saved Successfully");
       dispatch(setReportInEditSlice(null));
     }
+  };
+  const getFilterDateType = (type: FilterDateType) => {
+    setFilterDateType(type);
   };
   useEffect(() => {
     getUserListByProject();
@@ -75,6 +84,7 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
       <DateRangePicker
         selectedDate={dateRange}
         setSelectedDate={setDateRange}
+        setFilterDateType={getFilterDateType}
       />
 
       <TypeDependentSection
