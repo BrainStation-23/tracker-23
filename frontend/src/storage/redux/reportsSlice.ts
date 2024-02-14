@@ -3,6 +3,7 @@ import { IntegrationType } from "models/integration";
 import { createSlice } from "@reduxjs/toolkit";
 
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { FilterDateType } from "models/reports";
 export interface ReportConfig {
   id: number;
   projectIds?: number[];
@@ -12,6 +13,7 @@ export interface ReportConfig {
   sprintIds?: number[];
   endDate?: string;
   startDate?: string;
+  filterDateType?: FilterDateType;
 }
 
 export type ReportType =

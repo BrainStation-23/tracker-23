@@ -4,7 +4,6 @@ import { SprintUser } from "models/reports";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
-import { getDateRangeArray } from "@/components/common/datePicker";
 import UsersSelectorComponent from "@/components/common/topPanels/components/usersSelector";
 import {
   ReportData,
@@ -29,12 +28,6 @@ const SprintEstimationReportSettings = ({ reportData }: Props) => {
   );
   const [selectedUsers, setSelectedUsers] = useState<number[]>(
     reportData?.config?.userIds ? reportData?.config?.userIds : []
-  );
-  //@ts-ignore
-  const [dateRange, setDateRange] = useState(
-    reportData?.config?.startDate
-      ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray("this-week")
   );
   const getUserListByProject = async () => {
     const res = await userAPI.userListByProject(projects);
