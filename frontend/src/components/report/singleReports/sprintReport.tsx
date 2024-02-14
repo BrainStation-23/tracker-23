@@ -12,8 +12,9 @@ import SprintReportComponent from "../components/sprintReportComponents";
 
 type Props = {
   reportData: ReportData;
+  inView: Boolean;
 };
-const SprintReport = ({ reportData }: Props) => {
+const SprintReport = ({ reportData, inView }: Props) => {
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
   //@ts-ignore
   const [dateRange, setDateRange] = useState(
@@ -31,6 +32,7 @@ const SprintReport = ({ reportData }: Props) => {
   };
 
   const getSprintReport = async () => {
+    if (!inView) return;
     setIsLoading(true);
     if (reportData?.config?.sprintIds?.length > 0) {
       const res = await userAPI.getSprintReport({
@@ -48,7 +50,7 @@ const SprintReport = ({ reportData }: Props) => {
   };
   useEffect(() => {
     getSprintReport();
-  }, [reportData?.config]);
+  }, [reportData?.config, inView]);
   return (
     <>
       <ReportHeaderComponent

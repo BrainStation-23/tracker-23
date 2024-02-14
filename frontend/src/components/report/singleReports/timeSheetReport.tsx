@@ -12,8 +12,9 @@ import TableComponent from "../components/tableComponentReport";
 
 type Props = {
   reportData: ReportData;
+  inView: Boolean;
 };
-const TimeSheetReport = ({ reportData }: Props) => {
+const TimeSheetReport = ({ reportData, inView }: Props) => {
   const [data, setData] = useState([]);
   const [column, setColumns] = useState([]);
   //@ts-ignore
@@ -58,6 +59,7 @@ const TimeSheetReport = ({ reportData }: Props) => {
   };
 
   const getTimeSheetReport = async () => {
+    if (!inView) return;
     setIsLoading(true);
     const res = await userAPI.getTimeSheetReport({
       startDate: reportData?.config?.startDate
@@ -83,7 +85,7 @@ const TimeSheetReport = ({ reportData }: Props) => {
   };
   useEffect(() => {
     getTimeSheetReport();
-  }, [reportData?.config]);
+  }, [reportData?.config, inView]);
   return (
     <>
       <ReportHeaderComponent

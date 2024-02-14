@@ -15,9 +15,10 @@ import TopPanelTaskListComponents from "../components/topPanelTaskListComponents
 
 type Props = {
   reportData: ReportData;
+  inView: Boolean;
 };
 
-export default function TaskListReport({ reportData }: Props) {
+export default function TaskListReport({ reportData, inView }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
@@ -30,6 +31,7 @@ export default function TaskListReport({ reportData }: Props) {
   const [searchText, setSearchText] = useState("");
 
   const getTaskListReport = async () => {
+    if (!inView) return;
     setIsLoading(true);
     const res = await userAPI.getTaskListReport({
       searchText,
@@ -94,7 +96,7 @@ export default function TaskListReport({ reportData }: Props) {
 
   useEffect(() => {
     getTaskListReport();
-  }, [reportData?.config, searchText]);
+  }, [reportData?.config, searchText, inView]);
   return (
     <>
       <ReportHeaderComponent

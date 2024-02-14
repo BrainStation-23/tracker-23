@@ -12,9 +12,10 @@ import SprintViewTimelineReportComponent from "../components/sprintViewTimelineR
 
 type Props = {
   reportData: ReportData;
+  inView: Boolean;
 };
 
-export default function SprintTimelineReport({ reportData }: Props) {
+export default function SprintTimelineReport({ reportData, inView }: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
   const [downloading, setDownloading] = useState<boolean>(false);
@@ -29,6 +30,7 @@ export default function SprintTimelineReport({ reportData }: Props) {
   );
 
   const getSprintViewTimelineReport = async () => {
+    if (!inView) return;
     if (
       !(
         reportData?.config?.sprintIds?.length > 0 &&
@@ -60,7 +62,7 @@ export default function SprintTimelineReport({ reportData }: Props) {
 
   useEffect(() => {
     getSprintViewTimelineReport();
-  }, [reportData?.config]);
+  }, [reportData?.config, inView]);
 
   return (
     <>
