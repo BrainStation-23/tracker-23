@@ -23,7 +23,7 @@ export default function TaskListReport({ reportData, inView }: Props) {
   const dateRange =
     reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray(reportData?.config.filterDateType);
+      : getDateRangeArray(reportData?.config?.filterDateType);
 
   const [searchText, setSearchText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
