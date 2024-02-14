@@ -1,7 +1,7 @@
 import { message } from "antd";
 import { userAPI } from "APIs";
 import { IntegrationType } from "models/integration";
-import { SprintUser } from "models/reports";
+import { FilterDateType, SprintUser } from "models/reports";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -42,9 +42,9 @@ const TaskListReportSettings = ({ reportData }: Props) => {
       : null
   );
   const [dateRange, setDateRange] = useState(
-    reportData?.config?.startDate
+    reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray("this-week")
+      : getDateRangeArray(reportData?.config?.filterDateType)
   );
   const getUserListByProject = async () => {
     const res = await userAPI.userListByProject(projects);
@@ -67,6 +67,9 @@ const TaskListReportSettings = ({ reportData }: Props) => {
       dispatch(setReportInEditSlice(null));
     }
   };
+  const getFilterDateType = (type: string) => {
+    console.log("getFilterDateType", type);
+  };
   useEffect(() => {
     getUserListByProject();
   }, [projects]);
@@ -80,6 +83,7 @@ const TaskListReportSettings = ({ reportData }: Props) => {
       <DateRangePicker
         selectedDate={dateRange}
         setSelectedDate={setDateRange}
+        setFilterDateType={getFilterDateType}
       />
 
       <TypeDependentSection

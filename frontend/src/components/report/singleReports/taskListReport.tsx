@@ -12,24 +12,26 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import TaskListReportComponent from "../components/taskListReportComponent";
 import TopPanelTaskListComponents from "../components/topPanelTaskListComponents";
+import { FilterDateType } from "models/reports";
 
 type Props = {
   reportData: ReportData;
+  inView: Boolean;
 };
 
-export default function TaskListReport({ reportData }: Props) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [downloading, setDownloading] = useState<boolean>(false);
-  const [tasks, setTasks] = useState<TaskDto[]>([]);
-  //@ts-ignore
-  const [dateRange, setDateRange] = useState(
-    reportData?.config?.startDate
+export default function TaskListReport({ reportData, inView }: Props) {
+  const dateRange =
+    reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray("this-week")
-  );
+      : getDateRangeArray(reportData?.config?.filterDateType);
+
   const [searchText, setSearchText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [tasks, setTasks] = useState<TaskDto[]>([]);
+  const [downloading, setDownloading] = useState<boolean>(false);
 
   const getTaskListReport = async () => {
+    if (!inView) return;
     setIsLoading(true);
     const res = await userAPI.getTaskListReport({
       searchText,
@@ -94,7 +96,7 @@ export default function TaskListReport({ reportData }: Props) {
 
   useEffect(() => {
     getTaskListReport();
-  }, [reportData?.config, searchText]);
+  }, [reportData?.config, searchText, inView]);
   return (
     <>
       <ReportHeaderComponent

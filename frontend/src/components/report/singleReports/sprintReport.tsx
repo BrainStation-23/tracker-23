@@ -1,6 +1,6 @@
 import { Button, Spin } from "antd";
 import { userAPI } from "APIs";
-import { SprintReportDto } from "models/reports";
+import { FilterDateType, SprintReportDto } from "models/reports";
 import { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
 
@@ -12,35 +12,31 @@ import SprintReportComponent from "../components/sprintReportComponents";
 
 type Props = {
   reportData: ReportData;
+  inView: Boolean;
 };
-const SprintReport = ({ reportData }: Props) => {
-  const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
-  //@ts-ignore
-  const [dateRange, setDateRange] = useState(
-    reportData?.config?.startDate
-      ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray("this-week")
-  );
+const SprintReport = ({ reportData, inView }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
+  const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
+
+  const dateRange =
+    reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
+      ? [reportData?.config?.startDate, reportData?.config?.endDate]
+      : getDateRangeArray(reportData?.config?.filterDateType);
 
   const excelExport = async () => {
     setDownloading(true);
-
     setDownloading(false);
   };
 
   const getSprintReport = async () => {
+    if (!inView) return;
     setIsLoading(true);
     if (reportData?.config?.sprintIds?.length > 0) {
       const res = await userAPI.getSprintReport({
         sprintId: reportData?.config?.sprintIds[0],
-        startDate: reportData?.config?.startDate
-          ? reportData?.config?.startDate
-          : dateRange[0],
-        endDate: reportData?.config?.endDate
-          ? reportData?.config?.endDate
-          : dateRange[1],
+        startDate: dateRange[0],
+        endDate: dateRange[1],
       });
       res && setSprintReportData(res);
     }
@@ -48,7 +44,7 @@ const SprintReport = ({ reportData }: Props) => {
   };
   useEffect(() => {
     getSprintReport();
-  }, [reportData?.config]);
+  }, [reportData?.config, inView]);
   return (
     <>
       <ReportHeaderComponent
@@ -57,11 +53,11 @@ const SprintReport = ({ reportData }: Props) => {
         setIsLoading={setIsLoading}
         exportButton={
           <Button
-            type="ghost"
             className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
             icon={<LuDownload className="text-xl" />}
-            loading={downloading}
             onClick={() => excelExport()}
+            loading={downloading}
+            type="ghost"
           >
             Export to Excel
           </Button>

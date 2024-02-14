@@ -14,6 +14,7 @@ import {
 
 import TypeDependentSection from "../../typeDependentSection";
 import ReportSettingsWrapper from "./reportSettingsWrapper";
+import { FilterDateType } from "models/reports";
 
 type Props = {
   reportData: ReportData;
@@ -30,11 +31,10 @@ const SprintTimelineReportSettings = ({ reportData }: Props) => {
       ? reportData?.config?.projectIds[0]
       : null
   );
-  //@ts-ignore
   const [dateRange, setDateRange] = useState(
-    reportData?.config?.startDate
+    reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray("this-week")
+      : getDateRangeArray(reportData?.config?.filterDateType)
   );
   const saveConfig = async () => {
     const res = await userAPI.updateReport(reportData.id, {
@@ -49,6 +49,9 @@ const SprintTimelineReportSettings = ({ reportData }: Props) => {
       dispatch(setReportInEditSlice(null));
     }
   };
+  const getFilterDateType = (type: string) => {
+    console.log("getFilterDateType", type);
+  };
   return (
     <ReportSettingsWrapper
       {...{
@@ -59,6 +62,7 @@ const SprintTimelineReportSettings = ({ reportData }: Props) => {
       <DateRangePicker
         selectedDate={dateRange}
         setSelectedDate={setDateRange}
+        setFilterDateType={getFilterDateType}
       />
 
       <TypeDependentSection

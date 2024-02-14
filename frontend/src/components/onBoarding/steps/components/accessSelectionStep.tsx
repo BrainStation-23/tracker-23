@@ -28,8 +28,8 @@ const AccessSelectionStep = ({ data }: Props) => {
               className="w-fit"
               rules={[
                 {
-                  required: true,
-                  message: `Please input your ${obj.type}`,
+                  required: data[index].type !== "pastExperiences",
+                  message: `This Field cannot be empty`,
                 },
               ]}
             >

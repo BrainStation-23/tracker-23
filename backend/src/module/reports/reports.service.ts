@@ -67,6 +67,7 @@ export class ReportsService {
       ...(query.endDate && {
         endDate: query.endDate,
       }),
+      ...(query.filterDateType && { filterDateType: query.filterDateType }),
       ...(query.projectIds && { projectIds: query.projectIds }),
       ...(query.calendarIds && { calendarIds: query.calendarIds }),
       ...(query.sprintIds && { sprintIds: query.sprintIds }),

@@ -4,9 +4,9 @@ import PrimaryButton from "@/components/common/buttons/primaryButton";
 import { ReportData, setReportInEditSlice } from "@/storage/redux/reportsSlice";
 
 type Props = {
-  reportData: ReportData;
   children: React.ReactNode;
-  saveConfig: Function;
+  reportData: ReportData;
+  saveConfig: () => void;
 };
 const ReportSettingsWrapper = ({ reportData, children, saveConfig }: Props) => {
   const dispatch = useDispatch();
@@ -22,8 +22,8 @@ const ReportSettingsWrapper = ({ reportData, children, saveConfig }: Props) => {
         <div className="flex flex-col gap-4 py-5">{children}</div>
       </div>
       <div className="flex w-full justify-center gap-6 border-t-2 pt-4">
-        <PrimaryButton onClick={() => saveConfig()}> Save</PrimaryButton>
-        <PrimaryButton onClick={() => handleCancel()}> Cancel</PrimaryButton>
+        <PrimaryButton onClick={saveConfig}> Save</PrimaryButton>
+        <PrimaryButton onClick={handleCancel}> Cancel</PrimaryButton>
       </div>
     </div>
   );
