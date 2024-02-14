@@ -160,7 +160,7 @@ export class TasksService {
           ...(startDate &&
             endDate && {
               createdAt: { lte: endDate },
-              updatedAt: { gte: startDate },
+              updatedAt: { gte: startDate, lte: endDate },
             }),
           ...(priority1 && { priority: { in: priority1 } }),
           ...(status1 && { status: { in: status1 } }),
