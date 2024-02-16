@@ -10,6 +10,7 @@ import { APIException } from '../exception/api.exception';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { IntegrationDatabase } from 'src/database/integrations/index';
 import { ReportsService } from '../reports/reports.service';
+import { ErrorMessage } from './dto/get.userIntegrations.filter.dto';
 
 @Injectable()
 export class IntegrationsService {
@@ -135,15 +136,10 @@ export class IntegrationsService {
         await lastValueFrom(this.httpService.post(url, data, headers))
       ).data;
     } catch (err) {
-      console.log(
-        '🚀 ~ file: integrations.service.ts:100 ~ IntegrationsService ~ getUpdatedUserIntegration ~ err:',
-        err,
+      throw new APIException(
+        ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
+        HttpStatus.GONE,
       );
-      // throw new APIException(
-      //   'Can not update user integration',
-      //   HttpStatus.INTERNAL_SERVER_ERROR,
-      // );
-      return null;
     }
 
     const updatedUserIntegration =
