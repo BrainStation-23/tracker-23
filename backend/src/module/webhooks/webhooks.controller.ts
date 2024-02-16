@@ -60,6 +60,11 @@ export class WebhooksController {
     );
   }
 
+  @Post('outlook/lifecycle/receiver')
+  async handleOutlookWebhookLifecycle(@Body() payload: any) {
+    return await this.webhooksService.handleOutlookWebhookLifecycle(payload);
+  }
+
   @Get('outlook/subscriptions')
   @UseGuards(JwtAuthGuard)
   async getOutlookWebhooks(@GetUser() user: User) {
