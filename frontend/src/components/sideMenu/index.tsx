@@ -126,7 +126,7 @@ const SideMenu = () => {
                   className={`${
                     functionDropdownOpen ? "rotate-90" : ""
                   } duration-400 transition-all`}
-                />{" "}
+                />
                 Overview
               </div>
               <div
@@ -137,7 +137,7 @@ const SideMenu = () => {
                 <div className="flex flex-col gap-1">
                   {sideMenuFucntionOptions?.map((option) => (
                     <SideMenuOption
-                      key={Math.random()}
+                      key={option.title}
                       option={option}
                       active={router.asPath.includes(option.link)}
                     />
@@ -165,7 +165,7 @@ const SideMenu = () => {
                 <div className="flex flex-col gap-1">
                   {sideMenuManageOptions?.map((option) => (
                     <SideMenuOption
-                      key={Math.random()}
+                      key={option.title}
                       option={option}
                       active={router.asPath.includes(option.link)}
                     />
@@ -233,60 +233,58 @@ const SideMenu = () => {
                           },
                         ];
                         return (
-                          <>
-                            <div
-                              className={`group flex w-full items-center justify-between gap-2 rounded px-0 py-[6px] pr-2 text-black hover:bg-[#ECECED] hover:text-primary ${
-                                pageId === reportPage.id
-                                  ? "bg-[#ECECED] text-primary"
-                                  : ""
-                              }`}
+                          <div
+                            key={reportPage.id}
+                            className={`group flex w-full items-center justify-between gap-2 rounded px-0 py-[6px] pr-2 text-black hover:bg-[#ECECED] hover:text-primary ${
+                              pageId === reportPage.id
+                                ? "bg-[#ECECED] text-primary"
+                                : ""
+                            }`}
+                          >
+                            <MyLink
+                              href={"/reports/" + reportPage.id}
+                              className="flex items-center gap-2"
                             >
-                              {" "}
-                              <MyLink
-                                href={"/reports/" + reportPage.id}
-                                className="flex items-center gap-2"
+                              <div
+                                className={`flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
+                                  pageId === reportPage.id
+                                    ? "stroke-primary "
+                                    : "stroke-[#ADACB0] text-[#ADACB0]"
+                                }`}
                               >
-                                <div
-                                  className={`flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
-                                    pageId === reportPage.id
-                                      ? "stroke-primary "
-                                      : "stroke-[#ADACB0] text-[#ADACB0]"
-                                  }`}
-                                >
-                                  <LuNewspaper size={16} />
-                                </div>
-                                <div
-                                  className={`flex w-[120px] items-center font-medium
+                                <LuNewspaper size={16} />
+                              </div>
+                              <div
+                                className={`flex w-[120px] items-center
                                   ${
                                     pageId === reportPage.id
-                                      ? "font-semibold text-primary"
-                                      : "font-medium text-[#4D4E55]"
+                                      ? " font-semibold text-primary"
+                                      : " font-medium text-[#4D4E55]"
                                   }`}
-                                >
-                                  <Text
-                                    className="m-0 p-0 text-xs"
-                                    ellipsis={{ tooltip: reportPage.name }}
-                                  >
-                                    {reportPage.name}
-                                  </Text>
-                                </div>
-                              </MyLink>
-                              <Dropdown
-                                menu={{
-                                  items,
-                                  onClick: () => {},
-                                }}
-                                trigger={["click"]}
-                                className="relative "
-                                overlayClassName="absolute left-[-200px] "
-                                placement="bottomRight"
                               >
-                                <Button className="relative flex h-4 w-4 items-center justify-center p-0">
-                                  <LuMoreVertical size={10} />
-                                </Button>
-                              </Dropdown>
-                            </div>
-                          </>
+                                <Text
+                                  className="m-0 p-0 text-xs"
+                                  ellipsis={{ tooltip: reportPage.name }}
+                                >
+                                  {reportPage.name}
+                                </Text>
+                              </div>
+                            </MyLink>
+                            <Dropdown
+                              menu={{
+                                items,
+                                onClick: () => {},
+                              }}
+                              trigger={["click"]}
+                              className="relative "
+                              overlayClassName="absolute left-[-200px] "
+                              placement="bottomRight"
+                            >
+                              <Button className="relative flex h-4 w-4 items-center justify-center p-0">
+                                <LuMoreVertical size={10} />
+                              </Button>
+                            </Dropdown>
+                          </div>
                         );
                       })}
                     </div>

@@ -1,5 +1,3 @@
-import SecondaryButton from "../src/components/common/buttons/secondaryButton";
-
 export const publicRoutes = [
   "/login",
   "/registration",
@@ -169,4 +167,3 @@ export const rowColors = [
   { background: "#6ba9ff", text: "#333333" }, // Amethyst Purple
   { background: "#3498db", color: "#333333" }, // Dodger Blue
 ];
-

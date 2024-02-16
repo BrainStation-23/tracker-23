@@ -3,10 +3,7 @@ import { userAPI } from "APIs";
 import { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
 
-import {
-  dateRangeOptions,
-  getDateRangeArray,
-} from "@/components/common/datePicker";
+import { getDateRangeArray } from "@/components/common/datePicker";
 import { ExcelExport } from "@/services/exportHelpers";
 import { ReportData } from "@/storage/redux/reportsSlice";
 
@@ -26,10 +23,10 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
 
   const [data, setData] = useState([]);
   const [column, setColumns] = useState([]);
-
-  const [dateRangeArray, setDateRangeArray] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [dateRangeArray, setDateRangeArray] = useState([]);
   const [downloading, setDownloading] = useState<boolean>(false);
+
   const excelExport = async () => {
     setDownloading(true);
     try {
@@ -80,9 +77,11 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
     setDateRangeArray(res.dateRange);
     setIsLoading(false);
   };
+
   useEffect(() => {
     getTimeSheetReport();
   }, [reportData?.config, inView]);
+
   return (
     <>
       <ReportHeaderComponent

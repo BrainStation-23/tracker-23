@@ -26,10 +26,10 @@ const InvalidUserPage = () => {
         <div className="flex flex-col gap-4 text-base font-medium">
           <span>Dear {userDetails?.firstName},</span>
           <span>
-            Thank you for joining the Tracker23 waitlist! Our team is working
-            hard to bring our product to life and we will keep you updated on
-            our progress. Thank you for being an early adopter and supporting
-            us.
+            Thank you for joining the Tracker23 waiting list! Our team is
+            working hard to bring our product to life and we will keep you
+            updated on our progress. Thank you for being an early adopter and
+            supporting us.
           </span>
           <span> Best, Tracker23 Team</span>
           <LogOutButton />
