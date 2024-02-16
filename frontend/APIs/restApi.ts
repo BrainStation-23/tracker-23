@@ -111,6 +111,18 @@ export async function registerRest(
   }
 }
 
+export async function sendOTPRest(
+  data: RegisterDto
+): Promise<LoginResponseDto | undefined> {
+  try {
+    const res = await axios.post(`${apiEndPoints.sendOtp}`, data);
+    return res.data;
+  } catch (error: any) {
+    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
+    return null;
+  }
+}
+
 export async function registerFromInviteRest(
   data: RegisterDto
 ): Promise<LoginResponseDto | undefined> {
