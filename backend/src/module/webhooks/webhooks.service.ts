@@ -430,10 +430,11 @@ export class WebhooksService {
     return flag;
   }
 
-  async handleOutlookWebhookLifecycle(payload: any) {
+  async handleOutlookWebhookLifecycle(validationToken: any, payload: any) {
+    if (validationToken) return validationToken;
     try {
       const webhook = await this.webhookDatabase.getWebhook({
-        subscriptionId: payload.value[0].subscriptionId,
+        webhookId: payload.value[0].subscriptionId,
       });
 
       if (!webhook) {
@@ -451,32 +452,27 @@ export class WebhooksService {
       if (!userIntegration) {
         return null;
       }
-
+      const twoAndHalfDayInMilliSeconds = 2.5 * 3600 * 24 * 1000;
       const lifeCycleDate = {
-        expirationDateTime: new Date(Date.now() + 2.5 * 3600 * 24 * 1000),
+        expirationDateTime: new Date(Date.now() + twoAndHalfDayInMilliSeconds),
       };
-      let updatedLifeCycle;
+
       const extendLifecycleUrl = `${outLookConfig.outlookWebhookRegisterEndPoint}/${payload.value[0].subscriptionId}`;
       try {
-        updatedLifeCycle = await this.jiraClient.CallOutlook(
+        await this.jiraClient.CallOutlook(
           userIntegration,
           this.outlookApiCalls.extendOutlookWebhookLifecycle,
           extendLifecycleUrl,
           lifeCycleDate,
         );
       } catch (err) {
-        // console.log(err);
-        // throw new APIException(
-        //   'Fetching problem to register webhook in outlook!',
-        //   HttpStatus.BAD_REQUEST,
-        // );
         return null;
       }
 
       await this.webhookDatabase.updateWebhook(
         { id: webhook.id },
         {
-          expirationDateTime: new Date(Date.now() + 2.5 * 3600 * 24 * 1000),
+          expirationDate: new Date(Date.now() + twoAndHalfDayInMilliSeconds),
         },
       );
     } catch (err) {
@@ -651,10 +647,6 @@ export class WebhooksService {
         },
       }));
     if (!userIntegration) {
-      // throw new APIException(
-      //   'User integration not found',
-      //   HttpStatus.BAD_REQUEST,
-      // );
       return null;
     }
     const doesExistWebhook = await this.webhookDatabase.doesExistWebhook({
@@ -662,18 +654,16 @@ export class WebhooksService {
       calendarId: calendarId,
     });
     if (doesExistWebhook || !outLookConfig?.webhookUrl) {
-      // throw new APIException(
-      //   'Webhook already exist! Please renew.',
-      //   HttpStatus.BAD_REQUEST,
-      // );
       return null;
     }
+
+    const twoAndHalfDayInMilliSeconds = 2.5 * 3600 * 24 * 1000;
     const subscriptionConfig = {
       changeType: outLookConfig.outlookWebhookChangeType,
       notificationUrl: outLookConfig.webhookUrl,
       lifecycleNotificationUrl: outLookConfig.webhook_lifecycleUrl,
       resource: `/me/calendars/${calendarId}/events`,
-      expirationDateTime: new Date(Date.now() + 2.5 * 3600 * 24 * 1000),
+      expirationDateTime: new Date(Date.now() + twoAndHalfDayInMilliSeconds),
       clientState: outLookConfig.clientState,
     };
     let webhook;
@@ -695,6 +685,10 @@ export class WebhooksService {
       //   'Fetching problem to register webhook in outlook!',
       //   HttpStatus.BAD_REQUEST,
       // );
+      return null;
+    }
+
+    if (!webhook) {
       return null;
     }
 
@@ -844,6 +838,17 @@ export class WebhooksService {
         err.message || 'Fetching problem to Extend webhook life!',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  async deleteLocalWebhook(query: Record<string, string>) {
+    try {
+      const deletedWebhook = await this.prisma.webhook.delete({
+        where: query,
+      });
+      return deletedWebhook;
+    } catch (err) {
+      return null;
     }
   }
 }
