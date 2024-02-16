@@ -87,6 +87,7 @@ export class JiraService {
               accessToken: resp.access_token,
               refreshToken: resp.refresh_token,
               site: element.url,
+              expiration_time: new Date(token_expire),
             },
             {
               siteId: element.id,

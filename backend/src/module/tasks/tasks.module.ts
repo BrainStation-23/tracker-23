@@ -9,7 +9,6 @@ import { NotificationModule } from '../notifications/notifications.module';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { HelperModule } from '../helper/helper.module';
-import { ProjectsModule } from '../projects/projects.module';
 
 @Module({
   imports: [
