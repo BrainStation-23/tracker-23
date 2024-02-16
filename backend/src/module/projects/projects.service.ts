@@ -289,6 +289,10 @@ export class ProjectsService {
       await this.projectDatabase.deleteSprintByProjectId(id),
       await this.projectDatabase.deleteStatusDetails(id),
       await this.projectDatabase.deletePriorities(id),
+      project?.calendarId &&
+        (await this.webhooksService.deleteLocalWebhook({
+          calenderId: project?.calendarId,
+        })),
     ]);
 
     const updatedProject =
