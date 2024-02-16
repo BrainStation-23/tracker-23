@@ -430,6 +430,60 @@ export class WebhooksService {
     return flag;
   }
 
+  async handleOutlookWebhookLifecycle(payload: any) {
+    try {
+      const webhook = await this.webhookDatabase.getWebhook({
+        subscriptionId: payload.value[0].subscriptionId,
+      });
+
+      if (!webhook) {
+        return null;
+      }
+      const projects = await this.projectDatabase.getProjects({
+        calendarId: webhook.calendarId,
+      });
+      const userIntegration =
+        projects[0]?.userWorkspaceId &&
+        (await this.integrationDatabase.getIntegration({
+          userWorkspaceId: projects[0].userWorkspaceId,
+          siteId: webhook.siteId,
+        }));
+      if (!userIntegration) {
+        return null;
+      }
+
+      const lifeCycleDate = {
+        expirationDateTime: new Date(Date.now() + 2.5 * 3600 * 24 * 1000),
+      };
+      let updatedLifeCycle;
+      const extendLifecycleUrl = `${outLookConfig.outlookWebhookRegisterEndPoint}/${payload.value[0].subscriptionId}`;
+      try {
+        updatedLifeCycle = await this.jiraClient.CallOutlook(
+          userIntegration,
+          this.outlookApiCalls.extendOutlookWebhookLifecycle,
+          extendLifecycleUrl,
+          lifeCycleDate,
+        );
+      } catch (err) {
+        // console.log(err);
+        // throw new APIException(
+        //   'Fetching problem to register webhook in outlook!',
+        //   HttpStatus.BAD_REQUEST,
+        // );
+        return null;
+      }
+
+      await this.webhookDatabase.updateWebhook(
+        { id: webhook.id },
+        {
+          expirationDateTime: new Date(Date.now() + 2.5 * 3600 * 24 * 1000),
+        },
+      );
+    } catch (err) {
+      return null;
+    }
+  }
+
   private async mappingUserWorkspaceAndJiraAccountId(workspaceId: number) {
     const mappedUserWorkspaceAndJiraId = new Map<string, number>();
     const workspace = await this.prisma.workspace.findUnique({
@@ -597,10 +651,11 @@ export class WebhooksService {
         },
       }));
     if (!userIntegration) {
-      throw new APIException(
-        'User integration not found',
-        HttpStatus.BAD_REQUEST,
-      );
+      // throw new APIException(
+      //   'User integration not found',
+      //   HttpStatus.BAD_REQUEST,
+      // );
+      return null;
     }
     const doesExistWebhook = await this.webhookDatabase.doesExistWebhook({
       siteId: userIntegration.siteId,
@@ -616,6 +671,7 @@ export class WebhooksService {
     const subscriptionConfig = {
       changeType: outLookConfig.outlookWebhookChangeType,
       notificationUrl: outLookConfig.webhookUrl,
+      lifecycleNotificationUrl: outLookConfig.webhook_lifecycleUrl,
       resource: `/me/calendars/${calendarId}/events`,
       expirationDateTime: new Date(Date.now() + 2.5 * 3600 * 24 * 1000),
       clientState: outLookConfig.clientState,
@@ -629,12 +685,17 @@ export class WebhooksService {
         webhookUrl,
         subscriptionConfig,
       );
-    } catch (err) {
-      console.log(err);
-      throw new APIException(
-        'Fetching problem to register webhook in outlook!',
-        HttpStatus.BAD_REQUEST,
+      console.log(
+        '🚀 ~ WebhooksService ~ registerOutlookWebhook ~ webhook:',
+        webhook,
       );
+    } catch (err) {
+      // console.log(err);
+      // throw new APIException(
+      //   'Fetching problem to register webhook in outlook!',
+      //   HttpStatus.BAD_REQUEST,
+      // );
+      return null;
     }
 
     const data = {
@@ -645,10 +706,11 @@ export class WebhooksService {
     };
     const localWebhook = await this.webhookDatabase.createWebhook(data);
     if (!localWebhook) {
-      throw new APIException(
-        'Fetching problem to register webhook!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      // throw new APIException(
+      //   'Fetching problem to register webhook!',
+      //   HttpStatus.INTERNAL_SERVER_ERROR,
+      // );
+      return null;
     }
     return localWebhook;
   }

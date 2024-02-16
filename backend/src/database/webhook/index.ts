@@ -53,6 +53,18 @@ export class WebhookDatabase {
     }
   }
 
+  async updateWebhook(query: Record<string, any>, data: Record<string, any>) {
+    try {
+      return await this.prisma.webhook.update({
+        where: query,
+        data,
+      });
+    } catch (err) {
+      console.log('🚀 ~ WebhookDatabase ~ updateWebhook ~ err:', err);
+      return null;
+    }
+  }
+
   async deleteOutlookWebhook(
     query: Record<string, any>,
   ): Promise<webhook | null> {
