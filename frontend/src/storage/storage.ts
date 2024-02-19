@@ -1,4 +1,4 @@
-export const setLocalStorage = (key, data) => {
+export const setLocalStorage = (key: string, data: any) => {
   if (!data) {
     console.log("Data empty");
     return;
@@ -11,7 +11,7 @@ export const setLocalStorage = (key, data) => {
   }
 };
 
-export const getLocalStorage = (key) => {
+export const getLocalStorage = (key: string) => {
   try {
     return localStorage.getItem(key)
       ? JSON.parse(localStorage.getItem(key))
@@ -21,7 +21,7 @@ export const getLocalStorage = (key) => {
   }
 };
 
-export const deleteFromLocalStorage = (key) => {
+export const deleteFromLocalStorage = (key: string) => {
   try {
     localStorage.removeItem(key);
   } catch (e) {

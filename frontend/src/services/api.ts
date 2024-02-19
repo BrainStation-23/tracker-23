@@ -4,6 +4,10 @@ import { config } from "config";
 import { getLocalStorage } from "@/storage/storage";
 import { logOutFunction } from "@/components/logout/logoutFunction";
 
+import { store } from "@/storage/redux/store";
+import { setAuthorizationSlice } from "@/storage/redux/integrationsSlice";
+import { AuthorizationErrorMessage } from "models/integration";
+
 const baseURL = config?.baseUrl;
 const api = axios.create({
   baseURL,
@@ -33,6 +37,18 @@ api.interceptors.response.use(undefined, async (error) => {
     );
   if (status === 401) {
     logOutFunction();
+  }
+  if (status === 410 && data.error.message) {
+    switch (data.error.message) {
+      case AuthorizationErrorMessage.INVALID_JIRA_REFRESH_TOKEN:
+        store.dispatch(setAuthorizationSlice({ type: "JIRA", value: true }));
+        break;
+      case AuthorizationErrorMessage.INVALID_OUTLOOK_REFRESH_TOKEN:
+        store.dispatch(setAuthorizationSlice({ type: "OUTLOOK", value: true }));
+        break;
+      default:
+        break;
+    }
   }
 
   throw error.response;
