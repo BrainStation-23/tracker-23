@@ -288,7 +288,7 @@ export const getDateRangeArray = (key: string, dates?: any) => {
   return [startDate, endDate];
 };
 export const localFormat = (value: any) => {
-  return value?.format("MMM DD , YYYY").toString();
+  return value?.format("DD MMM YYYY").toString();
 };
 export const timeFormat = (value: any) => {
   return value?.format("HH:mm:ss").toString();

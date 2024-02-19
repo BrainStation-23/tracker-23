@@ -121,7 +121,7 @@ const TopPanelActiveSprint = ({
   };
   return (
     <div className="my-5 flex w-full justify-between">
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         {tabs?.map((tab, index) => {
           return activeTab === tab ? (
             <MyActiveTab {...{ tab, setActiveTab }} key={index}>
@@ -142,8 +142,8 @@ const TopPanelActiveSprint = ({
           );
         })}
       </div>
-      <div className="mt-[3px] flex max-w-[900px] gap-2">
-        <div className="flex h-auto w-full flex-wrap justify-end gap-6">
+      <div className="flex items-center justify-center gap-2">
+        <div className="flex w-full flex-wrap justify-end gap-4">
           {activeTab !== "ActiveSprint" && (
             <DateRangePicker
               selectedDate={selectedDate}

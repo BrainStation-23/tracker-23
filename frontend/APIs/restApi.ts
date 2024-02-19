@@ -119,7 +119,7 @@ export async function sendOTPRest(
   data: RegisterDto
 ): Promise<LoginResponseDto | undefined> {
   try {
-    const res = await axios.post(`${apiEndPoints.sendOtp}`, data);
+    const res = await api.post(`${apiEndPoints.sendOtp}`, data);
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
