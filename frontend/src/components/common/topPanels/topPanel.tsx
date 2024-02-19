@@ -165,8 +165,8 @@ const TopPanel = ({
     onClick: (item: any) => {},
   };
   return (
-    <div className="my-5  flex w-full justify-between">
-      <div className="col-span-3 flex gap-3">
+    <div className="my-5 flex w-full justify-between">
+      <div className="col-span-3 flex gap-2">
         {tabs?.map((tab, index) => {
           return activeTab === tab ? (
             <MyActiveTab {...{ tab, setActiveTab }} key={index}>
@@ -187,8 +187,8 @@ const TopPanel = ({
           );
         })}
       </div>
-      <div className="mt-[3px] flex h-auto max-w-[900px] gap-2">
-        <div className="flex h-auto  w-full flex-wrap justify-end gap-6">
+      <div className="flex h-auto max-w-[900px] items-center justify-center gap-2">
+        <div className="flex h-auto w-full justify-end gap-4">
           {!(sprints?.length > 0) && activeTab !== "ActiveSprint" && (
             <DateRangePicker
               selectedDate={selectedDate}
