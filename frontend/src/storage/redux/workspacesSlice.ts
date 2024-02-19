@@ -3,15 +3,15 @@ import { WorkspaceDto } from "models/workspaces";
 
 // Define the initial state using the WorkspaceState interface
 interface WorkspaceState {
+  reload: Boolean;
   workspaces: WorkspaceDto[];
   activeWorkspace?: WorkspaceDto;
-  reload: Boolean;
 }
 
 const initialState: WorkspaceState = {
+  reload: false,
   workspaces: [],
   activeWorkspace: null,
-  reload: false,
 };
 
 const workspacesSlice = createSlice({
