@@ -9,6 +9,7 @@ const {
   OUTLOOK_WEBHOOK_REGISTER_ENDPOINT,
   OUTLOOK_GET_EVENT_BY_EVENTID_URL,
   OUTLOOK_AUTH_URL,
+  OUTLOOK_WEBHOOK_LIFECYCLE_URL,
 } = process.env;
 
 export const outLookConfig = {
@@ -23,6 +24,7 @@ export const outLookConfig = {
     'offline_access user.read Calendars.ReadWrite Calendars.Read',
 
   webhookUrl: OUTLOOK_WEBHOOK_URL,
+  webhook_lifecycleUrl: OUTLOOK_WEBHOOK_LIFECYCLE_URL,
   outlookWebhookChangeType: OUTLOOK_WEBHOOK_CHANGE_TYPE || 'created',
   clientState: OUTLOOK_CLIENT_STATE || 'client-state',
   outlookWebhookRegisterEndPoint:

@@ -1,7 +1,7 @@
 import { Form, Input, message } from "antd";
 import { userAPI } from "APIs/index";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useState } from "react";
 
 import MyFormItem from "@/components/common/form/MyFormItem";
 import MyLink from "@/components/common/link/MyLink";
@@ -12,21 +12,25 @@ type Props = {
 };
 const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
   const router = useRouter();
+  const [waitingForOtp, setWaitingForOtp] = useState(false);
 
   const onFinish = async (values: any) => {
-    const temp = {
-      email: values.email,
-      firstName: values.firstName,
-      lastName: values.lastName,
-      password: values.password,
-    };
     setIsModalOpen(true);
-    const userRegistered = await userAPI.registerUser(temp);
-    setIsModalOpen(false);
+    if (!waitingForOtp) {
+      const otp = await userAPI.sendOTP(values);
+      setIsModalOpen(false);
 
-    if (userRegistered) {
-      message.success("Singed up Successfully");
-      router.push("/login");
+      if (otp) {
+        setWaitingForOtp(true);
+      }
+    } else {
+      const userRegistered = await userAPI.registerUser(values);
+      setIsModalOpen(false);
+
+      if (userRegistered) {
+        message.success("Singed up Successfully");
+        router.push("/login");
+      }
     }
   };
 
@@ -124,6 +128,18 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
           className="flex rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
         />
       </MyFormItem>
+      {waitingForOtp && (
+        <MyFormItem
+          label="OTP"
+          name="code"
+          rules={[{ required: true, message: "Please input your Last Name!" }]}
+        >
+          <Input
+            placeholder="Enter OTP code"
+            className="flex w-full rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
+          />
+        </MyFormItem>
+      )}
 
       <MyFormItem>
         <button className="flex w-full flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">
