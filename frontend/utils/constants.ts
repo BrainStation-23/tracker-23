@@ -5,7 +5,6 @@ export const publicRoutes = [
   "/forgotPassword",
   "/resetPassword",
   "/inviteLink",
-  // "/images",
 ];
 export const ignoreRoutes = [
   "/_next",

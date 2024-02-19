@@ -1,19 +1,18 @@
 import { Button, Spin } from "antd";
 import { TaskDto } from "models/tasks";
-import React, { useState } from "react";
+
 type Props = {
   runningTask: TaskDto;
-  handleWarningClick: Function;
   warningData: TaskDto;
+  handleWarningClick: Function;
 };
 
 const SessionStartWarning = ({
   runningTask,
-  handleWarningClick,
   warningData,
+  handleWarningClick,
 }: Props) => {
-  let spin = false;
-  console.log("🚀 ~ file: warning.tsx:16 ~ warningData:", warningData);
+  const spin = false;
   return (
     <>
       {spin ? (

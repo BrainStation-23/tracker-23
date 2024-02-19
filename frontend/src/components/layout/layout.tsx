@@ -35,6 +35,8 @@ import "react-toastify/dist/ReactToastify.css";
 const CustomLayout = ({ children }: any) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
+
   const syncRunning = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
@@ -47,7 +49,6 @@ const CustomLayout = ({ children }: any) => {
   const connectedSocket = useAppSelector(
     (state: RootState) => state.notificationsSlice.socket
   );
-  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
   const tmp = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );

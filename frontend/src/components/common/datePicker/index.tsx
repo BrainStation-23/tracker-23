@@ -51,7 +51,7 @@ const DateRangePicker = ({
         const date4 = dayjs(date3).endOf("month");
         setDropdownText([localFormat(date3), localFormat(date4)]);
         setSelectedDate([localFormat(date3), localFormat(date4)]);
-        setFilterDateType(FilterDateType.CUSTOM_DATE);
+        setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
       } else {
         const timeDifference =
           dayjs(selectedDate[1]).diff(dayjs(selectedDate[0])) +
@@ -61,7 +61,7 @@ const DateRangePicker = ({
 
         setDropdownText([localFormat(date3), localFormat(date4)]);
         setSelectedDate([localFormat(date3), localFormat(date4)]);
-        setFilterDateType(FilterDateType.CUSTOM_DATE);
+        setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
       }
     }
   };
@@ -74,7 +74,7 @@ const DateRangePicker = ({
         const date4 = dayjs(date3).endOf("month");
         setDropdownText([localFormat(date3), localFormat(date4)]);
         setSelectedDate([localFormat(date3), localFormat(date4)]);
-        setFilterDateType(FilterDateType.CUSTOM_DATE);
+        setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
       } else {
         const timeDifference =
           dayjs(selectedDate[0]).diff(dayjs(selectedDate[1])) -
@@ -84,7 +84,7 @@ const DateRangePicker = ({
 
         setDropdownText([localFormat(date3), localFormat(date4)]);
         setSelectedDate([localFormat(date3), localFormat(date4)]);
-        setFilterDateType(FilterDateType.CUSTOM_DATE);
+        setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
       }
     }
   };
@@ -105,7 +105,7 @@ const DateRangePicker = ({
       setDropdownText(getDateRangeArray(val.key));
       setSelectedDate(getDateRangeArray(val.key));
       // @ts-ignore
-      setFilterDateType(FilterReverseDateType[val.key]);
+      setFilterDateType && setFilterDateType(FilterReverseDateType[val.key]);
       setDropdownOpen(false);
       customDateOpen && setCustomDateOpen(false);
     },
@@ -175,9 +175,8 @@ const DateRangePicker = ({
                       <div className="mt-[300px] flex flex-row-reverse gap-3 px-3">
                         <Button
                           onClick={() => {
-                            if (setFilterDateType) {
+                            setFilterDateType &&
                               setFilterDateType(FilterDateType.CUSTOM_DATE);
-                            }
                             setDropdownText(customDateText);
                             setSelectedDate(customDateText);
                             setCustomDateOpen(!customDateOpen);

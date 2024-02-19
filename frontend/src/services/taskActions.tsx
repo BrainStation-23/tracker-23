@@ -27,10 +27,6 @@ export const updateTask = (task: any, taskName: string) => {
     } else {
       taskList.push(task.name);
       setLocalStorage("TaskList", taskList);
-      console.log(
-        "🚀 ~ file: taskActions.tsx:19 ~ updateTask ~ taskList",
-        taskList
-      );
       if (task?.totalTime >= 0) {
         setLocalStorage(task.name, task);
         deleteFromLocalStorage(taskName);

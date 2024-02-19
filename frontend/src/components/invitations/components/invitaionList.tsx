@@ -31,7 +31,6 @@ const InvitationList = ({
   acceptInvite,
   rejectInvite,
 }: Props) => {
-  console.log(invitationList);
   const columns: ColumnsType<InviteUserWorkspaceDto> = [
     {
       title: (

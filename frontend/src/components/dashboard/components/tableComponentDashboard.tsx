@@ -101,7 +101,6 @@ const DashboardTableComponent = ({
       dataIndex: "createdAt",
       key: "createdAt",
       render: (createdAt: any, task: TaskDto) => {
-        console.log("****", createdAt, task);
         return <>{getFormattedTime(formatDate(task.createdAt))}</>;
       },
     },

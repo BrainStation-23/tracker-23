@@ -61,8 +61,6 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
       filterDateType,
     });
     if (res) {
-      console.log("res", res);
-
       dispatch(updateReportSlice(res));
       message.success("Saved Successfully");
       dispatch(setReportInEditSlice(null));

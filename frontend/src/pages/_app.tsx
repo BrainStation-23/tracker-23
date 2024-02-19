@@ -1,9 +1,6 @@
 import { Spin } from "antd";
-import { config } from "config";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { publicRoutes } from "utils/constants";
 
 import InvalidUserPage from "@/components/invalidUser";
 import CustomLayout from "@/components/layout/layout";
@@ -17,25 +14,16 @@ import { UserDto } from "models/user";
 import "@/styles/globals.css";
 
 export default function App({ Component, pageProps }: AppProps) {
-  const router = useRouter();
-  const url = router.asPath;
-  const userDetails: UserDto = getLocalStorage("userDetails");
-
   const [loading, setLoading] = useState(true);
-  const [validUser, setValidUser] = useState(true);
+  const [validUser, setValidUser] = useState(false);
 
   useEffect(() => {
-    if (!publicRoutes.some((route) => url.includes(route))) {
-      if (typeof userDetails?.approved === "boolean")
-        setValidUser(
-          userDetails?.approved || userDetails?.email === config.adminMail
-        );
-      else setValidUser(true);
-    } else if (!validUser) {
+    const user: UserDto = getLocalStorage("userDetails");
+    if (user.approved) {
       setValidUser(true);
     }
     setLoading(false);
-  }, [validUser, url, router]);
+  }, []);
 
   return (
     <Providers>
@@ -47,7 +35,7 @@ export default function App({ Component, pageProps }: AppProps) {
             <CustomLayout>
               <Head>
                 <link rel="icon" href="/images/bsIcon.png" />
-                <title>Tracker23</title>
+                <title>Tracker 23</title>
               </Head>
               <Component {...pageProps} />
             </CustomLayout>

@@ -72,7 +72,6 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
     };
     const res = await userAPI.getTimeSheetReport(obj);
     res.columns && setColumns(res.columns);
-
     res.rows && setData(res.rows);
     setDateRangeArray(res.dateRange);
     setIsLoading(false);
@@ -91,10 +90,10 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
         exportButton={
           <Button
             type="ghost"
-            className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
-            icon={<LuDownload className="text-xl" />}
             loading={downloading}
             onClick={() => excelExport()}
+            icon={<LuDownload className="text-xl" />}
+            className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
           >
             Export to Excel
           </Button>
@@ -103,8 +102,8 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
       <Spin className="custom-spin" spinning={isLoading}>
         <TableComponent
           data={data}
-          dateRangeArray={dateRangeArray}
           column={column}
+          dateRangeArray={dateRangeArray}
         />
       </Spin>
     </>

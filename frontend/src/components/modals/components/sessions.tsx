@@ -40,7 +40,6 @@ const Sessions = ({
   const [sessionInEdit, setSessionInEdit] = useState(null);
   const onFinish = async (values: any) => {
     SetSpinning(true);
-    console.log(values);
     (await updateSession(sessionInEdit, values)) && setSessionInEdit(null);
     SetSpinning(false);
   };

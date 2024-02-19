@@ -30,13 +30,15 @@ import SprintTimelineReport from "./singleReports/sprintTimelineReport";
 import TaskListReport from "./singleReports/taskListReport";
 import TimeSheetReport from "./singleReports/timeSheetReport";
 
-const ReportPageComponent = () => {
-  const dispatch = useDispatch();
+export default function ReportPageComponent() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const pageId = router.query?.reportPageId
     ? parseInt(router.query?.reportPageId as string)
     : -1;
+
   const reportPageData = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages
   ).find((reportPage) => reportPage.id === pageId);
@@ -45,6 +47,7 @@ const ReportPageComponent = () => {
     const res = await userAPI.getReportSprints();
     if (res?.length > 0) dispatch(setReportSprintListReducer(res));
   };
+
   const getIntegrationTypes = async () => {
     const res = await userAPI.getIntegrationTypesReportPage();
     if (res?.length > 0) {
@@ -54,10 +57,12 @@ const ReportPageComponent = () => {
       dispatch(setReportIntegrationTypesSlice(types));
     }
   };
+
   const getProjectWiseStatues = async () => {
     const res = await userAPI.getAllReportProjects();
     res && dispatch(setReportProjectsSlice(res));
   };
+
   const reportToRender = (report: ReportData, inView: Boolean) => {
     switch (report.reportType) {
       case "TIME_SHEET":
@@ -80,6 +85,7 @@ const ReportPageComponent = () => {
     getSprintList();
     getProjectWiseStatues();
   }, []);
+
   return (
     <div className="flex flex-col gap-7 pb-5">
       <div className="flex items-center justify-end">
@@ -88,7 +94,12 @@ const ReportPageComponent = () => {
         </PrimaryButton>
       </div>
       {reportPageData?.reports?.map((report) => {
-        return <IntersectionWrapper {...{ report, reportToRender }} />;
+        return (
+          <IntersectionWrapper
+            {...{ report, reportToRender }}
+            key={report.id}
+          />
+        );
       })}
 
       <GlobalModal title="Add New Report" {...{ isModalOpen, setIsModalOpen }}>
@@ -96,9 +107,7 @@ const ReportPageComponent = () => {
       </GlobalModal>
     </div>
   );
-};
-
-export default ReportPageComponent;
+}
 
 export const ReportIcons = {
   TIME_SHEET: <FaChartBar />,

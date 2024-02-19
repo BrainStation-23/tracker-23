@@ -36,25 +36,115 @@ type SideMenuProps = {
 };
 const { Text } = Typography;
 
+export const sideMenuOptions = [
+  { link: "/dashboard", title: "Dashboard", icon: <LuLayoutDashboard /> },
+  { link: "/taskList", title: "All Tasks", icon: <LuClipboardList /> },
+  {
+    link: "/integrations",
+    title: "Integrations",
+    icon: <LuPlug />,
+  },
+  {
+    link: "/projects",
+    title: "Projects",
+    icon: <LuFolder />,
+  },
+  {
+    link: "/invitations",
+    title: "Invitations",
+    icon: <LuMail />,
+  },
+  {
+    link: "/members",
+    title: "Members",
+    icon: <LuUserCircle2 />,
+  },
+  {
+    link: "/settings",
+    title: "Settings",
+    icon: <LuSettings />,
+  },
+  {
+    link: "reports",
+    title: "Reports",
+    icon: <LuNewspaper />,
+  },
+  {
+    link: "suggestion",
+    title: "Suggestion/Support",
+    icon: <LuHelpCircle />,
+  },
+];
+
+export const sideMenuFucntionOptions = [
+  {
+    link: "/dashboard",
+    title: "Dashboard",
+    icon: <LuLayoutDashboard size={16} />,
+  },
+  {
+    link: "/taskList",
+    title: "All Tasks",
+    icon: <LuClipboardList size={16} />,
+  },
+];
+
+export const sideMenuManageOptions = [
+  {
+    link: "/integrations",
+    title: "Integrations",
+    icon: <LuPlug size={16} />,
+  },
+  {
+    link: "/projects",
+    title: "Projects",
+    icon: <LuFolder size={16} />,
+  },
+  {
+    link: "/invitations",
+    title: "Invitations",
+    icon: <LuMail size={16} />,
+  },
+  {
+    link: "/members",
+    title: "Members",
+    icon: <LuUserCircle2 size={16} />,
+  },
+  {
+    link: "/settings",
+    title: "Settings",
+    icon: <LuSettings size={16} />,
+  },
+  {
+    link: "suggestion",
+    title: "Suggestion/Support",
+    icon: <LuHelpCircle size={16} />,
+  },
+];
+
 const SideMenu = () => {
   const router = useRouter();
   const dispatch = useDispatch();
-  const [manageDropdownOpen, setManageDropdownOpen] = useState(true);
-  const [reportDropdownOpen, setReportDropdownOpen] = useState(true);
-  const [functionDropdownOpen, setFunctionDropdownOpen] = useState(true);
   const reportPages = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages
   );
+
   const pageId = router.query?.reportPageId
     ? parseInt(router.query?.reportPageId as string)
     : -1;
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   const [isCreatingPage, setIsCreatingPage] = useState(false);
   const [deletePage, setDeletePage] = useState<ReportPageDto>();
+  const [manageDropdownOpen, setManageDropdownOpen] = useState(true);
+  const [reportDropdownOpen, setReportDropdownOpen] = useState(true);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [functionDropdownOpen, setFunctionDropdownOpen] = useState(true);
+
   const handleDeletePage = (page: ReportPageDto) => {
     setDeletePage(page);
     setIsDeleteModalOpen(true);
   };
+
   const handleCreatePage = async () => {
     setIsCreatingPage(true);
     const res = await userAPI.createReportPage({
@@ -66,37 +156,7 @@ const SideMenu = () => {
     }
     setIsCreatingPage(false);
   };
-  const SideMenuOption = ({ option, active }: SideMenuProps) => {
-    const router = useRouter();
-    return (
-      <div
-        className={`group flex items-center gap-2 rounded-lg py-[6px] px-1 hover:cursor-pointer hover:bg-[#ECECED] hover:text-primary ${
-          active ? "bg-[#ECECED] text-primary" : ""
-        }`}
-        onClick={() => {
-          console.log(router);
-          option.link === "suggestion"
-            ? window.open("https://tracker23.canny.io/feature-request")
-            : router.push(option.link);
-        }}
-      >
-        <div
-          className={` flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
-            active ? "stroke-primary " : "stroke-[#ADACB0] text-[#ADACB0]"
-          }`}
-        >
-          {option.icon}
-        </div>
-        <div
-          className={`text-xs ${
-            active ? "font-semibold text-primary" : "font-medium text-[#4D4E55]"
-          }`}
-        >
-          {option.title}
-        </div>
-      </div>
-    );
-  };
+
   return (
     <div className="flex h-screen w-full items-center justify-center bg-[#F8F8F8]">
       <div className="flex h-full w-full flex-col justify-between">
@@ -315,94 +375,33 @@ const SideMenu = () => {
 
 export default SideMenu;
 
-export const sideMenuOptions = [
-  { link: "/dashboard", title: "Dashboard", icon: <LuLayoutDashboard /> },
-  { link: "/taskList", title: "All Tasks", icon: <LuClipboardList /> },
-  {
-    link: "/integrations",
-    title: "Integrations",
-    icon: <LuPlug />,
-  },
-  {
-    link: "/projects",
-    title: "Projects",
-    icon: <LuFolder />,
-  },
-  // {
-  //   link: "/exports",
-  //   title: "Exports",
-  //   icon: <LuDownload />,
-  // },
-  {
-    link: "/invitations",
-    title: "Invitations",
-    icon: <LuMail />,
-  },
-  {
-    link: "/members",
-    title: "Members",
-    icon: <LuUserCircle2 />,
-  },
-  {
-    link: "/settings",
-    title: "Settings",
-    icon: <LuSettings />,
-  },
-  {
-    link: "reports",
-    title: "Reports",
-    icon: <LuNewspaper />,
-  },
-  {
-    link: "suggestion",
-    title: "Suggestion/Support",
-    icon: <LuHelpCircle />,
-  },
-  // { link: "/onBoarding", title: "OnBoarding Page" },
-];
-
-export const sideMenuFucntionOptions = [
-  {
-    link: "/dashboard",
-    title: "Dashboard",
-    icon: <LuLayoutDashboard size={16} />,
-  },
-  {
-    link: "/taskList",
-    title: "All Tasks",
-    icon: <LuClipboardList size={16} />,
-  },
-];
-
-export const sideMenuManageOptions = [
-  {
-    link: "/integrations",
-    title: "Integrations",
-    icon: <LuPlug size={16} />,
-  },
-  {
-    link: "/projects",
-    title: "Projects",
-    icon: <LuFolder size={16} />,
-  },
-  {
-    link: "/invitations",
-    title: "Invitations",
-    icon: <LuMail size={16} />,
-  },
-  {
-    link: "/members",
-    title: "Members",
-    icon: <LuUserCircle2 size={16} />,
-  },
-  {
-    link: "/settings",
-    title: "Settings",
-    icon: <LuSettings size={16} />,
-  },
-  {
-    link: "suggestion",
-    title: "Suggestion/Support",
-    icon: <LuHelpCircle size={16} />,
-  },
-];
+const SideMenuOption = ({ option, active }: SideMenuProps) => {
+  const router = useRouter();
+  return (
+    <div
+      className={`group flex items-center gap-2 rounded-lg py-[6px] px-1 hover:cursor-pointer hover:bg-[#ECECED] hover:text-primary ${
+        active ? "bg-[#ECECED] text-primary" : ""
+      }`}
+      onClick={() => {
+        option.link === "suggestion"
+          ? window.open("https://tracker23.canny.io/feature-request")
+          : router.push(option.link);
+      }}
+    >
+      <div
+        className={` flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
+          active ? "stroke-primary " : "stroke-[#ADACB0] text-[#ADACB0]"
+        }`}
+      >
+        {option.icon}
+      </div>
+      <div
+        className={`text-xs ${
+          active ? "font-semibold text-primary" : "font-medium text-[#4D4E55]"
+        }`}
+      >
+        {option.title}
+      </div>
+    </div>
+  );
+};

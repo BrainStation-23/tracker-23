@@ -124,10 +124,7 @@ const SprintSelectorComponent = ({
             showArrow
             maxTagCount={1}
             options={Options}
-            onChange={(value) => {
-              console.log("🚀 ~ file: sprintSelector.tsx:123 ~ value:", value);
-              setSprints(value);
-            }}
+            onChange={(value) => setSprints(value)}
           />
         ) : (
           <Select
@@ -140,9 +137,7 @@ const SprintSelectorComponent = ({
             showArrow
             maxTagCount={1}
             options={Options}
-            onChange={(value) => {
-              setSprints(value);
-            }}
+            onChange={(value) => setSprints(value)}
           />
         )}
       </div>
