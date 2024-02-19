@@ -35,7 +35,6 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
   };
 
   const onFinishFailed = (errorInfo: any) => {
-    console.log("Failed:", errorInfo);
     errorInfo &&
       errorInfo.errorFields.forEach((ef: any) => {
         message.error(ef.errors[0]);

@@ -11,10 +11,8 @@ const ResetPasswordForm = () => {
   if (router.isReady && typeof token != "string") router.push("/login");
 
   const signIn = async (values: ResetPasswordDto) => {
-    console.log(values);
     if (typeof token === "string") {
       const res = await userAPI.resetPassword(token, values);
-      console.log("🚀 ~ file: ResetPasswordForm.tsx:16 ~ signIn ~ res:", res);
       res && message.success("successfully Updated");
     } else message.error("Update failed");
     router.push("/login");

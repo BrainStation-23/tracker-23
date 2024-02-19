@@ -15,10 +15,6 @@ const EstimationComponent = ({ task, handleEstimationChange }: Props) => {
   const [editing, setEditing] = useState(false);
   const [form] = Form.useForm();
   const onFinish = async (values: any) => {
-    console.log(
-      "🚀 ~ file: estimationComponent.tsx:5 ~ [form] ~ values:",
-      values
-    );
     if (Number(task.estimation) !== Number(values.estimation)) {
       const res = await handleEstimationChange(task, Number(values.estimation));
 

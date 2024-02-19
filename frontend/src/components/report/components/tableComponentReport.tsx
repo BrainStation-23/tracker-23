@@ -26,8 +26,8 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
       key: "name",
       width: 200,
       fixed: "left",
-      render: (_: any, v: any) => (
-        <div className="flex items-center gap-2">
+      render: (_: any, v: any, idx: number) => (
+        <div className="flex items-center gap-2" key={idx}>
           <div className=" ">
             {v?.picture ? (
               <Avatar src={v.picture} alt="N" className="h-[40px] w-[40px]" />
@@ -43,14 +43,15 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
           </div>
           <Text
             className="w-[100px] cursor-pointer"
-            ellipsis={{ tooltip: v.name }}
+            ellipsis={{ tooltip: v?.name }}
           >
-            {v.name}
+            {v?.name}
           </Text>
         </div>
       ),
     },
   ];
+
   column.forEach((date) => {
     columns.push({
       title: (
@@ -70,15 +71,14 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
       key: date,
       align: "center",
       width: 150,
-      render: (_: any, v: any) => {
-        return (
-          <div className="w-full cursor-pointer rounded px-2 text-center  text-black">
-            <FormatTimeForSettings time={v[date]} />
-          </div>
-        );
-      },
+      render: (_: any, v: any) => (
+        <div className="w-full cursor-pointer rounded px-2 text-center text-black">
+          <FormatTimeForSettings time={v[date]} />
+        </div>
+      ),
     });
   });
+
   columns.push({
     title: "Total",
     dataIndex: "totalTime",
@@ -86,19 +86,18 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
     align: "center",
     fixed: "right",
     width: 100,
-    render: (_: any, { totalTime }: any) => {
-      return (
-        <div className="w-full rounded px-2 text-center text-black">
-          <FormatTimeForSettings time={totalTime} />
-        </div>
-      );
-    },
+    render: (_: any, { totalTime }: any) => (
+      <div className="w-full rounded px-2 text-center text-black">
+        <FormatTimeForSettings time={totalTime} />
+      </div>
+    ),
     sorter: (a: any, b: any) => {
       if (a.totalTime < b.totalTime) return -1;
       if (a.totalTime > b.totalTime) return 1;
       return 0;
     },
   });
+
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {
       current: 1,
@@ -123,14 +122,14 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
 
   return (
     <Table
+      bordered
       columns={columns}
       dataSource={data}
-      rowKey={(d) => d.user}
-      pagination={tableParams.pagination}
-      onChange={handleTableChange}
       className="w-full"
       scroll={{ x: 1500 }}
-      bordered
+      rowKey={(d) => d.user}
+      onChange={handleTableChange}
+      pagination={tableParams.pagination}
     />
   );
 };

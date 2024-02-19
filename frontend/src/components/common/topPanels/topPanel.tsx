@@ -21,45 +21,50 @@ import SprintSelectorComponent from "./components/sprintSelector";
 import StatusSelectorComponent from "./components/statusSelector";
 import TopBarMoreComponent from "./components/topBarMoreComponent";
 import CalendarSelectorComponent from "./components/calendarSelector";
+import { FilterDateType } from "models/reports";
 
 type Props = {
   tasks: TaskDto[];
-  activeSprintTasks: TaskDto[];
   activeTab: string;
   setActiveTab: Function;
   setSearchParams: Function;
-  searchParams: SearchParamsModel;
   checkedOptionList: string[];
+  activeSprintTasks: TaskDto[];
   setCheckedOptionList: Function;
+  searchParams: SearchParamsModel;
 };
 const TopPanel = ({
   tasks,
-  activeSprintTasks,
   activeTab,
   setActiveTab,
-  setSearchParams,
   searchParams,
+  setSearchParams,
+  activeSprintTasks,
   checkedOptionList,
   setCheckedOptionList,
 }: Props) => {
-  const [searchText, setSearchText] = useState(searchParams.searchText);
-  const [selectedSource, setSelectedSource] = useState(searchParams.types);
-  const [status, setStatus] = useState<string[]>(searchParams.status);
+  const totalPinned = tasks?.filter((task) => task.pinned)?.length;
+  const tabs = ["All", "Pin"];
+
+  const sprintList = useAppSelector(
+    (state: RootState) => state.tasksSlice.sprintList
+  );
+
+  const [selectedDate, setSelectedDate] = useState(
+    getDateRangeArray("this-week")
+  );
   const [projectIds, setProjectIds] = useState<number[]>(
     searchParams.projectIds
   );
   const [calendarIds, setCalendarIds] = useState<number[]>(
     searchParams.calendarIds
   );
-  const [priority, setPriority] = useState(searchParams.priority);
-  const [sprints, setSprints] = useState(searchParams.sprints);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(
-    getDateRangeArray("this-week")
-  );
-  const sprintList = useAppSelector(
-    (state: RootState) => state.tasksSlice.sprintList
-  );
+  const [sprints, setSprints] = useState(searchParams.sprints);
+  const [priority, setPriority] = useState(searchParams.priority);
+  const [status, setStatus] = useState<string[]>(searchParams.status);
+  const [searchText, setSearchText] = useState(searchParams.searchText);
+  const [selectedSource, setSelectedSource] = useState(searchParams.types);
   const options = [
     { label: "Search", value: "Search" },
     { label: "Priority", value: "Priority" },
@@ -69,15 +74,10 @@ const TopPanel = ({
   ];
   if (sprintList.length > 0) options.push({ label: "Sprint", value: "Sprint" });
 
-  const totalPinned = tasks?.filter((task) => task.pinned)?.length;
-  // const tabs = ["All", "Pin", "ActiveSprint"];
-  const tabs = ["All", "Pin"];
-
   const handleInputChange = (event: any) => {
     setSearchText(event.target.value);
   };
   const debouncedHandleInputChange = debounce(handleInputChange, 500);
-  // useEffect(()=>)
   useEffect(() => {
     if (
       JSON.stringify(searchParams) !==
@@ -103,7 +103,6 @@ const TopPanel = ({
         types: selectedSource,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
   useEffect(() => {
     if (
@@ -139,8 +138,6 @@ const TopPanel = ({
         types: selectedSource,
       });
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedDate,
     priority,
@@ -165,11 +162,11 @@ const TopPanel = ({
   });
   const menuProps = {
     items,
-    onClick: (item: any) => {},
+    // onClick: (item: any) => {},
   };
   return (
-    <div className="my-5  flex w-full justify-between">
-      <div className="col-span-3 flex gap-3">
+    <div className="my-5 flex w-full justify-between">
+      <div className="flex gap-2">
         {tabs?.map((tab, index) => {
           return activeTab === tab ? (
             <MyActiveTab {...{ tab, setActiveTab }} key={index}>
@@ -190,10 +187,13 @@ const TopPanel = ({
           );
         })}
       </div>
-      <div className="mt-[3px] flex h-auto max-w-[900px] gap-2">
-        <div className="flex h-auto  w-full flex-wrap justify-end gap-6">
+      <div className="flex items-center justify-center gap-2">
+        <div className="flex w-full justify-end gap-4">
           {!(sprints?.length > 0) && activeTab !== "ActiveSprint" && (
-            <DateRangePicker {...{ selectedDate, setSelectedDate }} />
+            <DateRangePicker
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+            />
           )}
           {checkedOptionList.includes("Search") && (
             <div className="w-[210px]">

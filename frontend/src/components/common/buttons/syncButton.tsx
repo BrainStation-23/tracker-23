@@ -22,7 +22,6 @@ const SyncButtonComponent = ({
   const syncing = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
-  console.log("🚀 ~ file: syncButton.tsx:25 ~ syncing:", syncing);
   const syncingProjectId = useAppSelector(
     (state: RootState) => state.syncStatus.syncingProject
   );
