@@ -45,6 +45,9 @@ export class UserIntegrationDatabase {
         where: {
           id: userIntegrationId,
         },
+        include: {
+          integration: true,
+        },
       });
     } catch (error) {
       console.log(error);
