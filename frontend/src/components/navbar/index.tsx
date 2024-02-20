@@ -176,7 +176,7 @@ const Navbar = ({ extraComponent }: Props) => {
             className="flex items-center border-none bg-red-600 py-4 font-bold text-white hover:text-white"
             onClick={handleReauthorization}
           >
-            {`Click to authorize ${reauthorizationType}`}
+            {`Authorize ${reauthorizationType}`}
           </Button>
         )}
         <NotificationSection />

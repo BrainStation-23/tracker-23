@@ -1,25 +1,13 @@
 "use client";
 
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import ALertCircleIconSvg from "@/assets/svg/ALertCircleIconSvg";
 import LogOutButton from "@/components/logout/logOutButton";
-import { logOutFunction } from "@/components/logout/logoutFunction";
 import { getLocalStorage } from "@/storage/storage";
 
 const InvalidUserPage = () => {
-  const router = useRouter();
-  const [userDetails, setUserDetails] = useState(
-    getLocalStorage("userDetails")
-  );
-  useEffect(() => {
-    if (!getLocalStorage("userDetails")) {
-      logOutFunction();
-      router.push("/login");
-    }
-    setUserDetails(getLocalStorage("userDetails"));
-  }, [userDetails]);
+  const [userDetails] = useState(getLocalStorage("userDetails"));
 
   return (
     <div className="m-auto flex h-screen w-full flex-col items-center justify-center">
