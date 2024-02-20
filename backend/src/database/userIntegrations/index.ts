@@ -87,6 +87,23 @@ export class UserIntegrationDatabase {
     }
   }
 
+  async createAndUpdateUserIntegration(
+    query: Record<string, any>,
+    updateUserIntegration: Record<string, any>,
+    userIntegration: any,
+  ) {
+    try {
+      return await this.prisma.userIntegration.upsert({
+        where: query,
+        update: updateUserIntegration,
+        create: userIntegration,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
   async getUserIntegration(filter: Record<string, any>) {
     try {
       return await this.prisma.userIntegration.findUnique({

@@ -118,7 +118,7 @@ export class ProjectsService {
         await this.tasksService.syncCall(StatusEnum.FAILED, user),
       ]);
       throw new APIException(
-        'Could not import project tasks',
+        'UserIntegration not found. Could not import project tasks',
         HttpStatus.BAD_REQUEST,
       );
     }
