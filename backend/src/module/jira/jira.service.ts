@@ -167,16 +167,29 @@ export class JiraService {
         integrationId: doesExistIntegration.id,
       });
 
-      await this.userIntegrationDatabase.createUserIntegration({
-        accessToken: getTempIntegration.accessToken,
-        refreshToken: getTempIntegration.refreshToken,
-        jiraAccountId: getTempIntegration.jiraAccountId,
-        userWorkspaceId: getTempIntegration.userWorkspaceId,
-        workspaceId: getTempIntegration.workspaceId,
-        integrationId: doesExistIntegration.id,
-        siteId,
-        expiration_time: getTempIntegration.expiration_time,
-      });
+      await this.userIntegrationDatabase.createAndUpdateUserIntegration(
+        {
+          UserIntegrationIdentifier: {
+            integrationId: doesExistIntegration.id,
+            userWorkspaceId: getTempIntegration.userWorkspaceId,
+          },
+        },
+        {
+          accessToken: getTempIntegration.accessToken,
+          refreshToken: getTempIntegration.refreshToken,
+          expiration_time: getTempIntegration.expiration_time,
+        },
+        {
+          accessToken: getTempIntegration.accessToken,
+          refreshToken: getTempIntegration.refreshToken,
+          jiraAccountId: getTempIntegration.jiraAccountId,
+          userWorkspaceId: getTempIntegration.userWorkspaceId,
+          workspaceId: getTempIntegration.workspaceId,
+          integrationId: doesExistIntegration.id,
+          siteId,
+          expiration_time: getTempIntegration.expiration_time,
+        },
+      );
 
       const importedProject = await this.integrationDatabase.findProjects({
         workspaceId: user.activeWorkspaceId,
