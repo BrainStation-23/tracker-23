@@ -1,20 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { GetUserIntegrationsByUserWorkspaceIdAndWorkspaceId } from 'src/module/integrations/dto/get.userIntegrations.filter.dto';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 
 @Injectable()
 export class UserIntegrationDatabase {
   constructor(private prisma: PrismaService) {}
 
-  async getUserIntegrationListWithIntegrations(
-    filter: GetUserIntegrationsByUserWorkspaceIdAndWorkspaceId,
-  ) {
+  async getUserIntegrationListWithIntegrations(filter: Record<string, any>) {
     try {
       return await this.prisma.userIntegration.findMany({
-        where: {
-          userWorkspaceId: filter.userWorkspaceId,
-          workspaceId: filter.workspaceId,
-        },
+        where: filter,
         include: { integration: true },
       });
     } catch (error) {

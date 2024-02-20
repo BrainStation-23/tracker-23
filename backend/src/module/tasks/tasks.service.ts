@@ -1426,12 +1426,38 @@ export class TasksService {
     const userIntegration =
       project?.integrationId &&
       (await this.getUserIntegration(userWorkspace.id, project.integrationId));
-    const updatedUserIntegration =
-      userIntegration &&
-      (await this.integrationsService.getUpdatedUserIntegration(
-        user,
-        userIntegration.id,
-      ));
+
+    let updatedUserIntegration: any;
+    if (
+      userWorkspace.role === Role.ADMIN &&
+      !userIntegration &&
+      userWorkspace?.workspaceId
+    ) {
+      const userIntegrations = await this.tasksDatabase.getUserIntegrations({
+        workspaceId: userWorkspace.workspaceId,
+      });
+
+      for (let index = 0; index < userIntegrations.length; index++) {
+        const userIntegration = userIntegrations[index];
+        updatedUserIntegration =
+          userIntegration &&
+          (await this.integrationsService.getUpdatedUserIntegrationForOthers(
+            user,
+            userIntegration,
+          ));
+
+        if (updatedUserIntegration) {
+          break;
+        }
+      }
+    } else {
+      updatedUserIntegration =
+        userIntegration &&
+        (await this.integrationsService.getUpdatedUserIntegration(
+          user,
+          userIntegration.id,
+        ));
+    }
 
     if (!updatedUserIntegration) {
       Promise.allSettled([
@@ -1492,6 +1518,7 @@ export class TasksService {
   }
 
   async syncAll(user: User) {
+    console.log('🚀 ~ TasksService ~ syncAll ~ user:', user);
     const [jiraProjectIds, outLookCalendarIds] = await Promise.all([
       await this.sprintService.getProjectIds(user),
       await this.sprintService.getCalenderIds(user),
@@ -2513,10 +2540,12 @@ export class TasksService {
       const calendarEvent =
         localEvent.integratedEventId &&
         mappedIssues.get(localEvent.integratedEventId);
+      console.log('🚀 ~ TasksService ~ calendarEvent:', calendarEvent);
 
       if (
         localEvent &&
         localEvent.jiraUpdatedAt &&
+        calendarEvent?.lastModifiedDateTime &&
         localEvent.jiraUpdatedAt < new Date(calendarEvent.lastModifiedDateTime)
       ) {
         localEvent &&

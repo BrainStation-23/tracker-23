@@ -130,7 +130,7 @@ export class JiraApiCalls {
       const boardList = await (await axios(boardConfig)).data;
       return boardList;
     } catch (err) {
-      console.log('🚀 ~ JiraApiCalls ~ getBoardList ~ err:', err);
+      console.log('🚀 ~ JiraApiCalls ~ getBoardList ~ err:', err.message);
       return [];
     }
   }
