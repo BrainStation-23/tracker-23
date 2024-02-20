@@ -1,42 +1,49 @@
-import { message, Spin } from "antd";
-import { userAPI } from "APIs";
 import classNames from "classnames";
-import { IntegrationDto, IntegrationType } from "models/integration";
-import { GetWorkspaceListWithUserDto } from "models/workspaces";
+import { message, Spin } from "antd";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
-import { noNavbar, publicRoutes } from "utils/constants";
+
+// Models
+import { GetWorkspaceListWithUserDto } from "models/workspaces";
+import { IntegrationDto, IntegrationType } from "models/integration";
 
 import Navbar from "@/components/navbar";
-import ReportSettings from "@/components/report/components/reportSettings";
 import SideMenu from "@/components/sideMenu";
 import NoActiveWorkspace from "@/components/workspaces/noActiveWorkSpace";
+import ReportSettings from "@/components/report/components/reportSettings";
+
+// Service
+import { userAPI } from "APIs";
 import { GetCookie } from "@/services/cookie.service";
+import { noNavbar, publicRoutes } from "utils/constants";
 import { initializeSocket } from "@/services/socket.service";
-import { useAppDispatch, useAppSelector } from "@/storage/redux";
+
+// Storage
 import {
   setIntegrationsSlice,
   setIntegrationTypesSlice,
 } from "@/storage/redux/integrationsSlice";
-import { setNotifications } from "@/storage/redux/notificationsSlice";
-import { setPriorities } from "@/storage/redux/prioritySlice";
-import { setProjectsSlice } from "@/storage/redux/projectsSlice";
-import { setReportPages } from "@/storage/redux/reportsSlice";
-import { setSettingsReducer } from "@/storage/redux/settingsSlice";
 import { RootState } from "@/storage/redux/store";
-import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 import { setUserSlice } from "@/storage/redux/userSlice";
-import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
 import { deleteFromLocalStorage } from "@/storage/storage";
+import { setPriorities } from "@/storage/redux/prioritySlice";
+import { setReportPages } from "@/storage/redux/reportsSlice";
+import { useAppDispatch, useAppSelector } from "@/storage/redux";
+import { setProjectsSlice } from "@/storage/redux/projectsSlice";
+import { setSettingsReducer } from "@/storage/redux/settingsSlice";
+import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
+import { setNotifications } from "@/storage/redux/notificationsSlice";
+import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 
 import "react-toastify/dist/ReactToastify.css";
+import Head from "next/head";
 
-const CustomLayout = ({ children }: any) => {
+const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
 
+  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
   const syncRunning = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
@@ -149,16 +156,7 @@ const CustomLayout = ({ children }: any) => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    if (!publicRoutes.some((route) => path.includes(route))) {
-      userInfo?.activeWorkspace && initialLoading();
-    }
-  }, [
-    publicRoutes.some((route) => path.includes(route)),
-    path,
-    userInfo?.activeWorkspace,
-  ]);
-
+  // Side Effect
   useEffect(() => {
     const connectSocket = async () => {
       GetCookie("access_token") &&
@@ -176,6 +174,12 @@ const CustomLayout = ({ children }: any) => {
 
     return cleanup;
   }, []);
+
+  useEffect(() => {
+    if (!publicRoutes.some((route) => path.includes(route))) {
+      userInfo?.activeWorkspace && initialLoading();
+    }
+  }, [userInfo?.activeWorkspace.id]);
 
   useEffect(() => {
     const getSyncStatus = async () => {
@@ -278,13 +282,17 @@ const CustomLayout = ({ children }: any) => {
               loading && !publicRoutes.some((route) => path.includes(route))
             }
             tip={"Loading"}
-            className="inset-0 m-auto h-full "
+            className="inset-0 m-auto h-full"
           >
-            <div className="h-screen "></div>
+            <div className="h-screen" />
           </Spin>
         </div>
       ) : (
         <div className="flex">
+          <Head>
+            <link rel="icon" href="/images/bsIcon.png" />
+            <title>Tracker 23</title>
+          </Head>
           {!publicRoutes.some((route) => path.includes(route)) &&
             !path.includes("onBoarding") && (
               <div
@@ -339,4 +347,4 @@ const CustomLayout = ({ children }: any) => {
   );
 };
 
-export default CustomLayout;
+export default ValidUserLayout;
