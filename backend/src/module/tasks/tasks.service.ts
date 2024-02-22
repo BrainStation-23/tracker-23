@@ -1458,6 +1458,7 @@ export class TasksService {
           userIntegration.id,
         ));
     }
+    console.log('hello!');
 
     if (!updatedUserIntegration) {
       Promise.allSettled([
@@ -1518,7 +1519,6 @@ export class TasksService {
   }
 
   async syncAll(user: User) {
-    console.log('🚀 ~ TasksService ~ syncAll ~ user:', user);
     const [jiraProjectIds, outLookCalendarIds] = await Promise.all([
       await this.sprintService.getProjectIds(user),
       await this.sprintService.getCalenderIds(user),

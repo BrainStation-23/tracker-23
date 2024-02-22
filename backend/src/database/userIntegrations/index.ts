@@ -45,6 +45,9 @@ export class UserIntegrationDatabase {
         where: {
           id: userIntegrationId,
         },
+        include: {
+          integration: true,
+        },
       });
     } catch (error) {
       console.log(error);
@@ -80,6 +83,23 @@ export class UserIntegrationDatabase {
     try {
       return await this.prisma.userIntegration.create({
         data: userIntegration,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async createAndUpdateUserIntegration(
+    query: Record<string, any>,
+    updateUserIntegration: Record<string, any>,
+    userIntegration: any,
+  ) {
+    try {
+      return await this.prisma.userIntegration.upsert({
+        where: query,
+        update: updateUserIntegration,
+        create: userIntegration,
       });
     } catch (error) {
       console.log(error);

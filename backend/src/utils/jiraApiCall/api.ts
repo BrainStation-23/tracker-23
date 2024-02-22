@@ -283,4 +283,17 @@ export class JiraApiCalls {
       return null;
     }
   }
+
+  async jiraApiGetCall(userIntegration: UserIntegration, url: string) {
+    const taskConfig = {
+      method: 'get',
+      url,
+      headers: {
+        Authorization: `Bearer ${userIntegration?.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    };
+    const res = await (await axios(taskConfig)).data;
+    return res;
+  }
 }
