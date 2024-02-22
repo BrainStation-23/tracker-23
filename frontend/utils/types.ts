@@ -129,22 +129,22 @@ export interface apiFunction {
   getInvitedUserInfo: (token: string) => Promise<any>;
   getAllUsers: () => Promise<any>;
   updateApprovalUser: (
-    userId: number,
+    userId: string,
     data: updateApprovalUserDto
   ) => Promise<any>;
   updateOnboardingUser: (
-    userId: number,
+    userId: string,
     data: updateOnboardingUserDto
   ) => Promise<any>;
-  userListByProject: (projectIds: number[]) => Promise<any>;
+  userListByProject: (projectIds: string[]) => Promise<any>;
   createReportPage: (data: CreateReportPageDto) => Promise<any>;
   createReport: (data: CreateReportDto) => Promise<any>;
-  updateReport: (reportId: number, data: UpdateReportDto) => Promise<any>;
+  updateReport: (reportId: string, data: UpdateReportDto) => Promise<any>;
   updateReportPage: (
-    reportId: number,
+    reportId: string,
     data: UpdateReportPageDto
   ) => Promise<any>;
-  deleteReportPage: (reportId: number) => Promise<any>;
-  deleteReport: (reportId: number) => Promise<any>;
+  deleteReportPage: (reportId: string) => Promise<any>;
+  deleteReport: (reportId: string) => Promise<any>;
   getIntegrationTypesReportPage: () => Promise<any>;
 }
