@@ -1,7 +1,7 @@
 import { UserWorkspaceDto, WorkspaceDto } from "models/workspaces";
 
 export interface UserDto {
-  id: number;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;
@@ -13,7 +13,7 @@ export interface UserDto {
   activeUserWorkspace?: UserWorkspaceDto;
   approved?: boolean;
   status?: "ACTIVE" | "ONBOARD";
-  onboadingSteps: StepInfo[];
+  onboadingSteps?: StepInfo[];
 }
 
 export enum WorkspaceMemberStatusEnum {

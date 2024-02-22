@@ -1,4 +1,5 @@
 import { Spin } from "antd";
+import Head from "next/head";
 import { ReactNode, useEffect, useState } from "react";
 
 import ValidUserLayout from "./ValidUserLayout";
@@ -24,8 +25,13 @@ const Layout = ({ children }: { children: ReactNode }) => {
     }
     setIsLoading(false);
   }, [user]);
+
   return (
     <Spin spinning={isLoading}>
+      <Head>
+        <link rel="icon" href="/images/bsIcon.png" />
+        <title>Tracker 23</title>
+      </Head>
       {approvedUser ? (
         <ValidUserLayout children={children} />
       ) : (

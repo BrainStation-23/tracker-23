@@ -166,7 +166,7 @@ const OnboardingSteps: React.FC = () => {
         completed: true,
         emails: emails.toString(), // Doing this because backend wants this way
       });
-      res && message.success("Onboarding successfull");
+      res && message.success("Onboarding Successful");
       res && dispatch(changeWorkspaceReloadStatusSlice());
     }
     res && setCurrent(current + 1);

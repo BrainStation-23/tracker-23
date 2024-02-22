@@ -54,10 +54,7 @@ const ImportedProject = ({ project, deleteProject }: Props) => {
       </div>
       <div className="flex items-center">
         {project.source != "T23" && (
-          <SyncButtonComponent
-            project={project}
-            onClick={() => syncProject()}
-          />
+          <SyncButtonComponent project={project} onClick={syncProject} />
         )}
         <DeleteButton
           onClick={() => {
