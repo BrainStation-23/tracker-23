@@ -740,14 +740,18 @@ export async function getWorkspaceListRest() {
       reports: page.reports.map((report: any) => ({
         ...report,
         config: {
-          ...report.config,
+          ...report?.config,
           filterDateType:
             //@ts-ignore
             FilterDateType[report?.config?.filterDateType] ||
-            FilterDateType.CUSTOM_DATE,
+            (report?.config?.startDate && report?.config?.endDate)
+              ? FilterDateType.CUSTOM_DATE
+              : FilterDateType.THIS_WEEK,
         },
       })),
     }));
+    console.log("res.data.pages", res.data.pages);
+
     return res.data;
   } catch (error: any) {
     return false;
