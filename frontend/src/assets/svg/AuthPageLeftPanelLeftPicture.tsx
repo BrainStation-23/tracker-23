@@ -10,13 +10,13 @@ const AuthPageLeftPanelLeftPicture = () => {
     >
       <g filter="url(#filter0_b_511_2401)">
         <rect width="229.455" height="72.8403" rx="16.3226" fill="#EFC88B" />
-        <g clip-path="url(#clip0_511_2401)">
+        <g clipPath="url(#clip0_511_2401)">
           <circle
             cx="29.8371"
             cy="36.4201"
             r="16.6701"
             fill="white"
-            fill-opacity="0.94"
+            fillOpacity="0.94"
           />
           <rect x="22" y="28" width="16" height="16" fill="url(#pattern0)" />
         </g>
@@ -31,7 +31,7 @@ const AuthPageLeftPanelLeftPicture = () => {
           height="4.76289"
           rx="2.38144"
           fill="white"
-          fill-opacity="0.2"
+          fillOpacity="0.2"
         />
         <rect
           x="66.2568"
@@ -50,9 +50,9 @@ const AuthPageLeftPanelLeftPicture = () => {
           width="316.508"
           height="159.894"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feGaussianBlur in="BackgroundImageFix" stdDeviation="21.7635" />
           <feComposite
             in2="SourceAlpha"

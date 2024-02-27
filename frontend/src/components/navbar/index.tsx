@@ -1,4 +1,4 @@
-import { Form, Input, message, Tooltip } from "antd";
+import { Button, Form, Input, message, Tooltip } from "antd";
 import { userAPI } from "APIs";
 import { LoginResponseDto } from "models/auth";
 import { UpdateReportPageDto } from "models/reports";
@@ -22,6 +22,8 @@ type Props = {
 const Navbar = ({ extraComponent }: Props) => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const { reauthorization: isAuthorizationNeeded, type: reauthorizationType } =
+    useAppSelector((state: RootState) => state.integrations.authorization);
   const [userDetails, setUserDetails] = useState<LoginResponseDto>();
   const [editing, setEditing] = useState(false);
   const [form] = Form.useForm();
@@ -37,6 +39,32 @@ const Navbar = ({ extraComponent }: Props) => {
   const reportPageData = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages
   ).find((reportPage) => reportPage.id === pageId);
+
+  const handleReauthorization = async () => {
+    let api;
+    switch (reauthorizationType) {
+      case "JIRA":
+        api = userAPI.getJiraLink;
+        break;
+      case "JIRA":
+        api = userAPI.getOutlookLink;
+        break;
+      default:
+        break;
+    }
+    if (api) {
+      try {
+        const response = await api();
+        window.open(response, "_self");
+      } catch (error) {
+        console.error(error);
+        message.error(`Failed to ${reauthorizationType} authorization`);
+      }
+    } else {
+      message.error("Something is wrong!!");
+    }
+  };
+
   const updatePageName = async (data: UpdateReportPageDto) => {
     if (!reportPageData?.id) return;
     const oldPage = { ...reportPageData };
@@ -141,6 +169,15 @@ const Navbar = ({ extraComponent }: Props) => {
           >
             <SyncOutlined spin={syncing} />
           </Tooltip>
+        )}
+        {isAuthorizationNeeded && (
+          <Button
+            htmlType="button"
+            className="flex items-center border-none bg-red-600 py-4 font-bold text-white hover:text-white"
+            onClick={handleReauthorization}
+          >
+            {`Authorize ${reauthorizationType}`}
+          </Button>
         )}
         <NotificationSection />
         {extraComponent}

@@ -60,7 +60,6 @@ export default function ReportHeaderComponent({
     if (!reportData?.id) return;
     const res = await userAPI.updateReport(reportData.id, data);
     if (res) {
-      console.log("🚀 ~ updateTitle ~ res:", res);
       dispatch(updateReportSlice(res));
     }
   };

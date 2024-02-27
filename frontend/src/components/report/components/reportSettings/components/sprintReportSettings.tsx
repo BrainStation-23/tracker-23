@@ -21,6 +21,9 @@ type Props = {
 };
 const SprintReportSettings = ({ reportData }: Props) => {
   const dispatch = useDispatch();
+  const [filterDateType, setFilterDateType] = useState(
+    FilterDateType.THIS_WEEK
+  );
   const [sprint, setSprint] = useState<number>(
     reportData?.config?.sprintIds?.length > 0
       ? reportData?.config?.sprintIds[0]
@@ -36,8 +39,8 @@ const SprintReportSettings = ({ reportData }: Props) => {
       : getDateRangeArray(reportData?.config?.filterDateType)
   );
 
-  const getFilterDateType = (type: string) => {
-    console.log("getFilterDateType", type);
+  const getFilterDateType = (type: FilterDateType) => {
+    setFilterDateType(type);
   };
   const saveConfig = async () => {
     const res = await userAPI.updateReport(reportData.id, {
@@ -45,6 +48,7 @@ const SprintReportSettings = ({ reportData }: Props) => {
       sprintIds: sprint ? [sprint] : [],
       startDate: dateRange[0],
       endDate: dateRange[1],
+      filterDateType,
     });
     if (res) {
       dispatch(updateReportSlice(res));

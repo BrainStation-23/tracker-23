@@ -36,13 +36,13 @@ const LoginForm = ({ setIsModalOpen, email }: Props) => {
   return (
     <Form
       name="basic"
-      initialValues={{ remember: true, email }}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
       layout="vertical"
       labelAlign="left"
+      onFinish={onFinish}
       requiredMark={false}
-      className="mx-auto w-full pb-0 "
+      className="mx-auto w-full pb-0"
+      onFinishFailed={onFinishFailed}
+      initialValues={{ remember: true, email }}
     >
       <MyFormItem
         label="Email Address"
@@ -52,23 +52,23 @@ const LoginForm = ({ setIsModalOpen, email }: Props) => {
         rules={[
           { required: true, message: "Please input your email!" },
           {
-            type: "email",
             min: 0,
             max: 200,
+            type: "email",
             message: "Please input a valid email.",
           },
         ]}
       >
         <MyInput
-          disabled={email?.length > 0}
           type="text"
+          disabled={email?.length > 0}
           placeholder="Enter your email"
         />
       </MyFormItem>
       <div className="relative">
         <MyFormItem
-          label="Enter your password"
           name="password"
+          label="Enter your password"
           rules={[{ required: true, message: "Please input your password!" }]}
         >
           <MyPasswordInput placeholder="Password" />
@@ -76,12 +76,7 @@ const LoginForm = ({ setIsModalOpen, email }: Props) => {
       </div>
 
       <div className="flex items-center justify-between">
-        <MyFormItem
-          name="remember"
-          valuePropName="checked"
-          // wrapperCol={{ offset: 8, span: 16 }}
-          className="m-0"
-        >
+        <MyFormItem name="remember" valuePropName="checked" className="m-0">
           <Checkbox>
             <span className="2xl:text-lg">Remember me for 30 days</span>
           </Checkbox>

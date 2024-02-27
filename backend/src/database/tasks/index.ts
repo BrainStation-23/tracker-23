@@ -297,4 +297,14 @@ export class TasksDatabase {
       return null;
     }
   }
+  async getUserIntegrations(query: Record<string, any>) {
+    try {
+      return await this.prisma.userIntegration.findMany({
+        where: query,
+      });
+    } catch (err) {
+      console.log('🚀 ~ TasksDatabase ~ getUserIntegrations ~ err:', err);
+      return [];
+    }
+  }
 }

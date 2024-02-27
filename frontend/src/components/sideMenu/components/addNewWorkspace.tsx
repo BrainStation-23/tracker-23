@@ -21,7 +21,6 @@ const AddNewWorkspace = ({ setIsModalOpen, setIsModalLoading }: Props) => {
 
   const onFinish = async (values: CreateWorkspaceModel) => {
     setIsModalLoading(true);
-    console.log("Form values:", values);
     const res = await userAPI.createWorkspace(values);
     res && message.success("Workspace created Successfully");
     res && dispatch(addWorkspaceSlice(res));

@@ -328,9 +328,8 @@ export class SprintsService {
       );
     }
 
-    const userIntegrations = await this.integrationsService.getUserIntegrations(
-      user,
-    );
+    const userIntegrations =
+      await this.integrationsService.getUserIntegrationsByRole(user);
     const integrationIds: any[] = [];
     const projectIds: any[] = [];
 

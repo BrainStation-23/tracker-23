@@ -2,6 +2,10 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IntegrationDto, IntegrationType } from "models/integration";
 
 interface IntegrationsState {
+  authorization: {
+    type: IntegrationType;
+    reauthorization: boolean;
+  };
   integrations: IntegrationDto[];
   integrationTypes: IntegrationType[];
 }
@@ -9,6 +13,10 @@ interface IntegrationsState {
 const initialState: IntegrationsState = {
   integrations: [],
   integrationTypes: [],
+  authorization: {
+    type: "JIRA",
+    reauthorization: false,
+  },
 };
 
 const integrationsSlice = createSlice({
@@ -29,6 +37,13 @@ const integrationsSlice = createSlice({
     resetIntegrationsSlice: (state) => {
       state.integrations = [];
     },
+    setAuthorizationSlice: (
+      state,
+      action: PayloadAction<{ type: IntegrationType; value: boolean }>
+    ) => {
+      state.authorization.reauthorization = action.payload.value;
+      state.authorization.type = action.payload.type;
+    },
     setIntegrationTypesSlice: (
       state,
       action: PayloadAction<IntegrationType[]>
@@ -44,6 +59,7 @@ export const {
   deleteIntegrationsSlice,
   resetIntegrationsSlice,
   setIntegrationTypesSlice,
+  setAuthorizationSlice,
 } = integrationsSlice.actions;
 
 export default integrationsSlice.reducer;

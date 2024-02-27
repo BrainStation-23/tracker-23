@@ -76,10 +76,6 @@ export default function TaskListReport({ reportData, inView }: Props) {
           ? reportData?.config?.calendarIds
           : [],
       });
-      console.log(
-        "🚀 ~ file: topPanelExportPage.tsx:54 ~ excelExport ~ res:",
-        res
-      );
       if (!res) {
         message.error(
           res?.error?.message ? res?.error?.message : "Export Failed"

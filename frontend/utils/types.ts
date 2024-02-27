@@ -46,6 +46,7 @@ export interface apiFunction {
   ) => Promise<LoginResponseDto | undefined>;
   logout: () => {};
   registerUser: (data: RegisterDto) => Promise<LoginResponseDto | undefined>;
+  sendOTP: (data: RegisterDto) => Promise<LoginResponseDto | undefined>;
   registerUserFromInvite: (
     data: RegisterDto
   ) => Promise<LoginResponseDto | undefined>;

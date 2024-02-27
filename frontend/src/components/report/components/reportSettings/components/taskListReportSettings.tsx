@@ -24,6 +24,9 @@ type Props = {
 const TaskListReportSettings = ({ reportData }: Props) => {
   const dispatch = useDispatch();
   const [users, setUsers] = useState<SprintUser[]>([]);
+  const [filterDateType, setFilterDateType] = useState(
+    FilterDateType.THIS_WEEK
+  );
   const [sprints, setSprints] = useState<number[]>(
     reportData?.config?.sprintIds ? reportData?.config?.sprintIds : []
   );
@@ -60,6 +63,7 @@ const TaskListReportSettings = ({ reportData }: Props) => {
       calendarIds,
       userIds: selectedUser ? [selectedUser] : [],
       types: selectedSource,
+      filterDateType,
     });
     if (res) {
       dispatch(updateReportSlice(res));
@@ -67,8 +71,8 @@ const TaskListReportSettings = ({ reportData }: Props) => {
       dispatch(setReportInEditSlice(null));
     }
   };
-  const getFilterDateType = (type: string) => {
-    console.log("getFilterDateType", type);
+  const getFilterDateType = (type: FilterDateType) => {
+    setFilterDateType(type);
   };
   useEffect(() => {
     getUserListByProject();

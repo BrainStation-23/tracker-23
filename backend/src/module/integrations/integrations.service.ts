@@ -10,6 +10,7 @@ import { APIException } from '../exception/api.exception';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { IntegrationDatabase } from 'src/database/integrations/index';
 import { ReportsService } from '../reports/reports.service';
+import { ErrorMessage } from './dto/get.userIntegrations.filter.dto';
 
 @Injectable()
 export class IntegrationsService {
@@ -37,6 +38,30 @@ export class IntegrationsService {
         workspaceId: user.activeWorkspaceId,
       },
     );
+  }
+
+  async getUserIntegrationsByRole(user: User) {
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace || !user?.activeWorkspaceId)
+      throw new APIException(
+        'User Workspace not found',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    if (userWorkspace.role === Role.ADMIN) {
+      return await this.userIntegrationDatabase.getUserIntegrationListWithIntegrations(
+        {
+          workspaceId: user.activeWorkspaceId,
+        },
+      );
+    } else {
+      return await this.userIntegrationDatabase.getUserIntegrationListWithIntegrations(
+        {
+          userWorkspaceId: userWorkspace.id,
+          workspaceId: user.activeWorkspaceId,
+        },
+      );
+    }
   }
 
   async getIntegrations(user: User) {
@@ -106,11 +131,6 @@ export class IntegrationsService {
   }
 
   async getUpdatedUserIntegration(user: User, userIntegrationId: number) {
-    const url = 'https://auth.atlassian.com/oauth/token';
-    const headers: any = { 'Content-Type': 'application/json' };
-    if (!user?.activeWorkspaceId)
-      throw new APIException('No active Workspace', HttpStatus.BAD_REQUEST);
-
     const userIntegration =
       await this.userIntegrationDatabase.getUserIntegrationById(
         userIntegrationId,
@@ -122,49 +142,98 @@ export class IntegrationsService {
         HttpStatus.BAD_REQUEST,
       );
     }
+    if (userIntegration.expiration_time.getTime() > Date.now()) {
+      return userIntegration;
+    } else {
+      const url = 'https://auth.atlassian.com/oauth/token';
+      const headers: any = { 'Content-Type': 'application/json' };
+      if (!user?.activeWorkspaceId)
+        throw new APIException('No active Workspace', HttpStatus.BAD_REQUEST);
 
-    const data = {
-      grant_type: 'refresh_token',
-      client_id: this.config.get('JIRA_CLIENT_ID'),
-      client_secret: this.config.get('JIRA_SECRET_KEY'),
-      refresh_token: userIntegration?.refreshToken,
-    };
-    let tokenResp;
-    try {
-      tokenResp = (
-        await lastValueFrom(this.httpService.post(url, data, headers))
-      ).data;
-    } catch (err) {
-      console.log(
-        '🚀 ~ file: integrations.service.ts:100 ~ IntegrationsService ~ getUpdatedUserIntegration ~ err:',
-        err,
-      );
-      // throw new APIException(
-      //   'Can not update user integration',
-      //   HttpStatus.INTERNAL_SERVER_ERROR,
-      // );
-      return null;
+      const data = {
+        grant_type: 'refresh_token',
+        client_id: this.config.get('JIRA_CLIENT_ID'),
+        client_secret: this.config.get('JIRA_SECRET_KEY'),
+        refresh_token: userIntegration?.refreshToken,
+      };
+      let tokenResp;
+      try {
+        tokenResp = (
+          await lastValueFrom(this.httpService.post(url, data, headers))
+        ).data;
+      } catch (err) {
+        throw new APIException(
+          ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
+          HttpStatus.GONE,
+        );
+      }
+
+      const updatedUserIntegration =
+        userIntegration &&
+        (await this.userIntegrationDatabase.updateUserIntegrationById(
+          userIntegration?.id,
+          {
+            accessToken: tokenResp.access_token,
+            refreshToken: tokenResp.refresh_token,
+          },
+        ));
+
+      if (!updatedUserIntegration) {
+        // throw new APIException(
+        //   'Can not update user integration',
+        //   HttpStatus.INTERNAL_SERVER_ERROR,
+        // );
+        return null;
+      }
+
+      return updatedUserIntegration;
     }
+  }
 
-    const updatedUserIntegration =
+  async getUpdatedUserIntegrationForOthers(user: User, userIntegration: any) {
+    if (
       userIntegration &&
-      (await this.userIntegrationDatabase.updateUserIntegrationById(
-        userIntegration?.id,
-        {
-          accessToken: tokenResp.access_token,
-          refreshToken: tokenResp.refresh_token,
-        },
-      ));
+      userIntegration.expiration_time.getTime() > Date.now()
+    ) {
+      return userIntegration;
+    } else {
+      const url = 'https://auth.atlassian.com/oauth/token';
+      const headers: any = { 'Content-Type': 'application/json' };
+      if (!user?.activeWorkspaceId) {
+        return null;
+      }
 
-    if (!updatedUserIntegration) {
-      // throw new APIException(
-      //   'Can not update user integration',
-      //   HttpStatus.INTERNAL_SERVER_ERROR,
-      // );
-      return null;
+      const data = {
+        grant_type: 'refresh_token',
+        client_id: this.config.get('JIRA_CLIENT_ID'),
+        client_secret: this.config.get('JIRA_SECRET_KEY'),
+        refresh_token: userIntegration?.refreshToken,
+      };
+      let tokenResp;
+      try {
+        tokenResp = (
+          await lastValueFrom(this.httpService.post(url, data, headers))
+        ).data;
+      } catch (err) {
+        return null;
+      }
+
+      const updatedUserIntegration =
+        userIntegration &&
+        (await this.userIntegrationDatabase.updateUserIntegrationById(
+          userIntegration?.id,
+          {
+            accessToken: tokenResp.access_token,
+            refreshToken: tokenResp.refresh_token,
+          },
+        ));
+
+      if (!updatedUserIntegration) {
+        return null;
+      }
+
+      return updatedUserIntegration;
     }
-
-    return updatedUserIntegration;
   }
 
   async deleteUserIntegration(userIntegrationId: number) {

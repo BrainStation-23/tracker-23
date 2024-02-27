@@ -1,62 +1,68 @@
 import { message } from "antd";
-import axios from "axios";
+import Router from "next/router";
+
+import api from "../src/services/api";
+
+// Models
 import {
-  CreateLocalProjectModel,
-  CreateWorkspaceModel,
   SearchParamsModel,
+  CreateWorkspaceModel,
   SprintReportParamsModel,
+  CreateLocalProjectModel,
   SprintUserReportParamsModel,
 } from "models/apiParams";
 import {
-  ForgotPasswordDto,
   LoginDto,
-  LoginResponseDto,
   RegisterDto,
+  LoginResponseDto,
   ResetPasswordDto,
+  ForgotPasswordDto,
 } from "models/auth";
-import { SendWorkspaceInviteDto } from "models/invitation";
 import {
-  CreateReportDto,
-  CreateReportPageDto,
   FilterDateType,
-  getTimeSheetReportDto,
-  SprintViewReportDto,
-  SprintViewTimelineReportDto,
+  CreateReportDto,
   UpdateReportDto,
+  SprintViewReportDto,
+  CreateReportPageDto,
   UpdateReportPageDto,
+  getTimeSheetReportDto,
+  SprintViewTimelineReportDto,
 } from "models/reports";
 import {
-  AddWorkLogParams,
   CreateTaskDto,
-  UpdateTaskEstimationParams,
+  AddWorkLogParams,
   UpdateTaskStatusParams,
+  UpdateTaskEstimationParams,
 } from "models/tasks";
 import {
-  updateApprovalUserDto,
-  updateOnboardingUserDto,
   WorkspaceMemberDto,
   WorkspaceMemberStatus,
+  updateApprovalUserDto,
+  updateOnboardingUserDto,
 } from "models/user";
-import Router from "next/router";
+import { SendWorkspaceInviteDto } from "models/invitation";
+
 import { apiEndPoints } from "utils/apiEndPoints";
 
-import { RemoveCookie, SetCookie } from "@/services/cookie.service";
-import { disconnectSocket } from "@/services/socket.service";
-import { getLabels, getStringFromArray } from "@/services/taskActions";
-import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
-
+// Service
 import { sortByStatus } from "../src/services/taskActions";
+import { disconnectSocket } from "@/services/socket.service";
+import { RemoveCookie, SetCookie } from "@/services/cookie.service";
+import { getLabels, getStringFromArray } from "@/services/taskActions";
+
+// Storage
 import { ReportData } from "@/storage/redux/reportsSlice";
+import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
 
 export async function loginRest(
   data: LoginDto
 ): Promise<LoginResponseDto | undefined> {
   try {
-    const res = await axios.post(`${apiEndPoints.login}`, data);
+    const res = await api.post(`${apiEndPoints.login}`, data);
     if (res?.data?.access_token) {
+      setLocalStorage("userDetails", res.data);
       SetCookie("access_token", res?.data?.access_token);
       setLocalStorage("access_token", res?.data?.access_token);
-      setLocalStorage("userDetails", res.data);
     }
     return res.data;
   } catch (error: any) {
@@ -69,7 +75,7 @@ export async function loginFromInviteRest(
   data: LoginDto
 ): Promise<LoginResponseDto | undefined> {
   try {
-    const res = await axios.post(`${apiEndPoints.invitedUserLogin}`, data);
+    const res = await api.post(`${apiEndPoints.invitedUserLogin}`, data);
     if (res?.data?.access_token) {
       SetCookie("access_token", res?.data?.access_token);
       setLocalStorage("access_token", res?.data?.access_token);
@@ -87,14 +93,13 @@ export async function googleLoginRest(
   invitationCode?: string
 ): Promise<LoginResponseDto | undefined> {
   try {
-    const res = await axios.post(
+    const res = await api.post(
       `${apiEndPoints.googleLogin}?code=${code}${
-        invitationCode ? `&&invitationCode=${invitationCode}` : ""
+        invitationCode ? `&invitationCode=${invitationCode}` : ""
       }`
     );
     return res.data;
   } catch (error: any) {
-    console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
     return null;
   }
 }
@@ -103,7 +108,18 @@ export async function registerRest(
   data: RegisterDto
 ): Promise<LoginResponseDto | undefined> {
   try {
-    const res = await axios.post(`${apiEndPoints.register}`, data);
+    const res = await api.post(`${apiEndPoints.register}`, data);
+    return res.data;
+  } catch (error: any) {
+    return null;
+  }
+}
+
+export async function sendOTPRest(
+  data: RegisterDto
+): Promise<LoginResponseDto | undefined> {
+  try {
+    const res = await api.post(`${apiEndPoints.sendOtp}`, data);
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
@@ -115,7 +131,7 @@ export async function registerFromInviteRest(
   data: RegisterDto
 ): Promise<LoginResponseDto | undefined> {
   try {
-    const res = await axios.post(`${apiEndPoints.invitedUserRegister}`, data);
+    const res = await api.post(`${apiEndPoints.invitedUserRegister}`, data);
     if (res?.data?.access_token) {
       SetCookie("access_token", res?.data?.access_token);
       setLocalStorage("access_token", res?.data?.access_token);
@@ -132,7 +148,7 @@ export async function forgotPasswordRest(
   data: ForgotPasswordDto
 ): Promise<any> {
   try {
-    const res = await axios.post(`${apiEndPoints.forgotPassword}`, data);
+    const res = await api.post(`${apiEndPoints.forgotPassword}`, data);
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
@@ -145,10 +161,7 @@ export async function resetPasswordRest(
   data: ResetPasswordDto
 ): Promise<any> {
   try {
-    const res = await axios.patch(
-      `${apiEndPoints.resetPassword}/${token}`,
-      data
-    );
+    const res = await api.patch(`${apiEndPoints.resetPassword}/${token}`, data);
     return res.data;
   } catch (error: any) {
     console.log("🚀 ~ file: restApi.ts:59 ~ error:", error);
@@ -160,8 +173,6 @@ export async function logoutRest() {
   try {
     RemoveCookie("access_token");
     clearLocalStorage();
-    // deleteFromLocalStorage("userDetails");
-    // message.success("Logged Out");
     await disconnectSocket();
     Router.push("/login");
     return true;
@@ -173,7 +184,7 @@ export async function logoutRest() {
 
 export async function createTaskRest(data: CreateTaskDto) {
   try {
-    const res = await axios.post(`${apiEndPoints.tasks}/create`, data);
+    const res = await api.post(`${apiEndPoints.tasks}/create`, data);
     return res.data;
   } catch (error: any) {
     return false;
@@ -182,7 +193,7 @@ export async function createTaskRest(data: CreateTaskDto) {
 
 export async function deleteTaskRest(taskId: any) {
   try {
-    await axios.delete(`${apiEndPoints.tasks}/${taskId}`);
+    await api.delete(`${apiEndPoints.tasks}/${taskId}`);
     message.success("Task Deleted");
     return true;
   } catch (error: any) {
@@ -206,7 +217,7 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
   }
   const userIds = searchParams?.userIds;
   try {
-    const res = await axios.get(
+    const res = await api.get(
       apiEndPoints.tasks +
         "?" +
         (sprints?.length > 0
@@ -224,14 +235,8 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
         (status && status.length > 0 ? `&status=${status}` : "")
     );
     const sortedTasks = sortByStatus(res.data);
-    // const sortedTasks = sortByStatus(getFormattedTasks(res.data));
-    // setTasksSliceHook(sortedTasks);
     return sortedTasks;
   } catch (error: any) {
-    // if (error?.response?.status === 401) {
-    //   await logoutRest();
-    // }
-
     return false;
   }
 }
@@ -252,7 +257,7 @@ export async function getTaskListReportRest(searchParams: SearchParamsModel) {
       tmp = tmp.concat(calendarIds);
   }
   try {
-    const res = await axios.get(
+    const res = await api.get(
       apiEndPoints.taskListReport +
         "?" +
         (sprints?.length > 0 && (types.length === 0 || types.includes("JIRA"))
@@ -298,7 +303,7 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
       tmp = tmp.concat(calendarIds);
   }
   try {
-    const res = await axios.get(
+    const res = await api.get(
       apiEndPoints.export +
         "?" +
         (sprints?.length > 0
@@ -329,7 +334,7 @@ export async function exportSprintReportRest({
   projectIds,
 }: SprintUserReportParamsModel) {
   try {
-    const res = await axios.get(
+    const res = await api.get(
       apiEndPoints.exportSprintReport +
         (sprints?.length > 0 ||
         selectedUsers?.length > 0 ||
@@ -351,7 +356,7 @@ export async function exportSprintReportRest({
 
 export async function syncStatusRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.syncStatus}`);
+    const res = await api.get(`${apiEndPoints.syncStatus}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -360,7 +365,7 @@ export async function syncStatusRest() {
 
 export async function syncAllTasksRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.synAllTasks}`);
+    const res = await api.get(`${apiEndPoints.synAllTasks}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -369,9 +374,7 @@ export async function syncAllTasksRest() {
 
 export async function syncProjectTasksRest(projectId: number) {
   try {
-    const res = await axios.get(
-      `${apiEndPoints.syncProjectTasks}/${projectId}`
-    );
+    const res = await api.get(`${apiEndPoints.syncProjectTasks}/${projectId}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -380,7 +383,7 @@ export async function syncProjectTasksRest(projectId: number) {
 
 export async function createSessionRest(taskId: string) {
   try {
-    const res = await axios.post(`${apiEndPoints.sessions}`, {
+    const res = await api.post(`${apiEndPoints.sessions}`, {
       taskId: taskId,
     });
     return res.data;
@@ -391,7 +394,7 @@ export async function createSessionRest(taskId: string) {
 
 export async function stopSessionRest(taskId: string) {
   try {
-    const res = await axios.post(`${apiEndPoints.sessions}/${taskId}`, {});
+    const res = await api.post(`${apiEndPoints.sessions}/${taskId}`, {});
     return res.data;
   } catch (error: any) {
     return false;
@@ -400,7 +403,7 @@ export async function stopSessionRest(taskId: string) {
 
 export async function authJiraRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.jira}`);
+    const res = await api.get(`${apiEndPoints.jira}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -409,7 +412,7 @@ export async function authJiraRest() {
 
 export async function getJiraLinkRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.jira}`);
+    const res = await api.get(`${apiEndPoints.jira}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -418,7 +421,7 @@ export async function getJiraLinkRest() {
 
 export async function getOutlookLinkRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.outlook}`);
+    const res = await api.get(`${apiEndPoints.outlook}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -427,7 +430,7 @@ export async function getOutlookLinkRest() {
 
 export async function sendJiraCodeRest(code: string) {
   try {
-    const res = await axios.post(`${apiEndPoints.authJira}`, {
+    const res = await api.post(`${apiEndPoints.authJira}`, {
       code: code,
     });
     return res.data;
@@ -438,7 +441,7 @@ export async function sendJiraCodeRest(code: string) {
 
 export async function sendOutlookCodeRest(code: string) {
   try {
-    const res = await axios.post(`${apiEndPoints.authOutlook}`, {
+    const res = await api.post(`${apiEndPoints.authOutlook}`, {
       code: code,
     });
     return res.data;
@@ -449,7 +452,7 @@ export async function sendOutlookCodeRest(code: string) {
 
 export async function uninstallIntegrationRest(id: number) {
   try {
-    const res = await axios.delete(`${apiEndPoints.integrations}/user/${id}`);
+    const res = await api.delete(`${apiEndPoints.integrations}/user/${id}`);
     message.success(res?.data?.message);
     return true;
   } catch (error: any) {
@@ -459,7 +462,7 @@ export async function uninstallIntegrationRest(id: number) {
 
 export async function deleteIntegrationRest(id: number) {
   try {
-    const res = await axios.delete(`${apiEndPoints.integrations}/admin/${id}`);
+    const res = await api.delete(`${apiEndPoints.integrations}/admin/${id}`);
     message.success(res?.data?.message);
     return true;
   } catch (error: any) {
@@ -469,7 +472,7 @@ export async function deleteIntegrationRest(id: number) {
 
 export async function selectJiraIntegrationRest(id: string) {
   try {
-    const res = await axios.post(`${apiEndPoints.jira}/${id}`);
+    const res = await api.post(`${apiEndPoints.jira}/${id}`);
     message.success(res?.data?.message);
     return true;
   } catch (error: any) {
@@ -479,7 +482,7 @@ export async function selectJiraIntegrationRest(id: string) {
 
 export async function getIntegrationsRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.integrations}`);
+    const res = await api.get(`${apiEndPoints.integrations}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -487,7 +490,7 @@ export async function getIntegrationsRest() {
 }
 export async function getProjectWiseHourRest(dates?: any) {
   try {
-    const res = await axios.get(
+    const res = await api.get(
       `${apiEndPoints.spentTime}?${
         dates?.length > 0
           ? `startDate=${dates[0]}&endDate=${dates[1]}`
@@ -502,7 +505,7 @@ export async function getProjectWiseHourRest(dates?: any) {
 
 export async function getSpentTimePerDayRest(dates?: any) {
   try {
-    const res = await axios.get(
+    const res = await api.get(
       `${apiEndPoints.spentTimePerDay}?${
         dates?.length > 0
           ? `startDate=${dates[0]}&endDate=${dates[1]}`
@@ -517,7 +520,7 @@ export async function getSpentTimePerDayRest(dates?: any) {
 
 export async function addManualWorkLogRest(data: AddWorkLogParams) {
   try {
-    const res = await axios.patch(`${apiEndPoints.addWorkLog}`, data);
+    const res = await api.patch(`${apiEndPoints.addWorkLog}`, data);
     return res.data;
   } catch (error: any) {
     return false;
@@ -529,10 +532,9 @@ export async function updateTaskSTatusRest(
   data: UpdateTaskStatusParams
 ) {
   try {
-    const res = await axios.patch(
-      `${apiEndPoints.updateTaskStatus}/${taskId}`,
-      { status: data.status.name }
-    );
+    const res = await api.patch(`${apiEndPoints.updateTaskStatus}/${taskId}`, {
+      status: data.status.name,
+    });
     return res.data;
   } catch (error: any) {
     return false;
@@ -544,7 +546,7 @@ export async function updateTaskEstimationRest(
   data: UpdateTaskEstimationParams
 ) {
   try {
-    const res = await axios.patch(
+    const res = await api.patch(
       `${apiEndPoints.updateTaskEstimation}/${taskId}`,
       { estimation: data.estimation }
     );
@@ -555,7 +557,7 @@ export async function updateTaskEstimationRest(
 }
 export async function pinTaskRest(taskId: any, pinned: boolean) {
   try {
-    const res = await axios.patch(`${apiEndPoints.tasks}/${taskId}`, {
+    const res = await api.patch(`${apiEndPoints.tasks}/${taskId}`, {
       pinned: pinned,
     });
     return res.data;
@@ -566,7 +568,7 @@ export async function pinTaskRest(taskId: any, pinned: boolean) {
 
 export async function getIntegratedProjectStatusesRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.projectWiseStatus}`);
+    const res = await api.get(`${apiEndPoints.projectWiseStatus}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -575,7 +577,7 @@ export async function getIntegratedProjectStatusesRest() {
 
 export async function getNotificationsRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.notifications}`);
+    const res = await api.get(`${apiEndPoints.notifications}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -584,7 +586,7 @@ export async function getNotificationsRest() {
 
 export async function markNotificationSeenRest(id: number) {
   try {
-    const res = await axios.patch(`${apiEndPoints.markNotificationSeen}${id}`);
+    const res = await api.patch(`${apiEndPoints.markNotificationSeen}${id}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -593,7 +595,7 @@ export async function markNotificationSeenRest(id: number) {
 
 export async function markAllNotificationsSeenRest() {
   try {
-    const res = await axios.patch(`${apiEndPoints.markAllNotificationsSeen}`);
+    const res = await api.patch(`${apiEndPoints.markAllNotificationsSeen}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -601,9 +603,7 @@ export async function markAllNotificationsSeenRest() {
 }
 export async function markAllNotificationsClearedRest() {
   try {
-    const res = await axios.patch(
-      `${apiEndPoints.markAllNotificationsCleared}`
-    );
+    const res = await api.patch(`${apiEndPoints.markAllNotificationsCleared}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -612,7 +612,7 @@ export async function markAllNotificationsClearedRest() {
 
 export async function deleteSessionRest(sessionId: number) {
   try {
-    const res = await axios.delete(`${apiEndPoints.deleteSession}${sessionId}`);
+    const res = await api.delete(`${apiEndPoints.deleteSession}${sessionId}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -624,7 +624,7 @@ export async function updateSessionRest(
   data: AddWorkLogParams
 ) {
   try {
-    const res = await axios.patch(
+    const res = await api.patch(
       `${apiEndPoints.updateSession}${sessionId}`,
       data
     );
@@ -636,7 +636,7 @@ export async function updateSessionRest(
 
 export async function getJiraSprintsRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.jiraSprints}`);
+    const res = await api.get(`${apiEndPoints.jiraSprints}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -645,7 +645,7 @@ export async function getJiraSprintsRest() {
 
 export async function getReportSprintsRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.reportSprints}`);
+    const res = await api.get(`${apiEndPoints.reportSprints}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -659,7 +659,7 @@ export async function getJiraActiveSprintTasksRest(
   const priority = getStringFromArray(searchParams?.priority);
   const projectIds = searchParams?.projectIds;
   try {
-    const res = await axios.get(
+    const res = await api.get(
       `${apiEndPoints.activeSprintTasks}/?state=${["active"]}` +
         (searchParams?.searchText && searchParams?.searchText.length > 0
           ? `&text=${encodeURIComponent(searchParams.searchText)}`
@@ -677,7 +677,7 @@ export async function getJiraActiveSprintTasksRest(
 
 export async function getAllProjectsRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.projects}`);
+    const res = await api.get(`${apiEndPoints.projects}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -685,7 +685,7 @@ export async function getAllProjectsRest() {
 }
 export async function getAllReportProjectsRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.reportProjects}`);
+    const res = await api.get(`${apiEndPoints.reportProjects}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -694,7 +694,7 @@ export async function getAllReportProjectsRest() {
 
 export async function importProjectRest(id: number) {
   try {
-    const res = await axios.get(`${apiEndPoints.projects}/${id}`);
+    const res = await api.get(`${apiEndPoints.projects}/${id}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -703,7 +703,7 @@ export async function importProjectRest(id: number) {
 
 export async function importCalendarRest(ids: number[]) {
   try {
-    const res = await axios.get(`${apiEndPoints.calendar}?projectIds=${ids}`);
+    const res = await api.get(`${apiEndPoints.calendar}?projectIds=${ids}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -712,7 +712,7 @@ export async function importCalendarRest(ids: number[]) {
 
 export async function createProjectRest(data: CreateLocalProjectModel) {
   try {
-    const res = await axios.post(`${apiEndPoints.projects}/create`, data);
+    const res = await api.post(`${apiEndPoints.projects}/create`, data);
     return res.data;
   } catch (error: any) {
     return false;
@@ -720,7 +720,7 @@ export async function createProjectRest(data: CreateLocalProjectModel) {
 }
 export async function deleteProjectTasksRest(id: number) {
   try {
-    const res = await axios.post(`${apiEndPoints.projects}/${id}`);
+    const res = await api.post(`${apiEndPoints.projects}/${id}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -728,7 +728,7 @@ export async function deleteProjectTasksRest(id: number) {
 }
 export async function getWorkspaceListRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.workspaces}`);
+    const res = await api.get(`${apiEndPoints.workspaces}`);
     res.data.workspaces = res.data.workspaces.map((workspace: any) => {
       return {
         ...workspace,
@@ -740,14 +740,18 @@ export async function getWorkspaceListRest() {
       reports: page.reports.map((report: any) => ({
         ...report,
         config: {
-          ...report.config,
+          ...report?.config,
           filterDateType:
             //@ts-ignore
             FilterDateType[report?.config?.filterDateType] ||
-            FilterDateType.CUSTOM_DATE,
+            (report?.config?.startDate && report?.config?.endDate)
+              ? FilterDateType.CUSTOM_DATE
+              : FilterDateType.THIS_WEEK,
         },
       })),
     }));
+    console.log("res.data.pages", res.data.pages);
+
     return res.data;
   } catch (error: any) {
     return false;
@@ -758,7 +762,7 @@ export async function getWorkspaceMembersRest(): Promise<
   WorkspaceMemberDto[] | false
 > {
   try {
-    const res = await axios.get(`${apiEndPoints.members}`);
+    const res = await api.get(`${apiEndPoints.members}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -766,7 +770,7 @@ export async function getWorkspaceMembersRest(): Promise<
 }
 export async function createWorkspaceRest(data: CreateWorkspaceModel) {
   try {
-    const res = await axios.post(`${apiEndPoints.workspaces}`, data);
+    const res = await api.post(`${apiEndPoints.workspaces}`, data);
     return res.data;
   } catch (error: any) {
     return false;
@@ -777,7 +781,7 @@ export async function updateWorkspaceRest(
   id: number
 ) {
   try {
-    const res = await axios.patch(`${apiEndPoints.workspaces}/${id}`, data);
+    const res = await api.patch(`${apiEndPoints.workspaces}/${id}`, data);
     return res.data;
   } catch (error: any) {
     return false;
@@ -785,7 +789,7 @@ export async function updateWorkspaceRest(
 }
 export async function changeWorkspaceRest(id: number) {
   try {
-    const res = await axios.patch(`${apiEndPoints.changeWorkspace}/${id}`);
+    const res = await api.patch(`${apiEndPoints.changeWorkspace}/${id}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -794,7 +798,7 @@ export async function changeWorkspaceRest(id: number) {
 
 export async function deleteWorkspaceRest(id: number) {
   try {
-    const res = await axios.delete(`${apiEndPoints.workspaces}/${id}`);
+    const res = await api.delete(`${apiEndPoints.workspaces}/${id}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -805,7 +809,7 @@ export async function sendWorkspaceInvitationRest(
   data: SendWorkspaceInviteDto
 ) {
   try {
-    const res = await axios.post(`${apiEndPoints.invitation}/send`, data);
+    const res = await api.post(`${apiEndPoints.invitation}/send`, data);
     return res.data;
   } catch (error: any) {
     return false;
@@ -814,7 +818,7 @@ export async function sendWorkspaceInvitationRest(
 
 export async function getWorkspaceInvitationListRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.invitation}/list`);
+    const res = await api.get(`${apiEndPoints.invitation}/list`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -823,7 +827,7 @@ export async function getWorkspaceInvitationListRest() {
 
 export async function acceptWorkspaceInvitationRest(id: number) {
   try {
-    const res = await axios.patch(`${apiEndPoints.invitation}/response/${id}`, {
+    const res = await api.patch(`${apiEndPoints.invitation}/response/${id}`, {
       status: "ACTIVE",
     });
     return res.data;
@@ -833,7 +837,7 @@ export async function acceptWorkspaceInvitationRest(id: number) {
 }
 export async function rejectWorkspaceInvitationRest(id: number) {
   try {
-    const res = await axios.patch(`${apiEndPoints.invitation}/response/${id}`, {
+    const res = await api.patch(`${apiEndPoints.invitation}/response/${id}`, {
       status: "REJECTED",
     });
     return res.data;
@@ -847,7 +851,7 @@ export async function updateMemberStatusRest(
   status: WorkspaceMemberStatus
 ) {
   try {
-    const res = await axios.patch(`${apiEndPoints.invitation}/response/${id}`, {
+    const res = await api.patch(`${apiEndPoints.invitation}/response/${id}`, {
       status: status,
     });
     return res.data;
@@ -858,7 +862,7 @@ export async function updateMemberStatusRest(
 
 export async function getWorkspaceSettingsRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.workspaceSettings}`);
+    const res = await api.get(`${apiEndPoints.workspaceSettings}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -866,7 +870,7 @@ export async function getWorkspaceSettingsRest() {
 }
 export async function updateSyncTimeRest(time: number) {
   try {
-    const res = await axios.patch(`${apiEndPoints.workspaceSettings}`, {
+    const res = await api.patch(`${apiEndPoints.workspaceSettings}`, {
       syncTime: time,
     });
     return res.data;
@@ -876,7 +880,7 @@ export async function updateSyncTimeRest(time: number) {
 }
 export async function updateTimeFormatRest(value: string) {
   try {
-    const res = await axios.patch(`${apiEndPoints.workspaceSettings}`, {
+    const res = await api.patch(`${apiEndPoints.workspaceSettings}`, {
       timeFormat: value,
     });
     return res.data;
@@ -901,7 +905,7 @@ export async function exportTimeSheetReportRest({
       tmp = tmp.concat(calendarIds);
   }
   try {
-    const res = await axios.get(
+    const res = await api.get(
       `${apiEndPoints.exportTimeSheetReport}` +
         `?startDate=${startDate}&endDate=${endDate}` +
         (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
@@ -933,7 +937,7 @@ export async function getTimeSheetReportRest({
       tmp = tmp.concat(calendarIds);
   }
   try {
-    const res = await axios.get(
+    const res = await api.get(
       `${apiEndPoints.timeSheetReport}/` +
         `?startDate=${startDate}&endDate=${endDate}` +
         (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
@@ -952,7 +956,7 @@ export async function getSprintUserReportRest({
   projectIds,
 }: SprintUserReportParamsModel) {
   try {
-    const res = await axios.get(
+    const res = await api.get(
       `${apiEndPoints.sprintUserReport}` +
         (sprints?.length > 0 ||
         selectedUsers?.length > 0 ||
@@ -975,7 +979,7 @@ export async function getSprintReportRest({
   endDate,
 }: SprintReportParamsModel) {
   try {
-    const res = await axios.get(
+    const res = await api.get(
       `${apiEndPoints.sprintReport}?` +
         (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
         (sprintId ? `&sprintId=${sprintId}` : "")
@@ -1463,7 +1467,7 @@ export async function getSprintViewReportRest({
         },
       ],
     };
-    const res = await fakeAxiosRequest(
+    const res = await fakeapiRequest(
       `${apiEndPoints.sprintReport}?` +
         (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
         (sprintId ? `&sprintId=${sprintId}` : ""),
@@ -1482,7 +1486,7 @@ export async function getSprintViewTimelineReportRest({
   endDate,
 }: SprintReportParamsModel): Promise<SprintViewTimelineReportDto | false> {
   try {
-    const res = await axios.get(
+    const res = await api.get(
       `${apiEndPoints.sprintTimelineReport}?` +
         (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
         (sprintId ? `&sprintId=${sprintId}` : "")
@@ -1495,8 +1499,8 @@ export async function getSprintViewTimelineReportRest({
 }
 
 // TODO: Remove this when we do not need it
-// Define a function to mock the axios request
-function fakeAxiosRequest(
+// Define a function to mock the api request
+function fakeapiRequest(
   url: string,
   data: any,
   status: number = 200
@@ -1513,7 +1517,7 @@ function fakeAxiosRequest(
 
 export async function getInvitedUserInfoRest(token: string) {
   try {
-    const res = await axios.get(`${apiEndPoints.invitedUserInfo}` + token);
+    const res = await api.get(`${apiEndPoints.invitedUserInfo}` + token);
     return res.data;
   } catch (error: any) {
     return false;
@@ -1521,7 +1525,7 @@ export async function getInvitedUserInfoRest(token: string) {
 }
 export async function getAllUsersRest() {
   try {
-    const res = await axios.get(`${apiEndPoints.allUsers}`);
+    const res = await api.get(`${apiEndPoints.allUsers}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -1532,7 +1536,7 @@ export async function updateApprovalUserRest(
   data: updateApprovalUserDto
 ) {
   try {
-    const res = await axios.patch(
+    const res = await api.patch(
       `${apiEndPoints.updateApprovalUser}${userId}`,
       data
     );
@@ -1546,7 +1550,7 @@ export async function updateOnboardingUserRest(
   data: updateOnboardingUserDto
 ) {
   try {
-    const res = await axios.patch(
+    const res = await api.patch(
       `${apiEndPoints.updateOnboardingUser}${userId}`,
       data
     );
@@ -1557,7 +1561,7 @@ export async function updateOnboardingUserRest(
 }
 export async function userListByProjectRest(projectIds: number[]) {
   try {
-    const res = await axios.get(
+    const res = await api.get(
       `${apiEndPoints.userListByProject}` +
         (projectIds?.length > 0 ? `?projectIds=${projectIds}` : "")
     );
@@ -1569,7 +1573,7 @@ export async function userListByProjectRest(projectIds: number[]) {
 
 export async function createReportPageRest(data: CreateReportPageDto) {
   try {
-    const res = await axios.post(`${apiEndPoints.reportPage}`, data);
+    const res = await api.post(`${apiEndPoints.reportPage}`, data);
     return res.data;
   } catch (error: any) {
     return false;
@@ -1578,7 +1582,7 @@ export async function createReportPageRest(data: CreateReportPageDto) {
 
 export async function createReportRest(data: CreateReportDto) {
   try {
-    const res = await axios.post(`${apiEndPoints.reports}`, data);
+    const res = await api.post(`${apiEndPoints.reports}`, data);
     return res.data;
   } catch (error: any) {
     return false;
@@ -1590,7 +1594,7 @@ export async function updateReportRest(
   data: UpdateReportDto
 ) {
   try {
-    const res = await axios.patch<ReportData>(
+    const res = await api.patch<ReportData>(
       `${apiEndPoints.reports}/${reportId}`,
       data
     );
@@ -1607,7 +1611,7 @@ export async function updateReportPageRest(
   data: UpdateReportPageDto
 ) {
   try {
-    const res = await axios.patch(
+    const res = await api.patch(
       `${apiEndPoints.reportPage}/${reportPageId}`,
       data
     );
@@ -1619,9 +1623,7 @@ export async function updateReportPageRest(
 
 export async function deleteReportPageRest(reportPageId: number) {
   try {
-    const res = await axios.delete(
-      `${apiEndPoints.reportPage}/${reportPageId}`
-    );
+    const res = await api.delete(`${apiEndPoints.reportPage}/${reportPageId}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -1630,7 +1632,7 @@ export async function deleteReportPageRest(reportPageId: number) {
 
 export async function deleteReportRest(reportId: number) {
   try {
-    const res = await axios.delete(`${apiEndPoints.reports}/${reportId}`);
+    const res = await api.delete(`${apiEndPoints.reports}/${reportId}`);
     return res.data;
   } catch (error: any) {
     return false;
@@ -1639,9 +1641,7 @@ export async function deleteReportRest(reportId: number) {
 
 export async function getIntegrationTypesReportPageRest() {
   try {
-    const res = await axios.get(
-      `${apiEndPoints.getIntegrationTypesReportPage}`
-    );
+    const res = await api.get(`${apiEndPoints.getIntegrationTypesReportPage}`);
     return res.data;
   } catch (error: any) {
     return false;

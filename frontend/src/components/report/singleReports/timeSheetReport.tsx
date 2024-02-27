@@ -3,10 +3,7 @@ import { userAPI } from "APIs";
 import { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
 
-import {
-  dateRangeOptions,
-  getDateRangeArray,
-} from "@/components/common/datePicker";
+import { getDateRangeArray } from "@/components/common/datePicker";
 import { ExcelExport } from "@/services/exportHelpers";
 import { ReportData } from "@/storage/redux/reportsSlice";
 
@@ -26,10 +23,10 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
 
   const [data, setData] = useState([]);
   const [column, setColumns] = useState([]);
-
-  const [dateRangeArray, setDateRangeArray] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [dateRangeArray, setDateRangeArray] = useState([]);
   const [downloading, setDownloading] = useState<boolean>(false);
+
   const excelExport = async () => {
     setDownloading(true);
     try {
@@ -75,14 +72,15 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
     };
     const res = await userAPI.getTimeSheetReport(obj);
     res.columns && setColumns(res.columns);
-
     res.rows && setData(res.rows);
     setDateRangeArray(res.dateRange);
     setIsLoading(false);
   };
+
   useEffect(() => {
     getTimeSheetReport();
   }, [reportData?.config, inView]);
+
   return (
     <>
       <ReportHeaderComponent
@@ -92,10 +90,10 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
         exportButton={
           <Button
             type="ghost"
-            className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
-            icon={<LuDownload className="text-xl" />}
             loading={downloading}
             onClick={() => excelExport()}
+            icon={<LuDownload className="text-xl" />}
+            className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
           >
             Export to Excel
           </Button>
@@ -104,8 +102,8 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
       <Spin className="custom-spin" spinning={isLoading}>
         <TableComponent
           data={data}
-          dateRangeArray={dateRangeArray}
           column={column}
+          dateRangeArray={dateRangeArray}
         />
       </Spin>
     </>

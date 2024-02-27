@@ -9,7 +9,7 @@ const AuthPageLeftPanelMiddlePicture = ({ className }: any) => {
       xmlns="http://www.w3.org/2000/svg"
     >
       <g filter="url(#filter0_b_511_2223)">
-        <g clip-path="url(#clip0_511_2223)">
+        <g clipPath="url(#clip0_511_2223)">
           <rect
             y="0.0615234"
             width="481"
@@ -17,7 +17,7 @@ const AuthPageLeftPanelMiddlePicture = ({ className }: any) => {
             rx="19.8351"
             fill="white"
           />
-          <g clip-path="url(#clip1_511_2223)">
+          <g clipPath="url(#clip1_511_2223)">
             <circle cx="26.4469" cy="49.1498" r="10.5787" fill="#DADADA" />
             <path
               d="M24.7664 45.0175H23.6644C23.3722 45.0175 23.0919 45.1336 22.8853 45.3402C22.6786 45.5469 22.5625 45.8272 22.5625 46.1194V52.7311C22.5625 53.0234 22.6786 53.3037 22.8853 53.5103C23.0919 53.717 23.3722 53.8331 23.6644 53.8331H24.7664C25.0586 53.8331 25.3389 53.717 25.5456 53.5103C25.7522 53.3037 25.8683 53.0234 25.8683 52.7311V46.1194C25.8683 45.8272 25.7522 45.5469 25.5456 45.3402C25.3389 45.1336 25.0586 45.0175 24.7664 45.0175Z"
@@ -59,7 +59,7 @@ const AuthPageLeftPanelMiddlePicture = ({ className }: any) => {
             height="16.4794"
             rx="8.23969"
             stroke="#56A2E9"
-            stroke-width="0.82646"
+            strokeWidth="0.82646"
           />
           <circle cx="292.568" cy="49.1498" r="3.30584" fill="#56A2E9" />
           <path
@@ -76,7 +76,7 @@ const AuthPageLeftPanelMiddlePicture = ({ className }: any) => {
             x2="932.24"
             y2="94.8959"
             stroke="#DADADA"
-            stroke-width="0.82646"
+            strokeWidth="0.82646"
           />
           <rect
             width="919.024"
@@ -84,7 +84,7 @@ const AuthPageLeftPanelMiddlePicture = ({ className }: any) => {
             transform="translate(13.2236 101.309)"
             fill="white"
           />
-          <g clip-path="url(#clip2_511_2223)">
+          <g clipPath="url(#clip2_511_2223)">
             <circle cx="26.4469" cy="126.88" r="10.5787" fill="#DADADA" />
             <path
               d="M23.8018 123.353V130.406C23.8017 130.484 23.8226 130.561 23.8623 130.629C23.902 130.697 23.959 130.752 24.0274 130.791C24.0959 130.829 24.1733 130.848 24.2517 130.847C24.3302 130.845 24.4067 130.822 24.4735 130.781L30.2036 127.255C30.2678 127.216 30.3208 127.16 30.3576 127.095C30.3943 127.029 30.4136 126.955 30.4136 126.88C30.4136 126.804 30.3943 126.73 30.3576 126.664C30.3208 126.599 30.2678 126.544 30.2036 126.504L24.4735 122.978C24.4067 122.937 24.3302 122.914 24.2517 122.913C24.1733 122.911 24.0959 122.93 24.0274 122.969C23.959 123.007 23.902 123.063 23.8623 123.13C23.8226 123.198 23.8017 123.275 23.8018 123.353Z"
@@ -122,7 +122,7 @@ const AuthPageLeftPanelMiddlePicture = ({ className }: any) => {
             height="16.4794"
             rx="8.23969"
             stroke="#6CAE2B"
-            stroke-width="0.82646"
+            strokeWidth="0.82646"
           />
           <circle cx="292.568" cy="126.88" r="3.30584" fill="#6CAE2B" />
           <path
@@ -139,7 +139,7 @@ const AuthPageLeftPanelMiddlePicture = ({ className }: any) => {
             x2="932.24"
             y2="162.331"
             stroke="#DADADA"
-            stroke-width="0.82646"
+            strokeWidth="0.82646"
           />
           <rect
             width="919.024"
@@ -147,7 +147,7 @@ const AuthPageLeftPanelMiddlePicture = ({ className }: any) => {
             transform="translate(13.2236 168.745)"
             fill="white"
           />
-          <g clip-path="url(#clip3_511_2223)">
+          <g clipPath="url(#clip3_511_2223)">
             <circle cx="26.4469" cy="194.315" r="10.5787" fill="#DADADA" />
             <path
               d="M23.8018 190.789V197.841C23.8017 197.92 23.8226 197.997 23.8623 198.064C23.902 198.132 23.959 198.188 24.0274 198.226C24.0959 198.264 24.1733 198.284 24.2517 198.282C24.3302 198.28 24.4067 198.258 24.4735 198.217L30.2036 194.691C30.2678 194.651 30.3208 194.596 30.3576 194.53C30.3943 194.464 30.4136 194.39 30.4136 194.315C30.4136 194.24 30.3943 194.166 30.3576 194.1C30.3208 194.034 30.2678 193.979 30.2036 193.939L24.4735 190.413C24.4067 190.372 24.3302 190.35 24.2517 190.348C24.1733 190.346 24.0959 190.366 24.0274 190.404C23.959 190.442 23.902 190.498 23.8623 190.566C23.8226 190.633 23.8017 190.71 23.8018 190.789Z"
@@ -185,7 +185,7 @@ const AuthPageLeftPanelMiddlePicture = ({ className }: any) => {
             height="16.4794"
             rx="8.23969"
             stroke="#7E7E7E"
-            stroke-width="0.82646"
+            strokeWidth="0.82646"
           />
           <circle cx="292.568" cy="194.315" r="3.30584" fill="#7E7E7E" />
           <path
@@ -206,9 +206,9 @@ const AuthPageLeftPanelMiddlePicture = ({ className }: any) => {
           width="586.787"
           height="338.834"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feGaussianBlur in="BackgroundImageFix" stdDeviation="26.4467" />
           <feComposite
             in2="SourceAlpha"

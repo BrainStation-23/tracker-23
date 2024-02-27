@@ -1,42 +1,49 @@
-import { message, Spin } from "antd";
-import { userAPI } from "APIs";
 import classNames from "classnames";
-import { IntegrationDto, IntegrationType } from "models/integration";
-import { GetWorkspaceListWithUserDto } from "models/workspaces";
+import { message, Spin } from "antd";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
-import { noNavbar, publicRoutes } from "utils/constants";
+
+// Models
+import { GetWorkspaceListWithUserDto } from "models/workspaces";
+import { IntegrationDto, IntegrationType } from "models/integration";
 
 import Navbar from "@/components/navbar";
-import ReportSettings from "@/components/report/components/reportSettings";
 import SideMenu from "@/components/sideMenu";
 import NoActiveWorkspace from "@/components/workspaces/noActiveWorkSpace";
+import ReportSettings from "@/components/report/components/reportSettings";
+
+// Service
+import { userAPI } from "APIs";
 import { GetCookie } from "@/services/cookie.service";
+import { noNavbar, publicRoutes } from "utils/constants";
 import { initializeSocket } from "@/services/socket.service";
-import { useAppDispatch, useAppSelector } from "@/storage/redux";
+
+// Storage
 import {
   setIntegrationsSlice,
   setIntegrationTypesSlice,
 } from "@/storage/redux/integrationsSlice";
-import { setNotifications } from "@/storage/redux/notificationsSlice";
-import { setPriorities } from "@/storage/redux/prioritySlice";
-import { setProjectsSlice } from "@/storage/redux/projectsSlice";
-import { setReportPages } from "@/storage/redux/reportsSlice";
-import { setSettingsReducer } from "@/storage/redux/settingsSlice";
 import { RootState } from "@/storage/redux/store";
-import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 import { setUserSlice } from "@/storage/redux/userSlice";
-import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
 import { deleteFromLocalStorage } from "@/storage/storage";
+import { setPriorities } from "@/storage/redux/prioritySlice";
+import { setReportPages } from "@/storage/redux/reportsSlice";
+import { useAppDispatch, useAppSelector } from "@/storage/redux";
+import { setProjectsSlice } from "@/storage/redux/projectsSlice";
+import { setSettingsReducer } from "@/storage/redux/settingsSlice";
+import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
+import { setNotifications } from "@/storage/redux/notificationsSlice";
+import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 
-const CustomLayout = ({ children }: any) => {
+import "react-toastify/dist/ReactToastify.css";
+import Head from "next/head";
+
+const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
-  const [loading, setLoading] = useState<boolean>(true);
-  const path = router.asPath;
-  const isPublicRoute = publicRoutes.some((route) => path.includes(route));
-
   const dispatch = useAppDispatch();
+
+  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
   const syncRunning = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
@@ -49,10 +56,6 @@ const CustomLayout = ({ children }: any) => {
   const connectedSocket = useAppSelector(
     (state: RootState) => state.notificationsSlice.socket
   );
-  const [syncing, setSyncing] = useState(
-    useAppSelector((state: RootState) => state.syncStatus.syncRunning)
-  );
-  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
   const tmp = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
@@ -68,6 +71,17 @@ const CustomLayout = ({ children }: any) => {
   const reportInEdit = useAppSelector(
     (state: RootState) => state.reportsSlice.reportInEdit
   );
+
+  // State
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(
+    useAppSelector((state: RootState) => state.syncStatus.syncRunning)
+  );
+
+  // Constant
+  const path = router.asPath;
+  const isPublicRoute = publicRoutes.some((route) => path.includes(route));
+
   const getProjectWiseStatues = async () => {
     if (!projectStatuses) {
       {
@@ -76,6 +90,7 @@ const CustomLayout = ({ children }: any) => {
       }
     }
   };
+
   const getIntegrations = async () => {
     const integrations =
       integrationsSlice?.length > 0
@@ -99,30 +114,49 @@ const CustomLayout = ({ children }: any) => {
       dispatch(setNotifications(notifications));
     }
   };
+
   const getSettings = async () => {
     const res = await userAPI.getWorkspaceSettings();
     res && dispatch(setSettingsReducer(res));
   };
+
   const getProjects = async () => {
     const res = await userAPI.getIntegratedProjectStatuses();
     res && dispatch(setProjectsSlice(res));
     res && dispatch(setPriorities(res));
   };
+
   const initialLoading = async () => {
     await getIntegrations();
     await getNotifications();
     await getSettings();
     await getProjects();
   };
-  useEffect(() => {
-    if (!publicRoutes.some((route) => path.includes(route))) {
-      userInfo?.activeWorkspace && initialLoading();
+
+  const getWorkspaces = async () => {
+    const res: GetWorkspaceListWithUserDto = await userAPI.getWorkspaceList();
+    if (res.user) {
+      dispatch(
+        setUserSlice({ ...res.user, role: res.user.activeUserWorkspace?.role })
+      );
+      const tmpUser = res.user;
+      if (tmpUser?.status === "ONBOARD") {
+        !path.includes("onBoarding") && router.push("/onBoarding");
+      } else if (tmpUser?.status === "ACTIVE") {
+        path.includes("onBoarding") && router.push("/taskList");
+      }
+      res.workspaces && dispatch(setWorkspacesSlice(res.workspaces));
+    } else {
+      const errorRes: any = res;
+      errorRes?.error?.message && message.error(errorRes?.error?.message);
     }
-  }, [
-    publicRoutes.some((route) => path.includes(route)),
-    path,
-    userInfo?.activeWorkspace,
-  ]);
+    if (res.pages) {
+      dispatch(setReportPages(res.pages));
+    }
+    setLoading(false);
+  };
+
+  // Side Effect
   useEffect(() => {
     const connectSocket = async () => {
       GetCookie("access_token") &&
@@ -139,7 +173,14 @@ const CustomLayout = ({ children }: any) => {
     };
 
     return cleanup;
-  });
+  }, []);
+
+  useEffect(() => {
+    if (!publicRoutes.some((route) => path.includes(route))) {
+      userInfo?.activeWorkspace && initialLoading();
+    }
+  }, [userInfo?.activeWorkspace.id]);
+
   useEffect(() => {
     const getSyncStatus = async () => {
       const res = await userAPI.syncStatus();
@@ -165,7 +206,6 @@ const CustomLayout = ({ children }: any) => {
 
   useEffect(() => {
     let myTimeout: NodeJS.Timeout;
-
     const getSyncStatus = async () => {
       const res = await userAPI.syncStatus();
       res && dispatch(setSyncStatus(res));
@@ -189,33 +229,11 @@ const CustomLayout = ({ children }: any) => {
     };
 
     return cleanup;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, syncing, router]);
+
   useEffect(() => {
     if (syncRunning !== syncing) setSyncing(syncRunning);
   }, [syncing, syncRunning]);
-  const getWorkspaces = async () => {
-    const res: GetWorkspaceListWithUserDto = await userAPI.getWorkspaceList();
-    if (res.user) {
-      dispatch(
-        setUserSlice({ ...res.user, role: res.user.activeUserWorkspace?.role })
-      );
-      const tmpUser = res.user;
-      if (tmpUser?.status === "ONBOARD") {
-        !path.includes("onBoarding") && router.push("/onBoarding");
-      } else if (tmpUser?.status === "ACTIVE") {
-        path.includes("onBoarding") && router.push("/taskList");
-      }
-      res.workspaces && dispatch(setWorkspacesSlice(res.workspaces));
-    } else {
-      const errorRes: any = res;
-      errorRes?.error?.message && message.error(errorRes?.error?.message);
-    }
-    if (res.pages) {
-      dispatch(setReportPages(res.pages));
-    }
-    setLoading(false);
-  };
 
   useEffect(() => {
     if (
@@ -228,6 +246,7 @@ const CustomLayout = ({ children }: any) => {
       } else setLoading(false);
     }
   }, [router, path]);
+
   useEffect(() => {
     if (
       !publicRoutes.some((route) => path.includes(route)) &&
@@ -237,6 +256,7 @@ const CustomLayout = ({ children }: any) => {
       getWorkspaces();
     }
   }, [reloadWorkspace]);
+
   useEffect(() => {
     if (userInfo?.status === "ONBOARD") {
       !path.includes("onBoarding") && router.push("/onBoarding");
@@ -244,11 +264,13 @@ const CustomLayout = ({ children }: any) => {
       path.includes("onBoarding") && router.push("/taskList");
     }
   }, [router, path, userInfo]);
+
   useEffect(() => {
     !["/inviteLink", "/socialLogin/redirect"].some((route) =>
       path.includes(route)
     ) && deleteFromLocalStorage("invitationCode");
   }, [path]);
+
   return (
     <>
       {loading &&
@@ -260,13 +282,17 @@ const CustomLayout = ({ children }: any) => {
               loading && !publicRoutes.some((route) => path.includes(route))
             }
             tip={"Loading"}
-            className="inset-0 m-auto h-full "
+            className="inset-0 m-auto h-full"
           >
-            <div className="h-screen "></div>
+            <div className="h-screen" />
           </Spin>
         </div>
       ) : (
         <div className="flex">
+          <Head>
+            <link rel="icon" href="/images/bsIcon.png" />
+            <title>Tracker 23</title>
+          </Head>
           {!publicRoutes.some((route) => path.includes(route)) &&
             !path.includes("onBoarding") && (
               <div
@@ -321,4 +347,4 @@ const CustomLayout = ({ children }: any) => {
   );
 };
 
-export default CustomLayout;
+export default ValidUserLayout;

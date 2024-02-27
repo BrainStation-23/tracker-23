@@ -45,6 +45,7 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
       : getDateRangeArray(reportData?.config?.filterDateType)
   );
+
   const getUserListByProject = async () => {
     const res = await userAPI.userListByProject(projects);
     res && setUsers(res);
@@ -52,17 +53,15 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
 
   const saveConfig = async () => {
     const res = await userAPI.updateReport(reportData.id, {
-      startDate: dateRange[0],
-      endDate: dateRange[1],
-      userIds: selectedUsers,
-      projectIds: projects,
       calendarIds,
-      types: selectedSource,
       filterDateType,
+      projectIds: projects,
+      endDate: dateRange[1],
+      types: selectedSource,
+      userIds: selectedUsers,
+      startDate: dateRange[0],
     });
     if (res) {
-      console.log("res", res);
-
       dispatch(updateReportSlice(res));
       message.success("Saved Successfully");
       dispatch(setReportInEditSlice(null));
@@ -101,10 +100,12 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
         }}
       />
 
-      <UsersSelectorComponent
-        {...{ userList: users, selectedUsers, setSelectedUsers }}
-        className="w-[210px]"
-      />
+      {users.length ? (
+        <UsersSelectorComponent
+          {...{ userList: users, selectedUsers, setSelectedUsers }}
+          className="w-[210px]"
+        />
+      ) : null}
     </ReportSettingsWrapper>
   );
 };

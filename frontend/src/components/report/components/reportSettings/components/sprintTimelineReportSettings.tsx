@@ -21,6 +21,9 @@ type Props = {
 };
 const SprintTimelineReportSettings = ({ reportData }: Props) => {
   const dispatch = useDispatch();
+  const [filterDateType, setFilterDateType] = useState(
+    FilterDateType.THIS_WEEK
+  );
   const [sprint, setSprint] = useState<number>(
     reportData?.config?.sprintIds?.length > 0
       ? reportData?.config?.sprintIds[0]
@@ -42,6 +45,7 @@ const SprintTimelineReportSettings = ({ reportData }: Props) => {
       sprintIds: [sprint],
       startDate: dateRange[0],
       endDate: dateRange[1],
+      filterDateType,
     });
     if (res) {
       dispatch(updateReportSlice(res));
@@ -49,8 +53,8 @@ const SprintTimelineReportSettings = ({ reportData }: Props) => {
       dispatch(setReportInEditSlice(null));
     }
   };
-  const getFilterDateType = (type: string) => {
-    console.log("getFilterDateType", type);
+  const getFilterDateType = (type: FilterDateType) => {
+    setFilterDateType(type);
   };
   return (
     <ReportSettingsWrapper

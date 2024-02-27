@@ -13,7 +13,7 @@ export interface UserDto {
   activeUserWorkspace?: UserWorkspaceDto;
   approved?: boolean;
   status?: "ACTIVE" | "ONBOARD";
-  onboadingSteps: StepInfo[];
+  onboadingSteps?: StepInfo[];
 }
 
 export enum WorkspaceMemberStatusEnum {

@@ -37,6 +37,7 @@ import {
   WeekDaysType,
 } from './dto';
 import { UpdateIssuePriorityReqBodyDto } from './dto/update.issue.req.dto';
+import { ErrorMessage } from '../integrations/dto/get.userIntegrations.filter.dto';
 
 @Injectable()
 export class TasksService {
@@ -1425,12 +1426,39 @@ export class TasksService {
     const userIntegration =
       project?.integrationId &&
       (await this.getUserIntegration(userWorkspace.id, project.integrationId));
-    const updatedUserIntegration =
-      userIntegration &&
-      (await this.integrationsService.getUpdatedUserIntegration(
-        user,
-        userIntegration.id,
-      ));
+
+    let updatedUserIntegration: any;
+    if (
+      userWorkspace.role === Role.ADMIN &&
+      !userIntegration &&
+      userWorkspace?.workspaceId
+    ) {
+      const userIntegrations = await this.tasksDatabase.getUserIntegrations({
+        workspaceId: userWorkspace.workspaceId,
+      });
+
+      for (let index = 0; index < userIntegrations.length; index++) {
+        const userIntegration = userIntegrations[index];
+        updatedUserIntegration =
+          userIntegration &&
+          (await this.integrationsService.getUpdatedUserIntegrationForOthers(
+            user,
+            userIntegration,
+          ));
+
+        if (updatedUserIntegration) {
+          break;
+        }
+      }
+    } else {
+      updatedUserIntegration =
+        userIntegration &&
+        (await this.integrationsService.getUpdatedUserIntegration(
+          user,
+          userIntegration.id,
+        ));
+    }
+    console.log('hello!');
 
     if (!updatedUserIntegration) {
       Promise.allSettled([
@@ -1516,10 +1544,13 @@ export class TasksService {
       ]);
       return { message: syncedProjects + ' Projects Imported Successfully!' };
     } catch (error) {
-      console.log(
-        '🚀 ~ file: tasks.service.ts:1437 ~ TasksService ~ syncAll ~ error:',
-        error,
-      );
+      await this.syncCall(StatusEnum.FAILED, user);
+      if (error.message === ErrorMessage.INVALID_JIRA_REFRESH_TOKEN) {
+        throw new APIException(
+          ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
+          HttpStatus.GONE,
+        );
+      }
       throw new APIException(
         'Could not sync all of you project : ' +
           `${syncedProjects} synced out of ${jiraProjectIds?.length} projects`,
@@ -2446,10 +2477,7 @@ export class TasksService {
         ? res.send({ Message: 'Calendar Synced Successfully!' })
         : { Message: 'Calendar Synced Successfully!' };
     } catch (err) {
-      console.log(
-        '🚀 ~ file: tasks.service.ts:1511 ~ TasksService ~ syncTasks ~ err:',
-        err,
-      );
+      console.log('🚀 ~ TasksService ~ syncEvents ~ err:', err);
       Promise.allSettled([
         await this.sendImportedNotification(user, 'Syncing Failed!'),
         await this.syncCall(StatusEnum.FAILED, user),
@@ -2512,10 +2540,12 @@ export class TasksService {
       const calendarEvent =
         localEvent.integratedEventId &&
         mappedIssues.get(localEvent.integratedEventId);
+      console.log('🚀 ~ TasksService ~ calendarEvent:', calendarEvent);
 
       if (
         localEvent &&
         localEvent.jiraUpdatedAt &&
+        calendarEvent?.lastModifiedDateTime &&
         localEvent.jiraUpdatedAt < new Date(calendarEvent.lastModifiedDateTime)
       ) {
         localEvent &&
