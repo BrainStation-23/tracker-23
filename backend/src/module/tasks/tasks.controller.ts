@@ -13,7 +13,6 @@ import {
   Patch,
   Post,
   Query,
-  Response,
   UseGuards,
 } from '@nestjs/common';
 import { Task, User } from '@prisma/client';
@@ -28,9 +27,24 @@ import {
 } from './dto';
 import { TasksService } from './tasks.service';
 import { UpdateIssuePriorityReqBodyDto } from './dto/update.issue.req.dto';
+import { RabbitMQService } from '../queue/queue.service';
+import { QueuePayloadType } from '../queue/types';
+
 @Controller('tasks')
 export class TasksController {
-  constructor(private tasksService: TasksService) {}
+  constructor(
+    private tasksService: TasksService,
+    private readonly rabbitMQService: RabbitMQService,
+  ) {}
+
+  async onApplicationBootstrap() {
+    await this.rabbitMQService.connect();
+
+    await Promise.all([
+      this.rabbitMQService.consume(QueuePayloadType.SYNC_ALL),
+      this.rabbitMQService.consume(QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK),
+    ]);
+  }
 
   @Get()
   // @UseGuards(new RolesGuard(['USER', 'ADMIN']))
@@ -83,20 +97,30 @@ export class TasksController {
 
   @Get('sync/:projectId')
   @UseGuards(JwtAuthGuard)
-  async syncAndGetTasks(
+  async syncSingleProjectOrCalendar(
     @GetUser() user: User,
     @Param('projectId') projectId: string,
-    @Response() res: any,
   ) {
-    return this.tasksService.syncSingleProjectOrCalendar(
-      user,
-      Number(projectId),
-      res,
-    );
+    return this.tasksService.syncAndGetTasks(user, Number(projectId));
   }
+
+  // @Get('queue/sync/:projectId')
+  // @UseGuards(JwtAuthGuard)
+  // async syncAndGetTasks(
+  //   @GetUser() user: User,
+  //   @Param('projectId') projectId: string,
+  //   @Response() res: any,
+  // ) {
+  //   return this.tasksService.syncSingleProjectOrCalendar(
+  //     user,
+  //     Number(projectId),
+  //     res,
+  //   );
+  // }
+
   @Get('syncAll')
   @UseGuards(JwtAuthGuard)
-  async syncAllAndUpdateTasks(@GetUser() user: User) {
+  async syncAll(@GetUser() user: User) {
     return await this.tasksService.syncAll(user);
   }
 

@@ -14,6 +14,12 @@ import { NotificationModule } from '../notifications/notifications.module';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
 import { HelperModule } from '../helper/helper.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
+import { AuthService } from '../auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { EmailService } from '../email/email.service';
+import { UsersDatabase } from 'src/database/users';
+import { RabbitMQService } from '../queue/queue.service';
+import { WorkerService } from '../worker/worker.service';
 
 @Module({
   imports: [
@@ -34,6 +40,12 @@ import { WorkspacesModule } from '../workspaces/workspaces.module';
     SprintTaskDatabase,
     ProjectDatabase,
     JiraApiCalls,
+    AuthService,
+    JwtService,
+    EmailService,
+    UsersDatabase,
+    RabbitMQService,
+    WorkerService,
   ],
   exports: [SessionsService, SessionDatabase],
 })
