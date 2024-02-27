@@ -1,7 +1,7 @@
 import { UserWorkspaceDto, WorkspaceDto } from "models/workspaces";
 
 export interface UserDto {
-  id: string;
+  id: number;
   email: string;
   firstName: string;
   lastName: string;
