@@ -4,15 +4,12 @@ import io from "socket.io-client";
 import { getLocalStorage } from "@/storage/storage";
 import { store } from "@/storage/redux/store";
 import { addNotification, setSocket } from "@/storage/redux/notificationsSlice";
-let socket = io(config?.baseUrl, {
+
+const socket = io(config?.baseUrl, {
   withCredentials: true,
 });
 
 export async function initializeSocket() {
-  socket = io(config?.baseUrl, {
-    withCredentials: true,
-  });
-
   socket.on("connect", () => {
     // console.log("Connected to socket");
     store.dispatch(setSocket(socket.id));
