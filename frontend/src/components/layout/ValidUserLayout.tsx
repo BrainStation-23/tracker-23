@@ -1,3 +1,4 @@
+import Head from "next/head";
 import classNames from "classnames";
 import { message, Spin } from "antd";
 import { useRouter } from "next/router";
@@ -29,15 +30,14 @@ import { setUserSlice } from "@/storage/redux/userSlice";
 import { deleteFromLocalStorage } from "@/storage/storage";
 import { setPriorities } from "@/storage/redux/prioritySlice";
 import { setReportPages } from "@/storage/redux/reportsSlice";
-import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { setProjectsSlice } from "@/storage/redux/projectsSlice";
+import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { setSettingsReducer } from "@/storage/redux/settingsSlice";
 import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
 import { setNotifications } from "@/storage/redux/notificationsSlice";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 
 import "react-toastify/dist/ReactToastify.css";
-import Head from "next/head";
 
 const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
@@ -82,6 +82,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   const path = router.asPath;
   const isPublicRoute = publicRoutes.some((route) => path.includes(route));
 
+  // handler
   const getProjectWiseStatues = async () => {
     if (!projectStatuses) {
       {
@@ -281,7 +282,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
             spinning={
               loading && !publicRoutes.some((route) => path.includes(route))
             }
-            tip={"Loading"}
+            tip={"Loading..."}
             className="inset-0 m-auto h-full"
           >
             <div className="h-screen" />

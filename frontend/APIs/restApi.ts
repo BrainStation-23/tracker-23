@@ -750,8 +750,6 @@ export async function getWorkspaceListRest() {
         },
       })),
     }));
-    console.log("res.data.pages", res.data.pages);
-
     return res.data;
   } catch (error: any) {
     return false;

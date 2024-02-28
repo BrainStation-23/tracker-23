@@ -76,12 +76,6 @@ const WorkspaceNav = () => {
     setIsModalOpen(true);
   };
 
-  const handleWorkspaceEditClick = async (workspace: WorkspaceDto) => {
-    setSelectedWorkspace({ ...workspace });
-    setMode(1);
-    setIsModalOpen(true);
-  };
-
   const otherWorkspaces = workspaces.filter(
     (workspace) => workspace !== activeWorkspace
   );
@@ -251,7 +245,7 @@ const WorkspaceNav = () => {
         placement="topRight"
         arrow
         dropdownRender={dropdownRender}
-        className=" w-[250px]"
+        className="w-[250px]"
         open={isDropdownOpen}
         onOpenChange={(v) => {
           setDropdownOpen(v);

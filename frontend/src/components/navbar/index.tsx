@@ -152,9 +152,7 @@ const Navbar = ({ extraComponent }: Props) => {
                         </Form>
                       )}
                     </div>
-                  ) : (
-                    <></>
-                  )}
+                  ) : null}
                 </div>
               </div>
             )
