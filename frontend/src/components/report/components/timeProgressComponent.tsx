@@ -1,6 +1,4 @@
 import "react-circular-progressbar/dist/styles.css";
-
-// Import react-circular-progressbar module and styles
 import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
 
 type Props = {

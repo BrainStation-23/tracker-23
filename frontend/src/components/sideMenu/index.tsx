@@ -135,9 +135,9 @@ const SideMenu = () => {
 
   const [isCreatingPage, setIsCreatingPage] = useState(false);
   const [deletePage, setDeletePage] = useState<ReportPageDto>();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [manageDropdownOpen, setManageDropdownOpen] = useState(true);
   const [reportDropdownOpen, setReportDropdownOpen] = useState(true);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [functionDropdownOpen, setFunctionDropdownOpen] = useState(true);
 
   const handleDeletePage = (page: ReportPageDto) => {
@@ -243,9 +243,9 @@ const SideMenu = () => {
                     className={`${
                       reportDropdownOpen ? "rotate-90" : ""
                     } duration-400 transition-all`}
-                  />{" "}
+                  />
                   Reports
-                </div>{" "}
+                </div>
                 {reportDropdownOpen &&
                   (isCreatingPage ? (
                     <div className="flex h-[18px] w-[18px] flex-col items-center justify-center overflow-hidden">
@@ -277,7 +277,7 @@ const SideMenu = () => {
                             label: (
                               <div
                                 aria-disabled={"true"}
-                                className={`${
+                                className={`flex gap-1 ${
                                   pageId === reportPage.id
                                     ? " cursor-not-allowed"
                                     : "cursor-pointer"
@@ -288,6 +288,7 @@ const SideMenu = () => {
                                 }
                               >
                                 <DeleteIconSvg />
+                                Delete
                               </div>
                             ),
                           },
@@ -354,7 +355,7 @@ const SideMenu = () => {
             </div>
           </div>
         </div>
-        <div className="mb-[45px]">
+        <div className="p-4">
           <WorkspaceNav />
         </div>
       </div>
