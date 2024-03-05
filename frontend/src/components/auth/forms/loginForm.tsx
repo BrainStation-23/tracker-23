@@ -18,10 +18,17 @@ const LoginForm = ({ setIsModalOpen, email }: Props) => {
   const router = useRouter();
   const signIn = async (values: any) => {
     const data = await userAPI.login(values);
-    if (data?.status === "ONBOARD" && GetCookie("access_token"))
+    if (!data) setIsModalOpen(false);
+    if (window.gtag) {
+      window.gtag("event", "login", {
+        method: "System",
+      });
+    }
+    if (data?.status === "ONBOARD" && GetCookie("access_token")) {
       router.push("/onBoarding");
-    else if (GetCookie("access_token")) router.push("/onBoarding");
-    !data && setIsModalOpen(false);
+    } else if (GetCookie("access_token")) {
+      router.push("/taskList");
+    }
   };
 
   const onFinish = async (values: any) => {

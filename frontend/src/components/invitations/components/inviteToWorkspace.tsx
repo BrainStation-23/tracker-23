@@ -14,7 +14,14 @@ const InviteToWorkspace = ({ setIsModalOpen }: Props) => {
   const onFinish = async (values: any) => {
     setLoading(true);
     const res = await userAPI.sendWorkspaceInvitation(values);
-    res && message.success("Invitation sent successfully");
+    if (res) {
+      if (window.gtag) {
+        window.gtag("event", "team_invite", {
+          value: "team invitation",
+        });
+      }
+      message.success("Invitation sent successfully");
+    }
     setIsModalOpen(false);
     setLoading(false);
   };
