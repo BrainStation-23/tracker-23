@@ -47,6 +47,11 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
           res?.error?.message ? res?.error?.message : "Export Failed"
         );
       } else {
+        if (window.gtag) {
+          window.gtag("event", "download_report", {
+            value: "Time Sheet Report",
+          });
+        }
         ExcelExport({ file: res, name: "Tracker 23 Time Sheet Report" });
       }
     } catch (error) {

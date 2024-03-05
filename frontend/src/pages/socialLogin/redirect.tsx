@@ -7,7 +7,7 @@ import {
 import { userAPI } from "APIs";
 import { message, Spin } from "antd";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const GoogleCallbackPage = () => {
   const router = useRouter();

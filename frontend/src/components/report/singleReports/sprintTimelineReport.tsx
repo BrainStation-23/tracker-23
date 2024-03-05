@@ -47,7 +47,14 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
       startDate: dateRange[0],
       endDate: dateRange[1],
     });
-    res && setSprintTimelineReportData(res);
+    if (res) {
+      setSprintTimelineReportData(res);
+      if (window.gtag) {
+        window.gtag("event", "download_report", {
+          value: "Sprint Report",
+        });
+      }
+    }
     setIsLoading(false);
   };
 

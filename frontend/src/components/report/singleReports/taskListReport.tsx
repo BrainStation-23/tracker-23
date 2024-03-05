@@ -53,6 +53,11 @@ export default function TaskListReport({ reportData, inView }: Props) {
     if (res) {
       const { formattedTasks } = getFormattedTasks(res);
       setTasks(formattedTasks || []);
+      if (window.gtag) {
+        window.gtag("event", "download_report", {
+          value: "Task List Report",
+        });
+      }
     }
     setIsLoading(false);
   };

@@ -38,7 +38,14 @@ const SprintReport = ({ reportData, inView }: Props) => {
         startDate: dateRange[0],
         endDate: dateRange[1],
       });
-      res && setSprintReportData(res);
+      if (res) {
+        setSprintReportData(res);
+        if (window.gtag) {
+          window.gtag("event", "download_report", {
+            value: "Sprint Report",
+          });
+        }
+      }
     }
     setIsLoading(false);
   };

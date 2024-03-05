@@ -166,8 +166,15 @@ const OnboardingSteps: React.FC = () => {
         completed: true,
         emails: emails.toString(), // Doing this because backend wants this way
       });
-      res && message.success("Onboarding Successful");
-      res && dispatch(changeWorkspaceReloadStatusSlice());
+      if (res) {
+        message.success("Onboarding Successful");
+        if (window.gtag) {
+          window.gtag("event", "team_invite", {
+            value: "team invitation",
+          });
+        }
+        dispatch(changeWorkspaceReloadStatusSlice());
+      }
     }
     res && setCurrent(current + 1);
     setLoading(false);
