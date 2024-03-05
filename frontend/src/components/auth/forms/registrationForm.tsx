@@ -28,6 +28,11 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
       setIsModalOpen(false);
 
       if (userRegistered) {
+        if (window.gtag) {
+          window.gtag("event", "sign_up", {
+            method: "System",
+          });
+        }
         message.success("Singed up Successfully");
         router.push("/login");
       }

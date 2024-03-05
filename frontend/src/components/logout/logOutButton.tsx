@@ -6,14 +6,11 @@ type Props = {
   className?: string;
 };
 const LogOutButton = ({ className }: Props) => {
-  const handleLogOut = async () => {
-    logOutFunction();
-  };
   return (
     <button
       className={` flex w-full items-center gap-1 rounded 
        ${className ? className : ""}`}
-      onClick={() => handleLogOut()}
+      onClick={logOutFunction}
     >
       <LogoutIconSvg />
       <div className="text-[15px] font-semibold">Log out</div>
