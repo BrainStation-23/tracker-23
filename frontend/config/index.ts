@@ -5,5 +5,5 @@ export const config = {
       ? process?.env.NEXT_PUBLIC_API_PREFIX_REST
       : process?.env.NEXT_PUBLIC_API_PREFIX_DEV,
   adminMail: process?.env.NEXT_PUBLIC_API_ADMIN_EMAIL,
-  GA_MEASUREMENT_ID: process?.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+  NEXT_PUBLIC_GA_MEASUREMENT_ID: process?.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
 };
