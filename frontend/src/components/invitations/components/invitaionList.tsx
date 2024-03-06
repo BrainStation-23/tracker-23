@@ -42,7 +42,7 @@ const InvitationList = ({
       dataIndex: "firstName",
       key: "firstName",
       width: "300px",
-      render: (text: string, record: InviteUserWorkspaceDto, index: number) => {
+      render: (text: string, record: InviteUserWorkspaceDto) => {
         return (
           <div className="flex items-center gap-2">
             <div className=" ">
@@ -85,7 +85,7 @@ const InvitationList = ({
       dataIndex: "email",
       key: "email",
       width: "300px",
-      render: (text: string, record: InviteUserWorkspaceDto, index: number) => {
+      render: (text: string, record: InviteUserWorkspaceDto) => {
         return (
           <div className="flex  items-center gap-2">
             <Text
@@ -109,7 +109,7 @@ const InvitationList = ({
       dataIndex: "workspace",
       key: "workspace",
       width: "200px",
-      render: (text: string, record: InviteUserWorkspaceDto, index: number) => {
+      render: (text: string, record: InviteUserWorkspaceDto) => {
         return (
           <div className="flex  items-center gap-2">
             <Text
@@ -133,7 +133,7 @@ const InvitationList = ({
       dataIndex: "designation",
       key: "designation",
       width: "200px",
-      render: (text: string, record: InviteUserWorkspaceDto, index: number) => {
+      render: (text: string, record: InviteUserWorkspaceDto) => {
         return (
           <div className="flex w-full items-center justify-center gap-2">
             <Text
@@ -157,7 +157,7 @@ const InvitationList = ({
       dataIndex: "role",
       key: "role",
       width: "150px",
-      render: (text: string, record: InviteUserWorkspaceDto, index: number) => (
+      render: (text: string, record: InviteUserWorkspaceDto) => (
         <div className="flex w-full items-center justify-center gap-2">
           <div
             style={{
@@ -199,7 +199,7 @@ const InvitationList = ({
       dataIndex: "status",
       key: "status",
       width: "150px",
-      render: (text: string, record: InviteUserWorkspaceDto, index: number) => {
+      render: (text: string, record: InviteUserWorkspaceDto) => {
         return (
           <div className="flex w-full items-center justify-center gap-2">
             <div
@@ -233,7 +233,7 @@ const InvitationList = ({
       dataIndex: "",
       key: "",
       width: "1px",
-      render: (text: string, record: InviteUserWorkspaceDto, index: number) => (
+      render: (text: string, record: InviteUserWorkspaceDto) => (
         <div className="bgs-red-300 flex justify-center gap-2">
           <MoreFunctionInvitationPageComponent
             {...{ invitedUser: record, acceptInvite, rejectInvite }}

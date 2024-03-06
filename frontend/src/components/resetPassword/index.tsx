@@ -15,7 +15,7 @@ const ResetPassword = () => {
               Track your time now and discover new experiences
             </h1>
 
-            <p className="text-lg">don't have an account?</p>
+            <p className="text-lg">don&apos;t have an account?</p>
             <Link
               href="/registration"
               className="inline-block flex-none rounded-lg border-2 border-black bg-black px-4 py-3 font-medium text-white"

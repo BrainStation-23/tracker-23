@@ -111,11 +111,9 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
       dataIndex: "totalTime",
       key: "totalTime",
       align: "center",
-      render: (_: any, { totalTime }: any) => {
-        return (
-          <div className="w-full rounded px-2 text-center text-black">-</div>
-        );
-      },
+      render: () => (
+        <div className="w-full rounded px-2 text-center text-black">-</div>
+      ),
     });
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {

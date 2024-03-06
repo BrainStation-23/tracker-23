@@ -2,15 +2,6 @@ import { Tooltip } from "antd";
 import React from "react";
 
 function DisplayComponent(props: any) {
-  const h = () => {
-    if (props.time.h === 0) {
-      return "";
-    } else {
-      return (
-        <span>{props.time.h >= 10 ? props.time.h : "0" + props.time.h}</span>
-      );
-    }
-  };
   return (
     <div className=" col-span-5 m-auto text-center font-semibold">
       <Tooltip placement="bottom" title={"Total Spent Time"} color="blue">

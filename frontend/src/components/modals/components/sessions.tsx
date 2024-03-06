@@ -1,17 +1,17 @@
-import { DatePicker, Form, TimePicker, Tooltip } from "antd";
 import dayjs from "dayjs";
 import { TaskDto } from "models/tasks";
-import { useEffect, useState } from "react";
+import { DatePicker, Form, TimePicker, Tooltip } from "antd";
 
 import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
 import EditIconSvg from "@/assets/svg/EditIconSvg";
 import {
   formatDate,
-  getFormattedShortTime,
   getFormattedTime,
+  getFormattedShortTime,
   getFormattedTotalTime,
 } from "@/services/timeActions";
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { useState } from "react";
 
 type Props = {
   taskDetails: TaskDto;
@@ -44,22 +44,13 @@ const Sessions = ({
     SetSpinning(false);
   };
 
-  const onReset = () => {
-    form.resetFields();
-  };
-  const [initialValues, setInitialValues] = useState<any>();
   const handleInitialValues = (session: any) => {
     setSessionInEdit(session.id);
     form.setFieldsValue({ date: dayjs(session.startTime) });
     form.setFieldsValue({
       time: [dayjs(session.startTime), dayjs(session.endTime)],
     });
-    // setInitialValues({
-    //   date: dayjs(new Date(session.startTime)),
-    //   time: [new Date(session.startTime), new Date(session.startTime)],
-    // });
   };
-  useEffect(() => {}, [initialValues]);
   return (
     <>
       <h3 className="w-full  text-left text-base font-semibold">Sessions</h3>
@@ -76,24 +67,8 @@ const Sessions = ({
           const startTime: any = formatDate(session.startTime);
           const endTime: any = formatDate(session.endTime);
 
-          const totalTime = getFormattedTotalTime(endTime - startTime);
-
           return (
-            <Form
-              key={session.id}
-              form={form}
-              // name="control-hooks"
-              onFinish={onFinish}
-              // initialValues={{
-              //   date: dayjs(new Date(session.startTime)),
-              //   time: [
-              //     dayjs(new Date(session.startTime)),
-              //     dayjs(new Date(session.endTime)),
-              //   ],
-              // }}
-              // style={{ width: "500px" }}
-            >
-              {" "}
+            <Form key={session.id} form={form} onFinish={onFinish}>
               <div
                 className="grid grid-cols-12 gap-4 text-sm font-medium"
                 key={session.id}
@@ -200,7 +175,7 @@ const Sessions = ({
           );
         })}
       </div>
-      {currentSessions?.map((session: any, index: number) => {
+      {currentSessions?.map((session: any) => {
         const startTime = formatDate(session.startTime);
         return (
           <div className="w-full" key={session.id}>

@@ -5,7 +5,6 @@ import { LuFolderOpen } from "react-icons/lu";
 
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import { useAppSelector } from "@/storage/redux";
-import { Project } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
 
 const { Text } = Typography;
@@ -16,25 +15,25 @@ type Props = {
   className?: string;
   mode?: "multi" | "single";
 };
-type TagProps = {
-  label: any;
-  value: StatusDto;
-  closable: any;
-  onClose: any;
-};
-const ProjectSelectorComponent = ({
+
+export default function ProjectSelectorComponent({
   className,
   projectIds,
   setProjectIds,
   mode = "multi",
-}: Props) => {
+}: Props) {
   const router = useRouter();
   const path = router.asPath;
 
+  const reportProjects = useAppSelector(
+    (state: RootState) => state.projectList.reportProjects
+  );
+  const projectListProjects = useAppSelector(
+    (state: RootState) => state.projectList.projects
+  );
+
   const projects = (
-    path.includes("report")
-      ? useAppSelector((state: RootState) => state.projectList.reportProjects)
-      : useAppSelector((state: RootState) => state.projectList.projects)
+    path.includes("report") ? reportProjects : projectListProjects
   )?.filter((project) => project.integrationType !== "OUTLOOK");
 
   const selectOptions = projects
@@ -79,9 +78,14 @@ const ProjectSelectorComponent = ({
       )}
     </div>
   );
-};
+}
 
-export default ProjectSelectorComponent;
+type TagProps = {
+  label: any;
+  value: StatusDto;
+  closable: any;
+  onClose: any;
+};
 
 const tagRender = (props: TagProps, projectIds: number[]) => {
   const { label, onClose } = props;

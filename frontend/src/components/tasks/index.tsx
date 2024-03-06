@@ -66,10 +66,7 @@ const TasksPage = () => {
     searchText: "",
     selectedDate: getDateRangeArray("this-week"),
     priority: [],
-    status: [
-      // '{"name":"To Do","statusCategoryName":"TO_DO"}',
-      // '{"name":"In Progress","statusCategoryName":"IN_PROGRESS"}',
-    ],
+    status: [],
     sprints: [],
     types: [],
   });
@@ -341,11 +338,6 @@ const TasksPage = () => {
       setLoading(false);
     }
   };
-  const syncFunction = async () => {
-    dispatch(setSyncRunning(true));
-    const res = await userAPI.syncStatus();
-    res && dispatch(setSyncStatus(res));
-  };
 
   useEffect(() => {
     if (tasks) {
@@ -368,9 +360,11 @@ const TasksPage = () => {
   useEffect(() => {
     !loading && getTasks();
   }, [searchParams]);
+
   useEffect(() => {
     !loading && getActiveSprintTasks();
   }, [searchParamsActiveSprint]);
+
   useEffect(() => {
     if (!loading && !syncRunning) {
       getProjects();
@@ -379,6 +373,7 @@ const TasksPage = () => {
       getActiveSprintTasks();
     }
   }, [syncRunning]);
+
   useEffect(() => {
     const getSyncStatus = async () => {
       const res = await userAPI.syncStatus();
@@ -394,11 +389,8 @@ const TasksPage = () => {
     timeout =
       !publicRoutes.some((route) => path.includes(route)) &&
       setTimeout(getSyncStatus, 5000);
-    const cleanup = () => {
-      clearTimeout(timeout);
-    };
 
-    return cleanup;
+    return () => clearTimeout(timeout);
   }, [publicRoutes.some((route) => path.includes(route))]);
 
   useEffect(() => {
@@ -426,13 +418,13 @@ const TasksPage = () => {
     };
 
     return cleanup;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     dispatch,
     syncRunning,
     router,
     publicRoutes.some((route) => path.includes(route)),
   ]);
+
   return (
     <TaskContext.Provider
       value={{
@@ -450,45 +442,36 @@ const TasksPage = () => {
           </PrimaryButton>
         }
       />
-      <div
-        className="overflow-y-auto"
-        // style={{ height: "calc(100vh - 100px)" }}
-      >
+      <div className="overflow-y-auto">
         <div className="mb-4 flex justify-between">
           <h2 className="text-2xl font-bold">Tasks</h2>
-          {/* <div className="flex gap-1">
-            <PrimaryButton onClick={() => setViewModalOpen(true)}>
-              <PlusIconSvg />
-              Add Task
-            </PrimaryButton>
-          </div> */}
         </div>
         {activeTab === "ActiveSprint" ? (
           <TopPanelActiveSprint
             {...{
               tasks,
-              activeSprintTasks,
               activeTab,
               setActiveTab,
-              searchParamsActiveSprint,
-              setSearchParamsActiveSprint,
+              activeSprintTasks,
               checkedOptionList,
               setCheckedOptionList,
+              searchParamsActiveSprint,
+              setSearchParamsActiveSprint,
             }}
           />
         ) : (
           <TopPanel
             {...{
               tasks,
-              activeSprintTasks,
               activeTab,
               setActiveTab,
               searchParams,
+              selectedSource,
               setSearchParams,
               checkedOptionList,
-              setCheckedOptionList,
-              selectedSource,
+              activeSprintTasks,
               setSelectedSource,
+              setCheckedOptionList,
             }}
           />
         )}
@@ -500,20 +483,20 @@ const TasksPage = () => {
                 <TableComponent
                   {...{
                     tasks,
-                    runningTask,
-                    setSelectedTask,
-                    setTaskViewModalOpen,
-                    setManualTimeEntryModalOpen,
-                    deleteTask,
-                    startSession,
-                    stopSession,
-                    setReload,
                     reload,
-                    sessionActionLoading,
+                    setReload,
+                    deleteTask,
                     setLoading,
-                    handleStatusChange,
-                    handleEstimationChange,
+                    runningTask,
+                    stopSession,
+                    startSession,
                     handlePinTask,
+                    setSelectedTask,
+                    handleStatusChange,
+                    sessionActionLoading,
+                    setTaskViewModalOpen,
+                    handleEstimationChange,
+                    setManualTimeEntryModalOpen,
                   }}
                 />
               </div>
@@ -587,7 +570,7 @@ const TasksPage = () => {
           width={540}
           className="top-0 my-auto flex h-full items-center"
         >
-          <CreateTaskComponent taskList={tasks} createTask={createTask} />
+          <CreateTaskComponent />
         </GlobalModal>
         <GlobalModal
           isModalOpen={manualTimeEntryModalOpen}
@@ -616,7 +599,6 @@ const TasksPage = () => {
           setIsModalOpen={setTaskViewModalOpen}
           handleDeleteSession={handleDeleteSession}
           handleUpdateSession={handleUpdateSession}
-          // handleDelete={handleDelete}
         />
       </div>
     </TaskContext.Provider>

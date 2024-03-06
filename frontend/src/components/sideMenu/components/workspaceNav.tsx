@@ -20,7 +20,7 @@ import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 import SyncButtonComponent from "@/components/common/buttons/syncButton";
 import LogOutButton from "@/components/logout/logOutButton";
 import GlobalModal from "@/components/modals/globalModal";
-import { getActiveUserWorkspace } from "@/services/globalFunctions";
+import { useActiveUserWorkspace } from "@/hooks/useActiveUserWorkspace";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
@@ -49,14 +49,13 @@ const WorkspaceNav = () => {
   const workspaces = useAppSelector(
     (state: RootState) => state.workspacesSlice.workspaces
   );
-  const user = useAppSelector((state: RootState) => state.userSlice.user);
 
   const [selectedWorkspace, setSelectedWorkspace] =
     useState<WorkspaceDto | null>();
   const activeWorkspace = useAppSelector(
     (state: RootState) => state.workspacesSlice.activeWorkspace
   );
-  const activeUserWorkspace = getActiveUserWorkspace();
+  const activeUserWorkspace = useActiveUserWorkspace();
 
   const handleChangeWorkspaceClick = async (workspace: WorkspaceDto) => {
     if (activeWorkspace?.id !== workspace.id) {
@@ -75,10 +74,6 @@ const WorkspaceNav = () => {
     setSelectedWorkspace(workspace);
     setIsModalOpen(true);
   };
-
-  const otherWorkspaces = workspaces.filter(
-    (workspace) => workspace !== activeWorkspace
-  );
 
   const menuItems: MenuProps["items"] = [];
   const syncFunction = async () => {

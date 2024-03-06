@@ -20,72 +20,36 @@ export const getFormattedTotalTime = (time: number) => {
     mins ? Math.abs(mins) + "m" : ""
   }
   `;
-  // ${
-  //   seconds ?? seconds + "s"
-  // }
 };
 export const formatDate = (time: any) => (time ? new Date(time) : null);
 export const getFormattedTime = (timestamp: any) => {
   // or use padStart
   const date = timestamp;
   let hours = date?.getHours(),
-    minutes = date?.getMinutes(),
-    seconds = date?.getSeconds(),
     day = date?.getDate(),
     month = date?.getMonth(),
     year = date?.getFullYear();
-  let time = "am";
-  let zeroM = "";
-  let zeroH = "";
   if (hours === 0) hours = 12;
   else if (hours > 12) {
     hours -= 12;
-    time = "pm";
   }
-  if (minutes < 10) zeroM = "0";
-  if (hours < 10) zeroH = "0";
-  return (
-    // zeroH +
-    // hours +
-    // ":" +
-    // zeroM +
-    // minutes +
-    // time +
-    // ", " +
-    monthsList[month] + " " + day + "," + " " + year
-  );
-  // return (
-  //   hours + ":" + minutes + ":" + seconds + " " + day + "/" + month + "/" + year
-  // );
+
+  return monthsList[month] + " " + day + "," + " " + year;
 };
 export const getFormattedShortTime = (timestamp: any) => {
   // or use padStart
   const date = timestamp;
   let hours = date?.getHours(),
-    minutes = date?.getMinutes(),
-    seconds = date?.getSeconds(),
-    day = date?.getDate(),
-    month = date?.getMonth(),
-    year = date?.getFullYear();
+    minutes = date?.getMinutes();
   let time = "am";
   let zeroM = "";
-  let zeroH = "";
   if (hours >= 12) {
     if (hours > 12) hours -= 12;
     time = "pm";
   }
   if (hours === 0) hours = 12;
   if (minutes < 10) zeroM = "0";
-  if (hours < 10) zeroH = "0";
-  return (
-    hours + ":" + zeroM + minutes + " " + time
-    // +
-    // ", " +
-    // monthsList[month] + " " + day + "," + " " + year
-  );
-  // return (
-  //   hours + ":" + minutes + ":" + seconds + " " + day + "/" + month + "/" + year
-  // );
+  return hours + ":" + zeroM + minutes + " " + time;
 };
 export const getTotalSpentTime = (sessions: any) => {
   let total: number = 0;

@@ -25,9 +25,6 @@ const EstimationComponent = ({ task, handleEstimationChange }: Props) => {
     } else setEditing(false);
   };
 
-  const onReset = () => {
-    form.resetFields();
-  };
   const onFinishFailed = (err: any) => {
     console.log(
       "🚀 ~ file: estimationComponent.tsx:32 ~ onFinishFailed ~ err:",

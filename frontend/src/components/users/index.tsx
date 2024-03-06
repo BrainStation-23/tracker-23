@@ -26,11 +26,13 @@ const UsersComponent = () => {
     );
     setUserList([...newList]);
   };
+
   useEffect(() => {
     if (user.email === config.adminMail) {
       getUserList();
     } else router.push("/");
-  }, [user]);
+  }, [router, user]);
+
   return (
     <div>
       <div className="mb-4 flex justify-between">

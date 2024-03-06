@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Tooltip } from "antd";
+import { Tooltip } from "antd";
 import { PlayIcon } from "@/icons/playIcon";
 import { StopIcon } from "@/icons/stopIcon";
 function BtnComponent(props: any) {

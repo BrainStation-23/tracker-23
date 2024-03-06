@@ -22,7 +22,7 @@ export default function Document() {
         <NextScript />
         <script
           async
-          src={`https://www.googletagmanager.com/gtag/js?id=${config.GA_MEASUREMENT_ID}`}
+          src={`https://www.googletagmanager.com/gtag/js?id=${config.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
         />
         <script
           dangerouslySetInnerHTML={{
@@ -31,7 +31,7 @@ export default function Document() {
                     function gtag(){dataLayer.push(arguments);}
                     gtag('js', new Date());
                     
-                    gtag('config', '${config.GA_MEASUREMENT_ID}', {page_path: window.location.pathname,});
+                    gtag('config', '${config.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {page_path: window.location.pathname,});
                   `,
           }}
         />

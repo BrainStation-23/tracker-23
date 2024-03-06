@@ -153,16 +153,17 @@ const RecurrentTaskCreationComponent = ({ startDate }: Props) => {
           >
             <Checkbox.Group>
               <div className="flex gap-2 font-semibold">
-                {week.map((day) => (
+                {week.map((el) => (
                   <Checkbox
-                    checked={day.checked}
-                    value={day.day}
-                    onChange={(e) => handleDayCheck(e.target.checked, day.day)}
+                    key={el.day}
+                    checked={el.checked}
+                    value={el.day}
+                    onChange={(e) => handleDayCheck(e.target.checked, el.day)}
                     className={`custom-checkbox hidden-checkbox ${
-                      day.checked ? "checked" : ""
+                      el.checked ? "checked" : ""
                     }`}
                   >
-                    <Tooltip title={day.day}> {day.day[0]}</Tooltip>
+                    <Tooltip title={el.day}> {el.day[0]}</Tooltip>
                   </Checkbox>
                 ))}
               </div>

@@ -14,7 +14,6 @@ import {
   getFormattedTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
-import { getLocalStorage, setLocalStorage } from "@/storage/storage";
 
 const { Text } = Typography;
 const DashboardTableComponent = ({
@@ -22,8 +21,6 @@ const DashboardTableComponent = ({
   runningTask,
   startSession,
   stopSession,
-  setReload,
-  reload,
 }: any) => {
   const columns: any = [
     {
@@ -158,28 +155,28 @@ const DashboardTableComponent = ({
       position: ["bottomRight", "bottomLeft"],
     },
   });
-  const handlePin = (task: TaskDto) => {
-    task.pinned
-      ? (tableParams.pagination.total = tableParams.pagination.total - 1)
-      : (tableParams.pagination.total = tableParams.pagination.total + 1);
+  // const handlePin = (task: TaskDto) => {
+  //   task.pinned
+  //     ? (tableParams.pagination.total = tableParams.pagination.total - 1)
+  //     : (tableParams.pagination.total = tableParams.pagination.total + 1);
 
-    if (task.pinned) {
-      let pinnedTasks = getLocalStorage("pinnedTasks");
-      if (!pinnedTasks) pinnedTasks = [];
-      pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
-      setLocalStorage("pinnedTasks", pinnedTasks);
-    } else {
-      let pinnedTasks = getLocalStorage("pinnedTasks");
-      if (!pinnedTasks) pinnedTasks = [];
-      pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
-      pinnedTasks.push(task.id);
-      setLocalStorage("pinnedTasks", pinnedTasks);
-    }
-    task.pinned = !task.pinned;
-    setReload(!reload);
-  };
+  //   if (task.pinned) {
+  //     let pinnedTasks = getLocalStorage("pinnedTasks");
+  //     if (!pinnedTasks) pinnedTasks = [];
+  //     pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
+  //     setLocalStorage("pinnedTasks", pinnedTasks);
+  //   } else {
+  //     let pinnedTasks = getLocalStorage("pinnedTasks");
+  //     if (!pinnedTasks) pinnedTasks = [];
+  //     pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
+  //     pinnedTasks.push(task.id);
+  //     setLocalStorage("pinnedTasks", pinnedTasks);
+  //   }
+  //   task.pinned = !task.pinned;
+  //   setReload(!reload);
+  // };
 
-  const getRowClassName = (task: TaskDto, index: any) => {
+  const getRowClassName = (task: TaskDto) => {
     if (!task.sessions) task.sessions = [];
     return runningTask?.id === task.id ? "bg-[#F3FCFF]" : "";
   };
