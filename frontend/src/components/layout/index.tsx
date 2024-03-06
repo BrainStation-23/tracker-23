@@ -33,7 +33,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <title>Tracker 23</title>
       </Head>
       {approvedUser ? (
-        <ValidUserLayout children={children} />
+        <ValidUserLayout>{children}</ValidUserLayout>
       ) : (
         <InvalidUserPage />
       )}

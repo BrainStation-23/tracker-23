@@ -2,8 +2,6 @@ import React, { useContext, useEffect, useState } from "react";
 import DisplayComponent from "./Components/DisplayComponent";
 import BtnComponent from "./Components/BtnComponent";
 import { getTotalSpentTime } from "@/services/timeActions";
-import { toast } from "react-toastify";
-import { message } from "antd";
 import { TaskContext } from "@/components/tasks";
 
 function ReactStopWatchCopy({ task }: any) {
@@ -82,7 +80,6 @@ function ReactStopWatchCopy({ task }: any) {
 
   const stop = () => {
     stopSession();
-    const res = clearInterval(interv);
     setStatus(2);
   };
 

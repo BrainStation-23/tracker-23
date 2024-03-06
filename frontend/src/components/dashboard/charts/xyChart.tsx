@@ -17,12 +17,9 @@ export default function XYChart({ data }: any) {
     categoryAxis.renderer.grid.template.location = null;
     categoryAxis.renderer.grid.template.strokeOpacity = 0;
 
-    categoryAxis.renderer.labels.template.adapter.add(
-      "dy",
-      (dy: any, target) => {
-        return dy;
-      }
-    );
+    categoryAxis.renderer.labels.template.adapter.add("dy", (dy: any) => {
+      return dy;
+    });
 
     const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
     valueAxis.renderer.labels.template.fontSize = 16; // set font size

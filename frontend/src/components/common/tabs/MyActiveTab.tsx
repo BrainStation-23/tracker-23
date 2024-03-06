@@ -1,9 +1,9 @@
 type Props = {
-  children?: any;
   tab: string;
+  children?: any;
   setActiveTab?: Function;
 };
-const MyActiveTab = ({ children, tab, setActiveTab }: Props) => {
+const MyActiveTab = ({ children, tab }: Props) => {
   return (
     <div
       key={Math.random()}

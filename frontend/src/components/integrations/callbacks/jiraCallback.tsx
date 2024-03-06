@@ -13,7 +13,7 @@ const JiraCallBack = () => {
   const router = useRouter();
   const [newIntegrationProjects, setNewIntegrationProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSpinning, setIsSpinning] = useState(true);
+  const [isSpinning] = useState(true);
   const [spinning, setSpinning] = useState(false);
 
   const codeFound = async (code: string) => {

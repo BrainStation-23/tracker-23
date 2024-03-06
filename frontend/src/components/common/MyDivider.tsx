@@ -1,5 +1,3 @@
-import { Divider } from "antd";
-
 const MyDivider = ({ children, ...restProps }: any) => {
   return (
     <div

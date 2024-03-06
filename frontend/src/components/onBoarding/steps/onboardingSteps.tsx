@@ -186,7 +186,7 @@ const OnboardingSteps: React.FC = () => {
     <div className="flex flex-col justify-center gap-12 p-20">
       <div className="flex flex-col gap-2">
         <div className="text-xl font-semibold">Hello {user.firstName}</div>
-        <div>Let's start with some basic questions to get you started</div>
+        <div>Let&apos;s start with some basic questions to get you started</div>
       </div>
       <Spin spinning={loading}>
         <Form

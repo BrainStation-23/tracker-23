@@ -18,32 +18,31 @@ const ReportPage = () => {
       <div className="font-semibold">Your Reports</div>
       {reportPages?.length > 0 && (
         <div className="flex flex-col gap-2">
-          {reportPages?.map((reportPage) => {
-            return (
-              <div
-                className={`group flex w-min items-center justify-between gap-2 rounded px-2 text-black hover:bg-[#ECECED] hover:font-semibold hover:text-primary `}
+          {reportPages?.map((reportPage) => (
+            <div
+              key={reportPage.id}
+              className={`group flex w-min items-center justify-between gap-2 rounded px-2 text-black hover:bg-[#ECECED] hover:font-semibold hover:text-primary `}
+            >
+              <MyLink
+                href={"/reports/" + reportPage.id}
+                className="flex items-center  gap-2 p-1"
               >
-                <MyLink
-                  href={"/reports/" + reportPage.id}
-                  className="flex items-center  gap-2 p-1"
+                <div
+                  className={`flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary`}
                 >
-                  <div
-                    className={`flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary`}
+                  <LuNewspaper size={16} />
+                </div>
+                <div className="flex w-[120px] items-center">
+                  <Text
+                    className="m-0 p-0 text-xs "
+                    ellipsis={{ tooltip: reportPage.name }}
                   >
-                    <LuNewspaper size={16} />
-                  </div>
-                  <div className="flex w-[120px] items-center">
-                    <Text
-                      className="m-0 p-0 text-xs "
-                      ellipsis={{ tooltip: reportPage.name }}
-                    >
-                      {reportPage.name}
-                    </Text>
-                  </div>
-                </MyLink>
-              </div>
-            );
-          })}
+                    {reportPage.name}
+                  </Text>
+                </div>
+              </MyLink>
+            </div>
+          ))}
         </div>
       )}
     </div>

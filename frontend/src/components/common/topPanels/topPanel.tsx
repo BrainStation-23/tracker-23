@@ -21,7 +21,6 @@ import SprintSelectorComponent from "./components/sprintSelector";
 import StatusSelectorComponent from "./components/statusSelector";
 import TopBarMoreComponent from "./components/topBarMoreComponent";
 import CalendarSelectorComponent from "./components/calendarSelector";
-import { FilterDateType } from "models/reports";
 
 type Props = {
   tasks: TaskDto[];
@@ -150,6 +149,7 @@ const TopPanel = ({
 
   const filterOptions = [
     <TopBarMoreComponent
+      key={1}
       {...{ checkedOptionList, setCheckedOptionList, options }}
     />,
   ];

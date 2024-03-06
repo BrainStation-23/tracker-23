@@ -2,15 +2,10 @@ import { getProjectStatusList } from "@/services/taskActions";
 import { useAppSelector } from "@/storage/redux";
 import { StatusType } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
-import { userAPI } from "APIs";
 import { Dropdown, MenuProps } from "antd";
-import { StatusDto, TaskDto } from "models/tasks";
+import { TaskDto } from "models/tasks";
 import { useState } from "react";
-import {
-  statusBGColorEnum,
-  statusBorderColorEnum,
-  taskStatusEnum,
-} from "utils/constants";
+import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 
 type Props = {
   task: TaskDto;
@@ -47,7 +42,6 @@ const StatusDropdownComponent = ({
             updateStatus(status);
           }}
         >
-          {/* <div>{status.name}</div> */}
           <div
             className={`${
               status === selectedStatus && "border-r-2 bg-[#ECECED] "
@@ -102,20 +96,12 @@ const StatusDropdownComponent = ({
       dropdownRender={dropdownRender}
       trigger={["click"]}
       className="w-max cursor-pointer"
-      // overlayClassName="absolute left-[-200px]"
       placement="bottomLeft"
     >
       <div
         className="relative flex h-10 items-center p-2"
         onClick={() => setDropdownOpen(!dropDownOpen)}
       >
-        {/* <DeleteFilled
-className="w-6 text-red-600"
-style={{ fontSize: "24px" }}
-onClick={() => {
-  // deleteTask(task.id);
-}}
-/> */}
         {children}
       </div>
     </Dropdown>

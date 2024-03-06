@@ -13,7 +13,6 @@ const OutlookCallBack = () => {
   const router = useRouter();
   const [newIntegrationProjects, setNewIntegrationProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSpinning, setIsSpinning] = useState(true);
   const [spinning, setSpinning] = useState(false);
 
   const codeFound = async (code: string) => {
@@ -50,7 +49,7 @@ const OutlookCallBack = () => {
     <>
       <div className="flex w-full justify-center p-40">
         <Spin
-          spinning={isSpinning}
+          spinning={true}
           tip={tip}
           size="large"
           className="scale-150"

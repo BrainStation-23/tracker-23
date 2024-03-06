@@ -11,6 +11,9 @@ import { useEffect } from "react";
 
 const GoogleCallbackPage = () => {
   const router = useRouter();
+  const urlParams = new URLSearchParams(router.asPath.split("?")[1]);
+  const code = urlParams.get("code");
+
   const getUserData = async (code: string) => {
     const invitationCode = getLocalStorage("invitationCode");
     deleteFromLocalStorage("invitationCode");
@@ -29,8 +32,6 @@ const GoogleCallbackPage = () => {
   };
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(router.asPath.split("?")[1]);
-    const code = urlParams.get("code");
     if (typeof code === "string") {
       getUserData(code);
     } else if (!code) router.push("/login");

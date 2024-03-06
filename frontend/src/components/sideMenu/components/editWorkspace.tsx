@@ -25,8 +25,6 @@ const EditWorkspace = ({
     setSelectedWorkspace(null);
     message.success("Workspace updated Successfully");
     setIsModalOpen(false);
-    // Here you can perform actions based on the form values, e.g., create a workspace.
-    // If switchWorkspace is true, you can switch to the newly created workspace.
   };
   useEffect(() => {
     form.setFieldValue("name", workspace.name);
