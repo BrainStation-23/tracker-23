@@ -106,6 +106,7 @@ const TopPanelActiveSprint = ({
   }, [selectedDate, priority, status, projectIds]);
   const filterOptions = [
     <TopBarMoreComponent
+      key={1}
       {...{ checkedOptionList, setCheckedOptionList, options }}
     />,
   ];

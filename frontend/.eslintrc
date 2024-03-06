@@ -1,46 +1,29 @@
 {
-  "root": true,
-  "env": {
-    "browser": true,
-    "node": true
-  },
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "project": "./tsconfig.json",
-    "ecmaFeatures": {
-      "jsx": true
-    }
-  },
-  "plugins": ["@typescript-eslint", "react", "jsx-a11y", "prettier"],
-  "extends": [
-    "next/babel",
-    "next/core-web-vitals",
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended",
-    "plugin:jsx-a11y/recommended",
-    "prettier",
-    "prettier/@typescript-eslint",
-    "prettier/react",
-    "prettier/standard"
-  ],
+  // "root": true,
+  // "env": {
+  //   "browser": true,
+  //   "node": true
+  // },
+  // "parser": "@typescript-eslint/parser",
+  // "parserOptions": {
+  //   "project": "./tsconfig.json",
+  //   "ecmaFeatures": {
+  //     "jsx": true
+  //   }
+  // },
+  // "plugins": ["@typescript-eslint", "react", "jsx-a11y", "prettier"],
+  "extends": "next",
   "rules": {
-    "@typescript-eslint/explicit-module-boundary-types": "off",
+    // "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "off",
-    "react/react-in-jsx-scope": "off",
-    "react/prop-types": "off",
+    // "react/react-in-jsx-scope": "off",
+    // "react/prop-types": "off",
     "jsx-a11y/anchor-is-valid": "off",
-    "prettier/prettier": "error",
+    // "prettier/prettier": "error",
     "no-unused-vars": "warn",
-    "@typescript-eslint/no-unused-vars": [
-      "warn",
-      { "argsIgnorePattern": "^_" }
-    ],
-    "import/no-unused-modules": ""
-  },
-  "settings": {
-    "react": {
-      "version": "detect"
-    }
+    // "@typescript-eslint/no-unused-vars": [
+    //   "warn",
+    //   { "argsIgnorePattern": "^_" }
+    // ]
   }
 }

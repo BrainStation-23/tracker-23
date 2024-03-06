@@ -1,5 +1,4 @@
 import { Modal } from "antd";
-import { useRouter } from "next/router";
 type Props = {
   children: any;
   isModalOpen: boolean;
@@ -18,7 +17,6 @@ const GlobalModal = ({
   handleCancel,
   width,
 }: Props) => {
-  const router = useRouter();
   const handleOk = () => {
     setIsModalOpen(false);
   };

@@ -241,7 +241,7 @@ const DateRangePicker = ({
 
 export default DateRangePicker;
 
-export const getDateRangeArray = (key: string, dates?: any) => {
+export const getDateRangeArray = (key: string) => {
   let startDate, endDate;
   switch (key) {
     case "today":

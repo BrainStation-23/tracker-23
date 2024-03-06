@@ -1,22 +1,29 @@
 import { Form, Input, MenuProps, message } from "antd";
 import { userAPI } from "APIs";
 import classNames from "classnames";
-import { UpdateReportDto } from "models/reports";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
+import { UpdateReportDto } from "models/reports";
 
+import { ReportIcons } from "../reportPage";
 import SecondaryButton from "@/components/common/buttons/secondaryButton";
 import MoreButtonTopPanel from "@/components/common/topPanels/components/moreButtonTopPanel";
 import {
-  deleteReportSlice,
   ReportData,
-  setReportInEditSlice,
   updateReportSlice,
+  deleteReportSlice,
+  setReportInEditSlice,
 } from "@/storage/redux/reportsSlice";
 
-import { ReportIcons } from "../reportPage";
+type Props = {
+  title?: string;
+  className?: string;
+  exportButton?: React.ReactNode;
+  extraFilterComponent?: React.ReactNode;
+  reportData: ReportData;
+  setIsLoading: Function;
+};
 
-import type { PropsWithChildren } from "react";
 export default function ReportHeaderComponent({
   title,
   className,
@@ -24,34 +31,27 @@ export default function ReportHeaderComponent({
   reportData,
   setIsLoading,
   extraFilterComponent,
-}: PropsWithChildren<{
-  title?: string;
-  className?: string;
-  exportButton?: React.ReactNode;
-  extraFilterComponent?: React.ReactNode;
-  reportData: ReportData;
-  setIsLoading: Function;
-}>) {
-  const [editing, setEditing] = useState(false);
-  const dispatch = useDispatch();
+}: Props) {
   const [form] = Form.useForm();
+  const dispatch = useDispatch();
 
+  const [editing, setEditing] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const filterOptions = [
-    <SecondaryButton onClick={() => deleteReprot()}>Delete</SecondaryButton>,
-    <SecondaryButton className="w-full" onClick={() => handleEdit()}>
+    <SecondaryButton key={1} onClick={deleteReport}>
+      Delete
+    </SecondaryButton>,
+    <SecondaryButton key={2} className="w-full" onClick={handleEdit}>
       Edit
     </SecondaryButton>,
   ];
-  const items: MenuProps["items"] = filterOptions.map((option, index) => {
-    return {
-      label: option,
-      key: index,
-    };
-  });
+  const items: MenuProps["items"] = filterOptions.map((option, index) => ({
+    label: option,
+    key: index,
+  }));
   const menuProps = {
     items,
-    onClick: (item: any) => {
+    onClick: () => {
       setDropdownOpen(false);
     },
   };
@@ -63,7 +63,7 @@ export default function ReportHeaderComponent({
       dispatch(updateReportSlice(res));
     }
   };
-  const deleteReprot = async () => {
+  async function deleteReport() {
     setIsLoading(true);
     if (!reportData?.id) return;
     const res = await userAPI.deleteReport(reportData.id);
@@ -72,10 +72,10 @@ export default function ReportHeaderComponent({
       message.success("Report deleted successfully");
     }
     setIsLoading(false);
-  };
-  const handleEdit = () => {
+  }
+  function handleEdit() {
     dispatch(setReportInEditSlice(reportData));
-  };
+  }
   const onFinish = (values: { name: string }) => {
     if (values.name !== title) {
       updateTitle(values);
@@ -139,8 +139,6 @@ export default function ReportHeaderComponent({
           <MoreButtonTopPanel
             {...{ menuProps, dropdownOpen, setDropdownOpen }}
           />
-          {/* <PrimaryButton onClick={() => deleteReprot()}>Delete</PrimaryButton>
-          <PrimaryButton onClick={() => handleEdit()}>Edit</PrimaryButton> */}
         </div>
       </div>
     </div>

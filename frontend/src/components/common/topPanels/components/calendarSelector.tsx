@@ -6,8 +6,9 @@ import { LuCalendarDays } from "react-icons/lu";
 
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import { useAppSelector } from "@/storage/redux";
-import { Project, StatusType } from "@/storage/redux/projectsSlice";
+import { Project } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
+const { Text } = Typography;
 
 type Props = {
   calendarIds: number[];
@@ -15,29 +16,27 @@ type Props = {
   className?: string;
   mode?: "multi" | "single";
 };
-type TagProps = {
-  label: any;
-  value: StatusDto;
-  closable: any;
-  onClose: any;
-};
-const CalendarSelectorComponent = ({
+
+export default function CalendarSelectorComponent({
   calendarIds,
   setCalendarIds,
   className,
   mode = "multi",
-}: Props) => {
-  const { Text } = Typography;
-
+}: Props) {
   const defaultValues: any = [];
 
   const router = useRouter();
   const path = router.asPath;
 
+  const reportProjects = useAppSelector(
+    (state: RootState) => state.projectList.reportProjects
+  );
+  const projectListProjects = useAppSelector(
+    (state: RootState) => state.projectList.projects
+  );
+
   const calendars = (
-    path.includes("report")
-      ? useAppSelector((state: RootState) => state.projectList.reportProjects)
-      : useAppSelector((state: RootState) => state.projectList.projects)
+    path.includes("report") ? reportProjects : projectListProjects
   )?.filter((project) => project.integrationType === "OUTLOOK");
   const Options = calendars
     ? calendars?.map((calendars) => {
@@ -55,35 +54,7 @@ const CalendarSelectorComponent = ({
       });
     });
   }
-  const tagRender = (props: TagProps) => {
-    const { label, value, closable, onClose } = props;
 
-    const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-    };
-    return (
-      <div
-        onClick={onClose}
-        className="m-1 flex w-max cursor-pointer items-center gap-1 rounded border-[1px] border-secondary px-2 py-0.5 text-xs font-medium text-black"
-      >
-        {calendarIds.length > 1 ? (
-          <div className="flex w-max max-w-[30px] items-center text-sm">
-            <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
-              {label}
-            </Text>
-          </div>
-        ) : (
-          <div className="flex w-max max-w-[100px] items-center text-sm">
-            <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
-              {label}
-            </Text>
-          </div>
-        )}
-        <CrossIconSvg />
-      </div>
-    );
-  };
   useEffect(() => {
     const tmpArray: any[] = [];
     calendarIds?.map((projectId) => {
@@ -92,6 +63,7 @@ const CalendarSelectorComponent = ({
       });
     });
   }, [calendarIds]);
+
   return (
     <div
       className={`flex w-full items-center gap-2 text-sm font-normal text-black ${
@@ -102,7 +74,7 @@ const CalendarSelectorComponent = ({
       {mode == "single" ? (
         <Select
           placeholder="Select Calendar"
-          tagRender={(props) => tagRender(props)}
+          tagRender={(props) => tagRender(props, calendarIds)}
           value={calendarIds[0] ? calendarIds : null}
           className="w-full"
           showArrow
@@ -116,7 +88,7 @@ const CalendarSelectorComponent = ({
         <Select
           placeholder="Select Calendars"
           mode="multiple"
-          tagRender={(props) => tagRender(props)}
+          tagRender={(props) => tagRender(props, calendarIds)}
           value={calendarIds}
           className="w-full"
           showArrow
@@ -129,6 +101,37 @@ const CalendarSelectorComponent = ({
       )}
     </div>
   );
+}
+
+type TagProps = {
+  label: any;
+  value: StatusDto;
+  closable: any;
+  onClose: any;
 };
 
-export default CalendarSelectorComponent;
+const tagRender = (props: TagProps, calendarIds: number[]) => {
+  const { label, onClose } = props;
+
+  return (
+    <div
+      onClick={onClose}
+      className="m-1 flex w-max cursor-pointer items-center gap-1 rounded border-[1px] border-secondary px-2 py-0.5 text-xs font-medium text-black"
+    >
+      {calendarIds.length > 1 ? (
+        <div className="flex w-max max-w-[30px] items-center text-sm">
+          <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
+            {label}
+          </Text>
+        </div>
+      ) : (
+        <div className="flex w-max max-w-[100px] items-center text-sm">
+          <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
+            {label}
+          </Text>
+        </div>
+      )}
+      <CrossIconSvg />
+    </div>
+  );
+};

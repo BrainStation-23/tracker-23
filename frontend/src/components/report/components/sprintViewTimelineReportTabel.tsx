@@ -22,8 +22,7 @@ type Props = {
 const SprintViewTimelineReportTabel = ({ data }: Props) => {
   const renderTableTaskCell = (
     record: SprintViewTimelineReportTableRow,
-    column: SprintViewTimelineReportColumn,
-    columnIndex: number
+    column: SprintViewTimelineReportColumn
   ) => {
     if (column.key in record.task || column.key in record.devProgress) {
       type cellType = "progress" | "assignedTask" | "task" | "noTask";
@@ -228,11 +227,7 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
       dataIndex: "name",
       key: "name",
       fixed: "left",
-      render: (
-        text: string,
-        record: SprintViewTimelineReportTableRow,
-        index: number
-      ) => {
+      render: (text: string, record: SprintViewTimelineReportTableRow) => {
         return {
           children: (
             <div className="justify-left mx-auto flex w-[150px] items-center gap-2 ">
@@ -262,7 +257,7 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
       // align: "center",
     },
   ];
-  data?.columns.forEach((column, index) => {
+  data?.columns.forEach((column) => {
     if (column.key === "AssignTasks") {
       columns.push({
         title: (
@@ -293,9 +288,8 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
         fixed: "left",
         render: (
           value: SprintViewTimelineReportColumn,
-          record: SprintViewTimelineReportTableRow,
-          _: number
-        ) => renderTableTaskCell(record, column, index),
+          record: SprintViewTimelineReportTableRow
+        ) => renderTableTaskCell(record, column),
         align: "center",
       });
     } else {
@@ -339,9 +333,8 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
         key: column.key,
         render: (
           value: SprintViewTimelineReportTask,
-          record: SprintViewTimelineReportTableRow,
-          _: number
-        ) => renderTableTaskCell(record, column, index),
+          record: SprintViewTimelineReportTableRow
+        ) => renderTableTaskCell(record, column),
         align: "center",
       });
     }

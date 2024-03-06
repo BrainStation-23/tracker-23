@@ -21,7 +21,6 @@ const IntegrationsPageComponent = () => {
     null
   );
   const [loading, setLoading] = useState(true);
-  const [adminMode, setAdminMode] = useState(false);
   const [loadingTip, setLoadingTip] = useState("");
 
   const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
@@ -65,9 +64,6 @@ const IntegrationsPageComponent = () => {
     setLoading(false);
     setLoadingTip("");
   };
-  const changeAdminMode = () => {
-    setAdminMode(!adminMode);
-  };
 
   useEffect(() => {
     getIntegrations();
@@ -93,7 +89,7 @@ const IntegrationsPageComponent = () => {
               handleDeleteIntegration={handleDeleteIntegration}
             />
           ) : (
-            <div className="h-[500px]"></div>
+            <div className="h-[500px]" />
           )}
         </Spin>
       </div>

@@ -1,4 +1,4 @@
-import { Select, Spin, Tooltip, Typography } from "antd";
+import { Select, Spin, Tooltip } from "antd";
 import { userAPI } from "APIs";
 import { useEffect, useState } from "react";
 import { LuHelpCircle } from "react-icons/lu";
@@ -10,14 +10,7 @@ import {
   setTimeFormatReducer,
 } from "@/storage/redux/settingsSlice";
 
-type TagProps = {
-  label: any;
-  value: any;
-  closable: any;
-  onClose: any;
-};
 const SettingComponent = () => {
-  const { Text } = Typography;
   const dispatch = useDispatch();
   const [syncTime, setSyncTime] = useState<number | null>();
   const [timeFormat, setTimeFormat] = useState<string | null>();

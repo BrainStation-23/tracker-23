@@ -10,7 +10,6 @@ import {
 
 import {
   formatDate,
-  getFormattedTime,
   getFormattedTotalTime,
   getTimeFromDate,
   getTotalSpentTime,

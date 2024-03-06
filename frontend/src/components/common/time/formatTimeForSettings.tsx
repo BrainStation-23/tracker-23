@@ -5,10 +5,10 @@ type Props = {
   time: number | undefined;
 };
 const FormatTimeForSettings = ({ time }: Props) => {
-  if (typeof time !== "number") return <>---</>;
   const timeFormat = useAppSelector(
     (state: RootState) => state.settingsSlice.timeFormat
   );
+  if (typeof time !== "number") return <>---</>;
   return (
     <>
       {time

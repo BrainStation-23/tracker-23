@@ -36,7 +36,7 @@ const MemberList = ({ memberList, updateMember }: Props) => {
       dataIndex: "firstName",
       key: "firstName",
       width: "300px",
-      render: (text: string, record: WorkspaceMemberDto, index: number) => {
+      render: (text: string, record: WorkspaceMemberDto) => {
         return (
           <div className="flex items-center gap-2">
             <div className=" ">
@@ -81,7 +81,7 @@ const MemberList = ({ memberList, updateMember }: Props) => {
       dataIndex: "email",
       key: "email",
       width: "300px",
-      render: (text: string, record: WorkspaceMemberDto, index: number) => {
+      render: (text: string, record: WorkspaceMemberDto) => {
         return (
           <div className="flex  items-center gap-2">
             <Text
@@ -105,7 +105,7 @@ const MemberList = ({ memberList, updateMember }: Props) => {
       dataIndex: "designation",
       key: "designation",
       width: "200px",
-      render: (text: string, record: WorkspaceMemberDto, index: number) => {
+      render: (text: string, record: WorkspaceMemberDto) => {
         return (
           <div className="flex w-full items-center justify-center gap-2">
             <Text
@@ -129,7 +129,7 @@ const MemberList = ({ memberList, updateMember }: Props) => {
       dataIndex: "role",
       key: "role",
       width: "150px",
-      render: (text: string, record: WorkspaceMemberDto, index: number) => (
+      render: (text: string, record: WorkspaceMemberDto) => (
         <div className="flex w-full items-center justify-center gap-2">
           <div
             style={{
@@ -171,7 +171,7 @@ const MemberList = ({ memberList, updateMember }: Props) => {
       dataIndex: "status",
       key: "status",
       width: "150px",
-      render: (text: string, record: WorkspaceMemberDto, index: number) => {
+      render: (text: string, record: WorkspaceMemberDto) => {
         return (
           <div className="flex w-full items-center justify-center gap-2">
             <div
@@ -205,7 +205,7 @@ const MemberList = ({ memberList, updateMember }: Props) => {
       dataIndex: "",
       key: "",
       width: "1px",
-      render: (text: string, record: WorkspaceMemberDto, index: number) => (
+      render: (text: string, record: WorkspaceMemberDto) => (
         <div className="bgs-red-300 flex justify-center gap-2">
           <MoreFunctionMembersPageComponent
             {...{ member: record, updateMember }}

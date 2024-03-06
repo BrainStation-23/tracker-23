@@ -17,11 +17,7 @@ const SprintReportTabel = ({ data }: Props) => {
       title: "Date",
       dataIndex: "date",
       key: "date",
-      render: (
-        text: string,
-        record: ModifiesSprintReportUser,
-        index: number
-      ) => ({
+      render: (text: string, record: ModifiesSprintReportUser) => ({
         children: (
           <Text
             className="w-[200px] cursor-pointer font-semibold"
@@ -42,11 +38,7 @@ const SprintReportTabel = ({ data }: Props) => {
       title: "Developer Name",
       dataIndex: "name",
       key: "name",
-      render: (
-        text: string,
-        record: ModifiesSprintReportUser,
-        index: number
-      ) => {
+      render: (text: string, record: ModifiesSprintReportUser) => {
         return {
           children: (
             <div className="mx-auto flex w-fit items-center justify-center gap-2 ">
@@ -82,8 +74,7 @@ const SprintReportTabel = ({ data }: Props) => {
       key: "assignedTask",
       render: (
         assignedTask: SprintReportTask,
-        record: ModifiesSprintReportUser,
-        index: number
+        record: ModifiesSprintReportUser
       ) => {
         if (assignedTask)
           return {
@@ -122,11 +113,7 @@ const SprintReportTabel = ({ data }: Props) => {
       title: "Yesterday Task",
       dataIndex: "yesterdayTasks",
       key: "yesterdayTask",
-      render: (
-        task: SprintReportTask,
-        record: ModifiesSprintReportUser,
-        index: number
-      ) => {
+      render: (task: SprintReportTask, record: ModifiesSprintReportUser) => {
         if (record.yesterdayTask)
           return {
             children: (
@@ -159,11 +146,7 @@ const SprintReportTabel = ({ data }: Props) => {
       title: "Today's Task",
       dataIndex: "todayTasks",
       key: "todaysTask",
-      render: (
-        task: SprintReportTask,
-        record: ModifiesSprintReportUser,
-        index: number
-      ) => {
+      render: (task: SprintReportTask, record: ModifiesSprintReportUser) => {
         if (record.todayTask)
           return {
             children: (
