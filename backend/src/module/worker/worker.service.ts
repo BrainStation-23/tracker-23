@@ -44,12 +44,9 @@ export class WorkerService {
   async performTask(data: any) {
     return new Promise((resolve, reject) => {
       if (isMainThread) {
-        const worker = new Worker(
-          `${__filename}/../../../worker/main.worker.js`,
-          {
-            workerData: data,
-          },
-        );
+        const worker = new Worker(`${__filename}/../../../worker/worker.js`, {
+          workerData: data,
+        });
 
         worker.on('message', async (result) => {
           await this.processData(result);
