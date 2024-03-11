@@ -83,7 +83,7 @@ export default function ReportHeaderComponent({
     setEditing(false);
   };
   return (
-    <div className={classNames("flex w-full flex-col gap-4", className)}>
+    <div className={classNames("flex w-full flex-col gap-4 pb-3", className)}>
       <div className="flex items-center justify-between gap-3 ">
         <div onClick={() => setEditing(true)}>
           {!editing ? (
