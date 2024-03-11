@@ -87,7 +87,7 @@ const Navbar = ({ extraComponent }: Props) => {
   }, [userDetails, path]);
 
   return (
-    <div className=" mb-2 flex h-16 w-full items-center justify-between">
+    <div className=" mb-2 flex h-16 w-full items-center justify-between bg-[#F8F8F8] px-8">
       <div className="py-6">
         {sideMenuOptions?.map(
           (option) =>

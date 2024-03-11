@@ -87,8 +87,8 @@ export default function ReportPageComponent() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-7 pb-5">
-      <div className="flex items-center justify-end">
+    <div className="flex flex-col gap-7 bg-[#EDEDF0] pb-5">
+      <div className="flex items-center justify-end pt-2">
         <PrimaryButton onClick={() => setIsModalOpen(true)}>
           <PlusIconSvg /> Add New Report
         </PrimaryButton>
