@@ -1,8 +1,7 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { SprintsModule } from '../sprints/sprints.module';
-import { TasksController } from './tasks.controller';
-import { TasksService } from './tasks.service';
+import { WorkerService } from './worker.service';
 import { IntegrationsModule } from '../integrations/integrations.module';
 import { TasksDatabase } from 'src/database/tasks';
 import { NotificationModule } from '../notifications/notifications.module';
@@ -13,8 +12,6 @@ import { AuthService } from '../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { EmailService } from '../email/email.service';
 import { UsersDatabase } from 'src/database/users';
-import { RabbitMQService } from '../queue/queue.service';
-import { WorkerService } from '../worker/worker.service';
 
 @Module({
   imports: [
@@ -26,17 +23,15 @@ import { WorkerService } from '../worker/worker.service';
     HelperModule,
   ],
   providers: [
-    TasksService,
+    WorkerService,
     TasksDatabase,
     JiraApiCalls,
     AuthService,
     JwtService,
     EmailService,
     UsersDatabase,
-    RabbitMQService,
-    WorkerService,
   ],
-  controllers: [TasksController],
-  exports: [TasksService, TasksDatabase],
+  controllers: [],
+  exports: [WorkerService, TasksDatabase],
 })
-export class TasksModule {}
+export class WorkerModule {}

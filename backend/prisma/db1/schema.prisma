@@ -398,6 +398,13 @@ model Answer {
   onboardingId Int
 }
 
+model ApiRequestLimitLog {
+  id                   Int      @id @default(autoincrement())
+  fingerprint          String   @unique
+  count                Int
+  lastRequestTimestamp DateTime @updatedAt
+}
+
 enum Priority {
   LOW
   MEDIUM
