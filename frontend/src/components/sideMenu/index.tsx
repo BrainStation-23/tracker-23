@@ -304,7 +304,7 @@ const SideMenu = () => {
                           >
                             <MyLink
                               href={"/reports/" + reportPage.id}
-                              className="flex items-center gap-2"
+                              className="flex items-center gap-2 px-2 py-1"
                             >
                               <div
                                 className={`flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
