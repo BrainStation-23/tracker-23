@@ -311,25 +311,28 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
           publicRoutes.some((route) => path.includes(route)) ? (
             <div
               className={classNames(
-                "flex max-h-screen w-full flex-col overflow-auto overflow-y-auto",
-                {
-                  "px-8": !isPublicRoute && !path.includes("onBoarding"),
-                }
+                "flex max-h-screen w-full flex-col overflow-auto overflow-y-auto bg-[#EDEDF0]"
               )}
             >
               {!isPublicRoute &&
                 !path.includes("onBoarding") &&
                 !noNavbar.some((route) => path.includes(route)) && <Navbar />}
-              <div className="h-full w-full bg-white">{children}</div>
+              <div
+                className={classNames("h-full w-full", {
+                  "px-8": !isPublicRoute && !path.includes("onBoarding"),
+                })}
+              >
+                <div className="h-full w-full bg-white">{children}</div>
+              </div>
             </div>
           ) : (
-            <div
-              className={classNames("flex w-full flex-col overflow-y-auto", {
-                "px-8": !isPublicRoute && !path.includes("onBoarding"),
-              })}
-            >
+            <div className={classNames("flex w-full flex-col overflow-y-auto")}>
               <Navbar />
-              <NoActiveWorkspace />
+              <NoActiveWorkspace
+                className={classNames("", {
+                  "px-8": !isPublicRoute && !path.includes("onBoarding"),
+                })}
+              />
             </div>
           )}
         </div>
