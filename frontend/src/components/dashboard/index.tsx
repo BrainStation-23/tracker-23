@@ -165,7 +165,7 @@ const Dashboard = () => {
   return (
     <>
       {dataFetched ? (
-        <div className="flex flex-col gap-6 pb-12">
+        <div className="flex flex-col gap-6 px-8 pt-2 pb-12">
           <div className="grid grid-cols-1">
             {/* <div className="grid grid-cols-2"> */}
             <DashboardSection

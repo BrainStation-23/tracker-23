@@ -34,7 +34,7 @@ const MembersComponent = () => {
     getMemberList();
   }, []);
   return (
-    <div>
+    <div className="px-8 pt-2">
       <div className="mb-4 flex justify-between">
         <div className="flex gap-3">
           <div className="text-2xl font-bold">Workspace Members</div>

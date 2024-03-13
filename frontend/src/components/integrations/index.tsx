@@ -70,7 +70,7 @@ const IntegrationsPageComponent = () => {
   }, []);
 
   return (
-    <div className="flex w-full flex-col gap-2">
+    <div className="flex w-full flex-col gap-2 px-8 pt-2">
       <div className="flex flex-col gap-2">
         <div className="flex justify-between">
           <div className="text-2xl font-semibold">Select Source of Import</div>

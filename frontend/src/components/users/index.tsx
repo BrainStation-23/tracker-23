@@ -34,7 +34,7 @@ const UsersComponent = () => {
   }, [router, user]);
 
   return (
-    <div>
+    <div className="px-8 pt-2">
       <div className="mb-4 flex justify-between">
         <h2 className="text-2xl font-bold">User Approval</h2>
       </div>

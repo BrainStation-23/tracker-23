@@ -14,7 +14,7 @@ const ReportPage = () => {
     (state: RootState) => state.reportsSlice.reportPages
   );
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 px-8 pt-2">
       <div className="font-semibold">Your Reports</div>
       {reportPages?.length > 0 && (
         <div className="flex flex-col gap-2">

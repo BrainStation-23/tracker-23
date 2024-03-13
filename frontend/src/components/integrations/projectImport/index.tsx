@@ -69,7 +69,7 @@ const ProjectImport = () => {
 
   return (
     <Spin spinning={rootSpinning}>
-      <div className="mb-12 flex w-full flex-col gap-4">
+      <div className="mb-12 flex w-full flex-col gap-4 px-8 pt-2">
         <div className="mb-4 flex justify-between">
           <h2 className="text-2xl font-bold">Your Projects and Calenders</h2>
           <PrimaryButton onClick={() => setIsModalOpen(true)}>
