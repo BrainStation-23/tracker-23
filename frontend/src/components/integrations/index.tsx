@@ -73,7 +73,7 @@ const IntegrationsPageComponent = () => {
     <div className="flex h-full w-full flex-col gap-2 px-8 pt-4">
       <div className="flex flex-col gap-4">
         <div className="flex justify-between">
-          <div className="text-xl font-semibold">Select Source of Import</div>
+          <div className="text-2xl font-bold">Select Source of Import</div>
         </div>
         <Spin spinning={loading} tip={loadingTip} className="h-full">
           {integratedTypes ? (

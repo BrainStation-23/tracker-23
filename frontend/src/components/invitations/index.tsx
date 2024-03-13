@@ -37,7 +37,7 @@ const InvitationsComponent = () => {
     getInviteList();
   }, []);
   return (
-    <div className="px-8 pt-2">
+    <div className="px-8 pt-4">
       <div className="flex justify-between">
         <div className="flex gap-3">
           {tabs?.map((tab: any, index) => {
