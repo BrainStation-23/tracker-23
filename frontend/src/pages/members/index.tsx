@@ -1,11 +1,7 @@
 import MembersComponent from "@/components/members";
 
 const Invitations = () => {
-  return (
-    <>
-      <MembersComponent />
-    </>
-  );
+  return <MembersComponent />;
 };
 
 export default Invitations;

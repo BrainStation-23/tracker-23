@@ -1,4 +1,4 @@
-import { Button } from "antd";
+import { Button, Card } from "antd";
 import { userAPI } from "APIs";
 import {
   IntegrationDto,
@@ -35,8 +35,9 @@ const ImportCard = ({
   useEffect(() => {}, []);
 
   return (
-    <div
-      className={`relative flex w-60 flex-col justify-between rounded-xl border-2 border-[#ECECED] p-4`}
+    <Card
+      hoverable
+      className={`relative flex w-72 flex-col justify-between  hover:cursor-default`}
     >
       <div>
         {data.site && adminMode && (
@@ -110,7 +111,7 @@ const ImportCard = ({
             : "Coming Soon"}
         </Button>
       </div>
-    </div>
+    </Card>
   );
 };
 
