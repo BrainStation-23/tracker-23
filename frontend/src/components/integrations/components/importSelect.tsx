@@ -17,7 +17,7 @@ const ImportSelect = ({
   adminMode,
 }: Props) => {
   return (
-    <div className="flex w-full flex-col gap-12 p-4">
+    <div className="flex w-full flex-col gap-12">
       <IntegrationCard
         title="Installed"
         {...{
