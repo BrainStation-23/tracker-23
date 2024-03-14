@@ -33,7 +33,11 @@ const IntersectionComponent = ({
     <Card
       ref={chartRef}
       hoverable
-      className="min-h-[300px] hover:cursor-default"
+      className="hover:cursor-default"
+      style={{
+        width: "100%",
+        height: "100%",
+      }}
     >
       {children}
     </Card>
