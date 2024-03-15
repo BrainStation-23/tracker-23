@@ -76,7 +76,7 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
             disabled={true}
             type="ghost"
           >
-            Export Comming Soon
+            Export Coming Soon
           </Button>
         }
       />
