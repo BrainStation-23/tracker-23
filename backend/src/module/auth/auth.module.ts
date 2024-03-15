@@ -32,6 +32,6 @@ import { UsersModule } from '../user/users.module';
       useClass: TokenErrorFilter,
     },
   ],
-  exports: [AuthService],
+  // exports: [AuthService],
 })
 export class AuthModule {}

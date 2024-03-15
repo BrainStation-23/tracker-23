@@ -92,59 +92,6 @@ export class WorkspaceDatabase {
     inviterUserId,
     invitationId,
     invitedAt,
-    prisma,
-  }: userWorkspaceType) {
-    const userWorkspaceData: any = {
-      role,
-      userId,
-      workspaceId,
-      status,
-      ...(inviterUserId && { inviterUserId }),
-      ...(invitationId && { invitationId }),
-      ...(invitedAt && { invitedAt }),
-    };
-
-    const includeData = {
-      workspace: {
-        select: {
-          id: true,
-          name: true,
-          picture: true,
-          creatorUserId: true,
-        },
-      },
-      ...(inviterUserId && {
-        inviter: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            picture: true,
-            activeWorkspaceId: true,
-          },
-        },
-      }),
-    };
-    try {
-      return await prisma.userWorkspace.create({
-        data: userWorkspaceData,
-        include: includeData,
-      });
-    } catch (err) {
-      console.log(err);
-      return null;
-    }
-  }
-
-  async createUserWorkspaceWithPrisma({
-    userId,
-    workspaceId,
-    role,
-    status,
-    inviterUserId,
-    invitationId,
-    invitedAt,
     prisma = this.prisma,
   }: userWorkspaceType) {
     const userWorkspaceData: any = {
@@ -189,6 +136,59 @@ export class WorkspaceDatabase {
       return null;
     }
   }
+
+  // async createUserWorkspaceWithPrisma({
+  //   userId,
+  //   workspaceId,
+  //   role,
+  //   status,
+  //   inviterUserId,
+  //   invitationId,
+  //   invitedAt,
+  //   prisma = this.prisma,
+  // }: userWorkspaceType) {
+  //   const userWorkspaceData: any = {
+  //     role,
+  //     userId,
+  //     workspaceId,
+  //     status,
+  //     ...(inviterUserId && { inviterUserId }),
+  //     ...(invitationId && { invitationId }),
+  //     ...(invitedAt && { invitedAt }),
+  //   };
+
+  //   const includeData = {
+  //     workspace: {
+  //       select: {
+  //         id: true,
+  //         name: true,
+  //         picture: true,
+  //         creatorUserId: true,
+  //       },
+  //     },
+  //     ...(inviterUserId && {
+  //       inviter: {
+  //         select: {
+  //           id: true,
+  //           email: true,
+  //           firstName: true,
+  //           lastName: true,
+  //           picture: true,
+  //           activeWorkspaceId: true,
+  //         },
+  //       },
+  //     }),
+  //   };
+  //   try {
+  //     return await prisma.userWorkspace.create({
+  //       data: userWorkspaceData,
+  //       include: includeData,
+  //     });
+  //   } catch (err) {
+  //     console.log(err);
+  //     return null;
+  //   }
+  // }
 
   async getUserWorkspace(
     userId: number,

@@ -1581,7 +1581,7 @@ export class TasksService {
 
   async syncAll(user: User) {
     this.sendQueue(user, QueuePayloadType.SYNC_ALL);
-    return { message: 'Sync is in progress. Please wait a moment!' };
+    return await this.syncCall(StatusEnum.IN_PROGRESS, user);
   }
 
   async syncAndGetTasks(user: User, projectId: number) {

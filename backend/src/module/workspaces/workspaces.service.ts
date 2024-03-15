@@ -1,5 +1,11 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Role, User, UserWorkspace, UserWorkspaceStatus } from '@prisma/client';
+import {
+  ReportType,
+  Role,
+  User,
+  UserWorkspace,
+  UserWorkspaceStatus,
+} from '@prisma/client';
 import { Response } from 'express';
 import * as crypto from 'crypto';
 
@@ -13,6 +19,8 @@ import * as fs from 'fs';
 import * as ejs from 'ejs';
 import { coreConfig } from 'config/core';
 import { TasksDatabase } from 'src/database/tasks';
+import { ReportsService } from '../reports/reports.service';
+import { PagesService } from '../pages/pages.service';
 @Injectable()
 export class WorkspacesService {
   constructor(
@@ -21,6 +29,8 @@ export class WorkspacesService {
     private emailService: EmailService,
     private tasksDatabase: TasksDatabase,
     private prisma: PrismaService,
+    private reportsService: ReportsService,
+    private pagesService: PagesService,
   ) {}
 
   async createWorkspace(
@@ -73,6 +83,21 @@ export class WorkspacesService {
 
       return [workspace, userWorkspace];
     });
+    //page and report create start
+    const modifiedUser = {
+      id: user.id,
+      activeWorkspaceId: transaction[0].id,
+    };
+    const page = await this.pagesService.createPage(modifiedUser as User, {
+      name: 'Default Page',
+    });
+    const reportData = {
+      name: 'Task List',
+      reportType: ReportType.TASK_LIST,
+      pageId: page?.id,
+    };
+    await this.reportsService.createReport(reportData);
+    //page and report create start
     return transaction.length == 2 ? transaction[0] : null;
   }
 
@@ -221,7 +246,7 @@ export class WorkspacesService {
 
           newUserWorkspace =
             user?.activeWorkspaceId &&
-            (await this.workspaceDatabase.createUserWorkspaceWithPrisma({
+            (await this.workspaceDatabase.createUserWorkspace({
               role: reqBody?.role,
               status: UserWorkspaceStatus.INVITED,
               invitationId: invitationHashedToken,
@@ -231,11 +256,23 @@ export class WorkspacesService {
               invitedAt: new Date(Date.now()),
               prisma,
             }));
-          if (!newUserWorkspace)
+          if (!newUserWorkspace) {
             throw new APIException(
               'Cannot create userWorkspace. Failed to send invitation',
               HttpStatus.INTERNAL_SERVER_ERROR,
             );
+          }
+          //page and report create start
+          const page = await this.pagesService.createPage(newUser as User, {
+            name: 'Default Page',
+          });
+          const reportData = {
+            name: 'Task List',
+            reportType: ReportType.TASK_LIST,
+            pageId: page?.id,
+          };
+          await this.reportsService.createReport(reportData);
+          //page and report create start
 
           return newUserWorkspace;
         },
@@ -283,7 +320,7 @@ export class WorkspacesService {
         newUserWorkspace =
           user?.activeWorkspaceId &&
           invitedUser?.id &&
-          (await this.workspaceDatabase.createUserWorkspaceWithPrisma({
+          (await this.workspaceDatabase.createUserWorkspace({
             userId: invitedUser.id,
             workspaceId: user.activeWorkspaceId,
             role: reqBody.role,
@@ -292,6 +329,18 @@ export class WorkspacesService {
             invitationId: invitationHashedToken,
             invitedAt: new Date(Date.now()),
           }));
+
+        //page and report create start
+        const page = await this.pagesService.createPage(invitedUser as User, {
+          name: 'Default Page',
+        });
+        const reportData = {
+          name: 'default',
+          reportType: ReportType.TASK_LIST,
+          pageId: page?.id,
+        };
+        await this.reportsService.createReport(reportData);
+        //page and report create start
       }
       if (!newUserWorkspace) {
         throw new APIException(

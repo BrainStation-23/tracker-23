@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
 import { PagesService } from './pages.service';
 import { PagesController } from './pages.controller';
-import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { PageDatabase } from 'src/database/pages';
+import { WorkspaceDatabase } from 'src/database/workspaces';
 
 @Module({
-  imports: [WorkspacesModule],
   controllers: [PagesController],
-  providers: [PagesService, PageDatabase],
+  providers: [PagesService, PageDatabase, WorkspaceDatabase],
   exports: [PageDatabase, PagesService],
 })
 export class PagesModule {}
