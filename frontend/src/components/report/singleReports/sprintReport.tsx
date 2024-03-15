@@ -16,18 +16,12 @@ type Props = {
 };
 const SprintReport = ({ reportData, inView }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [downloading, setDownloading] = useState<boolean>(false);
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
 
   const dateRange =
     reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
       : getDateRangeArray(reportData?.config?.filterDateType);
-
-  const excelExport = async () => {
-    setDownloading(true);
-    setDownloading(false);
-  };
 
   const getSprintReport = async () => {
     if (!inView) return;
@@ -60,13 +54,13 @@ const SprintReport = ({ reportData, inView }: Props) => {
         setIsLoading={setIsLoading}
         exportButton={
           <Button
-            className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
+            className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:cursor-not-allowed hover:bg-[#1d8b56] hover:text-white"
             icon={<LuDownload className="text-xl" />}
-            onClick={() => excelExport()}
-            loading={downloading}
+            onClick={() => console.log("Not implemented yet")}
+            disabled={true}
             type="ghost"
           >
-            Export to Excel
+            Export Comming Soon
           </Button>
         }
       />
