@@ -2,17 +2,28 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreatePageDto } from './dto/create-page.dto';
 import { PageDatabase } from 'src/database/pages';
 import { Page, User } from '@prisma/client';
-import { WorkspacesService } from '../workspaces/workspaces.service';
 import { APIException } from '../exception/api.exception';
+import { WorkspaceDatabase } from 'src/database/workspaces';
 
 @Injectable()
 export class PagesService {
   constructor(
     private pageDatabase: PageDatabase,
-    private workspacesService: WorkspacesService,
+    private workspaceDatabase: WorkspaceDatabase,
   ) {}
   async createPage(user: User, createPageDto: CreatePageDto) {
-    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    const userWorkspace =
+      user?.activeWorkspaceId &&
+      (await this.workspaceDatabase.getUserWorkspace(
+        user.id,
+        user.activeWorkspaceId,
+      ));
+    if (!userWorkspace) {
+      throw new APIException(
+        'UserWorkspace not found!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const page = {
       userWorkspaceId: userWorkspace.id,
       workspaceId: user.activeWorkspaceId,
@@ -30,7 +41,12 @@ export class PagesService {
   }
 
   async getPages(user: User): Promise<any[] | []> {
-    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    const userWorkspace =
+      user?.activeWorkspaceId &&
+      (await this.workspaceDatabase.getUserWorkspace(
+        user.id,
+        user.activeWorkspaceId,
+      ));
     if (!userWorkspace) {
       throw new APIException(
         'User Workspace not found',

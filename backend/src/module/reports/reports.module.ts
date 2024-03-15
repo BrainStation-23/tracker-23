@@ -1,15 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 import { ReportsController } from './reports.controller';
-import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { ReportDatabase } from 'src/database/reports';
 import { PagesModule } from '../pages/pages.module';
-import { SprintDatabase } from 'src/database/sprints';
 
 @Module({
-  imports: [WorkspacesModule, PagesModule],
+  imports: [PagesModule],
   controllers: [ReportsController],
-  providers: [ReportsService, ReportDatabase, SprintDatabase],
+  providers: [ReportsService, ReportDatabase],
   exports: [ReportsService],
 })
 export class ReportsModule {}

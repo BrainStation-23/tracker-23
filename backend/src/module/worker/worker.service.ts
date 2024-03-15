@@ -44,9 +44,12 @@ export class WorkerService {
   async performTask(data: any) {
     return new Promise((resolve, reject) => {
       if (isMainThread) {
-        const worker = new Worker(`${__filename}/../../../worker/worker.js`, {
-          workerData: data,
-        });
+        const worker = new Worker(
+          `${__filename}/../../../module/worker/worker.js`,
+          {
+            workerData: data,
+          },
+        );
 
         worker.on('message', async (result) => {
           await this.processData(result);
@@ -1059,8 +1062,8 @@ export class WorkerService {
     const [jiraProjectIds, outLookCalendarIds] = await Promise.all([
       await this.sprintService.getProjectIds(user),
       await this.sprintService.getCalenderIds(user),
-      await this.syncCall(StatusEnum.IN_PROGRESS, user),
-      await this.sendImportedNotification(user, 'Syncing in progress!'),
+      // await this.syncCall(StatusEnum.IN_PROGRESS, user),
+      // await this.sendImportedNotification(user, 'Syncing in progress!'),
     ]);
     let syncedProjects = 0;
     try {
@@ -1073,10 +1076,10 @@ export class WorkerService {
         if (synced) syncedProjects++;
       }
       Promise.allSettled([
-        await this.sendImportedNotification(
-          user,
-          ' Project Synced Successfully!',
-        ),
+        // await this.sendImportedNotification(
+        //   user,
+        //   ' Project Synced Successfully!',
+        // ),
         await this.syncCall(StatusEnum.DONE, user),
       ]);
       return { message: syncedProjects + ' Projects Imported Successfully!' };
