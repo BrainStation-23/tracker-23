@@ -77,8 +77,19 @@ export default function ReportHeaderComponent({
     dispatch(setReportInEditSlice(reportData));
   }
   const onFinish = (values: { name: string }) => {
-    if (values.name !== title) {
-      updateTitle(values);
+    const trimmedValue = values?.name?.trim();
+    if (trimmedValue && trimmedValue !== title) {
+      updateTitle({
+        name: trimmedValue,
+      });
+    }
+    setEditing(false);
+  };
+
+  const handleBlur = (value: string) => {
+    const trimmedValue = value?.trim();
+    if (trimmedValue && trimmedValue !== title) {
+      updateTitle({ name: trimmedValue });
     }
     setEditing(false);
   };
@@ -86,52 +97,53 @@ export default function ReportHeaderComponent({
     <div className={classNames("flex w-full flex-col gap-4 pb-3", className)}>
       <div className="flex items-center justify-between gap-3 ">
         <div onClick={() => setEditing(true)}>
-          {!editing ? (
+          <Form
+            name="titleEdit"
+            onFinish={onFinish}
+            initialValues={{ name: title }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                form.submit();
+              }
+              if (e.key === "Escape") {
+                setEditing(false);
+              }
+            }}
+          >
             <div className="flex items-center gap-2 text-lg font-semibold">
-              <div className="flex items-center text-sm">
-                {ReportIcons[reportData.reportType]}
-              </div>
-              <div>{title}</div>
+              {ReportIcons[reportData.reportType]}
+              <Form.Item
+                name="name"
+                className="m-0"
+                rules={[
+                  { required: true, message: "Please input something!" },
+                  {
+                    pattern: /\S.*|\s+/,
+                    message: "Please enter valid name",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="Type something and press Enter"
+                  className={classNames(
+                    "m-0 p-0 px-1 text-base focus:shadow-none",
+                    {
+                      ["border-none"]: !editing,
+                    }
+                  )}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      form.submit();
+                    }
+                    if (e.key === "Escape") {
+                      setEditing(false);
+                    }
+                  }}
+                  onBlur={(e) => handleBlur(e.target.value)}
+                />
+              </Form.Item>
             </div>
-          ) : (
-            <Form
-              name="titleEdit"
-              onFinish={onFinish}
-              initialValues={{ name: title }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  form.submit();
-                }
-                if (e.key === "Escape") {
-                  setEditing(false);
-                }
-              }}
-            >
-              <div className="flex items-center gap-2 text-lg font-semibold">
-                {ReportIcons[reportData.reportType]}
-                <Form.Item
-                  name="name"
-                  className="m-0"
-                  rules={[
-                    { required: true, message: "Please input something!" },
-                  ]}
-                >
-                  <Input
-                    placeholder="Type something and press Enter"
-                    className="m-0 p-0 px-1 text-base focus:shadow-none"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        form.submit();
-                      }
-                      if (e.key === "Escape") {
-                        setEditing(false);
-                      }
-                    }}
-                  />
-                </Form.Item>
-              </div>
-            </Form>
-          )}
+          </Form>
         </div>
         <div className="flex items-center gap-2">
           {extraFilterComponent}

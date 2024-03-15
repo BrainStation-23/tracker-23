@@ -109,6 +109,7 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
           data={data}
           column={column}
           dateRangeArray={dateRangeArray}
+          reportData={reportData}
         />
       </Spin>
     </>
