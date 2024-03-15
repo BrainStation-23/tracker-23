@@ -5,13 +5,16 @@ import { ModifiesSprintReportUser, SprintReportTask } from "models/reports";
 import { formatDate, getFormattedTime } from "@/services/timeActions";
 
 import ProgressComponent from "./progressComponent";
+import { ReportData } from "@/storage/redux/reportsSlice";
+import EditReportConfigComponent from "./editReportConfigComponent";
 
 const { Text } = Typography;
 type Props = {
   data: ModifiesSprintReportUser[];
+  reportData: ReportData;
 };
 
-const SprintReportTabel = ({ data }: Props) => {
+const SprintReportTabel = ({ data, reportData }: Props) => {
   const columns: ColumnsType<ModifiesSprintReportUser> = [
     {
       title: "Date",
@@ -200,7 +203,9 @@ const SprintReportTabel = ({ data }: Props) => {
         <Empty
           className="mt-12"
           description="Select Project And Sprint to View Data"
-        />
+        >
+          <EditReportConfigComponent reportData={reportData} />
+        </Empty>
       )}
     </>
   );

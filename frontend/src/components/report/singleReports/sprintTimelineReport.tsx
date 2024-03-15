@@ -81,7 +81,10 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
         }
       />
       <Spin className="custom-spin" spinning={isLoading}>
-        <SprintViewTimelineReportComponent data={sprintTimelineReportData} />
+        <SprintViewTimelineReportComponent
+          data={sprintTimelineReportData}
+          reportData={reportData}
+        />
       </Spin>
     </>
   );

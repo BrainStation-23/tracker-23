@@ -65,7 +65,10 @@ const SprintReport = ({ reportData, inView }: Props) => {
         }
       />
       <Spin className="custom-spin" spinning={isLoading}>
-        <SprintReportComponent data={sprintReportData} />
+        <SprintReportComponent
+          data={sprintReportData}
+          reportData={reportData}
+        />
       </Spin>
     </>
   );

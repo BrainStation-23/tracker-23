@@ -10,6 +10,8 @@ import {
 import { TaskStatusEnum } from "models/tasks";
 
 import TimeProgressComponent from "./timeProgressComponent";
+import { ReportData } from "@/storage/redux/reportsSlice";
+import EditReportConfigComponent from "./editReportConfigComponent";
 
 const { Text } = Typography;
 type Props = {
@@ -17,9 +19,10 @@ type Props = {
     columns: SprintViewTimelineReportColumn[];
     rows: SprintViewTimelineReportTableRow[];
   };
+  reportData: ReportData;
 };
 
-const SprintViewTimelineReportTabel = ({ data }: Props) => {
+const SprintViewTimelineReportTabel = ({ data, reportData }: Props) => {
   const renderTableTaskCell = (
     record: SprintViewTimelineReportTableRow,
     column: SprintViewTimelineReportColumn
@@ -358,10 +361,14 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
       />
     </div>
   ) : (
-    <Empty
-      className="mt-12"
-      description="Select Project And Sprint to View Data"
-    />
+    <div>
+      <Empty
+        className="mt-12"
+        description="Select Project And Sprint to View Data"
+      >
+        <EditReportConfigComponent reportData={reportData} />
+      </Empty>
+    </div>
   );
 };
 

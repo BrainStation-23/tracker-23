@@ -124,7 +124,7 @@ export default function TaskListReport({ reportData, inView }: Props) {
         }
       />
       <Spin className="custom-spin" spinning={isLoading}>
-        <TaskListReportComponent {...{ tasks }} />
+        <TaskListReportComponent {...{ tasks, reportData }} />
       </Spin>
     </>
   );

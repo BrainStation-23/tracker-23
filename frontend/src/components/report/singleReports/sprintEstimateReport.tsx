@@ -91,7 +91,10 @@ const SprintEstimateReport = ({ reportData, inView }: Props) => {
         }
       />
       <Spin className="custom-spin" spinning={isLoading}>
-        <SpritEstimateReportComponent data={sprintEstimateReportData} />
+        <SpritEstimateReportComponent
+          data={sprintEstimateReportData}
+          reportData={reportData}
+        />
       </Spin>
     </>
   );
