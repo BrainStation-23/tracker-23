@@ -123,117 +123,119 @@ const DateRangePicker = ({
   };
 
   return (
-    <div className="flex items-center justify-center">
-      <div
-        className="cursor-pointer rounded-l bg-inherit bg-thirdLight py-1.5 pl-1.5 text-xl hover:bg-[#F3F4F6]"
-        onClick={() => handlePreviousClick()}
-      >
-        <LuChevronLeft />
-      </div>
-      <Dropdown
-        className="flex cursor-pointer items-center bg-gray-50 p-1.5 hover:bg-gray-100"
-        menu={menuProps}
-        trigger={["click"]}
-        open={dropdownOpen}
-        onOpenChange={(open) => {
-          setDropdownOpen(open);
-          customDateOpen && !open && setCustomDateOpen(false);
-        }}
-        dropdownRender={(menu) => (
-          <div style={contentStyle}>
-            {React.cloneElement(menu as React.ReactElement, {
-              style: menuStyle,
-            })}
-
-            <Divider style={{ margin: 0 }} />
-            <div style={{ padding: 8 }}>
-              <Popover
-                placement="left"
-                title={"Custom Date"}
-                open={customDateOpen}
-                content={
-                  <div className="flex w-[570px] flex-col gap-3 ">
-                    <RangePicker
-                      defaultValue={[dayjs(), dayjs()]}
-                      value={customDateValue}
-                      format={"DD/MM/YYYY"}
-                      clearIcon={false}
-                      open={customDateOpen}
-                      bordered={false}
-                      inputReadOnly={true}
-                      autoFocus={true}
-                      className="w-[250px]"
-                      popupClassName="custom-rangePicker-dropdown"
-                      onChange={(values) => {
-                        setCustomDateValue(values);
-                        setCustomDateText([
-                          localFormat(values[0]),
-                          localFormat(values[1]),
-                        ]);
-                      }}
-                    />
-                    <div className="mt-[300px] flex flex-row-reverse gap-3 px-3">
-                      <Button
-                        onClick={() => {
-                          setFilterDateType &&
-                            setFilterDateType(FilterDateType.CUSTOM_DATE);
-                          setDropdownText(customDateText);
-                          setSelectedDate(customDateText);
-                          setCustomDateOpen(!customDateOpen);
-                          setDropdownOpen(!customDateOpen);
-                        }}
-                      >
-                        Confirm{" "}
-                      </Button>
-                      <Button
-                        onClick={() => setCustomDateOpen(!customDateOpen)}
-                      >
-                        Cancel{" "}
-                      </Button>
-                    </div>
-                  </div>
-                }
-                trigger="click"
-              >
-                <Button
-                  className="flex w-full items-center pl-1.5 text-left hover:bg-gray-100"
-                  type="ghost"
-                  style={{
-                    clear: "both",
-                    margin: 0,
-                    fontWeight: "normal",
-                    fontSize: "14px",
-                    lineHeight: 1.5714285714285714,
-                    cursor: "pointer",
-                    transition: " all 0.2s",
-                    borderRadius: "4px",
-                  }}
-                  onClick={() => setCustomDateOpen(!customDateOpen)}
-                >
-                  <EditOutlined /> <div> Custom Date</div>
-                </Button>
-              </Popover>
-            </div>
-          </div>
-        )}
-      >
-        <div className="flex items-center justify-between gap-2 text-sm">
-          <div className="flex items-center gap-2">
-            <CalendarOutlined />
-            {dropdownText && (
-              <span>
-                {dropdownText[0]} - {dropdownText[1]}
-              </span>
-            )}
-          </div>
-          <DownArrowIconSvg />
+    <div className="flex w-full items-center justify-center gap-2">
+      <CalendarOutlined size={20} />
+      <div className="flex items-center justify-center">
+        <div
+          className="cursor-pointer rounded-l bg-inherit bg-thirdLight py-1.5 pl-1.5 text-xl hover:bg-[#F3F4F6]"
+          onClick={() => handlePreviousClick()}
+        >
+          <LuChevronLeft />
         </div>
-      </Dropdown>
-      <div
-        className="cursor-pointer rounded-r bg-thirdLight py-1.5 pr-1.5 text-xl hover:bg-[#F3F4F6]"
-        onClick={() => handleNext()}
-      >
-        <LuChevronRight />
+        <Dropdown
+          className="flex cursor-pointer items-center bg-gray-50 p-1.5 hover:bg-gray-100"
+          menu={menuProps}
+          trigger={["click"]}
+          open={dropdownOpen}
+          onOpenChange={(open) => {
+            setDropdownOpen(open);
+            customDateOpen && !open && setCustomDateOpen(false);
+          }}
+          dropdownRender={(menu) => (
+            <div style={contentStyle}>
+              {React.cloneElement(menu as React.ReactElement, {
+                style: menuStyle,
+              })}
+
+              <Divider style={{ margin: 0 }} />
+              <div style={{ padding: 8 }}>
+                <Popover
+                  placement="left"
+                  title={"Custom Date"}
+                  open={customDateOpen}
+                  content={
+                    <div className="flex w-[570px] flex-col gap-3 ">
+                      <RangePicker
+                        defaultValue={[dayjs(), dayjs()]}
+                        value={customDateValue}
+                        format={"DD/MM/YYYY"}
+                        clearIcon={false}
+                        open={customDateOpen}
+                        bordered={false}
+                        inputReadOnly={true}
+                        autoFocus={true}
+                        className="w-[250px]"
+                        popupClassName="custom-rangePicker-dropdown"
+                        onChange={(values) => {
+                          setCustomDateValue(values);
+                          setCustomDateText([
+                            localFormat(values[0]),
+                            localFormat(values[1]),
+                          ]);
+                        }}
+                      />
+                      <div className="mt-[300px] flex flex-row-reverse gap-3 px-3">
+                        <Button
+                          onClick={() => {
+                            setFilterDateType &&
+                              setFilterDateType(FilterDateType.CUSTOM_DATE);
+                            setDropdownText(customDateText);
+                            setSelectedDate(customDateText);
+                            setCustomDateOpen(!customDateOpen);
+                            setDropdownOpen(!customDateOpen);
+                          }}
+                        >
+                          Confirm{" "}
+                        </Button>
+                        <Button
+                          onClick={() => setCustomDateOpen(!customDateOpen)}
+                        >
+                          Cancel{" "}
+                        </Button>
+                      </div>
+                    </div>
+                  }
+                  trigger="click"
+                >
+                  <Button
+                    className="flex w-full items-center pl-1.5 text-left hover:bg-gray-100"
+                    type="ghost"
+                    style={{
+                      clear: "both",
+                      margin: 0,
+                      fontWeight: "normal",
+                      fontSize: "14px",
+                      lineHeight: 1.5714285714285714,
+                      cursor: "pointer",
+                      transition: " all 0.2s",
+                      borderRadius: "4px",
+                    }}
+                    onClick={() => setCustomDateOpen(!customDateOpen)}
+                  >
+                    <EditOutlined /> <div> Custom Date</div>
+                  </Button>
+                </Popover>
+              </div>
+            </div>
+          )}
+        >
+          <div className="flex items-center justify-between gap-2 text-sm">
+            <div className="flex items-center gap-2">
+              {dropdownText && (
+                <span>
+                  {dropdownText[0]} - {dropdownText[1]}
+                </span>
+              )}
+            </div>
+            <DownArrowIconSvg />
+          </div>
+        </Dropdown>
+        <div
+          className="cursor-pointer rounded-r bg-thirdLight py-1.5 pr-1.5 text-xl hover:bg-[#F3F4F6]"
+          onClick={() => handleNext()}
+        >
+          <LuChevronRight />
+        </div>
       </div>
     </div>
   );
