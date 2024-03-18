@@ -28,6 +28,7 @@ export class ReportsService {
       name: createReportDto.name,
       pageId: createReportDto.pageId,
       reportType: createReportDto.reportType,
+      ...(createReportDto.config && { config: createReportDto.config }),
     };
     const createdPage = await this.reportDatabase.createReport(report);
     if (!createdPage) {

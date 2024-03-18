@@ -8,6 +8,7 @@ import {
 } from '@prisma/client';
 import { Response } from 'express';
 import * as crypto from 'crypto';
+import * as dayjs from 'dayjs';
 
 import { SendInvitationReqBody, WorkspaceReqBody } from './dto';
 import { APIException } from '../exception/api.exception';
@@ -91,10 +92,22 @@ export class WorkspacesService {
     const page = await this.pagesService.createPage(modifiedUser as User, {
       name: 'Default Page',
     });
+
+    const startOfWeek = dayjs().startOf('week');
+    const endOfWeek = dayjs().endOf('week');
+    const startFormatted = startOfWeek.format('MMM DD, YYYY');
+    const endFormatted = endOfWeek.format('MMM DD, YYYY');
+    const config = {
+      types: ['JIRA'],
+      endDate: endFormatted,
+      userIds: [modifiedUser.id],
+      startDate: startFormatted,
+    };
     const reportData = {
       name: 'Task List',
       reportType: ReportType.TASK_LIST,
       pageId: page?.id,
+      config: config,
     };
     await this.reportsService.createReport(reportData);
     //page and report create start
@@ -266,10 +279,21 @@ export class WorkspacesService {
           const page = await this.pagesService.createPage(newUser as User, {
             name: 'Default Page',
           });
+          const startOfWeek = dayjs().startOf('week');
+          const endOfWeek = dayjs().endOf('week');
+          const startFormatted = startOfWeek.format('MMM DD, YYYY');
+          const endFormatted = endOfWeek.format('MMM DD, YYYY');
+          const config = {
+            types: ['JIRA'],
+            endDate: endFormatted,
+            userIds: [newUser.id],
+            startDate: startFormatted,
+          };
           const reportData = {
             name: 'Task List',
             reportType: ReportType.TASK_LIST,
             pageId: page?.id,
+            config: config,
           };
           await this.reportsService.createReport(reportData);
           //page and report create start
@@ -334,11 +358,30 @@ export class WorkspacesService {
         const page = await this.pagesService.createPage(invitedUser as User, {
           name: 'Default Page',
         });
+        const startOfWeek = dayjs().startOf('week');
+        const endOfWeek = dayjs().endOf('week');
+        const startFormatted = startOfWeek.format('MMM DD, YYYY');
+        const endFormatted = endOfWeek.format('MMM DD, YYYY');
+        const config = {
+          types: ['JIRA'],
+          endDate: endFormatted,
+          userIds: [invitedUser.id],
+          startDate: startFormatted,
+        };
+        console.log(
+          '🚀 ~ WorkspacesService ~ sendInvitation ~ config:',
+          config,
+        );
         const reportData = {
-          name: 'default',
+          name: 'Task List',
           reportType: ReportType.TASK_LIST,
           pageId: page?.id,
+          config: config,
         };
+        console.log(
+          '🚀 ~ WorkspacesService ~ sendInvitation ~ reportData:',
+          reportData,
+        );
         await this.reportsService.createReport(reportData);
         //page and report create start
       }
