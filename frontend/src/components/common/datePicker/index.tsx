@@ -9,6 +9,7 @@ import {
   Dropdown,
   MenuProps,
   Popover,
+  Tooltip,
   theme,
 } from "antd";
 const { useToken } = theme;
@@ -21,16 +22,19 @@ import { CalendarOutlined, EditOutlined } from "@ant-design/icons";
 
 // Types
 import { FilterDateType, FilterReverseDateType } from "models/reports";
+import classNames from "classnames";
 type Props = {
   selectedDate: string[];
   setSelectedDate: (data: string[]) => void;
   setFilterDateType?: (text: FilterDateType) => void;
+  readonly?: boolean;
 };
 
 const DateRangePicker = ({
   selectedDate,
   setSelectedDate,
   setFilterDateType,
+  readonly,
 }: Props) => {
   const [customDateValue, setCustomDateValue] = useState<any>([
     dayjs(),
@@ -123,11 +127,18 @@ const DateRangePicker = ({
   };
 
   return (
-    <div className="flex w-full items-center justify-center gap-2">
-      <CalendarOutlined size={20} />
+    <div className="flex items-center justify-center gap-2">
+      <Tooltip title="Date Range">
+        <CalendarOutlined size={20} />
+      </Tooltip>
       <div className="flex items-center justify-center">
         <div
-          className="cursor-pointer rounded-l bg-inherit bg-thirdLight py-1.5 pl-1.5 text-xl hover:bg-[#F3F4F6]"
+          className={classNames(
+            "cursor-pointer rounded-l bg-inherit bg-thirdLight py-1.5 pl-1.5 text-xl hover:bg-[#F3F4F6]",
+            {
+              ["hidden"]: readonly,
+            }
+          )}
           onClick={() => handlePreviousClick()}
         >
           <LuChevronLeft />
@@ -135,6 +146,7 @@ const DateRangePicker = ({
         <Dropdown
           className="flex cursor-pointer items-center bg-gray-50 p-1.5 hover:bg-gray-100"
           menu={menuProps}
+          disabled={readonly}
           trigger={["click"]}
           open={dropdownOpen}
           onOpenChange={(open) => {
@@ -231,7 +243,12 @@ const DateRangePicker = ({
           </div>
         </Dropdown>
         <div
-          className="cursor-pointer rounded-r bg-thirdLight py-1.5 pr-1.5 text-xl hover:bg-[#F3F4F6]"
+          className={classNames(
+            "cursor-pointer rounded-r bg-thirdLight py-1.5 pr-1.5 text-xl hover:bg-[#F3F4F6]",
+            {
+              hidden: readonly,
+            }
+          )}
           onClick={() => handleNext()}
         >
           <LuChevronRight />

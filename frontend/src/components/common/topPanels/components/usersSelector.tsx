@@ -1,9 +1,10 @@
 import { StatusDto } from "models/tasks";
 import { LuUsers } from "react-icons/lu";
-import { Select, Typography } from "antd";
+import { Select, Tooltip, Typography } from "antd";
 import { SprintUser } from "models/reports";
 
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
+import classNames from "classnames";
 
 const { Text } = Typography;
 
@@ -12,6 +13,7 @@ type Props = {
   className?: string;
   selectedUsers?: number[];
   setSelectedUsers?: Function;
+  readonly?: boolean;
 };
 
 type TagProps = {
@@ -26,13 +28,27 @@ const UsersSelectorComponent = ({
   className,
   selectedUsers,
   setSelectedUsers,
+  readonly,
 }: Props) => {
   const selectOptions = userList?.map((user: SprintUser) => ({
     value: user.userId,
     label: user.name,
   }));
 
-  return (
+  return readonly ? (
+    <div
+      className={classNames("flex items-center justify-center gap-1", {
+        ["hidden"]: !selectedUsers || !(selectedUsers?.length > 0),
+      })}
+    >
+      <Tooltip title="User(s)">
+        <LuUsers size={16} />
+      </Tooltip>
+      <div>
+        {selectedUsers.length} {selectedUsers.length === 1 ? "User" : "Users"}
+      </div>
+    </div>
+  ) : (
     <div
       className={`flex w-full items-center gap-2 text-sm font-normal text-black ${
         className ? className : ""
