@@ -20,8 +20,9 @@ import ReportSettingsWrapper from "./reportSettingsWrapper";
 
 type Props = {
   reportData: ReportData;
+  readonly?: boolean;
 };
-const TimeSheetReportSettings = ({ reportData }: Props) => {
+const TimeSheetReportSettings = ({ reportData, readonly }: Props) => {
   const dispatch = useDispatch();
   const [filterDateType, setFilterDateType] = useState(
     FilterDateType.THIS_WEEK
@@ -78,12 +79,14 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
       {...{
         reportData,
         saveConfig,
+        readonly,
       }}
     >
       <DateRangePicker
         selectedDate={dateRange}
         setSelectedDate={setDateRange}
         setFilterDateType={getFilterDateType}
+        readonly={readonly}
       />
 
       <TypeDependentSection
@@ -97,12 +100,13 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
           setSprints,
           calendarIds,
           setCalendarIds,
+          readonly,
         }}
       />
 
       {users.length ? (
         <UsersSelectorComponent
-          {...{ userList: users, selectedUsers, setSelectedUsers }}
+          {...{ userList: users, selectedUsers, setSelectedUsers, readonly }}
           className="w-[210px]"
         />
       ) : null}

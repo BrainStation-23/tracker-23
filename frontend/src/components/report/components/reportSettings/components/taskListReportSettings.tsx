@@ -20,8 +20,9 @@ import ReportSettingsWrapper from "./reportSettingsWrapper";
 
 type Props = {
   reportData: ReportData;
+  readonly?: boolean;
 };
-const TaskListReportSettings = ({ reportData }: Props) => {
+const TaskListReportSettings = ({ reportData, readonly }: Props) => {
   const dispatch = useDispatch();
   const [users, setUsers] = useState<SprintUser[]>([]);
   const [filterDateType, setFilterDateType] = useState(
@@ -82,12 +83,14 @@ const TaskListReportSettings = ({ reportData }: Props) => {
       {...{
         reportData,
         saveConfig,
+        readonly,
       }}
     >
       <DateRangePicker
         selectedDate={dateRange}
         setSelectedDate={setDateRange}
         setFilterDateType={getFilterDateType}
+        readonly={readonly}
       />
 
       <TypeDependentSection
@@ -101,11 +104,12 @@ const TaskListReportSettings = ({ reportData }: Props) => {
           setSprints,
           calendarIds,
           setCalendarIds,
+          readonly,
         }}
       />
 
       <UserSelectorComponent
-        {...{ userList: users, selectedUser, setSelectedUser }}
+        {...{ userList: users, selectedUser, setSelectedUser, readonly }}
         className="w-[210px]"
       />
     </ReportSettingsWrapper>

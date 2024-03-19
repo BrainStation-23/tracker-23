@@ -1,4 +1,4 @@
-import { Select, Typography } from "antd";
+import { Select, Tooltip, Typography } from "antd";
 import { SprintDto } from "models/tasks";
 import { useEffect } from "react";
 import { GiSprint } from "react-icons/gi";
@@ -7,6 +7,7 @@ import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { useRouter } from "next/router";
+import classNames from "classnames";
 
 const { Text } = Typography;
 
@@ -16,6 +17,7 @@ type Props = {
   className?: string;
   projectIds?: number[];
   mode?: "multi" | "single";
+  readonly?: boolean;
 };
 
 export default function SprintSelectorComponent({
@@ -24,6 +26,7 @@ export default function SprintSelectorComponent({
   className,
   projectIds,
   mode = "multi",
+  readonly,
 }: Props) {
   const router = useRouter();
   const path = router.asPath;
@@ -82,7 +85,20 @@ export default function SprintSelectorComponent({
       });
   }, [sprints]);
   if (Options.length > 0)
-    return (
+    return readonly ? (
+      <div
+        className={classNames("flex items-center justify-center gap-1", {
+          ["hidden"]: !sprints || !(sprints?.length > 0),
+        })}
+      >
+        <Tooltip title="Sprint(s)">
+          <GiSprint size={16} />
+        </Tooltip>
+        <div>
+          {sprints.length} {sprints.length === 1 ? "Sprint" : "Sprints"}
+        </div>
+      </div>
+    ) : (
       <div
         className={`flex w-full items-center gap-2 text-sm font-normal text-black ${
           className ? className : ""
