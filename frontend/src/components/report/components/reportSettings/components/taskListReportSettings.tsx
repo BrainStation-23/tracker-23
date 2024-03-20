@@ -1,7 +1,7 @@
 import { message } from "antd";
 import { userAPI } from "APIs";
 import { IntegrationType } from "models/integration";
-import { FilterDateType, SprintUser } from "models/reports";
+import { FilterDateType, SprintUser, UpdateReportDto } from "models/reports";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -54,7 +54,7 @@ const TaskListReportSettings = ({ reportData }: Props) => {
     res && setUsers(res);
   };
 
-  const saveConfig = async () => {
+  const saveConfig = async (extraData?: UpdateReportDto) => {
     const res = await userAPI.updateReport(reportData.id, {
       startDate: dateRange[0],
       endDate: dateRange[1],
@@ -64,6 +64,7 @@ const TaskListReportSettings = ({ reportData }: Props) => {
       userIds: selectedUser ? [selectedUser] : [],
       types: selectedSource,
       filterDateType,
+      ...(extraData ?? {}),
     });
     if (res) {
       dispatch(updateReportSlice(res));

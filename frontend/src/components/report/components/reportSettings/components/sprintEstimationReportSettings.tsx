@@ -1,6 +1,6 @@
 import { message } from "antd";
 import { userAPI } from "APIs";
-import { SprintUser } from "models/reports";
+import { SprintUser, UpdateReportDto } from "models/reports";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -34,11 +34,12 @@ const SprintEstimationReportSettings = ({ reportData }: Props) => {
     res && setUsers(res);
   };
 
-  const saveConfig = async () => {
+  const saveConfig = async (extraData?: UpdateReportDto) => {
     const res = await userAPI.updateReport(reportData.id, {
       sprintIds: sprints,
       userIds: selectedUsers,
       projectIds: projects,
+      ...(extraData ?? {}),
     });
     if (res) {
       dispatch(updateReportSlice(res));
