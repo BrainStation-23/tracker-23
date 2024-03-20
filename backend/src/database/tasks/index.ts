@@ -175,6 +175,7 @@ export class TasksDatabase {
             syncTime: true,
             workspaceId: true,
             timeFormat: true,
+            extraSpent: true,
           },
         }))
       );

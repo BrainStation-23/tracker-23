@@ -3,7 +3,6 @@ import * as amqp from 'amqplib';
 import { Connection, Channel } from 'amqplib';
 import { WorkerService } from '../worker/worker.service';
 import { queueConfig } from 'config/queue';
-const amqpUrl = queueConfig.amqp_url;
 
 @Injectable()
 export class RabbitMQService {
@@ -13,7 +12,11 @@ export class RabbitMQService {
 
   async connect() {
     try {
-      this.connection = await amqp.connect(amqpUrl);
+      const url = `amqp://${queueConfig.userName}:${encodeURIComponent(
+        queueConfig.password,
+      )}@${queueConfig.amqp_url}`;
+      this.connection = await amqp.connect(url);
+
       this.channel = await this.connection.createChannel();
       return this;
     } catch (error: any) {
