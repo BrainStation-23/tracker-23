@@ -27,14 +27,12 @@ type Props = {
   selectedDate: string[];
   setSelectedDate: (data: string[]) => void;
   setFilterDateType?: (text: FilterDateType) => void;
-  readonly?: boolean;
 };
 
 const DateRangePicker = ({
   selectedDate,
   setSelectedDate,
   setFilterDateType,
-  readonly,
 }: Props) => {
   const [customDateValue, setCustomDateValue] = useState<any>([
     dayjs(),
@@ -134,10 +132,7 @@ const DateRangePicker = ({
       <div className="flex items-center justify-center">
         <div
           className={classNames(
-            "cursor-pointer rounded-l bg-inherit bg-thirdLight py-1.5 pl-1.5 text-xl hover:bg-[#F3F4F6]",
-            {
-              ["hidden"]: readonly,
-            }
+            "cursor-pointer rounded-l bg-inherit bg-thirdLight py-1.5 pl-1.5 text-xl hover:bg-[#F3F4F6]"
           )}
           onClick={() => handlePreviousClick()}
         >
@@ -146,7 +141,6 @@ const DateRangePicker = ({
         <Dropdown
           className="flex cursor-pointer items-center bg-gray-50 p-1.5 hover:bg-gray-100"
           menu={menuProps}
-          disabled={readonly}
           trigger={["click"]}
           open={dropdownOpen}
           onOpenChange={(open) => {
@@ -244,10 +238,7 @@ const DateRangePicker = ({
         </Dropdown>
         <div
           className={classNames(
-            "cursor-pointer rounded-r bg-thirdLight py-1.5 pr-1.5 text-xl hover:bg-[#F3F4F6]",
-            {
-              hidden: readonly,
-            }
+            "cursor-pointer rounded-r bg-thirdLight py-1.5 pr-1.5 text-xl hover:bg-[#F3F4F6]"
           )}
           onClick={() => handleNext()}
         >

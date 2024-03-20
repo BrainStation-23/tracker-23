@@ -18,14 +18,8 @@ type Props = {
   children: React.ReactNode;
   reportData: ReportData;
   saveConfig: () => void;
-  readonly?: boolean;
 };
-const ReportSettingsWrapper = ({
-  reportData,
-  children,
-  saveConfig,
-  readonly,
-}: Props) => {
+const ReportSettingsWrapper = ({ reportData, children, saveConfig }: Props) => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const handleCancel = () => {
@@ -61,11 +55,7 @@ const ReportSettingsWrapper = ({
     setEditing(false);
   };
 
-  return readonly ? (
-    <div className="flex flex-wrap items-center justify-start gap-4">
-      {children}
-    </div>
-  ) : (
+  return (
     <div className="flex h-full flex-col items-center justify-between gap-2 py-4 px-3">
       <div className="flex flex-col items-center justify-start gap-4 px-3">
         <div

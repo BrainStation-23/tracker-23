@@ -19,7 +19,6 @@ type Props = {
   activeTab?: ReportPageTabs;
   setSelectedSource?: Function;
   selectedSource?: IntegrationType[];
-  readonly?: boolean;
 };
 
 const TypeDependentSection = ({
@@ -32,7 +31,6 @@ const TypeDependentSection = ({
   setCalendarIds,
   selectedSource,
   setSelectedSource,
-  readonly,
 }: Props) => {
   const router = useRouter();
   const path = router.asPath;
@@ -58,9 +56,7 @@ const TypeDependentSection = ({
         "Sprint Report",
         "Sprint View Timeline Report",
       ].includes(activeTab) && (
-        <SourceSelectorComponent
-          {...{ selectedSource, setSelectedSource, readonly }}
-        />
+        <SourceSelectorComponent {...{ selectedSource, setSelectedSource }} />
       )}
 
       {([
@@ -75,14 +71,12 @@ const TypeDependentSection = ({
             setProjectIds={setProjects}
             className="w-[210px]"
             mode="single"
-            readonly={readonly}
           />
         ) : (
           <ProjectSelectorComponent
             projectIds={projects}
             setProjectIds={setProjects}
             className="w-[210px]"
-            readonly={readonly}
           />
         ))}
       {([
@@ -99,14 +93,12 @@ const TypeDependentSection = ({
             projectIds={projects}
             {...{ sprints, setSprints }}
             className="w-[210px]"
-            readonly={readonly}
           />
         ) : (
           <SprintSelectorComponent
             projectIds={projects}
             {...{ sprints, setSprints }}
             className="w-[210px]"
-            readonly={readonly}
           />
         ))}
       {![
@@ -117,7 +109,7 @@ const TypeDependentSection = ({
         showCalendarSelector && (
           <CalendarSelectorComponent
             key={Math.random()}
-            {...{ calendarIds, setCalendarIds, readonly }}
+            {...{ calendarIds, setCalendarIds }}
             className="w-[210px]"
           />
         )}

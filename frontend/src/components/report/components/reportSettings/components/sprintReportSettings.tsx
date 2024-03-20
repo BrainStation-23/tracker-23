@@ -18,9 +18,8 @@ import { FilterDateType } from "models/reports";
 
 type Props = {
   reportData: ReportData;
-  readonly?: boolean;
 };
-const SprintReportSettings = ({ reportData, readonly }: Props) => {
+const SprintReportSettings = ({ reportData }: Props) => {
   const dispatch = useDispatch();
   const [filterDateType, setFilterDateType] = useState(
     FilterDateType.THIS_WEEK
@@ -62,14 +61,12 @@ const SprintReportSettings = ({ reportData, readonly }: Props) => {
       {...{
         reportData,
         saveConfig,
-        readonly,
       }}
     >
       <DateRangePicker
         selectedDate={dateRange}
         setSelectedDate={setDateRange}
         setFilterDateType={getFilterDateType}
-        readonly={readonly}
       />
       <TypeDependentSection
         {...{
@@ -78,7 +75,6 @@ const SprintReportSettings = ({ reportData, readonly }: Props) => {
           setProjects,
           sprints: [sprint],
           setSprints: setSprint,
-          readonly,
         }}
       />
     </ReportSettingsWrapper>

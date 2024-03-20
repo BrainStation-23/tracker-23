@@ -16,9 +16,8 @@ import ReportSettingsWrapper from "./reportSettingsWrapper";
 
 type Props = {
   reportData: ReportData;
-  readonly?: boolean;
 };
-const SprintEstimationReportSettings = ({ reportData, readonly }: Props) => {
+const SprintEstimationReportSettings = ({ reportData }: Props) => {
   const dispatch = useDispatch();
   const [users, setUsers] = useState<SprintUser[]>([]);
   const [sprints, setSprints] = useState<number[]>(
@@ -55,7 +54,6 @@ const SprintEstimationReportSettings = ({ reportData, readonly }: Props) => {
       {...{
         reportData,
         saveConfig,
-        readonly,
       }}
     >
       <TypeDependentSection
@@ -65,12 +63,11 @@ const SprintEstimationReportSettings = ({ reportData, readonly }: Props) => {
           setProjects,
           sprints,
           setSprints,
-          readonly,
         }}
       />
 
       <UsersSelectorComponent
-        {...{ userList: users, selectedUsers, setSelectedUsers, readonly }}
+        {...{ userList: users, selectedUsers, setSelectedUsers }}
         className="w-[210px]"
       />
     </ReportSettingsWrapper>
