@@ -1011,7 +1011,7 @@ export class WorkerService {
     }
     try {
       Promise.allSettled([
-        await this.syncCall(StatusEnum.IN_PROGRESS, user),
+        // await this.syncCall(StatusEnum.IN_PROGRESS, user),
         await this.sendImportedNotification(user, 'Syncing in progress!'),
         await this.syncTasksFetchAndProcessTasksAndWorklog(
           user,
