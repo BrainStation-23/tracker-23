@@ -14,7 +14,7 @@ import {
 
 import TypeDependentSection from "../../typeDependentSection";
 import ReportSettingsWrapper from "./reportSettingsWrapper";
-import { FilterDateType } from "models/reports";
+import { FilterDateType, UpdateReportDto } from "models/reports";
 
 type Props = {
   reportData: ReportData;
@@ -39,13 +39,14 @@ const SprintTimelineReportSettings = ({ reportData }: Props) => {
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
       : getDateRangeArray(reportData?.config?.filterDateType)
   );
-  const saveConfig = async () => {
+  const saveConfig = async (extraData?: UpdateReportDto) => {
     const res = await userAPI.updateReport(reportData.id, {
       projectIds: [project],
       sprintIds: [sprint],
       startDate: dateRange[0],
       endDate: dateRange[1],
       filterDateType,
+      ...(extraData ?? {}),
     });
     if (res) {
       dispatch(updateReportSlice(res));

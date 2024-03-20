@@ -73,10 +73,12 @@ export default function ReportHeaderComponent({
     <div className={classNames("flex w-full flex-col gap-4 pb-3", className)}>
       <div className="flex w-full items-center justify-between gap-3 ">
         <div className="flex w-2/3 items-center gap-2 text-xl font-semibold">
-          <div className="h-6 w-6">{ReportIcons[reportData.reportType]}</div>
+          <Tooltip title={reportData.reportType.replace("_", " ")}>
+            <div className="h-6 w-6">{ReportIcons[reportData.reportType]}</div>
+          </Tooltip>
           <Tooltip title={`Edit: ${title}`}>
             <Text
-              className="text-xl font-semibold hover:text-blue-500 hover:underline"
+              className="text-xl font-semibold text-[#3498DB] hover:underline"
               ellipsis={{ tooltip: title }}
               onClick={handleEdit}
             >
