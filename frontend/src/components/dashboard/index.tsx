@@ -38,31 +38,6 @@ const Dashboard = () => {
     },
   });
 
-  const getTasks = async () => {
-    try {
-      const res = await userAPI.getTasks();
-      if (res) {
-        const { formattedTasks, runningTask } = getFormattedTasks(res);
-        if (runningTask) setRunningTask(runningTask);
-        const tmpPinnedTaskList = formattedTasks?.filter(
-          (task: TaskDto) => task?.pinned
-        );
-        const pinnedTaskList = tmpPinnedTaskList;
-        setTasks(pinnedTaskList || []);
-
-        setTableParamsPinned({
-          ...tableParamsPinned,
-          pagination: {
-            ...tableParamsPinned.pagination,
-            total: pinnedTaskList.length,
-          },
-        });
-      }
-    } catch (error) {
-      console.log("🚀 ~ file: index.tsx:238 ~ getTasks ~ error:", error);
-    }
-  };
-
   const handleWarningClick = async (proceed: boolean) => {
     setWarningModalOpen(false);
     if (proceed) {
@@ -151,16 +126,40 @@ const Dashboard = () => {
     setWeekData(tmp);
   };
 
-  const getData = async () => {
-    await getTasks();
-    await getProjectWiseHour();
-    await getSpentTimePerDay();
-    setDataFetched(true);
-  };
-
   useEffect(() => {
+    const getTasks = async () => {
+      try {
+        const res = await userAPI.getTasks();
+        if (res) {
+          const { formattedTasks, runningTask } = getFormattedTasks(res);
+          if (runningTask) setRunningTask(runningTask);
+          const tmpPinnedTaskList = formattedTasks?.filter(
+            (task: TaskDto) => task?.pinned
+          );
+          const pinnedTaskList = tmpPinnedTaskList;
+          setTasks(pinnedTaskList || []);
+
+          setTableParamsPinned({
+            ...tableParamsPinned,
+            pagination: {
+              ...tableParamsPinned.pagination,
+              total: pinnedTaskList.length,
+            },
+          });
+        }
+      } catch (error) {
+        console.log("🚀 ~ file: index.tsx:238 ~ getTasks ~ error:", error);
+      }
+    };
+
+    const getData = async () => {
+      await getTasks();
+      await getProjectWiseHour();
+      await getSpentTimePerDay();
+      setDataFetched(true);
+    };
     getData();
-  }, []);
+  }, [setTasks, tableParamsPinned]);
 
   return (
     <>
