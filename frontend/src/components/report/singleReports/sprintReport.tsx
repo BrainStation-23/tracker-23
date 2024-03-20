@@ -9,7 +9,7 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SprintReportComponent from "../components/sprintReportComponents";
-import SprintReportSettings from "../components/reportSettings/components/sprintReportSettings";
+import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 
 type Props = {
   reportData: ReportData;
@@ -65,7 +65,7 @@ const SprintReport = ({ reportData, inView }: Props) => {
           </Button>
         }
         extraFilterComponent={
-          <SprintReportSettings reportData={reportData} readonly={true} />
+          <ReportConfigDescription reportData={reportData} />
         }
       />
       <Spin className="custom-spin" spinning={isLoading}>

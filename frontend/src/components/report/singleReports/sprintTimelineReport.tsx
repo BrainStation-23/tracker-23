@@ -9,7 +9,7 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 import { getDateRangeArray } from "@/components/common/datePicker";
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SprintViewTimelineReportComponent from "../components/sprintViewTimelineReportComponent";
-import SprintTimelineReportSettings from "../components/reportSettings/components/sprintTimelineReportSettings";
+import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 
 type Props = {
   reportData: ReportData;
@@ -81,10 +81,7 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
           </Button>
         }
         extraFilterComponent={
-          <SprintTimelineReportSettings
-            reportData={reportData}
-            readonly={true}
-          />
+          <ReportConfigDescription reportData={reportData} />
         }
       />
       <Spin className="custom-spin" spinning={isLoading}>

@@ -1,4 +1,4 @@
-import { Select, Tooltip, Typography } from "antd";
+import { Select, Typography } from "antd";
 import { StatusDto } from "models/tasks";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -16,7 +16,6 @@ type Props = {
   setCalendarIds: Function;
   className?: string;
   mode?: "multi" | "single";
-  readonly?: boolean;
 };
 
 export default function CalendarSelectorComponent({
@@ -24,7 +23,6 @@ export default function CalendarSelectorComponent({
   setCalendarIds,
   className,
   mode = "multi",
-  readonly,
 }: Props) {
   const defaultValues: any = [];
 
@@ -67,21 +65,7 @@ export default function CalendarSelectorComponent({
     });
   }, [calendarIds]);
 
-  return readonly ? (
-    <div
-      className={classNames("flex items-center justify-center gap-1", {
-        ["hidden"]: !calendarIds || !(calendarIds?.length > 0),
-      })}
-    >
-      <Tooltip title="Calendar(s)">
-        <LuCalendarDays size={16} />
-      </Tooltip>
-      <div>
-        {calendarIds.length}{" "}
-        {calendarIds.length === 1 ? "Calendar" : "Calendars"}
-      </div>
-    </div>
-  ) : (
+  return (
     <div
       className={`flex w-full items-center gap-2 text-sm font-normal text-black ${
         className ? className : ""

@@ -9,7 +9,7 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SpritEstimateReportComponent from "../components/sprintEstimateReportComponent";
-import SprintEstimationReportSettings from "../components/reportSettings/components/sprintEstimationReportSettings";
+import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 
 type Props = {
   reportData: ReportData;
@@ -91,10 +91,7 @@ const SprintEstimateReport = ({ reportData, inView }: Props) => {
           </Button>
         }
         extraFilterComponent={
-          <SprintEstimationReportSettings
-            reportData={reportData}
-            readonly={true}
-          />
+          <ReportConfigDescription reportData={reportData} />
         }
       />
       <Spin className="custom-spin" spinning={isLoading}>

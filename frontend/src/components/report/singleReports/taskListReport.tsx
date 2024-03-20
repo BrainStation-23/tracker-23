@@ -13,6 +13,7 @@ import ReportHeaderComponent from "../components/reportHeaderComponent";
 import TaskListReportComponent from "../components/taskListReportComponent";
 import TopPanelTaskListComponents from "../components/topPanelTaskListComponents";
 import { FilterDateType } from "models/reports";
+import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 
 type Props = {
   reportData: ReportData;
@@ -116,11 +117,14 @@ export default function TaskListReport({ reportData, inView }: Props) {
           </Button>
         }
         extraFilterComponent={
-          <TopPanelTaskListComponents
-            {...{
-              setSearchText,
-            }}
-          />
+          <>
+            <TopPanelTaskListComponents
+              {...{
+                setSearchText,
+              }}
+            />
+            <ReportConfigDescription reportData={reportData} />
+          </>
         }
       />
       <Spin className="custom-spin" spinning={isLoading}>

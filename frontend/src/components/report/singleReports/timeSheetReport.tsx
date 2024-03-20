@@ -10,7 +10,7 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import TableComponent from "../components/tableComponentReport";
 import { FilterDateType } from "models/reports";
-import TimeSheetReportSettings from "../components/reportSettings/components/timeSheetReportSettings";
+import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 
 type Props = {
   reportData: ReportData;
@@ -105,7 +105,7 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
           </Button>
         }
         extraFilterComponent={
-          <TimeSheetReportSettings reportData={reportData} readonly={true} />
+          <ReportConfigDescription reportData={reportData} />
         }
       />
       <Spin className="custom-spin" spinning={isLoading}>

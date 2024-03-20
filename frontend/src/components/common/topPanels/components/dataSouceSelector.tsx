@@ -8,7 +8,6 @@ import { integrationIcons } from "@/components/integrations/components/importCar
 import { useRouter } from "next/router";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
-import classNames from "classnames";
 
 const { Text } = Typography;
 
@@ -16,14 +15,12 @@ type Props = {
   selectedSource?: string[];
   setSelectedSource?: Function;
   className?: string;
-  readonly?: boolean;
 };
 
 export default function SourceSelectorComponent({
   selectedSource,
   setSelectedSource,
   className,
-  readonly,
 }: Props) {
   const router = useRouter();
   const path = router.asPath;
@@ -52,34 +49,7 @@ export default function SourceSelectorComponent({
     };
   });
 
-  return readonly ? (
-    <div
-      className={classNames("flex items-center justify-center gap-1", {
-        ["hidden"]: !selectedSource || !(selectedSource?.length > 0),
-      })}
-    >
-      <Tooltip title="Source">
-        <LuBringToFront size={16} />
-      </Tooltip>
-      <Text
-        ellipsis={{
-          tooltip:
-            selectedSource.length === 1
-              ? selectedSource[0]
-              : selectedSource.length > 1
-              ? `${selectedSource.join(", ")}`
-              : "No source selected",
-        }}
-        className="max-w-[210px]"
-      >
-        {selectedSource.length === 1
-          ? selectedSource[0]
-          : selectedSource.length > 1
-          ? `${selectedSource.join(", ")}`
-          : ""}{" "}
-      </Text>
-    </div>
-  ) : (
+  return (
     <div
       className={`flex w-[210px] items-center gap-2 text-sm font-normal text-black ${
         className ? className : ""

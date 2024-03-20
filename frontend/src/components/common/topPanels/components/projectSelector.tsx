@@ -1,4 +1,4 @@
-import { Select, Tooltip, Typography } from "antd";
+import { Select, Typography } from "antd";
 import { StatusDto } from "models/tasks";
 import { useRouter } from "next/router";
 import { LuFolderOpen } from "react-icons/lu";
@@ -6,7 +6,6 @@ import { LuFolderOpen } from "react-icons/lu";
 import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
-import classNames from "classnames";
 
 const { Text } = Typography;
 
@@ -15,7 +14,6 @@ type Props = {
   setProjectIds: Function;
   className?: string;
   mode?: "multi" | "single";
-  readonly?: boolean;
 };
 
 export default function ProjectSelectorComponent({
@@ -23,7 +21,6 @@ export default function ProjectSelectorComponent({
   projectIds,
   setProjectIds,
   mode = "multi",
-  readonly,
 }: Props) {
   const router = useRouter();
   const path = router.asPath;
@@ -48,20 +45,7 @@ export default function ProjectSelectorComponent({
       })
     : [];
 
-  return readonly ? (
-    <div
-      className={classNames("flex items-center justify-center gap-1", {
-        ["hidden"]: !projectIds || !(projectIds?.length > 0),
-      })}
-    >
-      <Tooltip title="Project(s)">
-        <LuFolderOpen size={16} />
-      </Tooltip>
-      <div>
-        {projectIds.length} {projectIds.length === 1 ? "Project" : "Projects"}
-      </div>
-    </div>
-  ) : (
+  return (
     <div
       className={`flex w-full items-center gap-2 text-sm font-normal text-black ${
         className ? className : ""
