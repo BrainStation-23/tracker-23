@@ -56,7 +56,7 @@ const ReportConfigDescription = ({
                   ? `${reportData.config.types.join(", ")}`
                   : "No source selected",
             }}
-            className="max-w-[210px]"
+            className="max-w-[210px] hover:text-[#3498db]"
           >
             {reportData.config.types.length === 1
               ? reportData.config.types[0]
