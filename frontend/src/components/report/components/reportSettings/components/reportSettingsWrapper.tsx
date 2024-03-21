@@ -57,12 +57,6 @@ const ReportSettingsWrapper = ({ reportData, children, saveConfig }: Props) => {
                 <Input
                   type="text"
                   placeholder="Type something and press Enter"
-                  className={classNames(
-                    "m-0 w-full p-0 px-1 text-base focus:shadow-none",
-                    {
-                      ["border-none"]: !editing,
-                    }
-                  )}
                   value={reportName}
                   onChange={(e) => {
                     const trimmedValue = e.target.value.trim();
