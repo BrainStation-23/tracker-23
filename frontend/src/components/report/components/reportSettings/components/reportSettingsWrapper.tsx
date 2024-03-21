@@ -28,8 +28,8 @@ const ReportSettingsWrapper = ({ reportData, children, saveConfig }: Props) => {
   }, [reportData.name]);
 
   return (
-    <div className="flex h-full flex-col items-center justify-between gap-2 py-4 px-3">
-      <div className="flex flex-col items-start justify-start gap-4 px-3">
+    <div className="flex h-full flex-col items-start justify-between gap-2 px-3">
+      <div className="flex w-full flex-col items-start justify-start gap-4 px-3">
         <div
           className="flex w-full flex-col gap-4"
           onClick={() => setEditing(true)}
@@ -74,7 +74,9 @@ const ReportSettingsWrapper = ({ reportData, children, saveConfig }: Props) => {
             </div>
           </Form>
         </div>
-        <div className="flex flex-col gap-4 py-5">{children}</div>
+        <div className="flex w-full flex-col items-start justify-start gap-4 py-5">
+          {children}
+        </div>
       </div>
       <div className="flex w-full justify-center gap-6 border-t-2 pt-4">
         <PrimaryButton onClick={() => saveConfig({ name: reportName })}>

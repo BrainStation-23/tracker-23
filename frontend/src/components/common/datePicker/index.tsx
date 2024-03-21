@@ -27,12 +27,14 @@ type Props = {
   selectedDate: string[];
   setSelectedDate: (data: string[]) => void;
   setFilterDateType?: (text: FilterDateType) => void;
+  className?: string;
 };
 
 const DateRangePicker = ({
   selectedDate,
   setSelectedDate,
   setFilterDateType,
+  className,
 }: Props) => {
   const [customDateValue, setCustomDateValue] = useState<any>([
     dayjs(),
@@ -125,11 +127,16 @@ const DateRangePicker = ({
   };
 
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div
+      className={classNames(
+        "flex w-full items-center justify-center gap-2",
+        className
+      )}
+    >
       <Tooltip title="Date Range">
         <CalendarOutlined size={20} />
       </Tooltip>
-      <div className="flex items-center justify-center">
+      <div className="flex w-full items-center">
         <div
           className={classNames(
             "cursor-pointer rounded-l bg-inherit bg-thirdLight py-1.5 pl-1.5 text-xl hover:bg-[#F3F4F6]"

@@ -28,7 +28,7 @@ const ReportSettings = () => {
     }
   };
   return (
-    <div className="h-screen min-w-[350px] max-w-[350px] pt-16 shadow-2xl">
+    <div className="h-screen min-w-[350px] max-w-[350px] py-6 shadow-2xl">
       {reportSettingsToRender()}
     </div>
   );

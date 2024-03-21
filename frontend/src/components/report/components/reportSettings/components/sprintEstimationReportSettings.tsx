@@ -69,7 +69,7 @@ const SprintEstimationReportSettings = ({ reportData }: Props) => {
 
       <UsersSelectorComponent
         {...{ userList: users, selectedUsers, setSelectedUsers }}
-        className="w-[210px]"
+        className="w-full min-w-[210px]"
       />
     </ReportSettingsWrapper>
   );

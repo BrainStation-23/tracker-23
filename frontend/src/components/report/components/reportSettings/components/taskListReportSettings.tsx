@@ -107,7 +107,7 @@ const TaskListReportSettings = ({ reportData }: Props) => {
 
       <UserSelectorComponent
         {...{ userList: users, selectedUser, setSelectedUser }}
-        className="w-[210px]"
+        className="w-full min-w-[210px]"
       />
     </ReportSettingsWrapper>
   );

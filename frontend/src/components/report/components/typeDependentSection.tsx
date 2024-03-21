@@ -69,14 +69,14 @@ const TypeDependentSection = ({
           <ProjectSelectorComponent
             projectIds={projects}
             setProjectIds={setProjects}
-            className="w-[210px]"
+            className="w-full min-w-[210px]"
             mode="single"
           />
         ) : (
           <ProjectSelectorComponent
             projectIds={projects}
             setProjectIds={setProjects}
-            className="w-[210px]"
+            className="w-full min-w-[210px]"
           />
         ))}
       {([
@@ -92,13 +92,13 @@ const TypeDependentSection = ({
             mode="single"
             projectIds={projects}
             {...{ sprints, setSprints }}
-            className="w-[210px]"
+            className="w-full min-w-[210px]"
           />
         ) : (
           <SprintSelectorComponent
             projectIds={projects}
             {...{ sprints, setSprints }}
-            className="w-[210px]"
+            className="w-full min-w-[210px]"
           />
         ))}
       {![
@@ -110,7 +110,7 @@ const TypeDependentSection = ({
           <CalendarSelectorComponent
             key={Math.random()}
             {...{ calendarIds, setCalendarIds }}
-            className="w-[210px]"
+            className="w-full min-w-[210px]"
           />
         )}
     </>
