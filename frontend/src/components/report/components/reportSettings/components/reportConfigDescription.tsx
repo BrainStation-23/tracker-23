@@ -1,5 +1,5 @@
 import { Tooltip, Typography } from "antd";
-import { ReportData } from "@/storage/redux/reportsSlice";
+import { ReportData, setReportInEditSlice } from "@/storage/redux/reportsSlice";
 import { CalendarOutlined } from "@ant-design/icons";
 import {
   LuBringToFront,
@@ -8,6 +8,7 @@ import {
   LuUsers,
 } from "react-icons/lu";
 import { GiSprint } from "react-icons/gi";
+import { useDispatch } from "react-redux";
 
 const { Text } = Typography;
 
@@ -16,10 +17,19 @@ const ReportConfigDescription = ({
 }: {
   reportData: ReportData;
 }) => {
+  const dispatch = useDispatch();
+
+  function handleEdit() {
+    dispatch(setReportInEditSlice(reportData));
+  }
+
   return (
     <div className="flex flex-wrap items-center justify-start gap-4">
       {reportData?.config?.startDate && reportData?.config?.endDate && (
-        <div className="flex items-center justify-center gap-2">
+        <div
+          className="flex items-center justify-center gap-2 hover:cursor-pointer hover:text-[#3498db]"
+          onClick={handleEdit}
+        >
           <Tooltip title="Date Range">
             <CalendarOutlined size={20} />
           </Tooltip>
@@ -30,7 +40,10 @@ const ReportConfigDescription = ({
       )}
 
       {reportData?.config?.types && reportData.config.types?.length > 0 && (
-        <div className="flex items-center justify-center gap-1">
+        <div
+          className="flex items-center justify-center gap-1 hover:cursor-pointer hover:text-[#3498db]"
+          onClick={handleEdit}
+        >
           <Tooltip title="Source">
             <LuBringToFront size={16} />
           </Tooltip>
@@ -56,7 +69,10 @@ const ReportConfigDescription = ({
 
       {reportData?.config?.projectIds &&
         reportData?.config?.projectIds?.length > 0 && (
-          <div className="flex items-center justify-center gap-1">
+          <div
+            className="flex items-center justify-center gap-1 hover:cursor-pointer hover:text-[#3498db]"
+            onClick={handleEdit}
+          >
             <Tooltip title="Project(s)">
               <LuFolderOpen size={16} />
             </Tooltip>
@@ -71,7 +87,10 @@ const ReportConfigDescription = ({
 
       {reportData?.config?.sprintIds &&
         reportData?.config?.sprintIds.length > 0 && (
-          <div className="flex items-center justify-center gap-1">
+          <div
+            className="flex items-center justify-center gap-1 hover:cursor-pointer hover:text-[#3498db]"
+            onClick={handleEdit}
+          >
             <Tooltip title="Sprint(s)">
               <GiSprint size={16} />
             </Tooltip>
@@ -86,7 +105,10 @@ const ReportConfigDescription = ({
 
       {reportData?.config?.calendarIds &&
         reportData?.config?.calendarIds?.length > 0 && (
-          <div className="flex items-center justify-center gap-1">
+          <div
+            className="flex items-center justify-center gap-1 hover:cursor-pointer hover:text-[#3498db]"
+            onClick={handleEdit}
+          >
             <Tooltip title="Calendar(s)">
               <LuCalendarDays size={16} />
             </Tooltip>
@@ -101,7 +123,10 @@ const ReportConfigDescription = ({
 
       {reportData?.config?.userIds &&
         reportData?.config?.userIds?.length > 0 && (
-          <div className="flex items-center justify-center gap-1">
+          <div
+            className="flex items-center justify-center gap-1 hover:cursor-pointer hover:text-[#3498db]"
+            onClick={handleEdit}
+          >
             <Tooltip title="User(s)">
               <LuUsers size={16} />
             </Tooltip>
