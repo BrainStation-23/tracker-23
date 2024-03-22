@@ -104,7 +104,7 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
       {users.length ? (
         <UsersSelectorComponent
           {...{ userList: users, selectedUsers, setSelectedUsers }}
-          className="w-[210px]"
+          className="w-full min-w-[210px]"
         />
       ) : null}
     </ReportSettingsWrapper>
