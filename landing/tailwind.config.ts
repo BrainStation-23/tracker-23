@@ -16,6 +16,10 @@ const config: Config = {
       colors: {
         main: "#CC5A3C",
         "gray-dark": "#273444",
+        "custom-blue": "#020055",
+      },
+      boxShadow: {
+        custom: "rgba(13, 38, 76, 0.19) 0px 9px 20px",
       },
     },
   },
