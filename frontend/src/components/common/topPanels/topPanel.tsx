@@ -187,17 +187,19 @@ const TopPanel = ({
           );
         })}
       </div>
-      <div className="flex items-center justify-center gap-2">
-        <div className="flex w-full justify-end gap-4">
+      <div className="flex items-center justify-end gap-2">
+        <div className="flex justify-end gap-4">
           {!(sprints?.length > 0) && activeTab !== "ActiveSprint" && (
             <DateRangePicker
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
+              className="min-w-[280px]"
             />
           )}
           {checkedOptionList.includes("Search") && (
-            <div className="w-[210px]">
+            <div className="min-w-[210px]">
               <Input
+                className="w-full"
                 placeholder="Search"
                 prefix={<SearchIconSvg />}
                 defaultValue={searchParams.searchText}
