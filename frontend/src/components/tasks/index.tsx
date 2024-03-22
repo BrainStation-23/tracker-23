@@ -314,7 +314,7 @@ const TasksPage = () => {
   const handlePinTask = async (task: TaskDto) => {
     setLoading(true);
     const res = await userAPI.pinTask(task.id, !task.pinned);
-    if (res) message.success("Task Pinned");
+    if (res) message.success(`Task ${!task.pinned ? "Pinned" : "Unpinned"}`);
     const tmp = tasks.map((t) =>
       t.id === task.id ? { ...task, pinned: !task.pinned } : t
     );
