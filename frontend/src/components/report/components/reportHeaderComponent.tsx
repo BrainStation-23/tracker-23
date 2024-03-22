@@ -78,7 +78,7 @@ export default function ReportHeaderComponent({
           </Tooltip>
           <Tooltip title={`Edit: ${title}`}>
             <Text
-              className="text-xl font-semibold text-[#3498DB] hover:underline"
+              className="text-xl font-semibold text-[#3498DB] hover:cursor-pointer hover:underline"
               ellipsis={{ tooltip: title }}
               onClick={handleEdit}
             >

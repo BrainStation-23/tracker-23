@@ -19,7 +19,7 @@ const ImportedProjectsSection = ({ projects, deleteProject, title }: Props) => {
     >
       <div className="flex w-full flex-col gap-4">
         <div className="text-xl font-bold">{title}</div>
-        <div className="flex w-full gap-4">
+        <div className="flex w-full flex-wrap gap-4">
           {projects.length > 0 ? (
             projects.map((project) => (
               <ImportedProject

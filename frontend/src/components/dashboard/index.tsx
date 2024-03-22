@@ -159,7 +159,7 @@ const Dashboard = () => {
       setDataFetched(true);
     };
     getData();
-  }, [setTasks, tableParamsPinned]);
+  }, [setTasks]);
 
   return (
     <>

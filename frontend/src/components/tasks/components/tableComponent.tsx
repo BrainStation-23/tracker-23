@@ -1,4 +1,10 @@
-import { Table, TablePaginationConfig, Tooltip, Typography } from "antd";
+import {
+  Button,
+  Table,
+  TablePaginationConfig,
+  Tooltip,
+  Typography,
+} from "antd";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { TableParams, TaskDto } from "models/tasks";
 import { useState } from "react";
@@ -16,6 +22,8 @@ import {
 
 import MoreFunctionComponent from "./moreFunction";
 import TimeDisplayComponent from "./timeDisplayComponent";
+import PinFilledIconSvg from "@/assets/svg/PinFilledIconSvg";
+import PinIconSvg from "@/assets/svg/PinIconSvg";
 
 const { Text } = Typography;
 const TableComponent = ({
@@ -38,6 +46,19 @@ const TableComponent = ({
       render: (_: any, task: TaskDto) => {
         return (
           <div className="flex items-center gap-2" aria-disabled="true">
+            {task.pinned && (
+              <Tooltip title={`Click To ${task.pinned ? "unpin" : "pin"}`}>
+                <Button
+                  className="absolute top-0 left-0 flex gap-3 p-1"
+                  onClick={() => {
+                    handlePin(task);
+                  }}
+                  type="ghost"
+                >
+                  {task.pinned ? <PinFilledIconSvg /> : <PinIconSvg />}
+                </Button>
+              </Tooltip>
+            )}
             {task.source !== "OUTLOOK" ? (
               <div className="cursor-pointer">
                 {runningTask?.id != task.id ? (

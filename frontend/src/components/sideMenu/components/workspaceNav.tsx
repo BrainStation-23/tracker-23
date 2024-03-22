@@ -240,13 +240,13 @@ const WorkspaceNav = () => {
         placement="topRight"
         arrow
         dropdownRender={dropdownRender}
-        className="w-[250px]"
+        // className="w-[250px]"
         open={isDropdownOpen}
         onOpenChange={(v) => {
           setDropdownOpen(v);
         }}
       >
-        <div className="flex h-max w-[240px] cursor-pointer items-center rounded-lg border-2 p-1">
+        <div className="flex h-max cursor-pointer items-center rounded-lg border-2 p-1">
           <div className="ice grid grid-cols-12 gap-2">
             <Avatar
               className="col-span-3 flex h-[48px] w-[48px] flex-col justify-center rounded font-medium text-primary"
