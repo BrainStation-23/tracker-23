@@ -174,3 +174,27 @@ body {
 .oneComponentDropdownItem .ant-dropdown-menu-item {
   padding: 5px 0 !important;
 }
+
+/* Style for the scrollbar */
+/* WebKit (Chrome, Safari, etc.) */
+::-webkit-scrollbar {
+  width: 4px; /* Set the width of the scrollbar */
+}
+
+/* Firefox */
+/* Please note that in Firefox, scrollbar-width and scrollbar-color are used */
+* {
+  scrollbar-width: thin;
+}
+
+/* Style for the scrollbar thumb (the draggable part) */
+/* WebKit */
+::-webkit-scrollbar-thumb {
+  border-radius: 4px; /* Make it rounded */
+}
+
+/* Style for the scrollbar track (the non-draggable part) */
+/* WebKit */
+::-webkit-scrollbar-track {
+  background: transparent; /* Set the color of the scrollbar track */
+}

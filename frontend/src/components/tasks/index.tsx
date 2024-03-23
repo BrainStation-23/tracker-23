@@ -1,32 +1,39 @@
-import { Empty, message, Spin } from "antd";
-import { userAPI } from "APIs";
-import { SearchParamsModel } from "models/apiParams";
-import { CreateTaskDto, TaskDto } from "models/tasks";
 import { useRouter } from "next/router";
+import { Empty, message, Spin } from "antd";
 import { createContext, useEffect, useState } from "react";
-import { publicRoutes } from "utils/constants";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
+
+// Components
+import Navbar from "@/components/navbar";
+import SessionStartWarning from "./components/warning";
+import TableComponent from "./components/tableComponent";
+import GlobalModal from "@/components/modals/globalModal";
+import ManualTimeEntry from "./components/manualTimeEntry";
+import TopPanel from "@/components/common/topPanels/topPanel";
+import CreateTaskComponent from "./components/createTaskComponent";
+import { getDateRangeArray } from "@/components/common/datePicker";
+import TaskDetailsModal from "@/components/modals/taskDetails.modal";
+import PrimaryButton from "@/components/common/buttons/primaryButton";
+import TopPanelActiveSprint from "@/components/common/topPanels/topPanelActiveSprint";
+
+// Models
+import { TaskDto } from "models/tasks";
+import { SearchParamsModel } from "models/apiParams";
+
+// Service
+import { userAPI } from "APIs";
+import { publicRoutes } from "utils/constants";
 import { getFormattedTasks } from "@/services/taskActions";
 import { getTotalSpentTime } from "@/services/timeActions";
-import { useAppDispatch, useAppSelector } from "@/storage/redux";
-import { setPriorities } from "@/storage/redux/prioritySlice";
-import { setProjectsSlice, StatusType } from "@/storage/redux/projectsSlice";
-import { RootState } from "@/storage/redux/store";
-import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
-import { setSprintListReducer } from "@/storage/redux/tasksSlice";
 
-import PrimaryButton from "../common/buttons/primaryButton";
-import TopPanel from "../common/topPanels/topPanel";
-import TopPanelActiveSprint from "../common/topPanels/topPanelActiveSprint";
-import { getDateRangeArray } from "../common/datePicker";
-import GlobalModal from "../modals/globalModal";
-import TaskDetailsModal from "../modals/taskDetails.modal";
-import Navbar from "../navbar";
-import CreateTaskComponent from "./components/createTaskComponent";
-import ManualTimeEntry from "./components/manualTimeEntry";
-import TableComponent from "./components/tableComponent";
-import SessionStartWarning from "./components/warning";
+// Storage
+import { RootState } from "@/storage/redux/store";
+import { setPriorities } from "@/storage/redux/prioritySlice";
+import { useAppDispatch, useAppSelector } from "@/storage/redux";
+import { setSprintListReducer } from "@/storage/redux/tasksSlice";
+import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
+import { setProjectsSlice, StatusType } from "@/storage/redux/projectsSlice";
 
 export const TaskContext = createContext<any>({
   taskList: [],
@@ -38,30 +45,34 @@ export const TaskContext = createContext<any>({
 
 const TasksPage = () => {
   const router = useRouter();
-  const path = router.asPath;
-
   const dispatch = useAppDispatch();
 
   const syncRunning = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
 
+  // State
+  const path = router.asPath;
+
+  const [reload, setReload] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [tasks, setTasks] = useState<TaskDto[]>([]);
+  const [warningData, setWarningData] = useState<any>([]);
   const [viewModalOpen, setViewModalOpen] = useState<boolean>(false);
+  const [selectedSource, setSelectedSource] = useState<string[]>([]);
+  const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
+  const [checkedOptionList, setCheckedOptionList] = useState(["Search"]);
+  const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
+  const [warningModalOpen, setWarningModalOpen] = useState<boolean>(false);
+  const [activeSprintTasks, setActiveSprintTasks] = useState<TaskDto[]>([]);
+  const [taskViewModalOpen, setTaskViewModalOpen] = useState<boolean>(false);
   const [sessionActionLoading, setSessionActionLoading] =
     useState<boolean>(false);
   const [manualTimeEntryModalOpen, setManualTimeEntryModalOpen] =
     useState<boolean>(false);
-  const [taskViewModalOpen, setTaskViewModalOpen] = useState<boolean>(false);
-  const [warningModalOpen, setWarningModalOpen] = useState<boolean>(false);
-  const [warningData, setWarningData] = useState<any>([]);
-  const [tasks, setTasks] = useState<TaskDto[]>([]);
-  const [activeSprintTasks, setActiveSprintTasks] = useState<TaskDto[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedSource, setSelectedSource] = useState<string[]>();
   const [activeTab, setActiveTab] = useState(
     router.query.tab === "pin" ? "Pin" : "All"
   );
-  const [checkedOptionList, setCheckedOptionList] = useState(["Search"]);
   const [searchParams, setSearchParams] = useState<SearchParamsModel>({
     searchText: "",
     selectedDate: getDateRangeArray("this-week"),
@@ -75,40 +86,40 @@ const TasksPage = () => {
     priority: [],
     status: [],
   });
-  const [reload, setReload] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
-  const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
-  const createTask = async (data: CreateTaskDto) => {
-    setLoading(true);
-    try {
-      const res = await userAPI.createTask(data);
-      if (res) {
-        message.success("Task created successfully");
-        if (data.isRecurrent) {
-          setViewModalOpen(false);
-          getTasks();
-        } else {
-          setTasks((tasks) => [res, ...tasks]);
-          if (tasks) {
-            tasks.map((task) => {
-              if (
-                task.sessions &&
-                task.sessions[task.sessions?.length - 1]?.status === "STARTED"
-              ) {
-                setRunningTask(task);
-              }
-            });
-          }
-        }
-      }
-      setViewModalOpen(false);
-    } catch (error) {
-      message.error("Error creating task");
-      setViewModalOpen(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+  // const createTask = async (data: CreateTaskDto) => {
+  //   setLoading(true);
+  //   try {
+  //     const res = await userAPI.createTask(data);
+  //     if (res) {
+  //       message.success("Task created successfully");
+  //       if (data.isRecurrent) {
+  //         setViewModalOpen(false);
+  //         getTasks();
+  //       } else {
+  //         setTasks((tasks) => [res, ...tasks]);
+  //         if (tasks) {
+  //           tasks.map((task) => {
+  //             if (
+  //               task.sessions &&
+  //               task.sessions[task.sessions?.length - 1]?.status === "STARTED"
+  //             ) {
+  //               setRunningTask(task);
+  //             }
+  //           });
+  //         }
+  //       }
+  //     }
+  //     setViewModalOpen(false);
+  //   } catch (error) {
+  //     message.error("Error creating task");
+  //     setViewModalOpen(false);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // Handler
   const handleWarning = async (tmpTask: any) => {
     setWarningData(tmpTask);
     setWarningModalOpen(true);
@@ -303,7 +314,7 @@ const TasksPage = () => {
   const handlePinTask = async (task: TaskDto) => {
     setLoading(true);
     const res = await userAPI.pinTask(task.id, !task.pinned);
-    if (res) message.success("Task Pinned");
+    if (res) message.success(`Task ${!task.pinned ? "Pinned" : "Unpinned"}`);
     const tmp = tasks.map((t) =>
       t.id === task.id ? { ...task, pinned: !task.pinned } : t
     );
@@ -339,6 +350,7 @@ const TasksPage = () => {
     }
   };
 
+  // Side Effect
   useEffect(() => {
     if (tasks) {
       tasks.map((task) => {
@@ -413,15 +425,11 @@ const TasksPage = () => {
       }
     }
 
-    const cleanup = () => {
-      clearTimeout(myTimeout);
-    };
-
-    return cleanup;
+    return () => clearTimeout(myTimeout);
   }, [
+    router,
     dispatch,
     syncRunning,
-    router,
     publicRoutes.some((route) => path.includes(route)),
   ]);
 
@@ -442,7 +450,7 @@ const TasksPage = () => {
           </PrimaryButton>
         }
       />
-      <div className="overflow-y-auto">
+      <div className="h-full overflow-y-auto px-8 pt-2">
         <div className="mb-4 flex justify-between">
           <h2 className="text-2xl font-bold">Tasks</h2>
         </div>

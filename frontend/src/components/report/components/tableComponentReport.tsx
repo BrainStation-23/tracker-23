@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Empty,
   Table,
   TablePaginationConfig,
   Tooltip,
@@ -11,14 +12,22 @@ import { useState } from "react";
 import { LuHelpCircle } from "react-icons/lu";
 
 import FormatTimeForSettings from "@/components/common/time/formatTimeForSettings";
+import { ReportData } from "@/storage/redux/reportsSlice";
+import EditReportConfigComponent from "./editReportConfigComponent";
 
 const { Text } = Typography;
 type Props = {
   data: any;
   column: any[];
   dateRangeArray: any;
+  reportData: ReportData;
 };
-const TableComponent = ({ data, column, dateRangeArray }: Props) => {
+const TableComponent = ({
+  data,
+  column,
+  dateRangeArray,
+  reportData,
+}: Props) => {
   const columns: any = [
     {
       title: "User",
@@ -120,17 +129,25 @@ const TableComponent = ({ data, column, dateRangeArray }: Props) => {
     });
   };
 
-  return (
-    <Table
-      bordered
-      columns={columns}
-      dataSource={data}
-      className="w-full"
-      scroll={{ x: 1500 }}
-      rowKey={(d) => d.user}
-      onChange={handleTableChange}
-      pagination={tableParams.pagination}
-    />
+  return columns?.length > 0 && data?.length > 0 ? (
+    <div className="flex flex-col gap-4">
+      <Table
+        bordered
+        columns={columns}
+        dataSource={data}
+        className="w-full"
+        scroll={{ x: 1500 }}
+        rowKey={(d) => d.user}
+        onChange={handleTableChange}
+        pagination={tableParams.pagination}
+      />
+    </div>
+  ) : (
+    <div>
+      <Empty className="mt-12" description="No Data">
+        <EditReportConfigComponent reportData={reportData} />
+      </Empty>
+    </div>
   );
 };
 

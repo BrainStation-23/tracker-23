@@ -9,6 +9,12 @@ import { NotificationModule } from '../notifications/notifications.module';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { HelperModule } from '../helper/helper.module';
+import { AuthService } from '../auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { EmailService } from '../email/email.service';
+import { UsersDatabase } from 'src/database/users';
+import { RabbitMQService } from '../queue/queue.service';
+import { WorkerService } from '../worker/worker.service';
 
 @Module({
   imports: [
@@ -19,7 +25,17 @@ import { HelperModule } from '../helper/helper.module';
     WorkspacesModule,
     HelperModule,
   ],
-  providers: [TasksService, TasksDatabase, JiraApiCalls],
+  providers: [
+    TasksService,
+    TasksDatabase,
+    JiraApiCalls,
+    AuthService,
+    JwtService,
+    EmailService,
+    UsersDatabase,
+    RabbitMQService,
+    WorkerService,
+  ],
   controllers: [TasksController],
   exports: [TasksService, TasksDatabase],
 })

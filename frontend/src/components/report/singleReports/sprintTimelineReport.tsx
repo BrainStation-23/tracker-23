@@ -9,6 +9,7 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 import { getDateRangeArray } from "@/components/common/datePicker";
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SprintViewTimelineReportComponent from "../components/sprintViewTimelineReportComponent";
+import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 
 type Props = {
   reportData: ReportData;
@@ -70,18 +71,24 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
         setIsLoading={setIsLoading}
         exportButton={
           <Button
-            className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
+            className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:cursor-not-allowed hover:bg-[#1d8b56] hover:text-white"
             onClick={() => console.log("excelExport is not implemented...")}
             icon={<LuDownload className="text-xl" />}
             disabled={true}
             type="ghost"
           >
-            Export to Excel
+            Export Coming Soon
           </Button>
+        }
+        extraFilterComponent={
+          <ReportConfigDescription reportData={reportData} />
         }
       />
       <Spin className="custom-spin" spinning={isLoading}>
-        <SprintViewTimelineReportComponent data={sprintTimelineReportData} />
+        <SprintViewTimelineReportComponent
+          data={sprintTimelineReportData}
+          reportData={reportData}
+        />
       </Spin>
     </>
   );

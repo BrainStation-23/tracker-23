@@ -396,7 +396,7 @@ export class AuthService {
     //   resetToken,
     // );
 
-    const resetURL = `${req.protocol}://${req.headers.referer}resetPassword/${resetToken}`;
+    const resetURL = `${req.headers.referer}resetPassword/${resetToken}`;
     // console.log(
     //   '🚀 ~ file: auth.service.ts:274 ~ AuthService ~ forgotPassword ~ resetURL:',
     //   resetURL,

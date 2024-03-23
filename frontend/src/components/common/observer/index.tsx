@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Card } from "antd";
 
 const IntersectionComponent = ({
   setInView,
@@ -29,12 +30,17 @@ const IntersectionComponent = ({
   }, [chartRef.current, setInView]);
 
   return (
-    <div
+    <Card
       ref={chartRef}
-      className="flex min-h-[300px] flex-col gap-5 overflow-y-auto rounded border-2 p-4"
+      hoverable
+      className="hover:cursor-default"
+      style={{
+        width: "100%",
+        height: "100%",
+      }}
     >
       {children}
-    </div>
+    </Card>
   );
 };
 

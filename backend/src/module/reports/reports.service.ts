@@ -6,7 +6,6 @@ import { Report, User } from '@prisma/client';
 import { APIException } from '../exception/api.exception';
 import { PageDatabase } from 'src/database/pages';
 import { PagesService } from '../pages/pages.service';
-import { SprintDatabase } from 'src/database/sprints';
 
 @Injectable()
 export class ReportsService {
@@ -14,7 +13,6 @@ export class ReportsService {
     private readonly reportDatabase: ReportDatabase,
     private readonly pageDatabase: PageDatabase,
     private readonly pageService: PagesService,
-    private readonly sprintDatabase: SprintDatabase,
   ) {}
   async createReport(createReportDto: CreateReportDto) {
     const doesExistPage = await this.pageDatabase.getPageById(
@@ -30,6 +28,7 @@ export class ReportsService {
       name: createReportDto.name,
       pageId: createReportDto.pageId,
       reportType: createReportDto.reportType,
+      ...(createReportDto.config && { config: createReportDto.config }),
     };
     const createdPage = await this.reportDatabase.createReport(report);
     if (!createdPage) {

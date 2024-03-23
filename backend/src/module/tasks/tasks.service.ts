@@ -38,6 +38,8 @@ import {
 } from './dto';
 import { UpdateIssuePriorityReqBodyDto } from './dto/update.issue.req.dto';
 import { ErrorMessage } from '../integrations/dto/get.userIntegrations.filter.dto';
+import { QueuePayloadType } from 'src/module/queue/types';
+import { RabbitMQService } from '../queue/queue.service';
 
 @Injectable()
 export class TasksService {
@@ -51,6 +53,7 @@ export class TasksService {
     private tasksDatabase: TasksDatabase,
     private jiraApiCalls: JiraApiCalls,
     private jiraClient: JiraClientService,
+    private readonly rabbitMQService: RabbitMQService,
   ) {}
 
   async getTasks(user: User, query: GetTaskQuery): Promise<Task[]> {
@@ -212,6 +215,22 @@ export class TasksService {
       return tasks;
     } catch (err) {
       return [];
+    }
+  }
+
+  private async sendQueue(
+    user: User,
+    type: QueuePayloadType,
+    projectId?: number,
+  ) {
+    try {
+      this.rabbitMQService.publishMessage(type, {
+        payloadType: type,
+        user: user,
+        ...(projectId && { projectId }),
+      });
+    } catch (error) {
+      console.log(error);
     }
   }
 
@@ -1375,6 +1394,7 @@ export class TasksService {
     const notification = await this.createNotification(user, msg, msg);
     this.myGateway.sendNotification(`${user.id}`, notification);
   }
+
   async syncSingleProjectOrCalendar(
     user: User,
     projId: number,
@@ -1518,7 +1538,7 @@ export class TasksService {
     }
   }
 
-  async syncAll(user: User) {
+  async syncAllAndUpdateTasks(user: User) {
     const [jiraProjectIds, outLookCalendarIds] = await Promise.all([
       await this.sprintService.getProjectIds(user),
       await this.sprintService.getCalenderIds(user),
@@ -1527,11 +1547,11 @@ export class TasksService {
     ]);
     let syncedProjects = 0;
     try {
-      for (const projectId of jiraProjectIds) {
+      for await (const projectId of jiraProjectIds) {
         const synced = await this.syncTasks(user, projectId);
         if (synced) syncedProjects++;
       }
-      for (const calendarId of outLookCalendarIds) {
+      for await (const calendarId of outLookCalendarIds) {
         const synced = await this.syncEvents(user, calendarId);
         if (synced) syncedProjects++;
       }
@@ -1557,6 +1577,16 @@ export class TasksService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async syncAll(user: User) {
+    this.sendQueue(user, QueuePayloadType.SYNC_ALL);
+    return await this.syncCall(StatusEnum.IN_PROGRESS, user);
+  }
+
+  async syncAndGetTasks(user: User, projectId: number) {
+    this.sendQueue(user, QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK, projectId);
+    return await this.syncCall(StatusEnum.IN_PROGRESS, user);
   }
 
   formatStatus(status: string) {

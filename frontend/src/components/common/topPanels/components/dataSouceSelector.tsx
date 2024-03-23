@@ -1,4 +1,4 @@
-import { Select, Typography } from "antd";
+import { Select, Tooltip, Typography } from "antd";
 import { integrationName, IntegrationType } from "models/integration";
 import { StatusDto } from "models/tasks";
 import { LuBringToFront } from "react-icons/lu";
@@ -51,11 +51,13 @@ export default function SourceSelectorComponent({
 
   return (
     <div
-      className={`flex w-[210px] items-center gap-2 text-sm font-normal text-black ${
+      className={`flex w-full min-w-[210px] items-center gap-2 text-sm font-normal text-black ${
         className ? className : ""
       }`}
     >
-      <LuBringToFront size={20} />
+      <Tooltip title="Source">
+        <LuBringToFront size={20} />
+      </Tooltip>
       <Select
         mode="multiple"
         placeholder="Select Source"

@@ -8,6 +8,7 @@ import CrossIconSvg from "@/assets/svg/CrossIconSvg";
 import { useAppSelector } from "@/storage/redux";
 import { Project } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
+import classNames from "classnames";
 const { Text } = Typography;
 
 type Props = {

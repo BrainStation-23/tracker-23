@@ -33,7 +33,7 @@ const InviteLinkComponent = () => {
   return (
     <Spin spinning={!dataLoaded}>
       <div
-        className="grid h-screen w-full grid-cols-2"
+        className="grid h-screen w-full grid-cols-2 px-8 pt-2"
         style={{
           borderColor: "#E0E0E0", // Change the border color to red
         }}

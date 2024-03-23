@@ -12,9 +12,17 @@ import {
   getFormattedTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
+import { ReportData } from "@/storage/redux/reportsSlice";
+import EditReportConfigComponent from "./editReportConfigComponent";
 
 const { Text } = Typography;
-const TaskListReportComponent = ({ tasks }: any) => {
+const TaskListReportComponent = ({
+  tasks,
+  reportData,
+}: {
+  tasks: any;
+  reportData: ReportData;
+}) => {
   const columns: any = [
     {
       title: "Title",
@@ -171,7 +179,9 @@ const TaskListReportComponent = ({ tasks }: any) => {
           pagination={{ position: ["bottomCenter"] }}
         />
       ) : (
-        <Empty className="mt-12" description="No tasks" />
+        <Empty className="mt-12" description="No tasks">
+          <EditReportConfigComponent reportData={reportData} />
+        </Empty>
       )}
     </div>
   );

@@ -10,6 +10,7 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import TableComponent from "../components/tableComponentReport";
 import { FilterDateType } from "models/reports";
+import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 
 type Props = {
   reportData: ReportData;
@@ -103,12 +104,16 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
             Export to Excel
           </Button>
         }
+        extraFilterComponent={
+          <ReportConfigDescription reportData={reportData} />
+        }
       />
       <Spin className="custom-spin" spinning={isLoading}>
         <TableComponent
           data={data}
           column={column}
           dateRangeArray={dateRangeArray}
+          reportData={reportData}
         />
       </Spin>
     </>

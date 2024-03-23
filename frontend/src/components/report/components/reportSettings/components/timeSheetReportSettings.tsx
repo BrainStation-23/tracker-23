@@ -1,7 +1,7 @@
 import { message } from "antd";
 import { userAPI } from "APIs";
 import { IntegrationType } from "models/integration";
-import { FilterDateType, SprintUser } from "models/reports";
+import { FilterDateType, SprintUser, UpdateReportDto } from "models/reports";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -51,7 +51,7 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
     res && setUsers(res);
   };
 
-  const saveConfig = async () => {
+  const saveConfig = async (extraData?: UpdateReportDto) => {
     const res = await userAPI.updateReport(reportData.id, {
       calendarIds,
       filterDateType,
@@ -60,6 +60,7 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
       types: selectedSource,
       userIds: selectedUsers,
       startDate: dateRange[0],
+      ...(extraData ?? {}),
     });
     if (res) {
       dispatch(updateReportSlice(res));
@@ -103,7 +104,7 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
       {users.length ? (
         <UsersSelectorComponent
           {...{ userList: users, selectedUsers, setSelectedUsers }}
-          className="w-[210px]"
+          className="w-full min-w-[210px]"
         />
       ) : null}
     </ReportSettingsWrapper>

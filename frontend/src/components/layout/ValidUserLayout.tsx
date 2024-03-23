@@ -2,13 +2,14 @@ import Head from "next/head";
 import classNames from "classnames";
 import { message, Spin } from "antd";
 import { useRouter } from "next/router";
-import { ReactNode, useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
+import { ReactNode, useEffect, useState } from "react";
 
 // Models
 import { GetWorkspaceListWithUserDto } from "models/workspaces";
 import { IntegrationDto, IntegrationType } from "models/integration";
 
+// Components
 import Navbar from "@/components/navbar";
 import SideMenu from "@/components/sideMenu";
 import NoActiveWorkspace from "@/components/workspaces/noActiveWorkSpace";
@@ -56,9 +57,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   const connectedSocket = useAppSelector(
     (state: RootState) => state.notificationsSlice.socket
   );
-  const tmp = useAppSelector(
-    (state: RootState) => state.syncStatus.syncRunning
-  );
+
   const reloadWorkspace = useAppSelector(
     (state: RootState) => state.workspacesSlice.reload
   );
@@ -74,9 +73,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
 
   // State
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(
-    useAppSelector((state: RootState) => state.syncStatus.syncRunning)
-  );
+  const [syncing, setSyncing] = useState(syncRunning);
 
   // Constant
   const path = router.asPath;
@@ -169,11 +166,8 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
       !publicRoutes.some((route) => path.includes(route)) &&
       !connectedSocket &&
       setTimeout(connectSocket, 2000);
-    const cleanup = () => {
-      clearTimeout(timeout);
-    };
 
-    return cleanup;
+    return () => clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
@@ -198,11 +192,8 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
       !publicRoutes.some((route) => path.includes(route)) &&
       userInfo?.activeWorkspace &&
       setTimeout(getSyncStatus, 2000);
-    const cleanup = () => {
-      clearTimeout(timeout);
-    };
 
-    return cleanup;
+    return () => clearTimeout(timeout);
   }, [publicRoutes.some((route) => path.includes(route))]);
 
   useEffect(() => {
@@ -220,16 +211,12 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
     };
 
     if (!publicRoutes.includes(router.pathname)) {
-      if (tmp && userInfo?.activeWorkspace) {
+      if (syncRunning && userInfo?.activeWorkspace) {
         myTimeout = setTimeout(getSyncStatus, 5000);
       }
     }
 
-    const cleanup = () => {
-      clearTimeout(myTimeout);
-    };
-
-    return cleanup;
+    return () => clearTimeout(myTimeout);
   }, [dispatch, syncing, router]);
 
   useEffect(() => {
@@ -311,25 +298,22 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
           publicRoutes.some((route) => path.includes(route)) ? (
             <div
               className={classNames(
-                "flex max-h-screen w-full flex-col overflow-auto overflow-y-auto",
-                {
-                  "px-8": !isPublicRoute && !path.includes("onBoarding"),
-                }
+                "flex max-h-screen w-full flex-col overflow-auto overflow-y-auto bg-white"
               )}
             >
               {!isPublicRoute &&
                 !path.includes("onBoarding") &&
                 !noNavbar.some((route) => path.includes(route)) && <Navbar />}
-              <div className="h-full w-full bg-white">{children}</div>
+              <div className="h-full min-h-max w-full">{children}</div>
             </div>
           ) : (
-            <div
-              className={classNames("flex w-full flex-col overflow-y-auto", {
-                "px-8": !isPublicRoute && !path.includes("onBoarding"),
-              })}
-            >
+            <div className={classNames("flex w-full flex-col overflow-y-auto")}>
               <Navbar />
-              <NoActiveWorkspace />
+              <NoActiveWorkspace
+                className={classNames("", {
+                  "px-8": !isPublicRoute && !path.includes("onBoarding"),
+                })}
+              />
             </div>
           )}
         </div>

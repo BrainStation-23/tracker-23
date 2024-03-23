@@ -3,12 +3,14 @@ import { colorPairs, rowColors } from "utils/constants";
 
 import ProgressComponent from "./progressComponent";
 import SprintReportTabel from "./sprintReportTable";
+import { ReportData } from "@/storage/redux/reportsSlice";
 
 type Props = {
   data: SprintReportDto;
+  reportData: ReportData;
 };
 
-const SprintReportComponent = ({ data }: Props) => {
+const SprintReportComponent = ({ data, reportData }: Props) => {
   const userList = data ? [...data?.data[0]?.users] : [];
   const colors: any = {};
   userList.map((user, index) => {
@@ -86,7 +88,7 @@ const SprintReportComponent = ({ data }: Props) => {
           />
         </div>
       )}
-      <SprintReportTabel data={modifiedData} />
+      <SprintReportTabel data={modifiedData} reportData={reportData} />
     </div>
   );
 };

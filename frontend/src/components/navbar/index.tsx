@@ -14,6 +14,7 @@ import { SyncOutlined } from "@ant-design/icons";
 
 import { sideMenuOptions } from "../sideMenu";
 import NotificationSection from "./components/notificationSection";
+import classNames from "classnames";
 
 type Props = {
   extraComponent?: any;
@@ -76,18 +77,30 @@ const Navbar = ({ extraComponent }: Props) => {
     }
   };
   const onFinish = (values: { name: string }) => {
-    if (values.name !== reportPageData.name) {
-      updatePageName(values);
+    const trimmedValue = values?.name?.trim();
+    if (trimmedValue && trimmedValue !== reportPageData.name) {
+      updatePageName({
+        name: trimmedValue,
+      });
     }
     setEditing(false);
   };
+
+  const handleBlur = (value: string) => {
+    const trimmedValue = value?.trim();
+    if (trimmedValue && trimmedValue !== reportPageData.name) {
+      updatePageName({ name: trimmedValue });
+    }
+    setEditing(false);
+  };
+
   useEffect(() => {
     const tmp = getLocalStorage("userDetails");
     if (!userDetails && tmp) setUserDetails(tmp);
   }, [userDetails, path]);
 
   return (
-    <div className=" mb-2 flex h-16 w-full items-center justify-between">
+    <div className="flex h-16 w-full items-center justify-between bg-[#F8F8F8] px-8">
       <div className="py-6">
         {sideMenuOptions?.map(
           (option) =>
@@ -106,51 +119,55 @@ const Navbar = ({ extraComponent }: Props) => {
                   )}
                   {router.asPath.includes("report") && reportPageData?.name ? (
                     <div onClick={() => setEditing(true)}>
-                      {!editing ? (
-                        <div className="flex items-center gap-2">
-                          {reportPageData?.name}
-                        </div>
-                      ) : (
-                        <Form
-                          name="titleEdit"
-                          onFinish={onFinish}
-                          initialValues={{ name: reportPageData?.name }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              form.submit();
-                            }
-                            if (e.key === "Escape") {
-                              setEditing(false);
-                            }
-                          }}
-                        >
-                          <div className="flex items-center gap-2  text-base font-semibold">
-                            <Form.Item
-                              name="name"
-                              className="m-0"
-                              rules={[
+                      <Form
+                        name="titleEdit"
+                        onFinish={onFinish}
+                        initialValues={{ name: reportPageData?.name }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            form.submit();
+                          }
+                          if (e.key === "Escape") {
+                            setEditing(false);
+                          }
+                        }}
+                      >
+                        <div className="flex items-center gap-2  text-base font-semibold">
+                          <Form.Item
+                            name="name"
+                            className="m-0"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please input something!",
+                              },
+                              {
+                                pattern: /\S.*|\s+/,
+                                message: "Please enter valid name",
+                              },
+                            ]}
+                          >
+                            <Input
+                              placeholder="Type something and press Enter"
+                              className={classNames(
+                                "m-0 p-0 px-1  text-base font-semibold focus:shadow-none",
                                 {
-                                  required: true,
-                                  message: "Please input something!",
-                                },
-                              ]}
-                            >
-                              <Input
-                                placeholder="Type something and press Enter"
-                                className="m-0 p-0 px-1  text-base font-semibold focus:shadow-none"
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    form.submit();
-                                  }
-                                  if (e.key === "Escape") {
-                                    setEditing(false);
-                                  }
-                                }}
-                              />
-                            </Form.Item>
-                          </div>
-                        </Form>
-                      )}
+                                  ["border-none"]: !editing,
+                                }
+                              )}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  form.submit();
+                                }
+                                if (e.key === "Escape") {
+                                  setEditing(false);
+                                }
+                              }}
+                              onBlur={(e) => handleBlur(e.target.value)}
+                            />
+                          </Form.Item>
+                        </div>
+                      </Form>
                     </div>
                   ) : null}
                 </div>

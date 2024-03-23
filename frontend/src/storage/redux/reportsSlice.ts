@@ -8,7 +8,7 @@ export interface ReportConfig {
   id: number;
   projectIds?: number[];
   calendarIds?: number[];
-  userIds?: any;
+  userIds?: number[];
   types?: IntegrationType[];
   sprintIds?: number[];
   endDate?: string;

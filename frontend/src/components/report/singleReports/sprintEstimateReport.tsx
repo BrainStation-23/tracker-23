@@ -9,6 +9,7 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SpritEstimateReportComponent from "../components/sprintEstimateReportComponent";
+import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 
 type Props = {
   reportData: ReportData;
@@ -89,9 +90,15 @@ const SprintEstimateReport = ({ reportData, inView }: Props) => {
             Export to Excel
           </Button>
         }
+        extraFilterComponent={
+          <ReportConfigDescription reportData={reportData} />
+        }
       />
       <Spin className="custom-spin" spinning={isLoading}>
-        <SpritEstimateReportComponent data={sprintEstimateReportData} />
+        <SpritEstimateReportComponent
+          data={sprintEstimateReportData}
+          reportData={reportData}
+        />
       </Spin>
     </>
   );

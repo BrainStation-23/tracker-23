@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ExportModule } from './module/export/export.module';
 import { TestModule } from './test/test.module';
@@ -23,6 +23,8 @@ import { OutlookModule } from './module/outlook/outlook.module';
 import { PagesModule } from './module/pages/pages.module';
 import { ReportsModule } from './module/reports/reports.module';
 import { OnboardingModule } from './module/onboarding/onboarding.module';
+import { RequestLimitMiddleware } from './middleware/request-limit.middleware';
+import { WorkerModule } from './module/worker/worker.module';
 
 @Module({
   imports: [
@@ -52,7 +54,19 @@ import { OnboardingModule } from './module/onboarding/onboarding.module';
     PagesModule,
     ReportsModule,
     OnboardingModule,
+    WorkerModule,
   ],
   providers: [CronService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(RequestLimitMiddleware)
+      .forRoutes(
+        { path: '*', method: RequestMethod.POST },
+        { path: '*', method: RequestMethod.PATCH },
+        { path: '*', method: RequestMethod.PUT },
+        { path: '*', method: RequestMethod.DELETE },
+      );
+  }
+}
