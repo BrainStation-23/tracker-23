@@ -4,7 +4,7 @@ type Props = {
 };
 const AuthHeader = ({ title, subTitle }: Props) => {
   return (
-    <div className="flex flex-col gap-2 text-left">
+    <div className="flex flex-col gap-2 text-center">
       <h2 className="text-3xl font-semibold md:text-4xl">{title}</h2>
       <p className="text-base font-normal">{subTitle}</p>
     </div>

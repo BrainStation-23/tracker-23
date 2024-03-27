@@ -10,7 +10,7 @@ const AuthPage = () => {
   const path = router.asPath;
   return (
     <div
-      className="grid h-screen w-full grid-cols-2"
+      className="h-screen w-full md:grid md:grid-cols-2"
       style={{
         borderColor: "#E0E0E0",
       }}
