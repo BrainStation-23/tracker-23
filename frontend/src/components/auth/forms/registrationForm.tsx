@@ -60,6 +60,7 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
       <MyFormItem
         label="First Name"
         name="firstName"
+        className="mb-5"
         rules={[{ required: true, message: "Please input your First Name!" }]}
       >
         <Input
@@ -70,6 +71,7 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
       <MyFormItem
         label="Last Name"
         name="lastName"
+        className="mb-5"
         rules={[{ required: true, message: "Please input your Last Name!" }]}
       >
         <Input
@@ -81,6 +83,7 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
       <MyFormItem
         label="Email Address"
         name="email"
+        className="mb-5"
         validateFirst={true}
         rules={[
           { required: true, message: "Please input a valid email!" },
@@ -105,6 +108,7 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
       <MyFormItem
         label="Password"
         name="password"
+        className="mb-5"
         rules={[{ required: true, message: "Please input your password!" }]}
       >
         <Input.Password
@@ -116,6 +120,7 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
       <MyFormItem
         label="Re-type Password"
         name="passwordRe"
+        className="mb-5"
         rules={[
           { required: true, message: "Please re-input your password!" },
           ({ getFieldValue }: any) => ({
@@ -136,6 +141,7 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
       {waitingForOtp && (
         <MyFormItem
           label="OTP"
+          className="mb-5"
           name="code"
           rules={[{ required: true, message: "Please input your Last Name!" }]}
         >
