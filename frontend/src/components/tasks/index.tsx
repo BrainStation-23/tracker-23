@@ -18,7 +18,7 @@ import PrimaryButton from "@/components/common/buttons/primaryButton";
 import TopPanelActiveSprint from "@/components/common/topPanels/topPanelActiveSprint";
 
 // Models
-import { TaskDto } from "models/tasks";
+import { CreateTaskDto, TaskDto } from "models/tasks";
 import { SearchParamsModel } from "models/apiParams";
 
 // Service
@@ -87,37 +87,37 @@ const TasksPage = () => {
     status: [],
   });
 
-  // const createTask = async (data: CreateTaskDto) => {
-  //   setLoading(true);
-  //   try {
-  //     const res = await userAPI.createTask(data);
-  //     if (res) {
-  //       message.success("Task created successfully");
-  //       if (data.isRecurrent) {
-  //         setViewModalOpen(false);
-  //         getTasks();
-  //       } else {
-  //         setTasks((tasks) => [res, ...tasks]);
-  //         if (tasks) {
-  //           tasks.map((task) => {
-  //             if (
-  //               task.sessions &&
-  //               task.sessions[task.sessions?.length - 1]?.status === "STARTED"
-  //             ) {
-  //               setRunningTask(task);
-  //             }
-  //           });
-  //         }
-  //       }
-  //     }
-  //     setViewModalOpen(false);
-  //   } catch (error) {
-  //     message.error("Error creating task");
-  //     setViewModalOpen(false);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+  const createTask = async (data: CreateTaskDto) => {
+    setLoading(true);
+    try {
+      const res = await userAPI.createTask(data);
+      if (res) {
+        message.success("Task created successfully");
+        if (data.isRecurrent) {
+          setViewModalOpen(false);
+          getTasks();
+        } else {
+          setTasks((tasks) => [res, ...tasks]);
+          if (tasks) {
+            tasks.map((task) => {
+              if (
+                task.sessions &&
+                task.sessions[task.sessions?.length - 1]?.status === "STARTED"
+              ) {
+                setRunningTask(task);
+              }
+            });
+          }
+        }
+      }
+      setViewModalOpen(false);
+    } catch (error) {
+      message.error("Error creating task");
+      setViewModalOpen(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handler
   const handleWarning = async (tmpTask: any) => {
@@ -578,7 +578,7 @@ const TasksPage = () => {
           width={540}
           className="top-0 my-auto flex h-full items-center"
         >
-          <CreateTaskComponent />
+          <CreateTaskComponent taskList={tasks} createTask={createTask} />
         </GlobalModal>
         <GlobalModal
           isModalOpen={manualTimeEntryModalOpen}
