@@ -1,4 +1,4 @@
-import { Button, Spin } from "antd";
+import { Button, Spin, message } from "antd";
 import { userAPI } from "APIs";
 import { FilterDateType, SprintReportDto } from "models/reports";
 import { useEffect, useState } from "react";
@@ -10,6 +10,7 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SprintReportComponent from "../components/sprintReportComponents";
 import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
+import { ExcelExport } from "@/services/exportHelpers";
 
 type Props = {
   reportData: ReportData;
@@ -18,6 +19,7 @@ type Props = {
 const SprintReport = ({ reportData, inView }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [sprintReportData, setSprintReportData] = useState<SprintReportDto>();
+  const [downloading, setDownloading] = useState<boolean>(false);
 
   const dateRange =
     reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
@@ -44,6 +46,25 @@ const SprintReport = ({ reportData, inView }: Props) => {
     }
     setIsLoading(false);
   };
+
+  const excelExport = async () => {
+    setDownloading(true);
+    try {
+      const res = await userAPI.exportSprintViewSheet(reportData);
+      if (!res) {
+        message.error(
+          res?.error?.message ? res?.error?.message : "Export Failed"
+        );
+      } else {
+        ExcelExport({ file: res, name: `${reportData.name}` });
+      }
+    } catch (error) {
+      message.error("Export Failed");
+    }
+
+    setDownloading(false);
+  };
+
   useEffect(() => {
     getSprintReport();
   }, [reportData?.config, inView]);
@@ -55,13 +76,13 @@ const SprintReport = ({ reportData, inView }: Props) => {
         setIsLoading={setIsLoading}
         exportButton={
           <Button
-            className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:cursor-not-allowed hover:bg-[#1d8b56] hover:text-white"
+            className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
             icon={<LuDownload className="text-xl" />}
-            onClick={() => console.log("Not implemented yet")}
-            disabled={true}
+            onClick={() => excelExport()}
             type="ghost"
+            loading={downloading}
           >
-            Export Coming Soon
+            Export to Excel
           </Button>
         }
         extraFilterComponent={

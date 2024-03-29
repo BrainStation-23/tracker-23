@@ -56,4 +56,6 @@ export const apiEndPoints = {
   reportPage: "/pages",
   reports: "/reports",
   getIntegrationTypesReportPage: "/integrations/report-page",
+  exportSprintViewSheet: "export/sprint-view-sheet",
+  exportTimeLineSheet: "export/time-line-sheet",
 };
