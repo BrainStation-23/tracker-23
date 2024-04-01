@@ -108,7 +108,7 @@ export class AuthService {
 
     const code = `${Math.floor(Math.random() * 900000) + 100000}`;
     const expireTime = new Date();
-    expireTime.setDate(expireTime.getDate() + 1);
+    expireTime.setDate(expireTime.getMinutes() + 2);
 
     const doesExistUserOTP = await this.usersDatabase.getUserOTP(dto.email);
     const userOTPData = {
