@@ -1,6 +1,5 @@
 import { userAPI } from "APIs";
 import { IntegrationType } from "models/integration";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FaChartBar } from "react-icons/fa";
 import { FaChartGantt } from "react-icons/fa6";
@@ -30,14 +29,9 @@ import SprintTimelineReport from "./singleReports/sprintTimelineReport";
 import TaskListReport from "./singleReports/taskListReport";
 import TimeSheetReport from "./singleReports/timeSheetReport";
 
-export default function ReportPageComponent() {
-  const router = useRouter();
+export default function ReportPageComponent({ pageId }: { pageId: number }) {
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const pageId = router.query?.reportPageId
-    ? parseInt(router.query?.reportPageId as string)
-    : -1;
 
   const reportPageData = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages

@@ -351,10 +351,10 @@ const SprintViewTimelineReportTabel = ({ data, reportData }: Props) => {
         rowKey={"id"}
         bordered
         pagination={{
-          current: 1,
-          pageSize: 500,
-          showSizeChanger: false,
-          showLessItems: true,
+          // current: 1,
+          // pageSize: 500,
+          // showSizeChanger: false,
+          // showLessItems: true,
           position: ["bottomRight", "bottomLeft"],
         }}
         scroll={{ x: true }}
