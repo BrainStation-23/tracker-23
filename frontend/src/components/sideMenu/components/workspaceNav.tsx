@@ -97,7 +97,7 @@ const WorkspaceNav = () => {
     <div style={contentStyle} className="py-4 font-semibold">
       <div className="mx-4">
         <Radio.Group
-          className="max-h-[500px] w-full"
+          className="max-h-[500px] w-full overflow-y-auto"
           defaultValue={activeWorkspace?.id}
           value={activeWorkspace?.id}
         >
