@@ -1645,3 +1645,52 @@ export async function getIntegrationTypesReportPageRest() {
     return false;
   }
 }
+
+export async function exportSprintViewSheetRest(reportData: ReportData) {
+  const searchParams = new URLSearchParams({
+    sprintId: `${
+      reportData?.config?.sprintIds?.length > 0
+        ? reportData?.config?.sprintIds
+        : []
+    }`,
+    startDate: reportData?.config?.startDate,
+    endDate: reportData?.config?.endDate,
+  });
+  const url = `${
+    apiEndPoints.exportSprintViewSheet
+  }?${searchParams.toString()}`;
+  console.log("url: " + url);
+  try {
+    const res = await api.get(url, {
+      responseType: "blob", // Set responseType to 'blob' to receive binary data
+    });
+    console.log("exportSprintViewSheetRest:", res.data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function exportTimeLineSheetRest(reportData: ReportData) {
+  const searchParams = new URLSearchParams({
+    sprintId: `${
+      reportData?.config?.sprintIds?.length > 0
+        ? reportData?.config?.sprintIds
+        : []
+    }`,
+    startDate: reportData?.config?.startDate,
+    endDate: reportData?.config?.endDate,
+    userIds: `${reportData?.config?.userIds}`,
+  });
+  const url = `${apiEndPoints.exportTimeLineSheet}?${searchParams.toString()}`;
+  console.log("url: " + url);
+  try {
+    const res = await api.get(url, {
+      responseType: "blob", // Set responseType to 'blob' to receive binary data
+    });
+    console.log("exportTimeLineSheetRest:", res.data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}

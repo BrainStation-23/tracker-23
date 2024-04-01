@@ -754,7 +754,9 @@ export class ExportService {
         }
         const startRowIndex = userRowIndex;
         const endRowIndex = startRowIndex + maxTasks - 1;
-        worksheet.mergeCells(startRowIndex, 2, endRowIndex, 2);
+        try {
+          worksheet.mergeCells(startRowIndex, 2, endRowIndex, 2);
+        } catch (err) {}
         userRowIndex = endRowIndex + 1;
 
         worksheet.columns.forEach((column) => {
@@ -772,10 +774,11 @@ export class ExportService {
           worksheet.getColumn(columnIndex).width = 50;
         }
       });
-
       const startDateRowIndex = dateRowIndex;
       const endDateRowIndex = startDateRowIndex + dateMaxTasks - 1;
-      worksheet.mergeCells(startDateRowIndex, 1, endDateRowIndex, 1);
+      try {
+        worksheet.mergeCells(startDateRowIndex, 1, endDateRowIndex, 1);
+      } catch (err) {}
       dateRowIndex = endDateRowIndex + 1;
     });
 
