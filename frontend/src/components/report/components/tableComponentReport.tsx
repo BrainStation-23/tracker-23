@@ -109,10 +109,10 @@ const TableComponent = ({
 
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {
-      current: 1,
-      pageSize: 10,
-      showSizeChanger: true,
-      showLessItems: true,
+      // current: 1,
+      // pageSize: 10,
+      // showSizeChanger: true,
+      // showLessItems: true,
       position: ["bottomRight", "bottomLeft"],
     },
   });
