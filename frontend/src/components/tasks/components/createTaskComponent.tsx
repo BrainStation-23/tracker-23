@@ -23,15 +23,17 @@ import { RootState } from "@/storage/redux/store";
 
 import RecurrentTaskCreationComponent from "./recurrentTaskCreationComponent";
 import AddLocalProject from "@/components/integrations/projectImport/components/addLocalProject";
+import { CreateTaskDto, CreateTaskValues } from "models/tasks";
 
-const CreateTaskComponent = () => {
+const CreateTaskComponent = ({ taskList, createTask }: any) => {
   const elementRef = useRef(null);
 
   const [startDate, setStartDate] = useState(dayjs());
   const [form] = Form.useForm();
-  const onFinish = async () => {
+  const onFinish = async (values: CreateTaskValues) => {
     setCreatingTask(true);
-
+    const formattedValues: CreateTaskDto = getFormattedValues(values);
+    const res = await createTask(formattedValues);
     setCreatingTask(false);
   };
 
@@ -70,24 +72,24 @@ const CreateTaskComponent = () => {
       .map((pp) => pp.name)
   );
   useEffect(() => {
-    console.log(
-      "XXXXXX",
-      priorityNames,
-      selectedProject,
-      priorities,
-      priorities.filter((p) => {
-        console.log("XXXXX", p.projectId, selectedProject);
+    // console.log(
+    //   "XXXXXX",
+    //   priorityNames,
+    //   selectedProject,
+    //   priorities,
+    //   priorities.filter((p) => {
+    //     console.log("XXXXX", p.projectId, selectedProject);
 
-        return p.projectId == selectedProject;
-      })
-    );
+    //     return p.projectId == selectedProject;
+    //   })
+    // );
 
     setPriorityNames(
       priorities
         .filter((p) => p.projectId == selectedProject)
         .map((pp) => pp.name)
     );
-  }, [priorities, priorityNames, selectedProject]);
+  }, [priorities, selectedProject]);
 
   const handleFrequencyChange = (value: string) => {
     console.log(`Selected: ${value}`);
@@ -114,7 +116,7 @@ const CreateTaskComponent = () => {
         requiredMark={false}
         className="custom-create-task-css"
       >
-        <div ref={elementRef} className="mb-2 max-h-[650px] overflow-auto">
+        <div ref={elementRef} className="max-h-[650px] mb-2 overflow-auto">
           <MyInputCreateTask
             name="title"
             label="Task Name"
@@ -238,3 +240,27 @@ const CreateTaskComponent = () => {
 };
 
 export default CreateTaskComponent;
+
+const getFormattedValues = (values: CreateTaskValues) => {
+  console.log(
+    "🚀 ~ file: createTaskComponent.tsx:661 ~ getFormattedValues ~ values:",
+    values
+  );
+  const formattedValues = {
+    ...values,
+    estimation:
+      typeof values.estimation !== "number"
+        ? +values.estimation
+        : values.estimation,
+    projectId:
+      typeof values.projectId !== "number"
+        ? +values.projectId
+        : values.projectId,
+    label: values.label ? values.label : [],
+    startTime: values.timeRange ? values.timeRange[0] : null,
+    endTime: values.timeRange ? values.timeRange[1] : null,
+  };
+  if (values?.repeat) formattedValues.repeat = +values.repeat;
+  if (values?.occurrences) formattedValues.occurrences = +values.occurrences;
+  return formattedValues;
+};

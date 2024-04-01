@@ -11,8 +11,8 @@ import GoogleLogin from "./googleLogin";
 const RegistrationPanel = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   return (
-    <div className="flex">
-      <div className="m-auto flex h-fit max-w-[60%] flex-col gap-6 lg:max-w-[70%]">
+    <>
+      <div className="m-auto flex flex-col gap-3 px-4 py-2 md:max-w-[60%] md:gap-6 lg:max-w-[70%]">
         <AuthHeader
           title={"Sign up to Tracker23"}
           subTitle={"Sign up or log in to start tracking your time"}
@@ -37,7 +37,7 @@ const RegistrationPanel = () => {
           <h1>Signing Up...</h1>
         </div>
       </Modal>
-    </div>
+    </>
   );
 };
 
