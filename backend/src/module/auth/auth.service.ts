@@ -28,6 +28,7 @@ import { EmailService } from '../email/email.service';
 import { APIException } from '../exception/api.exception';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
+import { coreConfig } from 'config/core';
 
 @Injectable()
 export class AuthService {
@@ -385,7 +386,7 @@ export class AuthService {
 
     if (!user) {
       throw new APIException(
-        'This email belong no user',
+        'This email belongs to no user!',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -396,7 +397,7 @@ export class AuthService {
     //   resetToken,
     // );
 
-    const resetURL = `${req.headers.referer}resetPassword/${resetToken}`;
+    const resetURL = `${coreConfig.host_url}/resetPassword/${resetToken}`;
     // console.log(
     //   '🚀 ~ file: auth.service.ts:274 ~ AuthService ~ forgotPassword ~ resetURL:',
     //   resetURL,
