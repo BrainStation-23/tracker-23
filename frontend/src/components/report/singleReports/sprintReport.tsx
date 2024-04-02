@@ -1,6 +1,6 @@
 import { Button, Spin, message } from "antd";
 import { userAPI } from "APIs";
-import { FilterDateType, SprintReportDto } from "models/reports";
+import { SprintReportDto } from "models/reports";
 import { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
 
@@ -22,7 +22,7 @@ const SprintReport = ({ reportData, inView }: Props) => {
   const [downloading, setDownloading] = useState<boolean>(false);
 
   const dateRange =
-    reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
+    reportData?.config?.startDate && reportData?.config?.endDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
       : getDateRangeArray(reportData?.config?.filterDateType);
 

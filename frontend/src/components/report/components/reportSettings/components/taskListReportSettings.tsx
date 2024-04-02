@@ -45,7 +45,7 @@ const TaskListReportSettings = ({ reportData }: Props) => {
       : null
   );
   const [dateRange, setDateRange] = useState(
-    reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
+    reportData?.config?.startDate && reportData?.config?.endDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
       : getDateRangeArray(reportData?.config?.filterDateType)
   );

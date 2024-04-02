@@ -9,7 +9,6 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import TableComponent from "../components/tableComponentReport";
-import { FilterDateType } from "models/reports";
 import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 
 type Props = {
@@ -18,7 +17,7 @@ type Props = {
 };
 const TimeSheetReport = ({ reportData, inView }: Props) => {
   const dateRange =
-    reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
+    reportData?.config?.startDate && reportData?.config?.endDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
       : getDateRangeArray(reportData?.config?.filterDateType);
 
