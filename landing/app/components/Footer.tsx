@@ -25,9 +25,9 @@ export default function Footer() {
           <li>
             <a href="#suitability">Suitability</a>
           </li>
-          <li>
+          {/* <li>
             <a href="#price">Price</a>
-          </li>
+          </li> */}
         </ul>
         <hr className="md:w-3/4 m-auto my-4" />
         <p className="text-center text-lg font-semibold">

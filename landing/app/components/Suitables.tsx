@@ -23,8 +23,8 @@ export default function Suitables() {
       icon: ProductTeamLogo,
     },
     {
-      name: "Startup",
-      line2: "Team",
+      name: "Creator",
+      line2: "",
       icon: StartupTeamLogo,
     },
     {
