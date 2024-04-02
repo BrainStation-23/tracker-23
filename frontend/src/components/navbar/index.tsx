@@ -150,7 +150,7 @@ const Navbar = ({ extraComponent }: Props) => {
                             <Input
                               placeholder="Type something and press Enter"
                               className={classNames(
-                                "m-0 p-0 px-1  text-base font-semibold focus:shadow-none",
+                                "m-0 bg-transparent p-0  px-1 text-base font-semibold focus:shadow-none",
                                 {
                                   ["border-none"]: !editing,
                                 }

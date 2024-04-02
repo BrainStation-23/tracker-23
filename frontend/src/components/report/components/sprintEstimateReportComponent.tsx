@@ -16,7 +16,7 @@ const SpritEstimateReportComponent = ({ data, reportData }: Props) => {
     });
   });
   return (
-    <div className="flex w-full">
+    <div className="flex w-full justify-center">
       {tableData?.length > 0 ? (
         <TableComponentSprintReport data={tableData} column={data?.columns} />
       ) : (
