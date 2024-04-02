@@ -304,6 +304,7 @@ const WorkspaceNav = () => {
               workspace={selectedWorkspace}
               setSelectedWorkspace={setSelectedWorkspace}
               setIsModalOpen={setIsModalOpen}
+              setIsModalLoading={setIsModalLoading}
             />
           )}
           {mode === 0 && (
