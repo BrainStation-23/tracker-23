@@ -28,6 +28,16 @@ const UsersComponent = () => {
   };
 
   useEffect(() => {
+    console.log(
+      "config.NEXT_PUBLIC_ADMIN_EMAIL - ",
+      config.NEXT_PUBLIC_ADMIN_EMAIL
+    );
+
+    console.log(
+      "config.NEXT_PUBLIC_ADMIN_EMAIL 2 -",
+      `${config.NEXT_PUBLIC_ADMIN_EMAIL}`
+    );
+
     if (user.email === config.NEXT_PUBLIC_ADMIN_EMAIL) {
       getUserList();
     } else router.push("/");
