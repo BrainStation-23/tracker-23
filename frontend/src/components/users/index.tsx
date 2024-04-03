@@ -37,6 +37,12 @@ const UsersComponent = () => {
       "config.NEXT_PUBLIC_ADMIN_EMAIL 2 -",
       `${config.NEXT_PUBLIC_ADMIN_EMAIL}`
     );
+    console.log("process.env", process.env);
+
+    console.log(
+      "NEXT_PUBLIC_API_ADMIN_EMAIL",
+      process.env.NEXT_PUBLIC_API_ADMIN_EMAIL
+    );
 
     if (user.email === config.NEXT_PUBLIC_ADMIN_EMAIL) {
       getUserList();
