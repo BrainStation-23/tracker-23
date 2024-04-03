@@ -5,7 +5,7 @@ export default function Header() {
   return (
     <div className="w-full bg-[url('/header/landing.png')] bg-no-repeat bg-cover">
       <div className="container mx-auto py-10 px-4 md:px-0">
-        <div className="flex justify-between">
+        <div className="flex justify-between items-center">
           <Image src={Logo} alt="Logo" />
           <div className="flex gap-1 text-lg font-medium">
             <a

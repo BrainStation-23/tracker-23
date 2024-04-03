@@ -14,7 +14,7 @@ export default function Home() {
       <Integrations />
       <Features />
       <Suitables />
-      <Pricing />
+      {/* <Pricing /> */}
       <Footer />
     </>
   );

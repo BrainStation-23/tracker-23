@@ -12,7 +12,6 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import TaskListReportComponent from "../components/taskListReportComponent";
 import TopPanelTaskListComponents from "../components/topPanelTaskListComponents";
-import { FilterDateType } from "models/reports";
 import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 
 type Props = {
@@ -22,7 +21,7 @@ type Props = {
 
 export default function TaskListReport({ reportData, inView }: Props) {
   const dateRange =
-    reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
+    reportData?.config?.startDate && reportData?.config?.endDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
       : getDateRangeArray(reportData?.config?.filterDateType);
 

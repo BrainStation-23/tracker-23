@@ -190,10 +190,9 @@ const SprintReportTabel = ({ data, reportData }: Props) => {
             rowKey={"id"}
             bordered
             pagination={{
-              current: 1,
-              pageSize: 500,
-              showSizeChanger: false,
-              showLessItems: true,
+              // pageSize: 100,
+              // showSizeChanger: false,
+              // showLessItems: true,
               position: ["bottomRight", "bottomLeft"],
             }}
             scroll={{ y: 600 }}

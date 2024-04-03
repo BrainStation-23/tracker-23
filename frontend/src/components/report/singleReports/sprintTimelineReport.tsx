@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Spin, message } from "antd";
 import { userAPI } from "APIs";
-import { FilterDateType, SprintViewTimelineReportDto } from "models/reports";
+import { SprintViewTimelineReportDto } from "models/reports";
 import { LuDownload } from "react-icons/lu";
 
 import { ReportData } from "@/storage/redux/reportsSlice";
@@ -19,7 +19,7 @@ type Props = {
 
 export default function SprintTimelineReport({ reportData, inView }: Props) {
   const dateRange =
-    reportData?.config?.filterDateType === FilterDateType.CUSTOM_DATE
+    reportData?.config?.startDate && reportData?.config?.endDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
       : getDateRangeArray(reportData?.config?.filterDateType);
 
@@ -27,7 +27,6 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
   const [sprintTimelineReportData, setSprintTimelineReportData] =
     useState<SprintViewTimelineReportDto>();
   const [downloading, setDownloading] = useState<boolean>(false);
-  
 
   const getSprintViewTimelineReport = async () => {
     if (!inView) return;
