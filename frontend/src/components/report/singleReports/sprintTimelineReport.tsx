@@ -59,7 +59,7 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
           row.data.forEach((data, _) => {
             if (data.key !== "AssignTasks") {
               data.value.tasks.forEach((task, _) => {
-                workedTaskKeys.add(task.title);
+                workedTaskKeys.add(task.key);
               });
             }
           });
@@ -67,7 +67,7 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
           row.data.forEach((data, _) => {
             if (data.key === "AssignTasks") {
               data.value.tasks = data.value.tasks.filter((task) =>
-                workedTaskKeys.has(task.title)
+                workedTaskKeys.has(task.key)
               );
             }
           });

@@ -44,10 +44,10 @@ const SprintReport = ({ reportData, inView }: Props) => {
               reportUser.assignedTasks.forEach((assignedTask) => {
                 if (
                   reportUser.yesterdayTasks.find(
-                    (item) => item.title === assignedTask.title
+                    (item) => item.key === assignedTask.key
                   ) ||
                   reportUser.todayTasks.find(
-                    (item) => item.title === assignedTask.title
+                    (item) => item.key === assignedTask.key
                   )
                 ) {
                   assignedTasks.push(assignedTask);
