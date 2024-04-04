@@ -23,7 +23,7 @@ export async function initializeSocket() {
   });
   const loggedInUser: LoginResponseDto = getLocalStorage("userDetails");
   socket.on(`${loggedInUser.id}`, (payload) => {
-    // console.log("Received new notification:", payload);
+    console.log("Received new notification line 26:", payload);
     store.dispatch(addNotification(payload));
   });
 }

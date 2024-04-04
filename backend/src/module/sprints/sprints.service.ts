@@ -604,7 +604,7 @@ export class SprintsService {
     const userWorkspaceList = await this.sprintTaskDatabase.getUserWorkspaces({
       workspaceId: user.activeWorkspaceId,
       status: UserWorkspaceStatus.ACTIVE,
-      userId: { in: userIdsArray },
+      ...(query?.userIds && { userId: { in: userIdsArray } }),
     });
     const mappedUserWithWorkspaceId = new Map<number, any>();
 

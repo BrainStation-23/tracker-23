@@ -11,11 +11,13 @@ import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { IntegrationDatabase } from 'src/database/integrations/index';
 import { ReportsService } from '../reports/reports.service';
 import { ErrorMessage } from './dto/get.userIntegrations.filter.dto';
+import { MyGateway } from '../notifications/socketGateway';
 
 @Injectable()
 export class IntegrationsService {
   constructor(
     private config: ConfigService,
+    private myGateway: MyGateway,
     private prisma: PrismaService,
     private httpService: HttpService,
     private workspacesService: WorkspacesService,
@@ -143,6 +145,10 @@ export class IntegrationsService {
       );
     }
     if (userIntegration.expiration_time.getTime() > Date.now()) {
+      await this.sendReAuthNotification(
+        user,
+        ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
+      );
       return userIntegration;
     } else {
       const url = 'https://auth.atlassian.com/oauth/token';
@@ -162,6 +168,10 @@ export class IntegrationsService {
           await lastValueFrom(this.httpService.post(url, data, headers))
         ).data;
       } catch (err) {
+        await this.sendReAuthNotification(
+          user,
+          ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
+        );
         throw new APIException(
           ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
           HttpStatus.GONE,
@@ -188,6 +198,32 @@ export class IntegrationsService {
 
       return updatedUserIntegration;
     }
+  }
+
+  private async createNotification(
+    user: User,
+    title: string,
+    description: string,
+  ) {
+    return (
+      user?.activeWorkspaceId &&
+      (await this.prisma.notification.create({
+        data: {
+          seen: false,
+          author: 'SYSTEM',
+          title,
+          description,
+          userId: user.id,
+          workspaceId: user.activeWorkspaceId,
+          // statusCode: HttpStatus.GONE,
+        },
+      }))
+    );
+  }
+
+  async sendReAuthNotification(user: User, msg: string, res?: Response) {
+    const notification = await this.createNotification(user, msg, msg);
+    this.myGateway.sendNotification(`${user.id}`, notification);
   }
 
   async getUpdatedUserIntegrationForOthers(user: User, userIntegration: any) {
