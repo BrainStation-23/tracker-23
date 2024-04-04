@@ -8,6 +8,7 @@ import { outLookConfig } from 'config/outlook';
 import axios from 'axios';
 import { APIException } from '../exception/api.exception';
 import { ErrorMessage } from '../integrations/dto/get.userIntegrations.filter.dto';
+import { StatusEnum } from '../tasks/dto';
 
 @Injectable()
 export class JiraClientService {
@@ -99,6 +100,18 @@ export class JiraClientService {
           })
         ).data;
       } catch (err) {
+        const getSync = await this.userIntegrationDatabase.getSyncStatus({
+          userWorkspaceId: userIntegration.userWorkspaceId,
+          status: StatusEnum.IN_PROGRESS,
+        });
+        if (getSync) {
+          await this.userIntegrationDatabase.updateSyncStatus(
+            {
+              id: getSync.id,
+            },
+            { status: StatusEnum.INVALID_JIRA_REFRESH_TOKEN },
+          );
+        }
         throw new APIException(
           ErrorMessage.INVALID_OUTLOOK_REFRESH_TOKEN,
           HttpStatus.GONE,

@@ -12,6 +12,7 @@ import { IntegrationDatabase } from 'src/database/integrations/index';
 import { ReportsService } from '../reports/reports.service';
 import { ErrorMessage } from './dto/get.userIntegrations.filter.dto';
 import { MyGateway } from '../notifications/socketGateway';
+import { StatusEnum } from '../tasks/dto';
 
 @Injectable()
 export class IntegrationsService {
@@ -145,10 +146,6 @@ export class IntegrationsService {
       );
     }
     if (userIntegration.expiration_time.getTime() > Date.now()) {
-      await this.sendReAuthNotification(
-        user,
-        ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
-      );
       return userIntegration;
     } else {
       const url = 'https://auth.atlassian.com/oauth/token';
@@ -168,10 +165,24 @@ export class IntegrationsService {
           await lastValueFrom(this.httpService.post(url, data, headers))
         ).data;
       } catch (err) {
-        await this.sendReAuthNotification(
-          user,
-          ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
-        );
+        const getSync = await this.userIntegrationDatabase.getSyncStatus({
+          userWorkspaceId: userIntegration.userWorkspaceId,
+          status: StatusEnum.IN_PROGRESS,
+        });
+        if (getSync) {
+          Promise.allSettled([
+            await this.sendReAuthNotification(
+              user,
+              ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
+            ),
+            await this.userIntegrationDatabase.updateSyncStatus(
+              {
+                id: getSync.id,
+              },
+              { status: StatusEnum.INVALID_JIRA_REFRESH_TOKEN },
+            ),
+          ]);
+        }
         throw new APIException(
           ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
           HttpStatus.GONE,

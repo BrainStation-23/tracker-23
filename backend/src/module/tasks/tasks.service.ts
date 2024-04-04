@@ -1784,11 +1784,7 @@ export class TasksService {
       } else
         throw new APIException('Something went wrong!', HttpStatus.BAD_REQUEST);
     } catch (err) {
-      console.log(err);
-      throw new APIException(
-        'Can not update issue status',
-        HttpStatus.BAD_REQUEST,
-      );
+      return null;
     }
   }
 
