@@ -454,6 +454,7 @@ export class TasksService {
           workspaceId: user.activeWorkspaceId,
           projectName: project?.projectName,
           projectId: project?.id,
+          createdAt: dto.startDate,
         },
       });
 
@@ -1581,6 +1582,7 @@ export class TasksService {
 
   async syncAll(user: User) {
     this.sendQueue(user, QueuePayloadType.SYNC_ALL);
+    // check if the user valid or not
     return await this.syncCall(StatusEnum.IN_PROGRESS, user);
   }
 
