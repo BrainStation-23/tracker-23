@@ -268,6 +268,7 @@ export interface UpdateReportDto {
   projectIds?: number[];
   calendarIds?: number[];
   types?: IntegrationType[];
+  excludeUnworkedTasks?: boolean;
 }
 export interface UpdateReportPageDto {
   name: string;

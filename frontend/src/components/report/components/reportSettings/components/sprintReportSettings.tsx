@@ -1,4 +1,4 @@
-import { message } from "antd";
+import { Checkbox, CheckboxProps, message } from "antd";
 import { userAPI } from "APIs";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -42,6 +42,10 @@ const SprintReportSettings = ({ reportData }: Props) => {
   const getFilterDateType = (type: FilterDateType) => {
     setFilterDateType(type);
   };
+  const [excludeUnworkedTasks, setExcludeUnworkedTasks] = useState(
+    reportData?.config?.excludeUnworkedTasks
+  );
+
   const saveConfig = async (extraData?: UpdateReportDto) => {
     const res = await userAPI.updateReport(reportData.id, {
       projectIds: projects,
@@ -49,6 +53,7 @@ const SprintReportSettings = ({ reportData }: Props) => {
       startDate: dateRange[0],
       endDate: dateRange[1],
       filterDateType,
+      excludeUnworkedTasks,
       ...(extraData ?? {}),
     });
     if (res) {
@@ -57,6 +62,13 @@ const SprintReportSettings = ({ reportData }: Props) => {
       dispatch(setReportInEditSlice(null));
     }
   };
+
+  const onChangeExcludeUnworkedTasksCheckbox: CheckboxProps["onChange"] = (
+    e
+  ) => {
+    setExcludeUnworkedTasks(e.target.checked);
+  };
+
   return (
     <ReportSettingsWrapper
       {...{
@@ -69,6 +81,12 @@ const SprintReportSettings = ({ reportData }: Props) => {
         setSelectedDate={setDateRange}
         setFilterDateType={getFilterDateType}
       />
+      <Checkbox
+        checked={excludeUnworkedTasks}
+        onChange={onChangeExcludeUnworkedTasksCheckbox}
+      >
+        Exclude unworked tasks
+      </Checkbox>
       <TypeDependentSection
         {...{
           activeTab: "Sprint Report",

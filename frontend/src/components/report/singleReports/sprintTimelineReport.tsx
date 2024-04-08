@@ -51,6 +51,29 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
       endDate: dateRange[1],
     });
     if (res) {
+      // TODO: We will do some front-end filtering here to show or hide unworked tasks for now. Later, this will be done from backend.
+      if (reportData?.config?.excludeUnworkedTasks) {
+        res.rows.forEach((row, _) => {
+          const workedTaskKeys = new Set<string>([]);
+
+          row.data.forEach((data, _) => {
+            if (data.key !== "AssignTasks") {
+              data.value.tasks.forEach((task, _) => {
+                workedTaskKeys.add(task.key);
+              });
+            }
+          });
+
+          row.data.forEach((data, _) => {
+            if (data.key === "AssignTasks") {
+              data.value.tasks = data.value.tasks.filter((task) =>
+                workedTaskKeys.has(task.key)
+              );
+            }
+          });
+        });
+      }
+
       setSprintTimelineReportData(res);
       if (window.gtag) {
         window.gtag("event", "download_report", {
@@ -95,6 +118,7 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
             icon={<LuDownload className="text-xl" />}
             onClick={() => excelExport()}
             type="ghost"
+            loading={downloading}
           >
             Export to Excel
           </Button>

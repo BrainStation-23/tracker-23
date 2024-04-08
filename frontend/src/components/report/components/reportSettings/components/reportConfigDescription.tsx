@@ -6,6 +6,7 @@ import {
   LuCalendarDays,
   LuFolderOpen,
   LuUsers,
+  LuFilterX,
 } from "react-icons/lu";
 import { GiSprint } from "react-icons/gi";
 import { useDispatch } from "react-redux";
@@ -136,6 +137,17 @@ const ReportConfigDescription = ({
             </div>
           </div>
         )}
+      {reportData?.config?.excludeUnworkedTasks && (
+        <div
+          className="flex items-center justify-center gap-1 hover:cursor-pointer hover:text-[#3498db]"
+          onClick={handleEdit}
+        >
+          <Tooltip title="Excluded Unworked Tasks">
+            <LuFilterX size={16} />
+          </Tooltip>
+          <div>Excluded unworked tasks</div>
+        </div>
+      )}
     </div>
   );
 };
