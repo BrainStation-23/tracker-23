@@ -14,6 +14,7 @@ export interface ReportConfig {
   endDate?: string;
   startDate?: string;
   filterDateType?: FilterDateType;
+  excludeUnworkedTasks?: boolean;
 }
 
 export type ReportType =

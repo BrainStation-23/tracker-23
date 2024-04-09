@@ -32,6 +32,8 @@ import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { TasksDatabase } from 'src/database/tasks';
 import * as dayjs from 'dayjs';
 import { SprintReportFilterDto } from './dto/sprint-report.dto';
+import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
+import { JiraClientService } from '../helper/client';
 
 @Injectable()
 export class SessionsService {
@@ -44,6 +46,8 @@ export class SessionsService {
     private projectDatabase: ProjectDatabase,
     private userIntegrationDatabase: UserIntegrationDatabase,
     private tasksDatabase: TasksDatabase,
+    private jiraApiCalls: JiraApiCalls,
+    private jiraClient: JiraClientService,
   ) {}
 
   async getSessions(user: User, taskId: number) {
@@ -242,16 +246,14 @@ export class SessionsService {
         started: this.getUtcTime(startTime),
         timeSpent: timeSpentReqBody,
       });
-      const config = {
-        method: 'post',
+
+      const workLog: any = await this.jiraClient.CallJira(
+        integration,
+        this.jiraApiCalls.updatedIssues,
         url,
-        headers: {
-          Authorization: `Bearer ${integration.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        data: data,
-      };
-      const workLog = await (await axios(config)).data;
+        data,
+      );
+      console.log('🚀 ~ SessionsService ~ workLog:', workLog);
       return workLog;
     } catch (err) {
       return null;

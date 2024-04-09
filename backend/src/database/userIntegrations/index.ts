@@ -17,6 +17,31 @@ export class UserIntegrationDatabase {
     }
   }
 
+  async getSyncStatus(query: Record<string, any>) {
+    try {
+      return await this.prisma.callSync.findFirst({
+        where: query,
+      });
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async updateSyncStatus(
+    query: Record<string, any>,
+    data: Record<string, any>,
+  ) {
+    try {
+      return await this.prisma.callSync.update({
+        where: query,
+        data,
+      });
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
+
   async getUserIntegrationListByIntegrationIds(
     userWorkspaceId: number,
     integrationIds: number[],

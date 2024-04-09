@@ -116,7 +116,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
         requiredMark={false}
         className="custom-create-task-css"
       >
-        <div ref={elementRef} className="max-h-[650px] mb-2 overflow-auto">
+        <div ref={elementRef} className="mb-2 max-h-[650px] overflow-auto">
           <MyInputCreateTask
             name="title"
             label="Task Name"
@@ -163,7 +163,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
                 placeholder="Select Project"
                 onChange={(e) => {
                   setSelectedProject(e);
-                  form.resetFields(["priority"]);
+                  // form.resetFields(["priority"]);
                 }}
                 dropdownRender={(menu) => (
                   <>

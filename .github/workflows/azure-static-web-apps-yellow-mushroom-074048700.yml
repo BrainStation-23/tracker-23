@@ -40,6 +40,7 @@ jobs:
           NEXT_PUBLIC_API_PREFIX_DEV: "http://localhost:3000"
           NEXT_PUBLIC_API: "REST"
           NEXT_PUBLIC_GA_MEASUREMENT_ID: "G-RH8MHHFDSK"
+          NEXT_PUBLIC_API_ADMIN_EMAIL: "dipubala466@gmail.com"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

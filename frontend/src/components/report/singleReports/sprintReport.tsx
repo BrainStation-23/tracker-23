@@ -1,6 +1,6 @@
 import { Button, Spin, message } from "antd";
 import { userAPI } from "APIs";
-import { SprintReportDto } from "models/reports";
+import { SprintReportDto, SprintReportTask } from "models/reports";
 import { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
 
@@ -36,6 +36,27 @@ const SprintReport = ({ reportData, inView }: Props) => {
         endDate: dateRange[1],
       });
       if (res) {
+        // TODO: We will do some front-end filtering here to show or hide unworked tasks for now. Later, this will be done from backend.
+        if (reportData?.config?.excludeUnworkedTasks) {
+          res.data.forEach((dateData, _) => {
+            dateData.users.forEach((reportUser, _) => {
+              const assignedTasks: SprintReportTask[] = [];
+              reportUser.assignedTasks.forEach((assignedTask) => {
+                if (
+                  reportUser.yesterdayTasks.find(
+                    (item) => item.key === assignedTask.key
+                  ) ||
+                  reportUser.todayTasks.find(
+                    (item) => item.key === assignedTask.key
+                  )
+                ) {
+                  assignedTasks.push(assignedTask);
+                }
+              });
+              reportUser.assignedTasks = assignedTasks;
+            });
+          });
+        }
         setSprintReportData(res);
         if (window.gtag) {
           window.gtag("event", "download_report", {

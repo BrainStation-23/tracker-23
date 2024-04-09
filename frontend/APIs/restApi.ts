@@ -1680,7 +1680,9 @@ export async function exportTimeLineSheetRest(reportData: ReportData) {
     }`,
     startDate: reportData?.config?.startDate,
     endDate: reportData?.config?.endDate,
-    userIds: `${reportData?.config?.userIds}`,
+    ...(reportData?.config?.userIds && {
+      userIds: `${reportData?.config?.userIds}`,
+    }),
   });
   const url = `${apiEndPoints.exportTimeLineSheet}?${searchParams.toString()}`;
   console.log("url: " + url);
