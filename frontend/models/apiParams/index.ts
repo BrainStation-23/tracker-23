@@ -20,6 +20,7 @@ export interface SprintReportParamsModel {
   startDate: string;
   endDate: string;
   sprintId: number;
+  excludeUnworkedTasks?: boolean;
 }
 
 export interface CreateWorkspaceModel {

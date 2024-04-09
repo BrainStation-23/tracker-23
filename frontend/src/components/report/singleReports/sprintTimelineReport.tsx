@@ -49,6 +49,9 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
           : null,
       startDate: dateRange[0],
       endDate: dateRange[1],
+      ...(reportData?.config?.excludeUnworkedTasks && {
+        excludeUnworkedTasks: reportData?.config?.excludeUnworkedTasks,
+      }),
     });
     if (res) {
       // TODO: We will do some front-end filtering here to show or hide unworked tasks for now. Later, this will be done from backend.
