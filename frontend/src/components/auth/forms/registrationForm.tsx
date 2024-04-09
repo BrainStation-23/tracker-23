@@ -39,19 +39,19 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
     }
   };
 
-  const onFinishFailed = (errorInfo: any) => {
-    errorInfo &&
-      errorInfo.errorFields.forEach((ef: any) => {
-        message.error(ef.errors[0]);
-      });
-  };
+  // const onFinishFailed = (errorInfo: any) => {
+  //   errorInfo &&
+  //     errorInfo.errorFields.forEach((ef: any) => {
+  //       message.error(ef.errors[0]);
+  //     });
+  // };
 
   return (
     <Form
       name="basic"
       initialValues={{ remember: true, email }}
       onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
+      // onFinishFailed={onFinishFailed}
       layout="vertical"
       labelAlign="left"
       requiredMark={false}
@@ -143,7 +143,7 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
           label="OTP"
           className="mb-5"
           name="code"
-          rules={[{ required: true, message: "Please input your Last Name!" }]}
+          rules={[{ required: true, message: "Please input the OTP" }]}
         >
           <Input
             placeholder="Enter OTP code"
