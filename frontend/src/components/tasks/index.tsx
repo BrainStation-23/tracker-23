@@ -363,8 +363,6 @@ const TasksPage = () => {
     getActiveSprintTasks();
   }, []);
 
-  useEffect(() => {}, [reload, runningTask]);
-
   const getPinnedTasks = () => {
     return tasks.filter((task) => task.pinned);
   };
