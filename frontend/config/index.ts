@@ -1,5 +1,3 @@
-console.log("process.env", process.env);
-
 export const config = {
   apiService: process?.env.NEXT_PUBLIC_API || "REST",
   baseUrl:
