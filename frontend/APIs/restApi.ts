@@ -975,12 +975,16 @@ export async function getSprintReportRest({
   sprintId,
   startDate,
   endDate,
+  excludeUnworkedTasks,
 }: SprintReportParamsModel) {
   try {
     const res = await api.get(
       `${apiEndPoints.sprintReport}?` +
         (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
-        (sprintId ? `&sprintId=${sprintId}` : "")
+        (sprintId ? `&sprintId=${sprintId}` : "") +
+        (excludeUnworkedTasks
+          ? `&excludeUnworkedTasks=${excludeUnworkedTasks}`
+          : "")
     );
     return res.data;
   } catch (error: any) {
@@ -1482,12 +1486,16 @@ export async function getSprintViewTimelineReportRest({
   sprintId,
   startDate,
   endDate,
+  excludeUnworkedTasks,
 }: SprintReportParamsModel): Promise<SprintViewTimelineReportDto | false> {
   try {
     const res = await api.get(
       `${apiEndPoints.sprintTimelineReport}?` +
         (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
-        (sprintId ? `&sprintId=${sprintId}` : "")
+        (sprintId ? `&sprintId=${sprintId}` : "") +
+        (excludeUnworkedTasks
+          ? `&excludeUnworkedTasks=${excludeUnworkedTasks}`
+          : "")
     );
     // For now, just return the dummy response data
     return res.data;
