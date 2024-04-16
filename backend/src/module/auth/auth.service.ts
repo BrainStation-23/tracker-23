@@ -403,7 +403,7 @@ export class AuthService {
     //   resetURL,
     // );
 
-    const message = `Forgot your password? Submit  a PATCH request with your new password and passwordConfirm to:
+    const message = `Forgot your password? Submit a request with your new password and confirm password to:
     ${resetURL}.\nIf you didn't forget your password. Please ignore this email`;
     try {
       await this.emailService.sendEmail(
