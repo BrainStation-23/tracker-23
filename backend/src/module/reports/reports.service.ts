@@ -30,14 +30,14 @@ export class ReportsService {
       reportType: createReportDto.reportType,
       ...(createReportDto.config && { config: createReportDto.config }),
     };
-    const createdPage = await this.reportDatabase.createReport(report);
-    if (!createdPage) {
+    const createdReport = await this.reportDatabase.createReport(report);
+    if (!createdReport) {
       throw new APIException(
         'Failed to create report',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    return createdPage;
+    return createdReport;
   }
 
   async getReportsByPageId(pageId: number): Promise<Report[] | []> {
@@ -72,6 +72,9 @@ export class ReportsService {
       ...(query.sprintIds && { sprintIds: query.sprintIds }),
       ...(query.types && { types: query.types }),
       ...(query.userIds && { userIds: query.userIds }),
+      ...(query.excludeUnworkedTasks && {
+        excludeUnworkedTasks: query.excludeUnworkedTasks,
+      }),
     };
 
     const reqBody = {
