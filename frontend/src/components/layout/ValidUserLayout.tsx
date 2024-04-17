@@ -1,6 +1,6 @@
 import Head from "next/head";
 import classNames from "classnames";
-import { message, Spin } from "antd";
+import { message, Spin, Layout, Drawer } from "antd";
 import { useRouter } from "next/router";
 import { ToastContainer } from "react-toastify";
 import { ReactNode, useEffect, useState } from "react";
@@ -39,10 +39,26 @@ import { setNotifications } from "@/storage/redux/notificationsSlice";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 
 import "react-toastify/dist/ReactToastify.css";
+import { useMediaQuery } from "react-responsive";
+
+const layoutStyle = {
+  // borderRadius: 8,
+  overflow: "hidden",
+  width: "100%",
+  maxWidth: "100%",
+  height: "100vh",
+  minHeight: "100vh",
+};
 
 const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
+
+  // Define your media queries
+  const isVerySmallDevice = useMediaQuery({ maxWidth: 400 }); // screens smaller than 400px
+  const isMobile = useMediaQuery({ maxWidth: 767 }); // screens smaller than 768px
+  // const isTablet = useMediaQuery({ minWidth: 768, maxWidth: 1023 }); // screens between 768px and 1023px
+  // const isDesktop = useMediaQuery({ minWidth: 1024 }); // screens larger than 1023px
 
   const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
   const syncRunning = useAppSelector(
@@ -74,6 +90,12 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   // State
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(syncRunning);
+
+  const [collapsed, setCollapsed] = useState(false);
+
+  const toggleCollapsed = () => {
+    setCollapsed(!collapsed);
+  };
 
   // Constant
   const path = router.asPath;
@@ -261,64 +283,105 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
 
   return (
     <>
-      {loading &&
-      !path.includes("socialLogin") &&
-      !publicRoutes.some((route) => path.includes(route)) ? (
-        <div className="h-screen">
-          <Spin
-            spinning={
-              loading && !publicRoutes.some((route) => path.includes(route))
-            }
-            tip={"Loading..."}
-            className="inset-0 m-auto h-full"
-          >
-            <div className="h-screen" />
-          </Spin>
-        </div>
-      ) : (
-        <div className="flex">
-          <Head>
-            <link rel="icon" href="/images/bsIcon.png" />
-            <title>Tracker 23</title>
-          </Head>
-          {!publicRoutes.some((route) => path.includes(route)) &&
-            !path.includes("onBoarding") && (
-              <div
-                className={`h-screen min-w-[${
-                  reportInEdit ? "350px" : "250px"
-                }] max-w-[${reportInEdit ? "350px" : "250px"}]`}
-              >
-                <div className="">
+      <Layout style={layoutStyle}>
+        {loading &&
+        !path.includes("socialLogin") &&
+        !publicRoutes.some((route) => path.includes(route)) ? (
+          <div className="h-screen">
+            <Spin
+              spinning={
+                loading && !publicRoutes.some((route) => path.includes(route))
+              }
+              tip={"Loading..."}
+              className="inset-0 m-auto h-full"
+            >
+              <div className="h-screen" />
+            </Spin>
+          </div>
+        ) : (
+          <div className="flex h-full w-full">
+            <Head>
+              <link rel="icon" href="/images/bsIcon.png" />
+              <title>Tracker 23</title>
+            </Head>
+            {!publicRoutes.some((route) => path.includes(route)) &&
+              !path.includes("onBoarding") && (
+                <div
+                  className={classNames(
+                    `hidden h-screen md:block min-w-[${
+                      reportInEdit ? "350px" : "250px"
+                    }] max-w-[${reportInEdit ? "350px" : "250px"}]`
+                  )}
+                >
                   {reportInEdit ? <ReportSettings /> : <SideMenu />}
                 </div>
+              )}
+
+            {!publicRoutes.some((route) => path.includes(route)) &&
+              !path.includes("onBoarding") && (
+                <Drawer
+                  placement="left"
+                  closable={isVerySmallDevice}
+                  onClose={toggleCollapsed}
+                  open={!collapsed || (isMobile && Boolean(reportInEdit))}
+                  maskClosable={!Boolean(reportInEdit)}
+                  style={{
+                    padding: 0,
+                    margin: 0,
+                  }}
+                  styles={{
+                    body: {
+                      padding: 0,
+                      margin: 0,
+                    },
+                  }}
+                  key="left"
+                  width={reportInEdit ? "350px" : "250px"}
+                  className={classNames(
+                    `hidden h-screen sm:block min-w-[${
+                      reportInEdit ? "350px" : "250px"
+                    }] max-w-[${reportInEdit ? "350px" : "250px"}]`
+                  )}
+                >
+                  {reportInEdit ? <ReportSettings /> : <SideMenu />}
+                </Drawer>
+              )}
+            {userInfo?.activeWorkspace ||
+            path.includes("socialLogin") ||
+            publicRoutes.some((route) => path.includes(route)) ? (
+              <div
+                className={classNames(
+                  "flex max-h-screen w-full flex-col overflow-auto overflow-y-auto bg-white"
+                )}
+              >
+                {!isPublicRoute &&
+                  !path.includes("onBoarding") &&
+                  !noNavbar.some((route) => path.includes(route)) && (
+                    <Navbar
+                      collapsed={collapsed}
+                      toggleCollapsed={toggleCollapsed}
+                    />
+                  )}
+                <div className="h-full min-h-max w-full">{children}</div>
+              </div>
+            ) : (
+              <div
+                className={classNames("flex w-full flex-col overflow-y-auto")}
+              >
+                <Navbar
+                  collapsed={collapsed}
+                  toggleCollapsed={toggleCollapsed}
+                />
+                <NoActiveWorkspace
+                  className={classNames("", {
+                    "px-8": !isPublicRoute && !path.includes("onBoarding"),
+                  })}
+                />
               </div>
             )}
-          {userInfo?.activeWorkspace ||
-          path.includes("socialLogin") ||
-          publicRoutes.some((route) => path.includes(route)) ? (
-            <div
-              className={classNames(
-                "flex max-h-screen w-full flex-col overflow-auto overflow-y-auto bg-white"
-              )}
-            >
-              {!isPublicRoute &&
-                !path.includes("onBoarding") &&
-                !noNavbar.some((route) => path.includes(route)) && <Navbar />}
-              <div className="h-full min-h-max w-full">{children}</div>
-            </div>
-          ) : (
-            <div className={classNames("flex w-full flex-col overflow-y-auto")}>
-              <Navbar />
-              <NoActiveWorkspace
-                className={classNames("", {
-                  "px-8": !isPublicRoute && !path.includes("onBoarding"),
-                })}
-              />
-            </div>
-          )}
-        </div>
-      )}
-
+          </div>
+        )}
+      </Layout>
       <ToastContainer
         position="top-right"
         autoClose={8000}
