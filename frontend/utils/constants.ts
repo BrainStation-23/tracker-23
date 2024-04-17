@@ -13,7 +13,7 @@ export const ignoreRoutes = [
   "/images",
   "/inviteLink",
 ];
-export const noNavbar = ["/taskList"];
+export const noNavbar: string[] = [];
 export const menuOptions = [
   { link: "/taskList", title: "Tasks Page" },
   // { link: "/dashboard", title: "Dashboard Page" },
