@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class SprintViewReqBodyDto {
   @IsString()
@@ -12,6 +12,10 @@ export class SprintViewReqBodyDto {
   @IsString()
   @IsNotEmpty()
   endDate: Date;
+
+  // @IsBoolean()
+  @IsOptional()
+  excludeUnworkedTasks?: boolean = false;
 }
 
 export class NewSprintViewQueryDto {
@@ -30,4 +34,8 @@ export class NewSprintViewQueryDto {
   @IsString()
   @IsNotEmpty()
   endDate: Date;
+
+  @IsOptional()
+  // @IsBoolean()
+  excludeUnworkedTasks?: boolean = false;
 }
