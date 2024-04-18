@@ -12,7 +12,8 @@ body {
 .ant-table-wrapper .ant-table,
 .ant-dropdown-menu-item .ant-dropdown-menu-title-content,
 .ant-btn,
-.ant-form-item-label {
+.ant-form-item-label,
+.ant-spin {
   font-family: "Inter", sans-serif;
 }
 
@@ -61,9 +62,15 @@ body {
 
 .ant-steps .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
   color: #ffffff;
-  position: relative;
+  /* position: relative;
   top: -4.5px;
-  line-height: 1;
+  line-height: 1; */
+  height: 100%;
+  width: min-content;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ant-select:not(.ant-select-disabled):hover .ant-select-selector,
@@ -166,4 +173,28 @@ body {
 
 .oneComponentDropdownItem .ant-dropdown-menu-item {
   padding: 5px 0 !important;
+}
+
+/* Style for the scrollbar */
+/* WebKit (Chrome, Safari, etc.) */
+::-webkit-scrollbar {
+  width: 4px; /* Set the width of the scrollbar */
+}
+
+/* Firefox */
+/* Please note that in Firefox, scrollbar-width and scrollbar-color are used */
+* {
+  scrollbar-width: thin;
+}
+
+/* Style for the scrollbar thumb (the draggable part) */
+/* WebKit */
+::-webkit-scrollbar-thumb {
+  border-radius: 4px; /* Make it rounded */
+}
+
+/* Style for the scrollbar track (the non-draggable part) */
+/* WebKit */
+::-webkit-scrollbar-track {
+  background: transparent; /* Set the color of the scrollbar track */
 }

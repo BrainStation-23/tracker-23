@@ -2,6 +2,7 @@ export const apiEndPoints = {
   login: `/auth/login`,
   googleLogin: `/auth/google/google-redirect`,
   register: `/auth/register`,
+  sendOtp: `/auth/register/send-otp`,
   forgotPassword: `/auth/forgot-password`,
   resetPassword: `/auth/resetPassword`,
   tasks: `/tasks`,
@@ -55,4 +56,6 @@ export const apiEndPoints = {
   reportPage: "/pages",
   reports: "/reports",
   getIntegrationTypesReportPage: "/integrations/report-page",
+  exportSprintViewSheet: "export/sprint-view-sheet",
+  exportTimeLineSheet: "export/time-line-sheet",
 };

@@ -1,15 +1,17 @@
-import { getTotalSpentTime } from "@/services/timeActions";
 import { Progress } from "antd";
 import { TaskDto } from "models/tasks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { progressColorEnum } from "utils/constants";
-import { useEffect } from "react";
+import { getTotalSpentTime } from "@/services/timeActions";
+
 type Props = {
   task: TaskDto;
 };
+
 const ProgressComponent = ({ task }: Props) => {
   const totalSpent = getTotalSpentTime(task.sessions);
   const [time, setTime] = useState(totalSpent);
+
   useEffect(() => {
     setTime(getTotalSpentTime(task.sessions));
     let interval: any = null;
@@ -20,14 +22,11 @@ const ProgressComponent = ({ task }: Props) => {
       setTime((time) => time + 1000);
     }, 1000);
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [task.sessions, task.estimation]);
+  }, [task, time]);
+
   return (
     <div className="flex w-max gap-3">
       <div style={{ width: 80 }}>
-        {/* <Progress percent={30} size="small" />
-          <Progress percent={50} size="small" status="active" />
-           */}
         {task.percentage >= 0 && task.percentage < 100 ? (
           <Progress
             percent={Math.floor(time / (task.estimation * 36000))}
@@ -50,7 +49,6 @@ const ProgressComponent = ({ task }: Props) => {
             percent={Math.floor(time / (task.estimation * 36000))}
             size="small"
             status="exception"
-            // strokeColor={progressColorEnum[task.status]}
             trailColor={progressColorEnum["BG"]}
             showInfo={false}
           />

@@ -1,11 +1,7 @@
 import InvitationsComponent from "@/components/invitations";
 
 const Invitations = () => {
-  return (
-    <>
-      <InvitationsComponent />
-    </>
-  );
+  return <InvitationsComponent />;
 };
 
 export default Invitations;

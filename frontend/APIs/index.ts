@@ -64,6 +64,7 @@ import {
   resetPasswordRest,
   selectJiraIntegrationRest,
   sendJiraCodeRest,
+  sendOTPRest,
   sendOutlookCodeRest,
   sendWorkspaceInvitationRest,
   stopSessionRest,
@@ -83,6 +84,8 @@ import {
   updateTimeFormatRest,
   updateWorkspaceRest,
   userListByProjectRest,
+  exportSprintViewSheetRest,
+  exportTimeLineSheetRest,
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -90,6 +93,7 @@ const restApi: apiFunction = {
   loginFromInvite: loginFromInviteRest,
   googleLogin: googleLoginRest,
   registerUser: registerRest,
+  sendOTP: sendOTPRest,
   registerUserFromInvite: registerFromInviteRest,
   logout: logoutRest,
   createTask: createTaskRest,
@@ -168,6 +172,8 @@ const restApi: apiFunction = {
   getIntegrationTypesReportPage: getIntegrationTypesReportPageRest,
   updateReportPage: updateReportPageRest,
   deleteReportPage: deleteReportPageRest,
+  exportSprintViewSheet: exportSprintViewSheetRest,
+  exportTimeLineSheet: exportTimeLineSheetRest,
 };
 
 export const userAPI: apiFunction = restApi;

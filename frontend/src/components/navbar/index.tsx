@@ -1,4 +1,4 @@
-import { Form, Input, message, Tooltip } from "antd";
+import { Button, Form, Input, message, Tooltip } from "antd";
 import { userAPI } from "APIs";
 import { LoginResponseDto } from "models/auth";
 import { UpdateReportPageDto } from "models/reports";
@@ -14,6 +14,7 @@ import { SyncOutlined } from "@ant-design/icons";
 
 import { sideMenuOptions } from "../sideMenu";
 import NotificationSection from "./components/notificationSection";
+import classNames from "classnames";
 
 type Props = {
   extraComponent?: any;
@@ -22,6 +23,8 @@ type Props = {
 const Navbar = ({ extraComponent }: Props) => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const { reauthorization: isAuthorizationNeeded, type: reauthorizationType } =
+    useAppSelector((state: RootState) => state.integrations.authorization);
   const [userDetails, setUserDetails] = useState<LoginResponseDto>();
   const [editing, setEditing] = useState(false);
   const [form] = Form.useForm();
@@ -37,6 +40,32 @@ const Navbar = ({ extraComponent }: Props) => {
   const reportPageData = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages
   ).find((reportPage) => reportPage.id === pageId);
+
+  const handleReauthorization = async () => {
+    let api;
+    switch (reauthorizationType) {
+      case "JIRA":
+        api = userAPI.getJiraLink;
+        break;
+      case "JIRA":
+        api = userAPI.getOutlookLink;
+        break;
+      default:
+        break;
+    }
+    if (api) {
+      try {
+        const response = await api();
+        window.open(response, "_self");
+      } catch (error) {
+        console.error(error);
+        message.error(`Failed to ${reauthorizationType} authorization`);
+      }
+    } else {
+      message.error("Something is wrong!!");
+    }
+  };
+
   const updatePageName = async (data: UpdateReportPageDto) => {
     if (!reportPageData?.id) return;
     const oldPage = { ...reportPageData };
@@ -48,18 +77,30 @@ const Navbar = ({ extraComponent }: Props) => {
     }
   };
   const onFinish = (values: { name: string }) => {
-    if (values.name !== reportPageData.name) {
-      updatePageName(values);
+    const trimmedValue = values?.name?.trim();
+    if (trimmedValue && trimmedValue !== reportPageData.name) {
+      updatePageName({
+        name: trimmedValue,
+      });
     }
     setEditing(false);
   };
+
+  const handleBlur = (value: string) => {
+    const trimmedValue = value?.trim();
+    if (trimmedValue && trimmedValue !== reportPageData.name) {
+      updatePageName({ name: trimmedValue });
+    }
+    setEditing(false);
+  };
+
   useEffect(() => {
     const tmp = getLocalStorage("userDetails");
     if (!userDetails && tmp) setUserDetails(tmp);
   }, [userDetails, path]);
 
   return (
-    <div className=" mb-2 flex h-16 w-full items-center justify-between">
+    <div className="flex h-16 w-full items-center justify-between border-b border-b-gray-100 bg-white px-8">
       <div className="py-6">
         {sideMenuOptions?.map(
           (option) =>
@@ -78,55 +119,57 @@ const Navbar = ({ extraComponent }: Props) => {
                   )}
                   {router.asPath.includes("report") && reportPageData?.name ? (
                     <div onClick={() => setEditing(true)}>
-                      {!editing ? (
-                        <div className="flex items-center gap-2">
-                          {reportPageData?.name}
-                        </div>
-                      ) : (
-                        <Form
-                          name="titleEdit"
-                          onFinish={onFinish}
-                          initialValues={{ name: reportPageData?.name }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              form.submit();
-                            }
-                            if (e.key === "Escape") {
-                              setEditing(false);
-                            }
-                          }}
-                        >
-                          <div className="flex items-center gap-2  text-base font-semibold">
-                            <Form.Item
-                              name="name"
-                              className="m-0"
-                              rules={[
+                      <Form
+                        name="titleEdit"
+                        onFinish={onFinish}
+                        initialValues={{ name: reportPageData?.name }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            form.submit();
+                          }
+                          if (e.key === "Escape") {
+                            setEditing(false);
+                          }
+                        }}
+                      >
+                        <div className="flex items-center gap-2  text-base font-semibold">
+                          <Form.Item
+                            name="name"
+                            className="m-0"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please input something!",
+                              },
+                              {
+                                pattern: /\S.*|\s+/,
+                                message: "Please enter valid name",
+                              },
+                            ]}
+                          >
+                            <Input
+                              placeholder="Type something and press Enter"
+                              className={classNames(
+                                "m-0 bg-transparent p-0  px-1 text-base font-semibold focus:shadow-none",
                                 {
-                                  required: true,
-                                  message: "Please input something!",
-                                },
-                              ]}
-                            >
-                              <Input
-                                placeholder="Type something and press Enter"
-                                className="m-0 p-0 px-1  text-base font-semibold focus:shadow-none"
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    form.submit();
-                                  }
-                                  if (e.key === "Escape") {
-                                    setEditing(false);
-                                  }
-                                }}
-                              />
-                            </Form.Item>
-                          </div>
-                        </Form>
-                      )}
+                                  ["border-none"]: !editing,
+                                }
+                              )}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  form.submit();
+                                }
+                                if (e.key === "Escape") {
+                                  setEditing(false);
+                                }
+                              }}
+                              onBlur={(e) => handleBlur(e.target.value)}
+                            />
+                          </Form.Item>
+                        </div>
+                      </Form>
                     </div>
-                  ) : (
-                    <></>
-                  )}
+                  ) : null}
                 </div>
               </div>
             )
@@ -141,6 +184,15 @@ const Navbar = ({ extraComponent }: Props) => {
           >
             <SyncOutlined spin={syncing} />
           </Tooltip>
+        )}
+        {isAuthorizationNeeded && (
+          <Button
+            htmlType="button"
+            className="flex items-center border-none bg-red-600 py-4 font-bold text-white hover:text-white"
+            onClick={handleReauthorization}
+          >
+            {`Authorize ${reauthorizationType}`}
+          </Button>
         )}
         <NotificationSection />
         {extraComponent}

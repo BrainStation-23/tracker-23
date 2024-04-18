@@ -73,12 +73,55 @@ export class ProjectsService {
 
     const userIntegration =
       project?.integrationId &&
-      (await this.userIntegrationDatabase.getUserIntegration({
-        UserIntegrationIdentifier: {
-          integrationId: project?.integrationId,
-          userWorkspaceId: userWorkspace.id,
-        },
-      }));
+      (await this.tasksService.getUserIntegration(
+        userWorkspace.id,
+        project.integrationId,
+      ));
+
+    let updatedUserIntegration: any;
+    if (
+      userWorkspace.role === Role.ADMIN &&
+      !userIntegration &&
+      userWorkspace?.workspaceId
+    ) {
+      const userIntegrations = await this.tasksDatabase.getUserIntegrations({
+        workspaceId: userWorkspace.workspaceId,
+      });
+      for (let index = 0; index < userIntegrations.length; index++) {
+        const userIntegration = userIntegrations[index];
+        updatedUserIntegration =
+          userIntegration &&
+          (await this.integrationsService.getUpdatedUserIntegrationForOthers(
+            user,
+            userIntegration,
+          ));
+
+        if (updatedUserIntegration) {
+          break;
+        }
+      }
+    } else {
+      updatedUserIntegration =
+        userIntegration &&
+        (await this.integrationsService.getUpdatedUserIntegration(
+          user,
+          userIntegration.id,
+        ));
+    }
+
+    if (!updatedUserIntegration) {
+      Promise.allSettled([
+        await this.tasksService.sendImportedNotification(
+          user,
+          'Syncing Failed!',
+        ),
+        await this.tasksService.syncCall(StatusEnum.FAILED, user),
+      ]);
+      throw new APIException(
+        'UserIntegration not found. Could not import project tasks',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     if (userIntegration && project.projectKey && userIntegration?.siteId) {
       const doesExistWebhook = await this.prisma.webhook.findMany({
         where: {
@@ -104,24 +147,6 @@ export class ProjectsService {
         };
         await this.webhooksService.registerWebhook(user, payload);
       }
-    }
-
-    const updatedUserIntegration =
-      userIntegration &&
-      (await this.integrationsService.getUpdatedUserIntegration(
-        user,
-        userIntegration.id,
-      ));
-
-    if (!updatedUserIntegration) {
-      await this.tasksService.sendImportedNotification(
-        user,
-        'Failed to import the project!',
-      );
-      throw new APIException(
-        'Updated User Integration not found',
-        HttpStatus.BAD_REQUEST,
-      );
     }
 
     try {
@@ -289,6 +314,10 @@ export class ProjectsService {
       await this.projectDatabase.deleteSprintByProjectId(id),
       await this.projectDatabase.deleteStatusDetails(id),
       await this.projectDatabase.deletePriorities(id),
+      project?.calendarId &&
+        (await this.webhooksService.deleteLocalWebhook({
+          calenderId: project?.calendarId,
+        })),
     ]);
 
     const updatedProject =
@@ -315,7 +344,7 @@ export class ProjectsService {
       );
 
     const getUserIntegrationList =
-      await this.integrationsService.getUserIntegrations(user);
+      await this.integrationsService.getUserIntegrationsByRole(user);
 
     const jiraIntegrationIds = getUserIntegrationList?.map(
       (userIntegration: any) => userIntegration?.integration?.id,

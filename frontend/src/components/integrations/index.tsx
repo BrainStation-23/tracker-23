@@ -21,7 +21,6 @@ const IntegrationsPageComponent = () => {
     null
   );
   const [loading, setLoading] = useState(true);
-  const [adminMode, setAdminMode] = useState(false);
   const [loadingTip, setLoadingTip] = useState("");
 
   const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
@@ -65,19 +64,16 @@ const IntegrationsPageComponent = () => {
     setLoading(false);
     setLoadingTip("");
   };
-  const changeAdminMode = () => {
-    setAdminMode(!adminMode);
-  };
 
   useEffect(() => {
     getIntegrations();
   }, []);
 
   return (
-    <div className="flex w-full flex-col gap-2">
-      <div className="flex flex-col gap-2">
+    <div className="flex h-full w-full flex-col gap-2 px-8 pt-4">
+      <div className="flex flex-col gap-4">
         <div className="flex justify-between">
-          <div className="text-2xl font-semibold">Select Source of Import</div>
+          <div className="text-2xl font-bold">Select Source of Import</div>
         </div>
         <Spin spinning={loading} tip={loadingTip} className="h-full">
           {integratedTypes ? (
@@ -93,7 +89,7 @@ const IntegrationsPageComponent = () => {
               handleDeleteIntegration={handleDeleteIntegration}
             />
           ) : (
-            <div className="h-[500px]"></div>
+            <div className="h-[500px]" />
           )}
         </Spin>
       </div>

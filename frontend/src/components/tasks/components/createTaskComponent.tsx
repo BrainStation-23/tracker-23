@@ -1,11 +1,9 @@
 import {
-  Button,
   Checkbox,
   DatePicker,
   Divider,
   Form,
   Input,
-  InputRef,
   Select,
   SelectProps,
   Space,
@@ -15,7 +13,6 @@ import {
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import { SizeType } from "antd/es/config-provider/SizeContext";
 import dayjs from "dayjs";
-import { CreateTaskDto, CreateTaskValues } from "models/tasks";
 import React, { useEffect, useRef, useState } from "react";
 
 import PrimaryButton from "@/components/common/buttons/primaryButton";
@@ -25,19 +22,11 @@ import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
 import RecurrentTaskCreationComponent from "./recurrentTaskCreationComponent";
-import { PlusOutlined } from "@ant-design/icons";
 import AddLocalProject from "@/components/integrations/projectImport/components/addLocalProject";
-import { message } from "antd";
-
-const { RangePicker } = DatePicker;
+import { CreateTaskDto, CreateTaskValues } from "models/tasks";
 
 const CreateTaskComponent = ({ taskList, createTask }: any) => {
-  const { TextArea } = Input;
   const elementRef = useRef(null);
-
-  const scrollToBottom = () => {
-    elementRef.current.scrollTop = elementRef.current.scrollHeight;
-  };
 
   const [startDate, setStartDate] = useState(dayjs());
   const [form] = Form.useForm();
@@ -45,7 +34,6 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
     setCreatingTask(true);
     const formattedValues: CreateTaskDto = getFormattedValues(values);
     const res = await createTask(formattedValues);
-
     setCreatingTask(false);
   };
 
@@ -72,7 +60,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
   const onReset = () => {
     form.resetFields();
   };
-  const [size, setSize] = useState<SizeType>("middle");
+  const [size] = useState<SizeType>("middle");
   const [recurrentTask, setRecurrentTask] = useState<boolean>(false);
   const [CreatingTask, setCreatingTask] = useState<boolean>(false);
   const [selectedProject, setSelectedProject] = useState<number>(
@@ -84,32 +72,24 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
       .map((pp) => pp.name)
   );
   useEffect(() => {
-    console.log(
-      "XXXXXX",
-      priorityNames,
-      selectedProject,
-      priorities,
-      priorities.filter((p) => {
-        console.log("XXXXX", p.projectId, selectedProject);
+    // console.log(
+    //   "XXXXXX",
+    //   priorityNames,
+    //   selectedProject,
+    //   priorities,
+    //   priorities.filter((p) => {
+    //     console.log("XXXXX", p.projectId, selectedProject);
 
-        return p.projectId == selectedProject;
-      })
-    );
+    //     return p.projectId == selectedProject;
+    //   })
+    // );
 
     setPriorityNames(
       priorities
         .filter((p) => p.projectId == selectedProject)
         .map((pp) => pp.name)
     );
-  }, [selectedProject]);
-  const [name, setName] = useState("");
-  const [projectItems, setProjectItems] = useState(["jack", "lucy"]);
-
-  const inputRef = useRef<InputRef>(null);
-
-  const onNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setName(event.target.value);
-  };
+  }, [priorities, selectedProject]);
 
   const handleFrequencyChange = (value: string) => {
     console.log(`Selected: ${value}`);
@@ -121,29 +101,10 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
   const initialValues = {
     projectId: projectData[0]?.value,
   };
-  console.log(
-    "🚀 ~ file: createTaskComponent.tsx:94 ~ CreateTaskComponent ~ initialValues:",
-    initialValues,
-    projectData
-  );
 
   const onCheckBoxChange = (e: CheckboxChangeEvent) => {
     setRecurrentTask(e.target.checked);
-    const scrollTimeout = setTimeout(() => {
-      scrollToBottom();
-    }, 50);
-    // scrollToBottom();
   };
-
-  const handleProjectIdChange = (value: any) => {
-    console.log(
-      "🚀 ~ file: createTaskComponent.tsx:408 ~ handleProjectIdChange ~ value:",
-      value
-    );
-  };
-  // useEffect(() => {
-  //   form.resetFields(["priority"]);
-  // }, [priorities]);
 
   return (
     <Spin spinning={CreatingTask} tip={"Processing"}>
@@ -152,7 +113,6 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
         name="control-hooks"
         onFinish={onFinish}
         initialValues={initialValues}
-        // style={{ width: "500px" }}
         requiredMark={false}
         className="custom-create-task-css"
       >
@@ -199,12 +159,11 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
               label="Project"
               rules={[{ required: true, message: "Project is Required" }]}
             >
-              {/* <Select onChange={handleProjectIdChange} options={projectData} /> */}
               <Select
                 placeholder="Select Project"
                 onChange={(e) => {
                   setSelectedProject(e);
-                  form.resetFields(["priority"]);
+                  // form.resetFields(["priority"]);
                 }}
                 dropdownRender={(menu) => (
                   <>
@@ -216,10 +175,6 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
                         setIsModalOpen={() => {}}
                         closeDropdowns={() => {
                           form.resetFields(["projectName"]);
-                          console.log(
-                            "🚀 ~ file: createTaskComponent.tsx:184 ~ CreateTaskComponent ~ projectName:",
-                            "projectName"
-                          );
                         }}
                         type={2}
                       />
@@ -234,7 +189,6 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
                 mode="tags"
                 size={size}
                 placeholder="Please select"
-                // defaultValue={["Bug Fix"]}
                 onChange={handleTagsChange}
                 style={{ width: "100%" }}
                 options={options}
@@ -249,13 +203,10 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
               initialValue={dayjs()}
             >
               <DatePicker
-                // defaultValue={dayjs()}
                 onChange={(e) => {
                   setStartDate(e);
                 }}
                 className="m-0"
-                // value={dateValue}
-                // disabled={radioButtonValue !== 1}
               />
             </MyInputCreateTask>
 

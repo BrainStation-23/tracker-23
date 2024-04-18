@@ -12,24 +12,26 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import TaskListReportComponent from "../components/taskListReportComponent";
 import TopPanelTaskListComponents from "../components/topPanelTaskListComponents";
+import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 
 type Props = {
   reportData: ReportData;
+  inView: Boolean;
 };
 
-export default function TaskListReport({ reportData }: Props) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [downloading, setDownloading] = useState<boolean>(false);
-  const [tasks, setTasks] = useState<TaskDto[]>([]);
-  //@ts-ignore
-  const [dateRange, setDateRange] = useState(
-    reportData?.config?.startDate
+export default function TaskListReport({ reportData, inView }: Props) {
+  const dateRange =
+    reportData?.config?.startDate && reportData?.config?.endDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray("this-week")
-  );
+      : getDateRangeArray(reportData?.config?.filterDateType);
+
   const [searchText, setSearchText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [tasks, setTasks] = useState<TaskDto[]>([]);
+  const [downloading, setDownloading] = useState<boolean>(false);
 
   const getTaskListReport = async () => {
+    if (!inView) return;
     setIsLoading(true);
     const res = await userAPI.getTaskListReport({
       searchText,
@@ -51,6 +53,11 @@ export default function TaskListReport({ reportData }: Props) {
     if (res) {
       const { formattedTasks } = getFormattedTasks(res);
       setTasks(formattedTasks || []);
+      if (window.gtag) {
+        window.gtag("event", "download_report", {
+          value: "Task List Report",
+        });
+      }
     }
     setIsLoading(false);
   };
@@ -74,10 +81,6 @@ export default function TaskListReport({ reportData }: Props) {
           ? reportData?.config?.calendarIds
           : [],
       });
-      console.log(
-        "🚀 ~ file: topPanelExportPage.tsx:54 ~ excelExport ~ res:",
-        res
-      );
       if (!res) {
         message.error(
           res?.error?.message ? res?.error?.message : "Export Failed"
@@ -94,7 +97,7 @@ export default function TaskListReport({ reportData }: Props) {
 
   useEffect(() => {
     getTaskListReport();
-  }, [reportData?.config, searchText]);
+  }, [reportData?.config, searchText, inView]);
   return (
     <>
       <ReportHeaderComponent
@@ -113,15 +116,18 @@ export default function TaskListReport({ reportData }: Props) {
           </Button>
         }
         extraFilterComponent={
-          <TopPanelTaskListComponents
-            {...{
-              setSearchText,
-            }}
-          />
+          <>
+            <TopPanelTaskListComponents
+              {...{
+                setSearchText,
+              }}
+            />
+            <ReportConfigDescription reportData={reportData} />
+          </>
         }
       />
       <Spin className="custom-spin" spinning={isLoading}>
-        <TaskListReportComponent {...{ tasks }} />
+        <TaskListReportComponent {...{ tasks, reportData }} />
       </Spin>
     </>
   );

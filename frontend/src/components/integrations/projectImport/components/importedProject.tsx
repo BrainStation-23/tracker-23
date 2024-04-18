@@ -1,4 +1,4 @@
-import { message } from "antd";
+import { Card, message, Typography } from "antd";
 import { userAPI } from "APIs";
 import { integrationName } from "models/integration";
 import { ProjectDto } from "models/projects";
@@ -13,6 +13,8 @@ import {
   setSyncRunning,
   setSyncStatus,
 } from "@/storage/redux/syncSlice";
+
+const { Text } = Typography;
 
 type Props = {
   project: ProjectDto;
@@ -35,37 +37,41 @@ const ImportedProject = ({ project, deleteProject }: Props) => {
     res && dispatch(setSyncStatus(res));
   };
   return (
-    <div className="flex w-[500px] justify-between rounded-md border-2 p-3 hover:bg-gray-50">
-      <div className="flex flex-col">
-        <div className=" font-bold">{project.projectName}</div>
-        <div className="flex items-center gap-1">
-          <div> Source :</div>
-          <OpenLinkInNewTab
+    <Card hoverable className="max-w-1/4 min-w-[300px] hover:cursor-default">
+      <div className="flex w-full flex-col justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <div className="font-bold">{project.projectName}</div>
+          <div className="text-sm font-medium">
+            <OpenLinkInNewTab
+              onClick={() => {
+                integrationName[project.integrationType] ===
+                  integrationName.JIRA && window.open(project.source);
+                integrationName[project.integrationType] ===
+                  integrationName.OUTLOOK && window.open(outlookSourceUrl);
+              }}
+            >
+              <Text
+                ellipsis={{ tooltip: project.source }}
+                className="max-w-[200px]"
+              >
+                {"Source: "}
+                {project.source}
+              </Text>
+            </OpenLinkInNewTab>
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-8">
+          {project.source != "T23" && (
+            <SyncButtonComponent project={project} onClick={syncProject} />
+          )}
+          <DeleteButton
             onClick={() => {
-              integrationName[project.integrationType] ===
-                integrationName.JIRA && window.open(project.source);
-              integrationName[project.integrationType] ===
-                integrationName.OUTLOOK && window.open(outlookSourceUrl);
+              deleteProjectTasks();
             }}
-          >
-            {project.source}
-          </OpenLinkInNewTab>
+          />
         </div>
       </div>
-      <div className="flex items-center">
-        {project.source != "T23" && (
-          <SyncButtonComponent
-            project={project}
-            onClick={() => syncProject()}
-          />
-        )}
-        <DeleteButton
-          onClick={() => {
-            deleteProjectTasks();
-          }}
-        />
-      </div>
-    </div>
+    </Card>
   );
 };
 

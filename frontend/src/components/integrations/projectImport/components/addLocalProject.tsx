@@ -27,7 +27,6 @@ const AddLocalProject = ({
   const handleSubmit = async (values: CreateLocalProjectModel) => {
     setSpinning(true);
     const res = await userAPI.createProject(values);
-    console.log("Submitted values:", values);
     if (res) {
       setIsModalOpen(false);
       dispatch(addNewProjectSlice(res));

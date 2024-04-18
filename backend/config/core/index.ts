@@ -14,6 +14,8 @@ const {
   NODEMAILER_SERVICE,
   NODEMAILER_USER,
   NODEMAILER_PASS,
+  ADMIN_EMAIL,
+  HOST_URL,
 } = process.env;
 
 export const coreConfig = {
@@ -21,10 +23,12 @@ export const coreConfig = {
   env: ENV || 'DEVELOPMENT',
   host: HOST || 'localhost',
   restApiPrefix: REST_API_PREFIX || 'api',
-  baseUrl: BASE_URL || 'http://localhost:8080',
+  baseUrl: BASE_URL || 'http://localhost:3000',
   promiseQuantity: Number(PROMISE_RESOLVE_QUANTITY) || 10,
   syncTaskQuantity: Number(SYNC_TASK_QUANTITY) || 10,
   ADMIN_URL: INVITE_URL || 'http://localhost:3001/inviteLink',
+  admin_mail: ADMIN_EMAIL || 'admin@example.com',
+  host_url: HOST_URL || 'http://localhost:3001',
 };
 
 export const nodemailerConfig = {

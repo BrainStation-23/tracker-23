@@ -20,7 +20,7 @@ import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 import SyncButtonComponent from "@/components/common/buttons/syncButton";
 import LogOutButton from "@/components/logout/logOutButton";
 import GlobalModal from "@/components/modals/globalModal";
-import { getActiveUserWorkspace } from "@/services/globalFunctions";
+import { useActiveUserWorkspace } from "@/hooks/useActiveUserWorkspace";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
@@ -49,14 +49,13 @@ const WorkspaceNav = () => {
   const workspaces = useAppSelector(
     (state: RootState) => state.workspacesSlice.workspaces
   );
-  const user = useAppSelector((state: RootState) => state.userSlice.user);
 
   const [selectedWorkspace, setSelectedWorkspace] =
     useState<WorkspaceDto | null>();
   const activeWorkspace = useAppSelector(
     (state: RootState) => state.workspacesSlice.activeWorkspace
   );
-  const activeUserWorkspace = getActiveUserWorkspace();
+  const activeUserWorkspace = useActiveUserWorkspace();
 
   const handleChangeWorkspaceClick = async (workspace: WorkspaceDto) => {
     if (activeWorkspace?.id !== workspace.id) {
@@ -72,20 +71,9 @@ const WorkspaceNav = () => {
   const handleWorkspaceDeleteClick = async (workspace: WorkspaceDto) => {
     setMode(2);
     // const response = await userAPI.deleteWorkspace(workspace.id);
-    // console.log("Deleted workspace response:", response);
     setSelectedWorkspace(workspace);
     setIsModalOpen(true);
   };
-
-  const handleWorkspaceEditClick = async (workspace: WorkspaceDto) => {
-    setSelectedWorkspace({ ...workspace });
-    setMode(1);
-    setIsModalOpen(true);
-  };
-
-  const otherWorkspaces = workspaces.filter(
-    (workspace) => workspace !== activeWorkspace
-  );
 
   const menuItems: MenuProps["items"] = [];
   const syncFunction = async () => {
@@ -105,69 +93,68 @@ const WorkspaceNav = () => {
     boxShadow: token.boxShadowSecondary,
   };
 
-  const dropdownRender = (menu: React.ReactNode) => (
+  const dropdownRender = () => (
     <div style={contentStyle} className="py-4 font-semibold">
       <div className="mx-4">
         <Radio.Group
-          className="max-h-[500px] w-full"
+          className="max-h-[500px] w-full overflow-y-auto"
           defaultValue={activeWorkspace?.id}
           value={activeWorkspace?.id}
         >
           <div className="flex w-full flex-col gap-0 ">
-            {workspaces?.map((workspace) => {
-              return (
-                <div
-                  className={`flex w-[280px] items-center gap-2 rounded p-1 pr-0 hover:bg-neutral-100 ${
-                    activeWorkspace?.id === workspace.id ? "bg-neutral-100" : ""
-                  }`}
+            {workspaces?.map((workspace) => (
+              <div
+                key={workspace.id}
+                className={`flex w-[280px] items-center gap-2 rounded p-1 pr-0 hover:bg-neutral-100 ${
+                  activeWorkspace?.id === workspace.id ? "bg-neutral-100" : ""
+                }`}
+              >
+                <Radio
+                  value={workspace.id}
+                  className="text-primary"
+                  onClick={() => handleChangeWorkspaceClick(workspace)}
                 >
-                  <Radio
-                    value={workspace.id}
-                    className="text-primary"
-                    onClick={() => handleChangeWorkspaceClick(workspace)}
-                  >
-                    <div className="flex gap-3">
-                      <div className="flex w-fit cursor-pointer items-center gap-2 rounded">
-                        <Avatar
-                          className="col-span-3 flex h-[40px] w-[40px] flex-col justify-center rounded font-medium text-primary"
-                          size={"large"}
-                        >
-                          {workspace?.name[0]}
-                        </Avatar>
-                        <Text
-                          className="w-[150px]"
-                          ellipsis={{
-                            tooltip: workspace.name,
-                          }}
-                        >
-                          {workspace.name}
-                        </Text>
-                      </div>
+                  <div className="flex gap-3">
+                    <div className="flex w-fit cursor-pointer items-center gap-2 rounded">
+                      <Avatar
+                        className="col-span-3 flex h-[40px] w-[40px] flex-col justify-center rounded font-medium text-primary"
+                        size={"large"}
+                      >
+                        {workspace?.name[0]}
+                      </Avatar>
+                      <Text
+                        className="w-[150px]"
+                        ellipsis={{
+                          tooltip: workspace.name,
+                        }}
+                      >
+                        {workspace.name}
+                      </Text>
                     </div>
-                  </Radio>
-                  <Dropdown
-                    menu={{ items: menuItems }}
-                    trigger={["click"]}
-                    placement="bottomRight"
-                    dropdownRender={(dropdownRender) =>
-                      workspaceMoreDropdown(dropdownRender, workspace)
+                  </div>
+                </Radio>
+                <Dropdown
+                  menu={{ items: menuItems }}
+                  trigger={["click"]}
+                  placement="bottomRight"
+                  dropdownRender={(dropdownRender) =>
+                    workspaceMoreDropdown(dropdownRender, workspace)
+                  }
+                  className=" flex h-fit w-[20px] items-center justify-center rounded p-1"
+                  open={workspace.id === workspaceInMoreMode}
+                  onOpenChange={(v) => {
+                    if (v) setWorkspaceInMoreMode(workspace.id);
+                    else if (workspaceInMoreMode === workspace.id) {
+                      setWorkspaceInMoreMode(null);
                     }
-                    className=" flex h-fit w-[20px] items-center justify-center rounded p-1"
-                    open={workspace.id === workspaceInMoreMode}
-                    onOpenChange={(v) => {
-                      if (v) setWorkspaceInMoreMode(workspace.id);
-                      else if (workspaceInMoreMode === workspace.id) {
-                        setWorkspaceInMoreMode(null);
-                      }
-                    }}
-                  >
-                    <Button className="m-0 p-0">
-                      <LuMoreHorizontal />
-                    </Button>
-                  </Dropdown>
-                </div>
-              );
-            })}
+                  }}
+                >
+                  <Button className="m-0 p-0">
+                    <LuMoreHorizontal />
+                  </Button>
+                </Dropdown>
+              </div>
+            ))}
           </div>
         </Radio.Group>
       </div>
@@ -253,13 +240,13 @@ const WorkspaceNav = () => {
         placement="topRight"
         arrow
         dropdownRender={dropdownRender}
-        className=" w-[250px]"
+        // className="w-[250px]"
         open={isDropdownOpen}
         onOpenChange={(v) => {
           setDropdownOpen(v);
         }}
       >
-        <div className="flex h-max w-[240px] cursor-pointer items-center rounded-lg border-2 p-1">
+        <div className="flex h-max cursor-pointer items-center rounded-lg border-2 p-1">
           <div className="ice grid grid-cols-12 gap-2">
             <Avatar
               className="col-span-3 flex h-[48px] w-[48px] flex-col justify-center rounded font-medium text-primary"
@@ -317,6 +304,7 @@ const WorkspaceNav = () => {
               workspace={selectedWorkspace}
               setSelectedWorkspace={setSelectedWorkspace}
               setIsModalOpen={setIsModalOpen}
+              setIsModalLoading={setIsModalLoading}
             />
           )}
           {mode === 0 && (

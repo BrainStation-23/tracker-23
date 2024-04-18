@@ -36,6 +36,7 @@ import {
   updateOnboardingUserDto,
   WorkspaceMemberDto,
 } from "../models/user/index";
+import { ReportData } from "@/storage/redux/reportsSlice";
 
 export interface apiFunction {
   login: (data: LoginDto) => Promise<LoginResponseDto | undefined>;
@@ -46,6 +47,7 @@ export interface apiFunction {
   ) => Promise<LoginResponseDto | undefined>;
   logout: () => {};
   registerUser: (data: RegisterDto) => Promise<LoginResponseDto | undefined>;
+  sendOTP: (data: RegisterDto) => Promise<LoginResponseDto | undefined>;
   registerUserFromInvite: (
     data: RegisterDto
   ) => Promise<LoginResponseDto | undefined>;
@@ -146,4 +148,6 @@ export interface apiFunction {
   deleteReportPage: (reportId: number) => Promise<any>;
   deleteReport: (reportId: number) => Promise<any>;
   getIntegrationTypesReportPage: () => Promise<any>;
+  exportSprintViewSheet: (reportData: ReportData) => Promise<any>;
+  exportTimeLineSheet: (reportData: ReportData) => Promise<any>;
 }

@@ -23,6 +23,5 @@ export const logOutFunction = async () => {
   store.dispatch(setSocket(null));
   RemoveAllCookies();
   clearLocalStorage();
-  console.log("logging out");
   userAPI.logout();
 };

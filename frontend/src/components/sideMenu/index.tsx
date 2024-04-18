@@ -36,280 +36,6 @@ type SideMenuProps = {
 };
 const { Text } = Typography;
 
-const SideMenu = () => {
-  const router = useRouter();
-  const dispatch = useDispatch();
-  const [manageDropdownOpen, setManageDropdownOpen] = useState(true);
-  const [reportDropdownOpen, setReportDropdownOpen] = useState(true);
-  const [functionDropdownOpen, setFunctionDropdownOpen] = useState(true);
-  const reportPages = useAppSelector(
-    (state: RootState) => state.reportsSlice.reportPages
-  );
-  const pageId = router.query?.reportPageId
-    ? parseInt(router.query?.reportPageId as string)
-    : -1;
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isCreatingPage, setIsCreatingPage] = useState(false);
-  const [deletePage, setDeletePage] = useState<ReportPageDto>();
-  const handleDeletePage = (page: ReportPageDto) => {
-    setDeletePage(page);
-    setIsDeleteModalOpen(true);
-  };
-  const handleCreatePage = async () => {
-    setIsCreatingPage(true);
-    const res = await userAPI.createReportPage({
-      name: "Untitled",
-    });
-    if (res) {
-      dispatch(addReportPage(res));
-      router.push("/reports/" + res.id);
-    }
-    setIsCreatingPage(false);
-  };
-  const SideMenuOption = ({ option, active }: SideMenuProps) => {
-    const router = useRouter();
-    return (
-      <div
-        className={`group flex items-center gap-2 rounded-lg py-[4px] px-1 pl-[10px] hover:cursor-pointer hover:bg-[#ECECED] hover:text-primary ${
-          active ? "bg-[#ECECED] text-primary" : ""
-        }`}
-        onClick={() => {
-          console.log(router);
-          option.link === "suggestion"
-            ? window.open("https://tracker23.canny.io/feature-request")
-            : router.push(option.link);
-        }}
-      >
-        <div
-          className={` flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
-            active ? "stroke-primary " : "stroke-[#ADACB0] text-[#ADACB0]"
-          }`}
-        >
-          {option.icon}
-        </div>
-        <div
-          className={`text-xs ${
-            active ? "font-semibold text-primary" : "font-medium text-[#4D4E55]"
-          }`}
-        >
-          {option.title}
-        </div>
-      </div>
-    );
-  };
-  return (
-    <div className="flex h-screen w-full items-center justify-center bg-[#F8F8F8]">
-      <div className="flex h-full w-full flex-col justify-between">
-        <div className="flex w-full flex-col gap-6">
-          <div
-            className="flex w-full gap-2 px-5 pt-8 text-left"
-            onClick={() => {
-              router.push("/");
-            }}
-          >
-            <div className="cursor-pointer">
-              <BSLogoSvg />
-            </div>
-          </div>
-          <div
-            style={{
-              maxHeight: "calc(100vh - 220px)",
-            }}
-            className="flex w-full flex-col gap-6 overflow-y-auto px-5"
-          >
-            <div className="flex flex-col gap-1">
-              <div
-                className={`flex w-min cursor-pointer items-center gap-2 rounded-sm  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
-                onClick={() => setFunctionDropdownOpen(!functionDropdownOpen)}
-              >
-                <LuChevronRight
-                  className={`${
-                    functionDropdownOpen ? "rotate-90" : ""
-                  } duration-400 transition-all`}
-                />{" "}
-                Overview
-              </div>
-              <div
-                className={`${
-                  functionDropdownOpen ? "" : "h-0"
-                } duration-900 overflow-y-auto transition-all`}
-              >
-                <div className="flex flex-col gap-1">
-                  {sideMenuFucntionOptions?.map((option) => (
-                    <SideMenuOption
-                      key={Math.random()}
-                      option={option}
-                      active={router.asPath.includes(option.link)}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div
-                className={`flex w-min cursor-pointer items-center gap-2 rounded-sm  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
-                onClick={() => setManageDropdownOpen(!manageDropdownOpen)}
-              >
-                <LuChevronRight
-                  className={`${
-                    manageDropdownOpen ? "rotate-90" : ""
-                  } duration-400 transition-all`}
-                />{" "}
-                Manage
-              </div>
-              <div
-                className={`${
-                  manageDropdownOpen ? "" : "h-0"
-                } duration-900 overflow-y-auto transition-all`}
-              >
-                <div className="flex flex-col gap-1">
-                  {sideMenuManageOptions?.map((option) => (
-                    <SideMenuOption
-                      key={Math.random()}
-                      option={option}
-                      active={router.asPath.includes(option.link)}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <div
-                  className={`flex w-min cursor-pointer items-center gap-2 rounded-sm  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
-                  onClick={() => setReportDropdownOpen(!reportDropdownOpen)}
-                >
-                  <LuChevronRight
-                    className={`${
-                      reportDropdownOpen ? "rotate-90" : ""
-                    } duration-400 transition-all`}
-                  />{" "}
-                  Reports
-                </div>{" "}
-                {reportDropdownOpen &&
-                  (isCreatingPage ? (
-                    <div className="flex h-[18px] w-[18px] flex-col items-center justify-center overflow-hidden">
-                      <LoadingOutlined style={{ fontSize: 12 }} spin />
-                    </div>
-                  ) : (
-                    <div
-                      className="w-min cursor-pointer rounded border p-[1px] group-hover:border-secondary"
-                      onClick={() => {
-                        handleCreatePage();
-                      }}
-                    >
-                      <LuPlus />
-                    </div>
-                  ))}
-              </div>
-              <div
-                className={`${
-                  reportDropdownOpen ? "" : "h-0"
-                } duration-900 overflow-y-autotransition-all overflow-y-auto`}
-              >
-                <div className="flex flex-col gap-1">
-                  {reportPages?.length > 0 && (
-                    <div className="flex flex-col gap-2 overflow-y-auto">
-                      {reportPages?.map((reportPage) => {
-                        const items: MenuProps["items"] = [
-                          {
-                            key: "1",
-                            label: (
-                              <div
-                                aria-disabled={"true"}
-                                className={`${
-                                  pageId === reportPage.id
-                                    ? " cursor-not-allowed"
-                                    : "cursor-pointer"
-                                }`}
-                                onClick={() =>
-                                  pageId !== reportPage.id &&
-                                  handleDeletePage(reportPage)
-                                }
-                              >
-                                <DeleteIconSvg />
-                              </div>
-                            ),
-                          },
-                        ];
-                        return (
-                          <>
-                            <div
-                              className={`group flex w-full items-center justify-between gap-2 rounded px-2 text-black hover:bg-[#ECECED] hover:font-semibold hover:text-primary ${
-                                pageId === reportPage.id
-                                  ? "bg-[#ECECED] font-semibold text-primary"
-                                  : ""
-                              }`}
-                            >
-                              {" "}
-                              <MyLink
-                                href={"/reports/" + reportPage.id}
-                                className="flex items-center  gap-2 p-1"
-                              >
-                                <div
-                                  className={`flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
-                                    pageId === reportPage.id
-                                      ? "stroke-primary "
-                                      : "stroke-[#ADACB0] text-[#ADACB0]"
-                                  }`}
-                                >
-                                  <LuNewspaper size={16} />
-                                </div>
-                                <div className="flex w-[120px] items-center">
-                                  <Text
-                                    className="m-0 p-0 text-xs "
-                                    ellipsis={{ tooltip: reportPage.name }}
-                                  >
-                                    {reportPage.name}
-                                  </Text>
-                                </div>
-                              </MyLink>
-                              <Dropdown
-                                menu={{
-                                  items,
-                                  onClick: () => {},
-                                }}
-                                trigger={["click"]}
-                                className="relative "
-                                overlayClassName="absolute left-[-200px] "
-                                placement="bottomRight"
-                              >
-                                <Button className="relative flex h-4 w-4 items-center justify-center p-0">
-                                  <LuMoreVertical size={10} />
-                                </Button>
-                              </Dropdown>
-                            </div>
-                          </>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="mb-[45px]">
-          <WorkspaceNav />
-        </div>
-      </div>
-      <GlobalModal
-        title="Deleting Report Page"
-        isModalOpen={isDeleteModalOpen}
-        setIsModalOpen={setIsDeleteModalOpen}
-        width={400}
-      >
-        <DeleteReportPageWarning
-          page={deletePage}
-          setIsModalOpen={setIsDeleteModalOpen}
-        />
-      </GlobalModal>
-    </div>
-  );
-};
-
-export default SideMenu;
-
 export const sideMenuOptions = [
   { link: "/dashboard", title: "Dashboard", icon: <LuLayoutDashboard /> },
   { link: "/taskList", title: "All Tasks", icon: <LuClipboardList /> },
@@ -323,11 +49,6 @@ export const sideMenuOptions = [
     title: "Projects",
     icon: <LuFolder />,
   },
-  // {
-  //   link: "/exports",
-  //   title: "Exports",
-  //   icon: <LuDownload />,
-  // },
   {
     link: "/invitations",
     title: "Invitations",
@@ -353,7 +74,6 @@ export const sideMenuOptions = [
     title: "Suggestion/Support",
     icon: <LuHelpCircle />,
   },
-  // { link: "/onBoarding", title: "OnBoarding Page" },
 ];
 
 export const sideMenuFucntionOptions = [
@@ -401,3 +121,288 @@ export const sideMenuManageOptions = [
     icon: <LuHelpCircle size={16} />,
   },
 ];
+
+const SideMenu = () => {
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const reportPages = useAppSelector(
+    (state: RootState) => state.reportsSlice.reportPages
+  );
+
+  const pageId = router.query?.reportPageId
+    ? parseInt(router.query?.reportPageId as string)
+    : -1;
+
+  const [isCreatingPage, setIsCreatingPage] = useState(false);
+  const [deletePage, setDeletePage] = useState<ReportPageDto>();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [manageDropdownOpen, setManageDropdownOpen] = useState(true);
+  const [reportDropdownOpen, setReportDropdownOpen] = useState(true);
+  const [functionDropdownOpen, setFunctionDropdownOpen] = useState(true);
+
+  const handleDeletePage = (page: ReportPageDto) => {
+    setDeletePage(page);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCreatePage = async () => {
+    setIsCreatingPage(true);
+    const res = await userAPI.createReportPage({
+      name: "Untitled",
+    });
+    if (res) {
+      dispatch(addReportPage(res));
+      router.push("/reports/" + res.id);
+    }
+    setIsCreatingPage(false);
+  };
+
+  return (
+    <div className="flex h-screen w-full items-center justify-center bg-[#F8F8F8]">
+      <div className="flex h-full w-full flex-col justify-between">
+        <div className="flex w-full flex-col gap-6">
+          <div
+            className="flex w-full gap-2 px-5 pt-8 text-left"
+            onClick={() => {
+              router.push("/");
+            }}
+          >
+            <div className="cursor-pointer">
+              <BSLogoSvg />
+            </div>
+          </div>
+          <div
+            style={{
+              maxHeight: "calc(100vh - 220px)",
+            }}
+            className="flex w-full flex-col gap-6 overflow-y-auto px-5"
+          >
+            <div className="flex flex-col gap-1">
+              <div
+                className={`flex w-min cursor-pointer items-center gap-2 rounded  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
+                onClick={() => setFunctionDropdownOpen(!functionDropdownOpen)}
+              >
+                <LuChevronRight
+                  className={`${
+                    functionDropdownOpen ? "rotate-90" : ""
+                  } duration-400 transition-all`}
+                />
+                Overview
+              </div>
+              <div
+                className={`${
+                  functionDropdownOpen ? "" : "h-0"
+                } duration-900 overflow-y-auto transition-all`}
+              >
+                <div className="flex flex-col gap-1">
+                  {sideMenuFucntionOptions?.map((option) => (
+                    <SideMenuOption
+                      key={option.title}
+                      option={option}
+                      active={router.asPath.includes(option.link)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div
+                className={`flex w-min cursor-pointer items-center gap-2 rounded  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
+                onClick={() => setManageDropdownOpen(!manageDropdownOpen)}
+              >
+                <LuChevronRight
+                  className={`${
+                    manageDropdownOpen ? "rotate-90" : ""
+                  } duration-400 transition-all`}
+                />{" "}
+                Manage
+              </div>
+              <div
+                className={`${
+                  manageDropdownOpen ? "" : "h-0"
+                } duration-900 overflow-y-auto transition-all`}
+              >
+                <div className="flex flex-col gap-1">
+                  {sideMenuManageOptions?.map((option) => (
+                    <SideMenuOption
+                      key={option.title}
+                      option={option}
+                      active={router.asPath.includes(option.link)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center justify-between pr-2">
+                <div
+                  className={`flex w-min cursor-pointer items-center gap-2 rounded  p-1 pr-2 text-xs hover:bg-[#ECECED]`}
+                  onClick={() => setReportDropdownOpen(!reportDropdownOpen)}
+                >
+                  <LuChevronRight
+                    className={`${
+                      reportDropdownOpen ? "rotate-90" : ""
+                    } duration-400 transition-all`}
+                  />
+                  Reports
+                </div>
+                {reportDropdownOpen &&
+                  (isCreatingPage ? (
+                    <div className="flex h-[18px] w-[18px] flex-col items-center justify-center overflow-hidden">
+                      <LoadingOutlined style={{ fontSize: 12 }} spin />
+                    </div>
+                  ) : (
+                    <div
+                      className="w-min cursor-pointer rounded border p-[1px] group-hover:border-secondary"
+                      onClick={() => {
+                        handleCreatePage();
+                      }}
+                    >
+                      <LuPlus />
+                    </div>
+                  ))}
+              </div>
+              <div
+                className={`${
+                  reportDropdownOpen ? "" : "h-0"
+                } duration-900 overflow-y-autotransition-all overflow-y-auto`}
+              >
+                <div className="flex flex-col gap-1">
+                  {reportPages?.length > 0 && (
+                    <div className="flex flex-col gap-1 overflow-y-auto">
+                      {reportPages?.map((reportPage) => {
+                        const items: MenuProps["items"] = [
+                          {
+                            key: "1",
+                            label: (
+                              <div
+                                aria-disabled={"true"}
+                                className={`flex gap-1 ${
+                                  pageId === reportPage.id
+                                    ? " cursor-not-allowed"
+                                    : "cursor-pointer"
+                                }`}
+                                onClick={() =>
+                                  pageId !== reportPage.id &&
+                                  handleDeletePage(reportPage)
+                                }
+                              >
+                                <DeleteIconSvg />
+                                Delete
+                              </div>
+                            ),
+                          },
+                        ];
+                        return (
+                          <div
+                            key={reportPage.id}
+                            className={`group flex w-full items-center justify-between gap-2 rounded px-0 py-[6px] pr-2 text-black hover:bg-[#ECECED] hover:text-primary ${
+                              pageId === reportPage.id
+                                ? "bg-[#ECECED] text-primary"
+                                : ""
+                            }`}
+                          >
+                            <MyLink
+                              href={"/reports/" + reportPage.id}
+                              className="flex items-center gap-2 px-2 py-1"
+                            >
+                              <div
+                                className={`flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
+                                  pageId === reportPage.id
+                                    ? "stroke-primary "
+                                    : "stroke-[#ADACB0] text-[#ADACB0]"
+                                }`}
+                              >
+                                <LuNewspaper size={16} />
+                              </div>
+                              <div
+                                className={`flex w-[120px] items-center
+                                  ${
+                                    pageId === reportPage.id
+                                      ? " font-semibold text-primary"
+                                      : " font-medium text-[#4D4E55]"
+                                  }`}
+                              >
+                                <Text
+                                  className="m-0 p-0 text-xs"
+                                  ellipsis={{ tooltip: reportPage.name }}
+                                >
+                                  {reportPage.name}
+                                </Text>
+                              </div>
+                            </MyLink>
+                            <Dropdown
+                              menu={{
+                                items,
+                                onClick: () => {},
+                              }}
+                              trigger={["click"]}
+                              className="relative "
+                              overlayClassName="absolute left-[-200px] "
+                              placement="bottomRight"
+                            >
+                              <Button className="relative flex h-4 w-4 items-center justify-center p-0">
+                                <LuMoreVertical size={10} />
+                              </Button>
+                            </Dropdown>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="p-4">
+          <WorkspaceNav />
+        </div>
+      </div>
+      <GlobalModal
+        title="Deleting Report Page"
+        isModalOpen={isDeleteModalOpen}
+        setIsModalOpen={setIsDeleteModalOpen}
+        width={400}
+      >
+        <DeleteReportPageWarning
+          page={deletePage}
+          setIsModalOpen={setIsDeleteModalOpen}
+        />
+      </GlobalModal>
+    </div>
+  );
+};
+
+export default SideMenu;
+
+const SideMenuOption = ({ option, active }: SideMenuProps) => {
+  const router = useRouter();
+  return (
+    <div
+      className={`group flex items-center gap-2 rounded-lg py-[6px] px-1 hover:cursor-pointer hover:bg-[#ECECED] hover:text-primary ${
+        active ? "bg-[#ECECED] text-primary" : ""
+      }`}
+      onClick={() => {
+        option.link === "suggestion"
+          ? window.open("https://tracker23.canny.io/feature-request")
+          : router.push(option.link);
+      }}
+    >
+      <div
+        className={` flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${
+          active ? "stroke-primary " : "stroke-[#ADACB0] text-[#ADACB0]"
+        }`}
+      >
+        {option.icon}
+      </div>
+      <div
+        className={`text-xs ${
+          active ? "font-semibold text-primary" : "font-medium text-[#4D4E55]"
+        }`}
+      >
+        {option.title}
+      </div>
+    </div>
+  );
+};

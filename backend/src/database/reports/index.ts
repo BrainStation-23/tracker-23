@@ -17,14 +17,10 @@ export class ReportDatabase {
     }
   }
 
-  async createReport(report: Record<string, any>): Promise<Report | null> {
+  async createReport(report: any): Promise<Report | null> {
     try {
       return await this.prisma.report.create({
-        data: {
-          pageId: report.pageId,
-          name: report.name,
-          reportType: report.reportType,
-        },
+        data: report,
       });
     } catch (err) {
       console.log(err);

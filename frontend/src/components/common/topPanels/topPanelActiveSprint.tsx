@@ -1,9 +1,8 @@
-import { Dropdown, Input, MenuProps } from "antd";
+import { Input, MenuProps } from "antd";
 import { debounce } from "lodash";
 import { SearchParamsModel } from "models/apiParams";
 import { TaskDto } from "models/tasks";
 import { useEffect, useState } from "react";
-import { LuMoreVertical } from "react-icons/lu";
 
 import SearchIconSvg from "@/assets/svg/searchIconSvg";
 import MyActiveTab from "@/components/common/tabs/MyActiveTab";
@@ -17,26 +16,27 @@ import ProjectSelectorComponent from "./components/projectSelector";
 import StatusSelectorComponent from "./components/statusSelector";
 import TopBarMoreComponent from "./components/topBarMoreComponent";
 import MoreButtonTopPanel from "./components/moreButtonTopPanel";
+import { FilterDateType } from "models/reports";
 
 type Props = {
   tasks: TaskDto[];
-  activeSprintTasks: TaskDto[];
   activeTab: string;
   setActiveTab: Function;
+  checkedOptionList: string[];
+  activeSprintTasks: TaskDto[];
+  setCheckedOptionList: Function;
   setSearchParamsActiveSprint: Function;
   searchParamsActiveSprint: SearchParamsModel;
-  checkedOptionList: string[];
-  setCheckedOptionList: Function;
 };
 const TopPanelActiveSprint = ({
   tasks,
-  activeSprintTasks,
   activeTab,
   setActiveTab,
-  setSearchParamsActiveSprint,
-  searchParamsActiveSprint,
+  activeSprintTasks,
   checkedOptionList,
   setCheckedOptionList,
+  searchParamsActiveSprint,
+  setSearchParamsActiveSprint,
 }: Props) => {
   const [searchText, setSearchText] = useState(
     searchParamsActiveSprint.searchText
@@ -48,12 +48,10 @@ const TopPanelActiveSprint = ({
     searchParamsActiveSprint.projectIds
   );
   const [priority, setPriority] = useState(searchParamsActiveSprint.priority);
-  const [active, setActive] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
-    getDateRangeArray("this-week")
+    getDateRangeArray(FilterDateType.THIS_WEEK)
   );
-
   const options = [
     { label: "Search", value: "Search" },
     { label: "Priority", value: "Priority" },
@@ -62,12 +60,11 @@ const TopPanelActiveSprint = ({
   ];
   const totalPinned = tasks?.filter((task) => task.pinned)?.length;
   const tabs = ["All", "Pin", "ActiveSprint"];
-
   const handleInputChange = (event: any) => {
     setSearchText(event.target.value);
   };
   const debouncedHandleInputChange = debounce(handleInputChange, 500);
-  // useEffect(()=>)
+
   useEffect(() => {
     if (
       JSON.stringify(searchParamsActiveSprint) !==
@@ -85,8 +82,8 @@ const TopPanelActiveSprint = ({
         projectIds: projectIds,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
+
   useEffect(() => {
     if (
       JSON.stringify(searchParamsActiveSprint) !=
@@ -106,11 +103,10 @@ const TopPanelActiveSprint = ({
         projectIds: projectIds,
       });
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, priority, status, projectIds]);
   const filterOptions = [
     <TopBarMoreComponent
+      key={1}
       {...{ checkedOptionList, setCheckedOptionList, options }}
     />,
   ];
@@ -122,11 +118,11 @@ const TopPanelActiveSprint = ({
   });
   const menuProps = {
     items,
-    onClick: (item: any) => {},
+    // onClick: (item: any) => {},
   };
   return (
     <div className="my-5 flex w-full justify-between">
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         {tabs?.map((tab, index) => {
           return activeTab === tab ? (
             <MyActiveTab {...{ tab, setActiveTab }} key={index}>
@@ -147,10 +143,13 @@ const TopPanelActiveSprint = ({
           );
         })}
       </div>
-      <div className="mt-[3px] flex max-w-[900px] gap-2">
-        <div className="flex h-auto w-full flex-wrap justify-end gap-6">
+      <div className="flex items-center justify-center gap-2">
+        <div className="flex w-full flex-wrap justify-end gap-4">
           {activeTab !== "ActiveSprint" && (
-            <DateRangePicker {...{ selectedDate, setSelectedDate }} />
+            <DateRangePicker
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+            />
           )}
           {checkedOptionList.includes("Search") && (
             <div className="w-[210px]">

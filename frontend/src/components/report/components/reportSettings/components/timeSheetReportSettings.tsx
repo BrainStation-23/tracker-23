@@ -1,7 +1,7 @@
 import { message } from "antd";
 import { userAPI } from "APIs";
 import { IntegrationType } from "models/integration";
-import { SprintUser } from "models/reports";
+import { FilterDateType, SprintUser, UpdateReportDto } from "models/reports";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -23,6 +23,9 @@ type Props = {
 };
 const TimeSheetReportSettings = ({ reportData }: Props) => {
   const dispatch = useDispatch();
+  const [filterDateType, setFilterDateType] = useState(
+    FilterDateType.THIS_WEEK
+  );
   const [users, setUsers] = useState<SprintUser[]>([]);
   const [sprints, setSprints] = useState<number[]>([]);
   const [selectedSource, setSelectedSource] = useState<IntegrationType[]>(
@@ -38,29 +41,35 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
     reportData?.config?.userIds ? reportData?.config?.userIds : []
   );
   const [dateRange, setDateRange] = useState(
-    reportData?.config?.startDate
+    reportData?.config?.startDate && reportData?.config?.endDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray("this-week")
+      : getDateRangeArray(reportData?.config?.filterDateType)
   );
+
   const getUserListByProject = async () => {
     const res = await userAPI.userListByProject(projects);
     res && setUsers(res);
   };
 
-  const saveConfig = async () => {
+  const saveConfig = async (extraData?: UpdateReportDto) => {
     const res = await userAPI.updateReport(reportData.id, {
-      startDate: dateRange[0],
-      endDate: dateRange[1],
-      userIds: selectedUsers,
-      projectIds: projects,
       calendarIds,
+      filterDateType,
+      projectIds: projects,
+      endDate: dateRange[1],
       types: selectedSource,
+      userIds: selectedUsers,
+      startDate: dateRange[0],
+      ...(extraData ?? {}),
     });
     if (res) {
       dispatch(updateReportSlice(res));
       message.success("Saved Successfully");
       dispatch(setReportInEditSlice(null));
     }
+  };
+  const getFilterDateType = (type: FilterDateType) => {
+    setFilterDateType(type);
   };
   useEffect(() => {
     getUserListByProject();
@@ -75,6 +84,7 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
       <DateRangePicker
         selectedDate={dateRange}
         setSelectedDate={setDateRange}
+        setFilterDateType={getFilterDateType}
       />
 
       <TypeDependentSection
@@ -91,10 +101,12 @@ const TimeSheetReportSettings = ({ reportData }: Props) => {
         }}
       />
 
-      <UsersSelectorComponent
-        {...{ userList: users, selectedUsers, setSelectedUsers }}
-        className="w-[210px]"
-      />
+      {users.length ? (
+        <UsersSelectorComponent
+          {...{ userList: users, selectedUsers, setSelectedUsers }}
+          className="w-full min-w-[210px]"
+        />
+      ) : null}
     </ReportSettingsWrapper>
   );
 };

@@ -1,25 +1,44 @@
 import { Injectable } from '@nestjs/common';
-import { GetUserIntegrationsByUserWorkspaceIdAndWorkspaceId } from 'src/module/integrations/dto/get.userIntegrations.filter.dto';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 
 @Injectable()
 export class UserIntegrationDatabase {
   constructor(private prisma: PrismaService) {}
 
-  async getUserIntegrationListWithIntegrations(
-    filter: GetUserIntegrationsByUserWorkspaceIdAndWorkspaceId,
-  ) {
+  async getUserIntegrationListWithIntegrations(filter: Record<string, any>) {
     try {
       return await this.prisma.userIntegration.findMany({
-        where: {
-          userWorkspaceId: filter.userWorkspaceId,
-          workspaceId: filter.workspaceId,
-        },
+        where: filter,
         include: { integration: true },
       });
     } catch (error) {
       console.log(error);
       return [];
+    }
+  }
+
+  async getSyncStatus(query: Record<string, any>) {
+    try {
+      return await this.prisma.callSync.findFirst({
+        where: query,
+      });
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async updateSyncStatus(
+    query: Record<string, any>,
+    data: Record<string, any>,
+  ) {
+    try {
+      return await this.prisma.callSync.update({
+        where: query,
+        data,
+      });
+    } catch (err) {
+      console.log(err);
+      return null;
     }
   }
 
@@ -50,6 +69,9 @@ export class UserIntegrationDatabase {
       return await this.prisma.userIntegration.findUnique({
         where: {
           id: userIntegrationId,
+        },
+        include: {
+          integration: true,
         },
       });
     } catch (error) {
@@ -86,6 +108,23 @@ export class UserIntegrationDatabase {
     try {
       return await this.prisma.userIntegration.create({
         data: userIntegration,
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async createAndUpdateUserIntegration(
+    query: Record<string, any>,
+    updateUserIntegration: Record<string, any>,
+    userIntegration: any,
+  ) {
+    try {
+      return await this.prisma.userIntegration.upsert({
+        where: query,
+        update: updateUserIntegration,
+        create: userIntegration,
       });
     } catch (error) {
       console.log(error);

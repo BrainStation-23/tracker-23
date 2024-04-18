@@ -107,11 +107,7 @@ const SprintViewReportTabel = ({ data }: Props) => {
       dataIndex: "name",
       key: "name",
       fixed: "left",
-      render: (
-        text: string,
-        record: SprintViewReportTableRow,
-        index: number
-      ) => {
+      render: (text: string, record: SprintViewReportTableRow) => {
         return {
           children: (
             <div className="justify-left mx-auto flex w-[150px] items-center gap-2 ">
@@ -163,8 +159,7 @@ const SprintViewReportTabel = ({ data }: Props) => {
         fixed: "left",
         render: (
           value: SprintViewReportTask,
-          record: SprintViewReportTableRow,
-          _: number
+          record: SprintViewReportTableRow
         ) => renderTableTaskCell(record, column),
         align: "center",
       });
@@ -188,8 +183,7 @@ const SprintViewReportTabel = ({ data }: Props) => {
         key: column.key,
         render: (
           value: SprintViewReportTask,
-          record: SprintViewReportTableRow,
-          _: number
+          record: SprintViewReportTableRow
         ) => renderTableTaskCell(record, column),
         align: "center",
       });
@@ -215,8 +209,7 @@ const SprintViewReportTabel = ({ data }: Props) => {
         key: column.key,
         render: (
           value: SprintViewReportTask,
-          record: SprintViewReportTableRow,
-          _: number
+          record: SprintViewReportTableRow
         ) => renderTableTaskCell(record, column),
         align: "center",
       });

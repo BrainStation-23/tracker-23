@@ -1,6 +1,5 @@
 import { userAPI } from "APIs";
 import { IntegrationType } from "models/integration";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FaChartBar } from "react-icons/fa";
 import { FaChartGantt } from "react-icons/fa6";
@@ -23,19 +22,17 @@ import {
 import { RootState } from "@/storage/redux/store";
 
 import AddNewReport from "./components/addNewReport";
+import IntersectionWrapper from "./components/intersectionWrapper";
 import SprintEstimateReport from "./singleReports/sprintEstimateReport";
 import SprintReport from "./singleReports/sprintReport";
 import SprintTimelineReport from "./singleReports/sprintTimelineReport";
 import TaskListReport from "./singleReports/taskListReport";
 import TimeSheetReport from "./singleReports/timeSheetReport";
 
-const ReportPageComponent = () => {
+export default function ReportPageComponent({ pageId }: { pageId: number }) {
   const dispatch = useDispatch();
-  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const pageId = router.query?.reportPageId
-    ? parseInt(router.query?.reportPageId as string)
-    : -1;
+
   const reportPageData = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages
   ).find((reportPage) => reportPage.id === pageId);
@@ -44,6 +41,7 @@ const ReportPageComponent = () => {
     const res = await userAPI.getReportSprints();
     if (res?.length > 0) dispatch(setReportSprintListReducer(res));
   };
+
   const getIntegrationTypes = async () => {
     const res = await userAPI.getIntegrationTypesReportPage();
     if (res?.length > 0) {
@@ -53,53 +51,57 @@ const ReportPageComponent = () => {
       dispatch(setReportIntegrationTypesSlice(types));
     }
   };
+
   const getProjectWiseStatues = async () => {
     const res = await userAPI.getAllReportProjects();
     res && dispatch(setReportProjectsSlice(res));
   };
-  const reportToRender = (report: ReportData) => {
+
+  const reportToRender = (report: ReportData, inView: Boolean) => {
     switch (report.reportType) {
       case "TIME_SHEET":
-        return <TimeSheetReport reportData={report} />;
+        return <TimeSheetReport reportData={report} inView={inView} />;
       case "SPRINT_ESTIMATION":
-        return <SprintEstimateReport reportData={report} />;
+        return <SprintEstimateReport reportData={report} inView={inView} />;
       case "TASK_LIST":
-        return <TaskListReport reportData={report} />;
+        return <TaskListReport reportData={report} inView={inView} />;
       case "SPRINT_REPORT":
-        return <SprintReport reportData={report} />;
+        return <SprintReport reportData={report} inView={inView} />;
       case "SPRINT_TIMELINE":
-        return <SprintTimelineReport reportData={report} />;
+        return <SprintTimelineReport reportData={report} inView={inView} />;
       default:
         return <div>No report found</div>;
     }
   };
+
   useEffect(() => {
     getIntegrationTypes();
     getSprintList();
     getProjectWiseStatues();
   }, []);
+
   return (
-    <div className="flex flex-col gap-7 pb-5">
-      <div className="flex items-center justify-end">
+    <div className="flex min-h-full w-full flex-col gap-7 bg-[#EDEDF0] px-8 pt-2 pb-5">
+      <div className="flex items-center justify-end pt-2">
         <PrimaryButton onClick={() => setIsModalOpen(true)}>
           <PlusIconSvg /> Add New Report
         </PrimaryButton>
       </div>
       {reportPageData?.reports?.map((report) => {
         return (
-          <div className="flex flex-col gap-5 rounded border-2 p-4">
-            {reportToRender(report)}
-          </div>
+          <IntersectionWrapper
+            {...{ report, reportToRender }}
+            key={report.id}
+          />
         );
       })}
+
       <GlobalModal title="Add New Report" {...{ isModalOpen, setIsModalOpen }}>
         <AddNewReport setIsModalOpen={setIsModalOpen} />
       </GlobalModal>
     </div>
   );
-};
-
-export default ReportPageComponent;
+}
 
 export const ReportIcons = {
   TIME_SHEET: <FaChartBar />,

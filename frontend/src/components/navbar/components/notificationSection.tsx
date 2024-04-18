@@ -71,7 +71,7 @@ const NotificationSection = () => {
 
   const menuProps = {
     items,
-    onClick: (item: any) => {},
+    onClick: () => {},
   };
 
   const { token } = useToken();

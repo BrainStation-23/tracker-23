@@ -12,12 +12,14 @@ import GoogleLogin from "./googleLogin";
 const LoginPanel = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   return (
-    <div className="flex">
-      <div className="m-auto flex h-fit max-w-[60%] flex-col gap-6 lg:max-w-[70%]">
-        <BSLogoSvg height={40} />
+    <>
+      <div className="m-auto flex flex-col gap-6 px-4 py-5 md:max-w-[60%] md:py-0 lg:max-w-[70%]">
+        <div className="flex justify-center">
+          <BSLogoSvg height={40} />
+        </div>
         <AuthHeader
           title={"Sign in to account"}
-          subTitle={"   Sign up or log in to start tracking your time"}
+          subTitle={"Sign up or log in to start tracking your time"}
         />
         <GoogleLogin setIsModalOpen={setIsModalOpen} />
         <MyDivider>or</MyDivider>
@@ -39,7 +41,7 @@ const LoginPanel = () => {
           <h1>Logging In...</h1>
         </div>
       </Modal>
-    </div>
+    </>
   );
 };
 

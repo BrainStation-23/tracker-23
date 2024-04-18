@@ -7,9 +7,13 @@ const OnBoarding = () => {
   const { status } = useAppSelector((state: RootState) => state.userSlice.user);
   if (status === "ONBOARD")
     return (
-      <div className="grid h-screen grid-cols-2">
-        <SideBanner />
-        <OnboardingSteps />
+      <div className="grid h-screen grid-cols-5">
+        <div className="col-span-3 ">
+          <OnboardingSteps />
+        </div>
+        <div className="col-span-2 ">
+          <SideBanner />
+        </div>
       </div>
     );
   else return <></>;

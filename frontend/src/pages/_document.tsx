@@ -2,6 +2,7 @@ import React from "react";
 import { createCache, extractStyle, StyleProvider } from "@ant-design/cssinjs";
 import Document, { Head, Html, Main, NextScript } from "next/document";
 import type { DocumentContext } from "next/document";
+import { config } from "config";
 
 function MyDocument() {
   return (
@@ -22,6 +23,21 @@ function MyDocument() {
       <body>
         <Main />
         <NextScript />
+        <script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${config.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    
+                    gtag('config', '${config.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {page_path: window.location.pathname,});
+                  `,
+          }}
+        />
       </body>
     </Html>
   );
@@ -41,7 +57,7 @@ MyDocument.getInitialProps = async (ctx: DocumentContext) => {
     });
 
   const initialProps = await Document.getInitialProps(ctx);
-  const style = extractStyle(cache, true);
+  const style = extractStyle(cache);
   return {
     ...initialProps,
     styles: (

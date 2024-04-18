@@ -5,14 +5,16 @@ import {
 } from "models/reports";
 
 import SprintViewTimelineReportTabel from "./sprintViewTimelineReportTabel";
+import { ReportData } from "@/storage/redux/reportsSlice";
 
 type Props = {
   data: SprintViewTimelineReportDto;
+  reportData: ReportData;
 };
 
-const SprintViewTimelineReportComponent = ({ data }: Props) => {
-  const rows = data?.rows ? [...data?.rows] : [];
-  const modifiedColumns = data?.columns ? [...data?.columns] : [];
+const SprintViewTimelineReportComponent = ({ data, reportData }: Props) => {
+  const rows = data?.rows?.length ? [...data?.rows] : [];
+  const modifiedColumns = data?.columns?.length ? [...data?.columns] : [];
 
   const modifiedRows: SprintViewTimelineReportTableRow[] = [];
 
@@ -66,6 +68,7 @@ const SprintViewTimelineReportComponent = ({ data }: Props) => {
           columns: modifiedColumns,
           rows: modifiedRows,
         }}
+        reportData={reportData}
       />
     </div>
   );

@@ -1,13 +1,13 @@
 import { Form } from "antd";
 
-const MyFormItem = ({ rules = [], label, ...restProps }: any) => {
+const MyFormItem = ({ rules = [], label, noStar, ...restProps }: any) => {
   let myLabel = label;
 
   if (rules.some((rule: any) => rule.required)) {
     myLabel = (
       <div className="2xl:text-base">
         {myLabel}
-        <span style={{ color: "red" }}>*</span>
+        {!noStar && <span style={{ color: "red" }}>*</span>}
       </div>
     );
   }

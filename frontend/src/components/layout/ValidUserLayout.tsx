@@ -1,42 +1,50 @@
-import { message, Spin } from "antd";
-import { userAPI } from "APIs";
+import Head from "next/head";
 import classNames from "classnames";
-import { IntegrationDto, IntegrationType } from "models/integration";
-import { GetWorkspaceListWithUserDto } from "models/workspaces";
+import { message, Spin } from "antd";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
-import { noNavbar, publicRoutes } from "utils/constants";
+import { ReactNode, useEffect, useState } from "react";
 
+// Models
+import { GetWorkspaceListWithUserDto } from "models/workspaces";
+import { IntegrationDto, IntegrationType } from "models/integration";
+
+// Components
 import Navbar from "@/components/navbar";
-import ReportSettings from "@/components/report/components/reportSettings";
 import SideMenu from "@/components/sideMenu";
 import NoActiveWorkspace from "@/components/workspaces/noActiveWorkSpace";
+import ReportSettings from "@/components/report/components/reportSettings";
+
+// Service
+import { userAPI } from "APIs";
 import { GetCookie } from "@/services/cookie.service";
+import { noNavbar, publicRoutes } from "utils/constants";
 import { initializeSocket } from "@/services/socket.service";
-import { useAppDispatch, useAppSelector } from "@/storage/redux";
+
+// Storage
 import {
   setIntegrationsSlice,
   setIntegrationTypesSlice,
 } from "@/storage/redux/integrationsSlice";
-import { setNotifications } from "@/storage/redux/notificationsSlice";
-import { setPriorities } from "@/storage/redux/prioritySlice";
-import { setProjectsSlice } from "@/storage/redux/projectsSlice";
-import { setReportPages } from "@/storage/redux/reportsSlice";
-import { setSettingsReducer } from "@/storage/redux/settingsSlice";
 import { RootState } from "@/storage/redux/store";
-import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 import { setUserSlice } from "@/storage/redux/userSlice";
-import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
 import { deleteFromLocalStorage } from "@/storage/storage";
+import { setPriorities } from "@/storage/redux/prioritySlice";
+import { setReportPages } from "@/storage/redux/reportsSlice";
+import { setProjectsSlice } from "@/storage/redux/projectsSlice";
+import { useAppDispatch, useAppSelector } from "@/storage/redux";
+import { setSettingsReducer } from "@/storage/redux/settingsSlice";
+import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
+import { setNotifications } from "@/storage/redux/notificationsSlice";
+import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 
-const CustomLayout = ({ children }: any) => {
+import "react-toastify/dist/ReactToastify.css";
+
+const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
-  const [loading, setLoading] = useState<boolean>(true);
-  const path = router.asPath;
-  const isPublicRoute = publicRoutes.some((route) => path.includes(route));
-
   const dispatch = useAppDispatch();
+
+  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
   const syncRunning = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
@@ -49,13 +57,7 @@ const CustomLayout = ({ children }: any) => {
   const connectedSocket = useAppSelector(
     (state: RootState) => state.notificationsSlice.socket
   );
-  const [syncing, setSyncing] = useState(
-    useAppSelector((state: RootState) => state.syncStatus.syncRunning)
-  );
-  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
-  const tmp = useAppSelector(
-    (state: RootState) => state.syncStatus.syncRunning
-  );
+
   const reloadWorkspace = useAppSelector(
     (state: RootState) => state.workspacesSlice.reload
   );
@@ -68,6 +70,16 @@ const CustomLayout = ({ children }: any) => {
   const reportInEdit = useAppSelector(
     (state: RootState) => state.reportsSlice.reportInEdit
   );
+
+  // State
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(syncRunning);
+
+  // Constant
+  const path = router.asPath;
+  const isPublicRoute = publicRoutes.some((route) => path.includes(route));
+
+  // handler
   const getProjectWiseStatues = async () => {
     if (!projectStatuses) {
       {
@@ -76,6 +88,7 @@ const CustomLayout = ({ children }: any) => {
       }
     }
   };
+
   const getIntegrations = async () => {
     const integrations =
       integrationsSlice?.length > 0
@@ -99,115 +112,28 @@ const CustomLayout = ({ children }: any) => {
       dispatch(setNotifications(notifications));
     }
   };
+
   const getSettings = async () => {
     const res = await userAPI.getWorkspaceSettings();
     res && dispatch(setSettingsReducer(res));
   };
+
   const getProjects = async () => {
     const res = await userAPI.getIntegratedProjectStatuses();
     res && dispatch(setProjectsSlice(res));
     res && dispatch(setPriorities(res));
   };
+
   const initialLoading = async () => {
     await getIntegrations();
     await getNotifications();
     await getSettings();
     await getProjects();
   };
-  useEffect(() => {
-    if (!publicRoutes.some((route) => path.includes(route))) {
-      userInfo?.activeWorkspace && initialLoading();
-    }
-  }, [
-    publicRoutes.some((route) => path.includes(route)),
-    path,
-    userInfo?.activeWorkspace,
-  ]);
-  useEffect(() => {
-    const connectSocket = async () => {
-      GetCookie("access_token") &&
-        !connectedSocket &&
-        (await initializeSocket());
-    };
-    let timeout: NodeJS.Timeout;
-    timeout =
-      !publicRoutes.some((route) => path.includes(route)) &&
-      !connectedSocket &&
-      setTimeout(connectSocket, 2000);
-    const cleanup = () => {
-      clearTimeout(timeout);
-    };
 
-    return cleanup;
-  });
-  useEffect(() => {
-    const getSyncStatus = async () => {
-      const res = await userAPI.syncStatus();
-      res && dispatch(setSyncStatus(res));
-      if (res.status === "IN_PROGRESS") {
-        dispatch(setSyncRunning(true));
-      } else if (res.status === "DONE") {
-        syncing && message.success("Sync Completed");
-        dispatch(setSyncRunning(false));
-      }
-    };
-    let timeout: NodeJS.Timeout;
-    timeout =
-      !publicRoutes.some((route) => path.includes(route)) &&
-      userInfo?.activeWorkspace &&
-      setTimeout(getSyncStatus, 2000);
-    const cleanup = () => {
-      clearTimeout(timeout);
-    };
-
-    return cleanup;
-  }, [publicRoutes.some((route) => path.includes(route))]);
-
-  useEffect(() => {
-    let myTimeout: NodeJS.Timeout;
-
-    const getSyncStatus = async () => {
-      const res = await userAPI.syncStatus();
-      res && dispatch(setSyncStatus(res));
-      if (res.status === "IN_PROGRESS") {
-        dispatch(setSyncRunning(true));
-        myTimeout = setTimeout(getSyncStatus, 5000);
-      } else if (res.status === "DONE") {
-        syncing && message.success("Sync Completed");
-        dispatch(setSyncRunning(false));
-      }
-    };
-
-    if (!publicRoutes.includes(router.pathname)) {
-      if (tmp && userInfo?.activeWorkspace) {
-        myTimeout = setTimeout(getSyncStatus, 5000);
-      }
-    }
-
-    const cleanup = () => {
-      clearTimeout(myTimeout);
-    };
-
-    return cleanup;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, syncing, router]);
-  useEffect(() => {
-    if (syncRunning !== syncing) setSyncing(syncRunning);
-  }, [syncing, syncRunning]);
   const getWorkspaces = async () => {
     const res: GetWorkspaceListWithUserDto = await userAPI.getWorkspaceList();
-    console.log("🚀 ~ file: layout.tsx:159 ~ getWorkspaces ~ res:", res);
     if (res.user) {
-      // const activeWorkspace = res.user.activeWorkspace;
-      // const workspaces = res.workspaces.map((workspace) => {
-      //   return {
-      //     ...workspace,
-      //     active: workspace.id === res.user.activeWorkspaceId,
-      //   };
-      // });
-      // const activeUserWorkspace = activeWorkspace?.userWorkspaces.find(
-      //   (userWorkspace) => userWorkspace.userId === res.user.id
-      // );
       dispatch(
         setUserSlice({ ...res.user, role: res.user.activeUserWorkspace?.role })
       );
@@ -228,6 +154,75 @@ const CustomLayout = ({ children }: any) => {
     setLoading(false);
   };
 
+  // Side Effect
+  useEffect(() => {
+    const connectSocket = async () => {
+      GetCookie("access_token") &&
+        !connectedSocket &&
+        (await initializeSocket());
+    };
+    let timeout: NodeJS.Timeout;
+    timeout =
+      !publicRoutes.some((route) => path.includes(route)) &&
+      !connectedSocket &&
+      setTimeout(connectSocket, 2000);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    if (!publicRoutes.some((route) => path.includes(route))) {
+      userInfo?.activeWorkspace && initialLoading();
+    }
+  }, [userInfo?.activeWorkspace.id]);
+
+  useEffect(() => {
+    const getSyncStatus = async () => {
+      const res = await userAPI.syncStatus();
+      res && dispatch(setSyncStatus(res));
+      if (res.status === "IN_PROGRESS") {
+        dispatch(setSyncRunning(true));
+      } else if (res.status === "DONE") {
+        syncing && message.success("Sync Completed");
+        dispatch(setSyncRunning(false));
+      }
+    };
+    let timeout: NodeJS.Timeout;
+    timeout =
+      !publicRoutes.some((route) => path.includes(route)) &&
+      userInfo?.activeWorkspace &&
+      setTimeout(getSyncStatus, 2000);
+
+    return () => clearTimeout(timeout);
+  }, [publicRoutes.some((route) => path.includes(route))]);
+
+  useEffect(() => {
+    let myTimeout: NodeJS.Timeout;
+    const getSyncStatus = async () => {
+      const res = await userAPI.syncStatus();
+      res && dispatch(setSyncStatus(res));
+      if (res.status === "IN_PROGRESS") {
+        dispatch(setSyncRunning(true));
+        myTimeout = setTimeout(getSyncStatus, 5000);
+      } else if (res.status === "DONE") {
+        syncing && message.success("Sync Completed");
+        dispatch(setSyncRunning(false));
+      }
+    };
+
+    if (!publicRoutes.includes(router.pathname)) {
+      if (syncRunning && userInfo?.activeWorkspace) {
+        myTimeout = setTimeout(getSyncStatus, 5000);
+      }
+    }
+
+    return () => clearTimeout(myTimeout);
+  }, [dispatch, syncing, router]);
+
+  useEffect(() => {
+    if (syncRunning !== syncing) setSyncing(syncRunning);
+  }, [syncing, syncRunning]);
+
   useEffect(() => {
     if (
       !publicRoutes.some((route) => path.includes(route)) &&
@@ -239,6 +234,7 @@ const CustomLayout = ({ children }: any) => {
       } else setLoading(false);
     }
   }, [router, path]);
+
   useEffect(() => {
     if (
       !publicRoutes.some((route) => path.includes(route)) &&
@@ -248,6 +244,7 @@ const CustomLayout = ({ children }: any) => {
       getWorkspaces();
     }
   }, [reloadWorkspace]);
+
   useEffect(() => {
     if (userInfo?.status === "ONBOARD") {
       !path.includes("onBoarding") && router.push("/onBoarding");
@@ -255,11 +252,13 @@ const CustomLayout = ({ children }: any) => {
       path.includes("onBoarding") && router.push("/taskList");
     }
   }, [router, path, userInfo]);
+
   useEffect(() => {
     !["/inviteLink", "/socialLogin/redirect"].some((route) =>
       path.includes(route)
     ) && deleteFromLocalStorage("invitationCode");
   }, [path]);
+
   return (
     <>
       {loading &&
@@ -270,14 +269,18 @@ const CustomLayout = ({ children }: any) => {
             spinning={
               loading && !publicRoutes.some((route) => path.includes(route))
             }
-            tip={"Loading"}
-            className="inset-0 m-auto h-full "
+            tip={"Loading..."}
+            className="inset-0 m-auto h-full"
           >
-            <div className="h-screen "></div>
+            <div className="h-screen" />
           </Spin>
         </div>
       ) : (
         <div className="flex">
+          <Head>
+            <link rel="icon" href="/images/bsIcon.png" />
+            <title>Tracker 23</title>
+          </Head>
           {!publicRoutes.some((route) => path.includes(route)) &&
             !path.includes("onBoarding") && (
               <div
@@ -295,25 +298,22 @@ const CustomLayout = ({ children }: any) => {
           publicRoutes.some((route) => path.includes(route)) ? (
             <div
               className={classNames(
-                "flex max-h-screen w-full flex-col overflow-auto overflow-y-auto",
-                {
-                  "px-8": !isPublicRoute && !path.includes("onBoarding"),
-                }
+                "flex max-h-screen w-full flex-col overflow-auto overflow-y-auto bg-white"
               )}
             >
               {!isPublicRoute &&
                 !path.includes("onBoarding") &&
                 !noNavbar.some((route) => path.includes(route)) && <Navbar />}
-              <div className="h-full w-full bg-white">{children}</div>
+              <div className="h-full min-h-max w-full">{children}</div>
             </div>
           ) : (
-            <div
-              className={classNames("flex w-full flex-col overflow-y-auto", {
-                "px-8": !isPublicRoute && !path.includes("onBoarding"),
-              })}
-            >
+            <div className={classNames("flex w-full flex-col overflow-y-auto")}>
               <Navbar />
-              <NoActiveWorkspace />
+              <NoActiveWorkspace
+                className={classNames("", {
+                  "px-8": !isPublicRoute && !path.includes("onBoarding"),
+                })}
+              />
             </div>
           )}
         </div>
@@ -332,4 +332,4 @@ const CustomLayout = ({ children }: any) => {
   );
 };
 
-export default CustomLayout;
+export default ValidUserLayout;

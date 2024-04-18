@@ -2,10 +2,13 @@ import { UserIntegration } from '@prisma/client';
 import { lastValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import { outLookConfig } from 'config/outlook';
 import axios from 'axios';
+import { APIException } from '../exception/api.exception';
+import { ErrorMessage } from '../integrations/dto/get.userIntegrations.filter.dto';
+import { StatusEnum } from '../tasks/dto';
 
 @Injectable()
 export class JiraClientService {
@@ -43,7 +46,10 @@ export class JiraClientService {
           await lastValueFrom(this.httpService.post(url, data, headers))
         ).data;
       } catch (err) {
-        console.log('🚀 ~ file: client.ts:55 ~ JiraClient ~ err:', err);
+        throw new APIException(
+          ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
+          HttpStatus.GONE,
+        );
       }
       const expires_in = 3500000;
       const issued_time = Date.now();
@@ -76,7 +82,6 @@ export class JiraClientService {
       return await apiCaller(userIntegration, ...rest);
     } else {
       const url = outLookConfig.outlookAuthUrl;
-      console.log('🚀 ~ file: client.ts:79 ~ JiraClientService ~ url:', url);
       const data = {
         client_id: outLookConfig.clientId,
         grant_type: 'refresh_token',
@@ -95,7 +100,22 @@ export class JiraClientService {
           })
         ).data;
       } catch (err) {
-        console.log('🚀 ~ file: client.ts:106 ~ JiraClientService ~ err:', err);
+        const getSync = await this.userIntegrationDatabase.getSyncStatus({
+          userWorkspaceId: userIntegration.userWorkspaceId,
+          status: StatusEnum.IN_PROGRESS,
+        });
+        if (getSync) {
+          await this.userIntegrationDatabase.updateSyncStatus(
+            {
+              id: getSync.id,
+            },
+            { status: StatusEnum.INVALID_JIRA_REFRESH_TOKEN },
+          );
+        }
+        throw new APIException(
+          ErrorMessage.INVALID_OUTLOOK_REFRESH_TOKEN,
+          HttpStatus.GONE,
+        );
       }
 
       const issuedTime = Date.now();

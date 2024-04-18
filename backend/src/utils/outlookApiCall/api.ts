@@ -25,6 +25,30 @@ export class OutlookApiCalls {
     }
   }
 
+  async extendOutlookWebhookLifecycle(
+    userIntegration: UserIntegration,
+    url: string,
+    formateReqBody: any,
+  ) {
+    try {
+      const config = {
+        method: 'PATCH',
+        url,
+        headers: {
+          Authorization: `Bearer ${userIntegration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        data: formateReqBody,
+      };
+      const webhook = await (await axios(config)).data;
+      console.log('🚀 ~ OutlookApiCalls ~ webhook:', webhook);
+      return webhook;
+    } catch (err) {
+      console.log('🚀 ~ OutlookApiCalls ~ err:', err);
+      return null;
+    }
+  }
+
   async getCalendarEvents(userIntegration: UserIntegration, url: string) {
     try {
       const headers: any = {

@@ -15,6 +15,7 @@ import {
   LoginDto,
   PasswordResetDto,
   RegisterDto,
+  RegisterSenOTPDto,
 } from './dto';
 import { AuthService } from './auth.service';
 import { Request } from 'express';
@@ -22,6 +23,11 @@ import { Request } from 'express';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly usersService: AuthService) {}
+
+  @Post('register/send-otp')
+  async sendRegisterOTP(@Body() registerDto: RegisterSenOTPDto) {
+    return this.usersService.sendRegisterOTP(registerDto);
+  }
 
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {

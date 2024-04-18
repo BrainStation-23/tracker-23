@@ -1,7 +1,7 @@
 import { Form, Input, message } from "antd";
 import { userAPI } from "APIs/index";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useState } from "react";
 
 import MyFormItem from "@/components/common/form/MyFormItem";
 import MyLink from "@/components/common/link/MyLink";
@@ -12,38 +12,46 @@ type Props = {
 };
 const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
   const router = useRouter();
+  const [waitingForOtp, setWaitingForOtp] = useState(false);
 
   const onFinish = async (values: any) => {
-    const temp = {
-      email: values.email,
-      firstName: values.firstName,
-      lastName: values.lastName,
-      password: values.password,
-    };
     setIsModalOpen(true);
-    const userRegistered = await userAPI.registerUser(temp);
-    setIsModalOpen(false);
+    if (!waitingForOtp) {
+      const otp = await userAPI.sendOTP(values);
+      setIsModalOpen(false);
 
-    if (userRegistered) {
-      message.success("Singed up Successfully");
-      router.push("/login");
+      if (otp) {
+        setWaitingForOtp(true);
+      }
+    } else {
+      const userRegistered = await userAPI.registerUser(values);
+      setIsModalOpen(false);
+
+      if (userRegistered) {
+        if (window.gtag) {
+          window.gtag("event", "sign_up", {
+            method: "System",
+          });
+        }
+        message.success("Singed up Successfully");
+        router.push("/login");
+      }
     }
   };
 
-  const onFinishFailed = (errorInfo: any) => {
-    console.log("Failed:", errorInfo);
-    errorInfo &&
-      errorInfo.errorFields.forEach((ef: any) => {
-        message.error(ef.errors[0]);
-      });
-  };
+  // const onFinishFailed = (errorInfo: any) => {
+  //   errorInfo &&
+  //     errorInfo.errorFields.forEach((ef: any) => {
+  //       message.error(ef.errors[0]);
+  //     });
+  // };
 
   return (
     <Form
       name="basic"
       initialValues={{ remember: true, email }}
       onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
+      // onFinishFailed={onFinishFailed}
       layout="vertical"
       labelAlign="left"
       requiredMark={false}
@@ -52,6 +60,7 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
       <MyFormItem
         label="First Name"
         name="firstName"
+        className="mb-5"
         rules={[{ required: true, message: "Please input your First Name!" }]}
       >
         <Input
@@ -62,6 +71,7 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
       <MyFormItem
         label="Last Name"
         name="lastName"
+        className="mb-5"
         rules={[{ required: true, message: "Please input your Last Name!" }]}
       >
         <Input
@@ -73,6 +83,7 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
       <MyFormItem
         label="Email Address"
         name="email"
+        className="mb-5"
         validateFirst={true}
         rules={[
           { required: true, message: "Please input a valid email!" },
@@ -97,6 +108,7 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
       <MyFormItem
         label="Password"
         name="password"
+        className="mb-5"
         rules={[{ required: true, message: "Please input your password!" }]}
       >
         <Input.Password
@@ -108,6 +120,7 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
       <MyFormItem
         label="Re-type Password"
         name="passwordRe"
+        className="mb-5"
         rules={[
           { required: true, message: "Please re-input your password!" },
           ({ getFieldValue }: any) => ({
@@ -125,6 +138,19 @@ const RegistrationForm = ({ setIsModalOpen, email }: Props) => {
           className="flex rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
         />
       </MyFormItem>
+      {waitingForOtp && (
+        <MyFormItem
+          label="OTP"
+          className="mb-5"
+          name="code"
+          rules={[{ required: true, message: "Please input the OTP" }]}
+        >
+          <Input
+            placeholder="Enter OTP code"
+            className="flex w-full rounded-lg border-2 border-black px-3 py-2 font-medium placeholder:font-normal md:px-4 md:py-3"
+          />
+        </MyFormItem>
+      )}
 
       <MyFormItem>
         <button className="flex w-full flex-none items-center justify-center rounded-lg border-2 border-black bg-black px-3 py-2 font-medium text-white md:px-4 md:py-3">

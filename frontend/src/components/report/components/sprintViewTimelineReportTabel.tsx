@@ -10,6 +10,8 @@ import {
 import { TaskStatusEnum } from "models/tasks";
 
 import TimeProgressComponent from "./timeProgressComponent";
+import { ReportData } from "@/storage/redux/reportsSlice";
+import EditReportConfigComponent from "./editReportConfigComponent";
 
 const { Text } = Typography;
 type Props = {
@@ -17,13 +19,13 @@ type Props = {
     columns: SprintViewTimelineReportColumn[];
     rows: SprintViewTimelineReportTableRow[];
   };
+  reportData: ReportData;
 };
 
-const SprintViewTimelineReportTabel = ({ data }: Props) => {
+const SprintViewTimelineReportTabel = ({ data, reportData }: Props) => {
   const renderTableTaskCell = (
     record: SprintViewTimelineReportTableRow,
-    column: SprintViewTimelineReportColumn,
-    columnIndex: number
+    column: SprintViewTimelineReportColumn
   ) => {
     if (column.key in record.task || column.key in record.devProgress) {
       type cellType = "progress" | "assignedTask" | "task" | "noTask";
@@ -228,11 +230,7 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
       dataIndex: "name",
       key: "name",
       fixed: "left",
-      render: (
-        text: string,
-        record: SprintViewTimelineReportTableRow,
-        index: number
-      ) => {
+      render: (text: string, record: SprintViewTimelineReportTableRow) => {
         return {
           children: (
             <div className="justify-left mx-auto flex w-[150px] items-center gap-2 ">
@@ -262,7 +260,7 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
       // align: "center",
     },
   ];
-  data?.columns.forEach((column, index) => {
+  data?.columns.forEach((column) => {
     if (column.key === "AssignTasks") {
       columns.push({
         title: (
@@ -293,9 +291,8 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
         fixed: "left",
         render: (
           value: SprintViewTimelineReportColumn,
-          record: SprintViewTimelineReportTableRow,
-          _: number
-        ) => renderTableTaskCell(record, column, index),
+          record: SprintViewTimelineReportTableRow
+        ) => renderTableTaskCell(record, column),
         align: "center",
       });
     } else {
@@ -339,9 +336,8 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
         key: column.key,
         render: (
           value: SprintViewTimelineReportTask,
-          record: SprintViewTimelineReportTableRow,
-          _: number
-        ) => renderTableTaskCell(record, column, index),
+          record: SprintViewTimelineReportTableRow
+        ) => renderTableTaskCell(record, column),
         align: "center",
       });
     }
@@ -355,20 +351,24 @@ const SprintViewTimelineReportTabel = ({ data }: Props) => {
         rowKey={"id"}
         bordered
         pagination={{
-          current: 1,
-          pageSize: 500,
-          showSizeChanger: false,
-          showLessItems: true,
+          // current: 1,
+          // pageSize: 500,
+          // showSizeChanger: false,
+          // showLessItems: true,
           position: ["bottomRight", "bottomLeft"],
         }}
         scroll={{ x: true }}
       />
     </div>
   ) : (
-    <Empty
-      className="mt-12"
-      description="Select Project And Sprint to View Data"
-    />
+    <div>
+      <Empty
+        className="mt-12"
+        description="Select Project And Sprint to View Data"
+      >
+        <EditReportConfigComponent reportData={reportData} />
+      </Empty>
+    </div>
   );
 };
 

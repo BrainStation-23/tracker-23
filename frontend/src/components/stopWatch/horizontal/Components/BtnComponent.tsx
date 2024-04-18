@@ -1,4 +1,4 @@
-import { Button, Tooltip } from "antd";
+import { Tooltip } from "antd";
 
 import { PlayIcon } from "@/icons/playIcon";
 import React from "react";

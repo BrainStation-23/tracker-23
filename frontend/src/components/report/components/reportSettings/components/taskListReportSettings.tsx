@@ -1,7 +1,7 @@
 import { message } from "antd";
 import { userAPI } from "APIs";
 import { IntegrationType } from "models/integration";
-import { SprintUser } from "models/reports";
+import { FilterDateType, SprintUser, UpdateReportDto } from "models/reports";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -24,6 +24,9 @@ type Props = {
 const TaskListReportSettings = ({ reportData }: Props) => {
   const dispatch = useDispatch();
   const [users, setUsers] = useState<SprintUser[]>([]);
+  const [filterDateType, setFilterDateType] = useState(
+    FilterDateType.THIS_WEEK
+  );
   const [sprints, setSprints] = useState<number[]>(
     reportData?.config?.sprintIds ? reportData?.config?.sprintIds : []
   );
@@ -42,16 +45,16 @@ const TaskListReportSettings = ({ reportData }: Props) => {
       : null
   );
   const [dateRange, setDateRange] = useState(
-    reportData?.config?.startDate
+    reportData?.config?.startDate && reportData?.config?.endDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray("this-week")
+      : getDateRangeArray(reportData?.config?.filterDateType)
   );
   const getUserListByProject = async () => {
     const res = await userAPI.userListByProject(projects);
     res && setUsers(res);
   };
 
-  const saveConfig = async () => {
+  const saveConfig = async (extraData?: UpdateReportDto) => {
     const res = await userAPI.updateReport(reportData.id, {
       startDate: dateRange[0],
       endDate: dateRange[1],
@@ -60,12 +63,17 @@ const TaskListReportSettings = ({ reportData }: Props) => {
       calendarIds,
       userIds: selectedUser ? [selectedUser] : [],
       types: selectedSource,
+      filterDateType,
+      ...(extraData ?? {}),
     });
     if (res) {
       dispatch(updateReportSlice(res));
       message.success("Saved Successfully");
       dispatch(setReportInEditSlice(null));
     }
+  };
+  const getFilterDateType = (type: FilterDateType) => {
+    setFilterDateType(type);
   };
   useEffect(() => {
     getUserListByProject();
@@ -80,6 +88,7 @@ const TaskListReportSettings = ({ reportData }: Props) => {
       <DateRangePicker
         selectedDate={dateRange}
         setSelectedDate={setDateRange}
+        setFilterDateType={getFilterDateType}
       />
 
       <TypeDependentSection
@@ -98,7 +107,7 @@ const TaskListReportSettings = ({ reportData }: Props) => {
 
       <UserSelectorComponent
         {...{ userList: users, selectedUser, setSelectedUser }}
-        className="w-[210px]"
+        className="w-full min-w-[210px]"
       />
     </ReportSettingsWrapper>
   );

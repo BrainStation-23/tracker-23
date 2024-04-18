@@ -8,6 +8,8 @@ import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { useRouter } from "next/router";
 
+const { Text } = Typography;
+
 type Props = {
   sprints: any[];
   setSprints: Function;
@@ -15,27 +17,28 @@ type Props = {
   projectIds?: number[];
   mode?: "multi" | "single";
 };
-type TagProps = {
-  label: any;
-  value: SprintDto;
-  closable: any;
-  onClose: any;
-};
-const SprintSelectorComponent = ({
+
+export default function SprintSelectorComponent({
   sprints,
   setSprints,
   className,
   projectIds,
   mode = "multi",
-}: Props) => {
-  const { Text } = Typography;
-  const defaultValues: any = [];
+}: Props) {
   const router = useRouter();
   const path = router.asPath;
+  const defaultValues: any = [];
+
+  const reportSprintList = useAppSelector(
+    (state: RootState) => state.projectList.reportSprintList
+  );
+  const taskSprintList = useAppSelector(
+    (state: RootState) => state.tasksSlice.sprintList
+  );
 
   const sprintList = path.includes("report")
-    ? useAppSelector((state: RootState) => state.projectList.reportSprintList)
-    : useAppSelector((state: RootState) => state.tasksSlice.sprintList);
+    ? reportSprintList
+    : taskSprintList;
 
   const Options: { value: number; label: string; key: number }[] = [];
   if (projectIds) {
@@ -67,36 +70,7 @@ const SprintSelectorComponent = ({
       });
     }
   }
-  const tagRender = (props: TagProps) => {
-    const { label, value, closable, onClose } = props;
 
-    const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-    };
-
-    return (
-      <div
-        onClick={onClose}
-        className="m-1 flex w-max cursor-pointer items-center gap-1 rounded border-[1px] border-secondary px-2 py-0.5 text-xs font-medium text-black"
-      >
-        {sprints.length > 1 ? (
-          <div className="flex w-max max-w-[30px] items-center text-sm">
-            <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
-              {label}
-            </Text>
-          </div>
-        ) : (
-          <div className="flex w-max max-w-[100px] items-center text-sm">
-            <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
-              {label}
-            </Text>
-          </div>
-        )}
-        <CrossIconSvg />
-      </div>
-    );
-  };
   useEffect(() => {
     const tmpArray: any[] = [];
     mode !== "single" &&
@@ -118,35 +92,61 @@ const SprintSelectorComponent = ({
         {mode === "single" ? (
           <Select
             placeholder="Select Sprint"
-            tagRender={(props) => tagRender(props)}
+            tagRender={(props) => tagRender({ ...props, sprints })}
             value={sprints[0] ? sprints : null}
             className="w-full"
             showArrow
             maxTagCount={1}
             options={Options}
-            onChange={(value) => {
-              console.log("🚀 ~ file: sprintSelector.tsx:123 ~ value:", value);
-              setSprints(value);
-            }}
+            onChange={(value) => setSprints(value)}
           />
         ) : (
           <Select
             placeholder="Select Sprint"
             mode="multiple"
-            tagRender={(props) => tagRender(props)}
+            tagRender={(props) => tagRender({ ...props, sprints })}
             value={sprints}
             defaultValue={[]}
             className="w-full"
             showArrow
             maxTagCount={1}
             options={Options}
-            onChange={(value) => {
-              setSprints(value);
-            }}
+            onChange={(value) => setSprints(value)}
           />
         )}
       </div>
     );
+}
+
+type TagProps = {
+  label: any;
+  value: SprintDto;
+  closable: any;
+  onClose: any;
+  sprints: any[];
 };
 
-export default SprintSelectorComponent;
+const tagRender = (props: TagProps) => {
+  const { label, onClose, sprints } = props;
+  return (
+    <div
+      onClick={onClose}
+      className="m-1 flex w-max cursor-pointer items-center gap-1 rounded border-[1px] border-secondary px-2 py-0.5 text-xs font-medium text-black"
+    >
+      {sprints.length > 1 ? (
+        <div className="flex w-max max-w-[30px] items-center text-sm">
+          <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
+            {label}
+          </Text>
+        </div>
+      ) : (
+        <div className="flex w-max max-w-[100px] items-center text-sm">
+          <Text className="m-0 p-0 text-xs" ellipsis={{ tooltip: label }}>
+            {label}
+          </Text>
+        </div>
+      )}
+      <CrossIconSvg />
+    </div>
+  );
+};

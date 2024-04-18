@@ -8,6 +8,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
+import * as fs from 'fs';
+import * as ejs from 'ejs';
 import {
   ForgotPasswordDto,
   InvitedUserLoginDto,
@@ -15,6 +17,7 @@ import {
   LoginDto,
   PasswordResetDto,
   RegisterDto,
+  RegisterSenOTPDto,
   userDto,
 } from './dto';
 import { User, UserStatus, UserWorkspaceStatus } from '@prisma/client';
@@ -25,6 +28,7 @@ import { EmailService } from '../email/email.service';
 import { APIException } from '../exception/api.exception';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
+import { coreConfig } from 'config/core';
 
 @Injectable()
 export class AuthService {
@@ -95,12 +99,65 @@ export class AuthService {
     return await this.usersDatabase.findUserByEmail(dto.email);
   }
 
+  async sendRegisterOTP(dto: RegisterSenOTPDto) {
+    const { email, firstName, lastName } = dto;
+    dto.email = email.toLowerCase();
+    const doesExistUser = await this.usersDatabase.findUserByEmail(dto.email);
+    if (doesExistUser) {
+      throw new APIException('Email already in Use!', HttpStatus.BAD_REQUEST);
+    }
+
+    const code = `${Math.floor(Math.random() * 900000) + 100000}`;
+    const expireTime = new Date();
+    expireTime.setDate(expireTime.getMinutes() + 2);
+
+    const doesExistUserOTP = await this.usersDatabase.getUserOTP(dto.email);
+    const userOTPData = {
+      email,
+      code,
+      expireTime,
+    };
+
+    let response = null;
+    response = doesExistUserOTP
+      ? await this.usersDatabase.updateUserOTP(email, userOTPData)
+      : await this.usersDatabase.addUserOTP(userOTPData);
+
+    if (!response) {
+      throw new NotFoundException('Failed to send OTP for registration.');
+    }
+
+    const template = fs.readFileSync(
+      'src/utils/htmlTemplates/email-confirmation.html',
+      'utf8',
+    );
+
+    // send OTP registration code to email
+    const name = `${firstName} ${lastName || ''}`;
+    const html = ejs.render(template, { code, name });
+    this.emailService.sendEmail('Email Confirmation Code', html, email);
+
+    return {
+      message:
+        'Email confirmation code sent successfully. Please check your email and use the code to verify your account.',
+    };
+  }
+
   async register(dto: RegisterDto) {
     const email = dto?.email?.toLowerCase();
     dto.email = email;
 
-    const doesExistUser = await this.getUser(dto);
+    // Verify OTP Code
+    const isOTPValid = await this.verifyOTP({ email, code: dto.code });
+    if (!isOTPValid) {
+      throw new APIException(
+        'Invalid OTP code. Registration failed.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
+    let response = null;
+    const doesExistUser = await this.getUser(dto);
     if (doesExistUser) {
       const userWorkspace =
         await this.userWorkspaceDatabase.getSingleUserWorkspace({
@@ -108,7 +165,7 @@ export class AuthService {
           status: UserWorkspaceStatus.INVITED,
         });
       if (userWorkspace) {
-        return await this.createInvitedUserRegularFlow(dto);
+        response = await this.createInvitedUserRegularFlow(dto);
       } else {
         throw new APIException('Email already in Use!', HttpStatus.BAD_REQUEST);
       }
@@ -116,7 +173,30 @@ export class AuthService {
       // return { ...doesExistUser, ...token };
     }
 
-    return await this.createUser(dto);
+    if (!response) response = await this.createUser(dto);
+    this.usersDatabase.deleteUserOTP(email);
+    return response;
+  }
+
+  private async verifyOTP(data: {
+    email: string;
+    code: string;
+  }): Promise<boolean> {
+    const { email, code } = data;
+
+    // Fetch the user OTP data
+    const userOTPData = await this.usersDatabase.getUserOTP(email);
+
+    // Check if user OTP data exists and the provided OTP code matches
+    if (userOTPData && userOTPData.code === code) {
+      // Check if the OTP has not expired
+      const currentDateTime = new Date();
+      if (currentDateTime <= new Date(userOTPData.expireTime)) {
+        return true; // OTP is valid and not expired
+      }
+    }
+
+    return false; // Either OTP is invalid or expired
   }
 
   async login(dto: LoginDto) {
@@ -306,7 +386,7 @@ export class AuthService {
 
     if (!user) {
       throw new APIException(
-        'This email belong no user',
+        'This email belongs to no user!',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -317,7 +397,7 @@ export class AuthService {
     //   resetToken,
     // );
 
-    const resetURL = `${req.protocol}://${req.headers.referer}resetPassword/${resetToken}`;
+    const resetURL = `${coreConfig.host_url}/resetPassword/${resetToken}`;
     // console.log(
     //   '🚀 ~ file: auth.service.ts:274 ~ AuthService ~ forgotPassword ~ resetURL:',
     //   resetURL,

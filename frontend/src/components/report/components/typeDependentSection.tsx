@@ -9,32 +9,40 @@ import SprintSelectorComponent from "@/components/common/topPanels/components/sp
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
-const TypeDependentSection = ({
-  activeTab,
-  selectedSource,
-  setSelectedSource,
-  projects,
-  setProjects,
-  sprints,
-  setSprints,
-  calendarIds,
-  setCalendarIds,
-}: {
-  activeTab?: ReportPageTabs;
-  selectedSource?: IntegrationType[];
-  setSelectedSource?: Function;
+type Props = {
   projects?: any;
   setProjects?: any;
   calendarIds?: any;
-  setCalendarIds?: any;
   sprints: number[];
   setSprints: Function;
-}) => {
+  setCalendarIds?: any;
+  activeTab?: ReportPageTabs;
+  setSelectedSource?: Function;
+  selectedSource?: IntegrationType[];
+};
+
+const TypeDependentSection = ({
+  sprints,
+  projects,
+  activeTab,
+  setSprints,
+  setProjects,
+  calendarIds,
+  setCalendarIds,
+  selectedSource,
+  setSelectedSource,
+}: Props) => {
   const router = useRouter();
   const path = router.asPath;
+  const reportSprintList = useAppSelector(
+    (state: RootState) => state.projectList.reportSprintList
+  );
+  const taskSprintList = useAppSelector(
+    (state: RootState) => state.tasksSlice.sprintList
+  );
   const sprintList = path.includes("report")
-    ? useAppSelector((state: RootState) => state.projectList.reportSprintList)
-    : useAppSelector((state: RootState) => state.tasksSlice.sprintList);
+    ? reportSprintList
+    : taskSprintList;
 
   const showProjectSelector =
     selectedSource?.length > 0 ? selectedSource.includes("JIRA") : true;
@@ -61,14 +69,14 @@ const TypeDependentSection = ({
           <ProjectSelectorComponent
             projectIds={projects}
             setProjectIds={setProjects}
-            className="w-[210px]"
+            className="w-full min-w-[210px]"
             mode="single"
           />
         ) : (
           <ProjectSelectorComponent
             projectIds={projects}
             setProjectIds={setProjects}
-            className="w-[210px]"
+            className="w-full min-w-[210px]"
           />
         ))}
       {([
@@ -84,13 +92,13 @@ const TypeDependentSection = ({
             mode="single"
             projectIds={projects}
             {...{ sprints, setSprints }}
-            className="w-[210px]"
+            className="w-full min-w-[210px]"
           />
         ) : (
           <SprintSelectorComponent
             projectIds={projects}
             {...{ sprints, setSprints }}
-            className="w-[210px]"
+            className="w-full min-w-[210px]"
           />
         ))}
       {![
@@ -102,7 +110,7 @@ const TypeDependentSection = ({
           <CalendarSelectorComponent
             key={Math.random()}
             {...{ calendarIds, setCalendarIds }}
-            className="w-[210px]"
+            className="w-full min-w-[210px]"
           />
         )}
     </>

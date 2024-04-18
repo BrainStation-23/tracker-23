@@ -13,13 +13,10 @@ const OutlookCallBack = () => {
   const router = useRouter();
   const [newIntegrationProjects, setNewIntegrationProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSpinning, setIsSpinning] = useState(true);
   const [spinning, setSpinning] = useState(false);
 
   const codeFound = async (code: string) => {
     const res = await userAPI.sendOutlookCode(code);
-    console.log("sendOutlookCode", res);
-
     if (res && res[0]) {
       setIsModalOpen(true);
       setNewIntegrationProjects(res);
@@ -29,8 +26,6 @@ const OutlookCallBack = () => {
   const importIntegrationTasks = async (project: ProjectDto) => {
     setSpinning(true);
     const res = await userAPI.importCalendar([project.id]);
-    console.log("importProject", res);
-
     if (res) {
       message.success(res.message);
       router.push("/projects");
@@ -41,7 +36,6 @@ const OutlookCallBack = () => {
 
   useEffect(() => {
     const code = router.query.code;
-    console.log(`importing ${code}`);
     if (typeof code === "string") codeFound(code);
     if (router.query.error) router.push("/projects");
   }, [router.isReady]);
@@ -55,7 +49,7 @@ const OutlookCallBack = () => {
     <>
       <div className="flex w-full justify-center p-40">
         <Spin
-          spinning={isSpinning}
+          spinning={true}
           tip={tip}
           size="large"
           className="scale-150"

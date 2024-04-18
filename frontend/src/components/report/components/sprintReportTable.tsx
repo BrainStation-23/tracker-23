@@ -5,23 +5,22 @@ import { ModifiesSprintReportUser, SprintReportTask } from "models/reports";
 import { formatDate, getFormattedTime } from "@/services/timeActions";
 
 import ProgressComponent from "./progressComponent";
+import { ReportData } from "@/storage/redux/reportsSlice";
+import EditReportConfigComponent from "./editReportConfigComponent";
 
 const { Text } = Typography;
 type Props = {
   data: ModifiesSprintReportUser[];
+  reportData: ReportData;
 };
 
-const SprintReportTabel = ({ data }: Props) => {
+const SprintReportTabel = ({ data, reportData }: Props) => {
   const columns: ColumnsType<ModifiesSprintReportUser> = [
     {
       title: "Date",
       dataIndex: "date",
       key: "date",
-      render: (
-        text: string,
-        record: ModifiesSprintReportUser,
-        index: number
-      ) => ({
+      render: (text: string, record: ModifiesSprintReportUser) => ({
         children: (
           <Text
             className="w-[200px] cursor-pointer font-semibold"
@@ -42,11 +41,7 @@ const SprintReportTabel = ({ data }: Props) => {
       title: "Developer Name",
       dataIndex: "name",
       key: "name",
-      render: (
-        text: string,
-        record: ModifiesSprintReportUser,
-        index: number
-      ) => {
+      render: (text: string, record: ModifiesSprintReportUser) => {
         return {
           children: (
             <div className="mx-auto flex w-fit items-center justify-center gap-2 ">
@@ -82,8 +77,7 @@ const SprintReportTabel = ({ data }: Props) => {
       key: "assignedTask",
       render: (
         assignedTask: SprintReportTask,
-        record: ModifiesSprintReportUser,
-        index: number
+        record: ModifiesSprintReportUser
       ) => {
         if (assignedTask)
           return {
@@ -122,11 +116,7 @@ const SprintReportTabel = ({ data }: Props) => {
       title: "Yesterday Task",
       dataIndex: "yesterdayTasks",
       key: "yesterdayTask",
-      render: (
-        task: SprintReportTask,
-        record: ModifiesSprintReportUser,
-        index: number
-      ) => {
+      render: (task: SprintReportTask, record: ModifiesSprintReportUser) => {
         if (record.yesterdayTask)
           return {
             children: (
@@ -159,11 +149,7 @@ const SprintReportTabel = ({ data }: Props) => {
       title: "Today's Task",
       dataIndex: "todayTasks",
       key: "todaysTask",
-      render: (
-        task: SprintReportTask,
-        record: ModifiesSprintReportUser,
-        index: number
-      ) => {
+      render: (task: SprintReportTask, record: ModifiesSprintReportUser) => {
         if (record.todayTask)
           return {
             children: (
@@ -204,10 +190,9 @@ const SprintReportTabel = ({ data }: Props) => {
             rowKey={"id"}
             bordered
             pagination={{
-              current: 1,
-              pageSize: 500,
-              showSizeChanger: false,
-              showLessItems: true,
+              // pageSize: 100,
+              // showSizeChanger: false,
+              // showLessItems: true,
               position: ["bottomRight", "bottomLeft"],
             }}
             scroll={{ y: 600 }}
@@ -217,7 +202,9 @@ const SprintReportTabel = ({ data }: Props) => {
         <Empty
           className="mt-12"
           description="Select Project And Sprint to View Data"
-        />
+        >
+          <EditReportConfigComponent reportData={reportData} />
+        </Empty>
       )}
     </>
   );

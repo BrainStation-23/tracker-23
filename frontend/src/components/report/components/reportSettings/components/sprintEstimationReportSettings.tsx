@@ -1,10 +1,9 @@
 import { message } from "antd";
 import { userAPI } from "APIs";
-import { SprintUser } from "models/reports";
+import { SprintUser, UpdateReportDto } from "models/reports";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
-import { getDateRangeArray } from "@/components/common/datePicker";
 import UsersSelectorComponent from "@/components/common/topPanels/components/usersSelector";
 import {
   ReportData,
@@ -30,22 +29,17 @@ const SprintEstimationReportSettings = ({ reportData }: Props) => {
   const [selectedUsers, setSelectedUsers] = useState<number[]>(
     reportData?.config?.userIds ? reportData?.config?.userIds : []
   );
-  //@ts-ignore
-  const [dateRange, setDateRange] = useState(
-    reportData?.config?.startDate
-      ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray("this-week")
-  );
   const getUserListByProject = async () => {
     const res = await userAPI.userListByProject(projects);
     res && setUsers(res);
   };
 
-  const saveConfig = async () => {
+  const saveConfig = async (extraData?: UpdateReportDto) => {
     const res = await userAPI.updateReport(reportData.id, {
       sprintIds: sprints,
       userIds: selectedUsers,
       projectIds: projects,
+      ...(extraData ?? {}),
     });
     if (res) {
       dispatch(updateReportSlice(res));
@@ -75,7 +69,7 @@ const SprintEstimationReportSettings = ({ reportData }: Props) => {
 
       <UsersSelectorComponent
         {...{ userList: users, selectedUsers, setSelectedUsers }}
-        className="w-[210px]"
+        className="w-full min-w-[210px]"
       />
     </ReportSettingsWrapper>
   );

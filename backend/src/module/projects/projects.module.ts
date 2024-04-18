@@ -16,6 +16,12 @@ import { HelperModule } from '../helper/helper.module';
 import { WebhooksModule } from '../webhooks/webhooks.module';
 import { JiraService } from '../jira/jira.service';
 import { ReportsModule } from '../reports/reports.module';
+import { JwtService } from '@nestjs/jwt';
+import { UsersDatabase } from 'src/database/users';
+import { EmailService } from '../email/email.service';
+import { AuthService } from '../auth/auth.service';
+import { RabbitMQService } from '../queue/queue.service';
+import { WorkerService } from '../worker/worker.service';
 
 @Module({
   imports: [
@@ -37,6 +43,12 @@ import { ReportsModule } from '../reports/reports.module';
     SprintTaskDatabase,
     JiraApiCalls,
     JiraService,
+    AuthService,
+    JwtService,
+    EmailService,
+    UsersDatabase,
+    RabbitMQService,
+    WorkerService,
   ],
   controllers: [ProjectsController],
   exports: [ProjectsService, ProjectDatabase],

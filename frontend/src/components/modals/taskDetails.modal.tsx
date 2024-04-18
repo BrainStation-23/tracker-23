@@ -30,7 +30,6 @@ const TaskDetailsModal = ({
   task,
   isModalOpen,
   setIsModalOpen,
-  handleDelete,
   handleDeleteSession,
   handleUpdateSession,
 }: Props) => {

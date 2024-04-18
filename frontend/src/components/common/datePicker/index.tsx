@@ -1,35 +1,52 @@
+import dayjs from "dayjs";
+import React, { useState } from "react";
+
+// Components
 import {
   Button,
   DatePicker,
   Divider,
   Dropdown,
-  Menu,
   MenuProps,
   Popover,
+  Tooltip,
   theme,
 } from "antd";
-import dayjs from "dayjs";
-import React, { useState } from "react";
-import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
-
-import DownArrowIconSvg from "@/assets/svg/DownArrowIconSvg";
-import { CalendarOutlined, EditOutlined } from "@ant-design/icons";
-
 const { useToken } = theme;
 const { RangePicker } = DatePicker;
-const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
+
+// Icons
+import DownArrowIconSvg from "@/assets/svg/DownArrowIconSvg";
+import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
+import { CalendarOutlined, EditOutlined } from "@ant-design/icons";
+
+// Types
+import { FilterDateType, FilterReverseDateType } from "models/reports";
+import classNames from "classnames";
+type Props = {
+  selectedDate: string[];
+  setSelectedDate: (data: string[]) => void;
+  setFilterDateType?: (text: FilterDateType) => void;
+  className?: string;
+};
+
+const DateRangePicker = ({
+  selectedDate,
+  setSelectedDate,
+  setFilterDateType,
+  className,
+}: Props) => {
   const [customDateValue, setCustomDateValue] = useState<any>([
     dayjs(),
     dayjs(),
   ]);
-  const [customDateOpen, setCustomDateOpen] = useState<boolean>(false);
   const [dateRangeType, setDateRangeType] = useState<string>("this-week");
-  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
+  const [customDateOpen, setCustomDateOpen] = useState<boolean>(false);
   const [dropdownText, setDropdownText] = useState<any>(selectedDate);
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const [customDateText, setCustomDateText] = useState<any>(
-    getDateRangeArray("this-week")
+    getDateRangeArray(FilterDateType.THIS_WEEK)
   );
-  const items: MenuProps["items"] = [];
 
   const handleNext = () => {
     if (selectedDate) {
@@ -38,6 +55,7 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
         const date4 = dayjs(date3).endOf("month");
         setDropdownText([localFormat(date3), localFormat(date4)]);
         setSelectedDate([localFormat(date3), localFormat(date4)]);
+        setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
       } else {
         const timeDifference =
           dayjs(selectedDate[1]).diff(dayjs(selectedDate[0])) +
@@ -47,6 +65,7 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
 
         setDropdownText([localFormat(date3), localFormat(date4)]);
         setSelectedDate([localFormat(date3), localFormat(date4)]);
+        setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
       }
     }
   };
@@ -59,6 +78,7 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
         const date4 = dayjs(date3).endOf("month");
         setDropdownText([localFormat(date3), localFormat(date4)]);
         setSelectedDate([localFormat(date3), localFormat(date4)]);
+        setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
       } else {
         const timeDifference =
           dayjs(selectedDate[0]).diff(dayjs(selectedDate[1])) -
@@ -68,10 +88,12 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
 
         setDropdownText([localFormat(date3), localFormat(date4)]);
         setSelectedDate([localFormat(date3), localFormat(date4)]);
+        setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
       }
     }
   };
 
+  const items: MenuProps["items"] = [];
   const tmp = Object.entries(dateRangeOptions);
   tmp.forEach((val) => {
     items.push({
@@ -86,11 +108,14 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
       setDateRangeType(val.key);
       setDropdownText(getDateRangeArray(val.key));
       setSelectedDate(getDateRangeArray(val.key));
+      // @ts-ignore
+      setFilterDateType && setFilterDateType(FilterReverseDateType[val.key]);
       setDropdownOpen(false);
       customDateOpen && setCustomDateOpen(false);
     },
   };
-  const dateFormat = "DD/MM/YYYY";
+
+  // css
   const { token } = useToken();
   const contentStyle = {
     backgroundColor: token.colorBgElevated,
@@ -100,16 +125,28 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
   const menuStyle = {
     boxShadow: "none",
   };
+
   return (
-    <div className="flex items-center gap-0">
-      <div
-        className="cursor-pointer rounded-l bg-inherit bg-thirdLight p-2 text-xl hover:bg-[#F3F4F6]"
-        onClick={() => handlePreviousClick()}
-      >
-        <LuChevronLeft />
-      </div>
-      <div>
+    <div
+      className={classNames(
+        "flex w-full items-center justify-center gap-2",
+        className
+      )}
+    >
+      <Tooltip title="Date Range">
+        <CalendarOutlined size={20} />
+      </Tooltip>
+      <div className="flex w-full items-center">
+        <div
+          className={classNames(
+            "cursor-pointer rounded-l bg-inherit bg-thirdLight py-1.5 pl-1.5 text-xl hover:bg-[#F3F4F6]"
+          )}
+          onClick={() => handlePreviousClick()}
+        >
+          <LuChevronLeft />
+        </div>
         <Dropdown
+          className="flex cursor-pointer items-center bg-gray-50 p-1.5 hover:bg-gray-100"
           menu={menuProps}
           trigger={["click"]}
           open={dropdownOpen}
@@ -134,7 +171,7 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
                       <RangePicker
                         defaultValue={[dayjs(), dayjs()]}
                         value={customDateValue}
-                        format={dateFormat}
+                        format={"DD/MM/YYYY"}
                         clearIcon={false}
                         open={customDateOpen}
                         bordered={false}
@@ -153,6 +190,8 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
                       <div className="mt-[300px] flex flex-row-reverse gap-3 px-3">
                         <Button
                           onClick={() => {
+                            setFilterDateType &&
+                              setFilterDateType(FilterDateType.CUSTOM_DATE);
                             setDropdownText(customDateText);
                             setSelectedDate(customDateText);
                             setCustomDateOpen(!customDateOpen);
@@ -172,7 +211,7 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
                   trigger="click"
                 >
                   <Button
-                    className="flex w-full items-center pl-[5px] text-left hover:bg-gray-100"
+                    className="flex w-full items-center pl-1.5 text-left hover:bg-gray-100"
                     type="ghost"
                     style={{
                       clear: "both",
@@ -192,29 +231,26 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
               </div>
             </div>
           )}
-          className="flex w-[250px] cursor-pointer items-center bg-gray-50 p-2 hover:bg-gray-100"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2 text-sm">
             <div className="flex items-center gap-2">
-              <CalendarOutlined />
-              <div>
-                {dropdownText && (
-                  <>
-                    {dropdownText[0]} - {dropdownText[1]}
-                  </>
-                )}
-              </div>
+              {dropdownText && (
+                <span>
+                  {dropdownText[0]} - {dropdownText[1]}
+                </span>
+              )}
             </div>
             <DownArrowIconSvg />
-            {/* <DownOutlined /> */}
           </div>
         </Dropdown>
-      </div>
-      <div
-        className="cursor-pointer rounded-r bg-thirdLight p-2 text-xl hover:bg-[#F3F4F6]"
-        onClick={() => handleNext()}
-      >
-        <LuChevronRight />
+        <div
+          className={classNames(
+            "cursor-pointer rounded-r bg-thirdLight py-1.5 pr-1.5 text-xl hover:bg-[#F3F4F6]"
+          )}
+          onClick={() => handleNext()}
+        >
+          <LuChevronRight />
+        </div>
       </div>
     </div>
   );
@@ -222,25 +258,9 @@ const DateRangePicker = ({ selectedDate, setSelectedDate }: any) => {
 
 export default DateRangePicker;
 
-export const getDateRangeArray = (key: string, dates?: any) => {
+export const getDateRangeArray = (key: string) => {
   let startDate, endDate;
-  if (dates) {
-    const timeDifference =
-      dayjs(dates[1]).diff(dayjs(dates[0])) + 24 * 60 * 60 * 1000;
-    const date3 = dayjs(dates[0]).add(timeDifference, "millisecond");
-    const date4 = dayjs(dates[1]).add(timeDifference, "millisecond");
-    console.log(
-      "🚀 ~ file: index.tsx:184 ~ getDateRangeArray ~ timeDifference:",
-      timeDifference,
-      dayjs(dates[0]),
-      dayjs(dates[1]),
-      date3,
-      date4
-    );
-  }
   switch (key) {
-    // case "all":
-    //   return null;
     case "today":
       startDate = localFormat(dayjs());
       endDate = localFormat(dayjs());
@@ -285,14 +305,13 @@ export const getDateRangeArray = (key: string, dates?: any) => {
   return [startDate, endDate];
 };
 export const localFormat = (value: any) => {
-  return value?.format("MMM DD , YYYY").toString();
+  return value?.format("DD MMM YYYY").toString();
 };
 export const timeFormat = (value: any) => {
   return value?.format("HH:mm:ss").toString();
 };
 export const dateRangeOptions = {
   today: "Today",
-  // all: "All",
   yesterday: "Yesterday",
   tomorrow: "Tomorrow",
   "this-week": "This week",
@@ -324,64 +343,6 @@ export const getFormattedDateRange = (
     dayjs(dateRange[1]).format(format),
   ];
 };
-<Menu>
-  <Menu.Item>
-    <Popover
-      zIndex={9999}
-      id="dateRangePopover"
-      trigger="click"
-      placement={"left"}
-      // open={true}
-      destroyTooltipOnHide={false}
-      getPopupContainer={() =>
-        document.getElementById("dateRangePopoverWrapper")!
-      }
-      content={
-        <div
-          className="absolute"
-          // style={styles.popoverContent}
-        >
-          <div id="custom-range-picker">
-            {/* <CustomRangePicker
-            availableDate={availableDate}
-            syncPeriod={syncPeriod}
-            {...{ pickerValue, setPickerValue, minDay }}
-          /> */}
-          </div>
-          <div
-            // className={css.actionWrapper}
-            style={{ textAlign: "right" }}
-          >
-            <Button
-            //  onClick={datePickerClickHandler}
-            >
-              Cancel
-            </Button>
-            <Button
-            // onClick={() =>
-            //   handelRangePickerChanges(pickerValue)
-            // }
-            // className={css.ok}
-            >
-              Confirm
-            </Button>
-          </div>
-        </div>
-      }
-    >
-      {/* <DatePickerRow
-      date={"Custom date"}
-      icon={<EditOutlined />}
-      selected={
-        selectedDateType === CustomDateType.CustomDate ? (
-          <SelectedIcon />
-        ) : null
-      }
-    />{" "} */}
-      Custom Range
-    </Popover>
-  </Menu.Item>
-</Menu>;
 
 export function formatUserData(dataArray: any[]) {
   if (!dataArray) dataArray = [];

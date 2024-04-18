@@ -1,9 +1,14 @@
-import { Table, TablePaginationConfig, Tooltip, Typography } from "antd";
+import {
+  Button,
+  Table,
+  TablePaginationConfig,
+  Tooltip,
+  Typography,
+} from "antd";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { TableParams, TaskDto } from "models/tasks";
 import { useState } from "react";
 
-import JiraIconSvg from "@/assets/svg/JiraIconSvg";
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
 import { integrationIcons } from "@/components/integrations/components/importCard";
@@ -17,6 +22,8 @@ import {
 
 import MoreFunctionComponent from "./moreFunction";
 import TimeDisplayComponent from "./timeDisplayComponent";
+import PinFilledIconSvg from "@/assets/svg/PinFilledIconSvg";
+import PinIconSvg from "@/assets/svg/PinIconSvg";
 
 const { Text } = Typography;
 const TableComponent = ({
@@ -29,9 +36,6 @@ const TableComponent = ({
   stopSession,
   setManualTimeEntryModalOpen,
   sessionActionLoading,
-  setLoading,
-  handleStatusChange,
-  handleEstimationChange,
   handlePinTask,
 }: any) => {
   const columns: any = [
@@ -42,6 +46,19 @@ const TableComponent = ({
       render: (_: any, task: TaskDto) => {
         return (
           <div className="flex items-center gap-2" aria-disabled="true">
+            {task.pinned && (
+              <Tooltip title={`Click To ${task.pinned ? "unpin" : "pin"}`}>
+                <Button
+                  className="absolute top-0 left-0 flex gap-3 p-1"
+                  onClick={() => {
+                    handlePin(task);
+                  }}
+                  type="ghost"
+                >
+                  {task.pinned ? <PinFilledIconSvg /> : <PinIconSvg />}
+                </Button>
+              </Tooltip>
+            )}
             {task.source !== "OUTLOOK" ? (
               <div className="cursor-pointer">
                 {runningTask?.id != task.id ? (
@@ -69,7 +86,6 @@ const TableComponent = ({
             ) : (
               <div className="h-1 p-4"></div>
             )}
-            {/* {task.status === "DONE" && <div className="w-[34px]"></div>} */}
             <div className="flex flex-col gap-2">
               <Text
                 className="w-[180px] cursor-pointer"
@@ -79,7 +95,6 @@ const TableComponent = ({
                   setTaskViewModalOpen(true);
                 }}
               >
-                {/* <div>{task?.title}</div> */}
                 {task?.title}
               </Text>
               <div className="flex cursor-pointer gap-2">
@@ -112,46 +127,6 @@ const TableComponent = ({
         return -1;
       },
     },
-    // {
-    //   title: "Status",
-    //   dataIndex: "status",
-    //   key: "status",
-    //   // align: "center",
-    //   render: (_: any, task: TaskDto) => (
-    //     <StatusDropdownComponent
-    //       selectedStatus={{
-    //         name: task.status,
-    //         statusCategoryName: task.statusCategoryName,
-    //       }}
-    //       task={task}
-    //       setLoading={setLoading}
-    //       handleStatusChange={handleStatusChange}
-    //     >
-    //       <div
-    //         style={{
-    //           backgroundColor: statusBGColorEnum[task.statusCategoryName],
-    //           border: `1px solid ${
-    //             statusBorderColorEnum[task.statusCategoryName]
-    //           }`,
-    //           borderRadius: "36px",
-    //         }}
-    //         className="relative flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
-    //       >
-    //         <div
-    //           className="h-2 w-2 rounded-full"
-    //           style={{
-    //             backgroundColor: statusBorderColorEnum[task.statusCategoryName],
-    //           }}
-    //         />
-    //         <div className="max-w-[90px]">
-    //           <Text className="" ellipsis={{ tooltip: task?.status }}>
-    //             {task.status}
-    //           </Text>
-    //         </div>
-    //       </div>
-    //     </StatusDropdownComponent>
-    //   ),
-    // },
     {
       title: "Source",
       dataIndex: "dataSource",
@@ -173,7 +148,7 @@ const TableComponent = ({
       title: "Created",
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (createdAt: string, task: TaskDto) => {
+      render: (createdAt: string) => {
         return <>{getFormattedTime(formatDate(createdAt))}</>;
       },
 
@@ -191,32 +166,12 @@ const TableComponent = ({
         return -1;
       },
     },
-    // {
-    //   title: "Priority",
-    //   dataIndex: "priority",
-    //   key: "priority",
-    //   render: (_: any, task: TaskDto) => <TablePriorityComponent task={task} />,
-    // },
-
-    // {
-    //   title: "Progress",
-    //   dataIndex: "percentage",
-    //   key: "percentage",
-
-    //   // align: "center",
-    //   render: (_: any, task: TaskDto) =>
-    //     runningTask?.id != task.id ? (
-    //       <StaticProgressComponent task={task} />
-    //     ) : (
-    //       <ProgressComponent task={task} />
-    //     ),
-    // },
     {
       title: "Started",
       dataIndex: "started",
       key: "started",
       align: "center",
-      render: (started: any, task: TaskDto) => (
+      render: (_: any, task: TaskDto) => (
         <>
           {task.sessions?.length > 0
             ? getFormattedTime(formatDate(task.sessions[0].startTime))
@@ -261,15 +216,6 @@ const TableComponent = ({
       sorter: (a: any, b: any) =>
         getTotalSpentTime(a.sessions) - getTotalSpentTime(b.sessions),
     },
-    // {
-    //   title: "Estimation",
-    //   dataIndex: "estimation",
-    //   key: "estimation",
-    //   render: (_: any, task: TaskDto) => (
-    //     <EstimationComponent {...{ task, handleEstimationChange }} />
-    //   ),
-    //   sorter: (a: any, b: any) => a.estimation - b.estimation,
-    // },
     {
       title: "",
       dataIndex: "",
@@ -291,8 +237,6 @@ const TableComponent = ({
       showSizeChanger: true,
       showLessItems: true,
       position: ["bottomRight", "bottomLeft"],
-
-      // total: 100,
     },
   });
   const handleAddManualWorkLog = (task: TaskDto) => {
@@ -307,7 +251,7 @@ const TableComponent = ({
         : (tableParams.pagination.total = tableParams.pagination.total + 1);
   };
 
-  const getRowClassName = (task: TaskDto, index: any) => {
+  const getRowClassName = (task: TaskDto) => {
     if (!task.sessions) task.sessions = [];
     return runningTask?.id === task.id ? "bg-[#F3FCFF]" : "";
   };
@@ -321,17 +265,11 @@ const TableComponent = ({
       filters,
       ...sorter,
     });
-
-    // `dataSource` is useless since `pageSize` changed
-    // if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-    //   setData([]);
-    // }
   };
   return (
     <Table
       columns={columns}
       dataSource={tasks}
-      // onChange={onChange}
       rowKey={(task) => task.id}
       pagination={tableParams.pagination}
       rowClassName={getRowClassName}

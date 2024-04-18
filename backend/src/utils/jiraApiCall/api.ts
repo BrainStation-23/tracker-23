@@ -118,16 +118,21 @@ export class JiraApiCalls {
     }
   }
   async getBoardList(userIntegration: UserIntegration, url: string) {
-    const boardConfig = {
-      method: 'get',
-      url,
-      headers: {
-        Authorization: `Bearer ${userIntegration?.accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    };
-    const boardList = await (await axios(boardConfig)).data;
-    return boardList;
+    try {
+      const boardConfig = {
+        method: 'get',
+        url,
+        headers: {
+          Authorization: `Bearer ${userIntegration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      };
+      const boardList = await (await axios(boardConfig)).data;
+      return boardList;
+    } catch (err) {
+      console.log('🚀 ~ JiraApiCalls ~ getBoardList ~ err:', err.message);
+      return [];
+    }
   }
   async getSprintIssueList(
     userIntegration: UserIntegration,
@@ -277,5 +282,18 @@ export class JiraApiCalls {
       );
       return null;
     }
+  }
+
+  async jiraApiGetCall(userIntegration: UserIntegration, url: string) {
+    const taskConfig = {
+      method: 'get',
+      url,
+      headers: {
+        Authorization: `Bearer ${userIntegration?.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    };
+    const res = await (await axios(taskConfig)).data;
+    return res;
   }
 }

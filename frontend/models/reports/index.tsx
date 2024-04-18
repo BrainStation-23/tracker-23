@@ -259,15 +259,43 @@ export interface CreateReportDto {
   pageId: number;
 }
 export interface UpdateReportDto {
-  name?: String;
-  startDate?: String;
-  endDate?: String;
-  projectIds?: number[];
-  calendarIds?: number[];
+  name?: string;
+  endDate?: string;
+  startDate?: string;
+  filterDateType?: FilterDateType;
   userIds?: number[];
   sprintIds?: number[];
+  projectIds?: number[];
+  calendarIds?: number[];
   types?: IntegrationType[];
+  excludeUnworkedTasks?: boolean;
 }
 export interface UpdateReportPageDto {
   name: string;
+}
+
+export enum FilterDateType {
+  TODAY = "today",
+  YESTERDAY = "yesterday",
+  TOMORROW = "tomorrow",
+  THIS_WEEK = "this-week",
+  PAST_WEEK = "last-week",
+  NEXT_WEEK = "next-week",
+  THIS_MONTH = "this-month",
+  PAST_MONTH = "last-month",
+  NEXT_MONTH = "next-month",
+  CUSTOM_DATE = "CUSTOM_DATE",
+}
+
+export enum FilterReverseDateType {
+  "today" = "TODAY",
+  "yesterday" = "YESTERDAY",
+  "tomorrow" = "TOMORROW",
+  "this-week" = "THIS_WEEK",
+  "last-week" = "PAST_WEEK",
+  "next-week" = "NEXT_WEEK",
+  "this-month" = "THIS_MONTH",
+  "last-month" = "PAST_MONTH",
+  "next-month" = "NEXT_MONTH",
+  "CUSTOM_DATE" = "CUSTOM_DATE",
 }

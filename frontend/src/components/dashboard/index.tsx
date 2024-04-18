@@ -1,8 +1,6 @@
-import { Empty, message, Spin, TablePaginationConfig, Typography } from "antd";
-import { FilterValue, SorterResult } from "antd/es/table/interface";
+import { Empty, message, Spin } from "antd";
 import { userAPI } from "APIs";
 import { TableParams, TaskDto } from "models/tasks";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import XYChart from "@/components/dashboard/charts/xyChart";
@@ -16,30 +14,14 @@ import DonutChart from "./charts/donutChart";
 import DashboardSection from "./components/sections";
 import DashboardTableComponent from "./components/tableComponentDashboard";
 
-const { Text } = Typography;
-
 const Dashboard = () => {
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [dataDonutTotal, setDataDonutTotal] = useState(0);
   const [dataDonut, setDataDonut] = useState(null);
-
   const [weekData, setWeekData] = useState(null);
-
-  const handleTableChange = (
-    pagination: TablePaginationConfig,
-    filters: Record<string, FilterValue>,
-    sorter: SorterResult<TaskDto> | SorterResult<TaskDto>[]
-  ) => {
-    setTableParamsPinned({
-      pagination,
-      filters,
-      ...sorter,
-    });
-  };
   const [reload, setReload] = useState(false);
 
   const [warningModalOpen, setWarningModalOpen] = useState<boolean>(false);
-  const [morePin, setMorePin] = useState<boolean>(false);
   const [dataFetched, setDataFetched] = useState<boolean>(false);
   const [warningData, setWarningData] = useState<any>([]);
   const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
@@ -53,40 +35,8 @@ const Dashboard = () => {
       showSizeChanger: true,
       showLessItems: true,
       position: ["bottomRight", "bottomLeft"],
-
-      // total: 100,
     },
   });
-  const getRowClassName = (task: TaskDto, index: any) => {
-    if (!task.sessions) task.sessions = [];
-    return runningTask?.id === task.id ? "bg-[#F3FCFF]" : "";
-  };
-  const getTasks = async () => {
-    try {
-      const res = await userAPI.getTasks();
-      if (res) {
-        const { formattedTasks, runningTask } = getFormattedTasks(res);
-        if (runningTask) setRunningTask(runningTask);
-        const tmpPinnedTaskList = formattedTasks?.filter(
-          (task: TaskDto) => task?.pinned
-        );
-        if (tmpPinnedTaskList?.length > 5) setMorePin(true);
-        const pinnedTaskList = tmpPinnedTaskList;
-        setTasks(pinnedTaskList || []);
-
-        setTableParamsPinned({
-          ...tableParamsPinned,
-          pagination: {
-            ...tableParamsPinned.pagination,
-            total: pinnedTaskList.length,
-          },
-        });
-      }
-    } catch (error) {
-      console.log("🚀 ~ file: index.tsx:238 ~ getTasks ~ error:", error);
-    } finally {
-    }
-  };
 
   const handleWarningClick = async (proceed: boolean) => {
     setWarningModalOpen(false);
@@ -176,25 +126,45 @@ const Dashboard = () => {
     setWeekData(tmp);
   };
 
-  const getData = async () => {
-    await getTasks();
-    await getProjectWiseHour();
-    await getSpentTimePerDay();
-    setDataFetched(true);
-  };
-
   useEffect(() => {
+    const getTasks = async () => {
+      try {
+        const res = await userAPI.getTasks();
+        if (res) {
+          const { formattedTasks, runningTask } = getFormattedTasks(res);
+          if (runningTask) setRunningTask(runningTask);
+          const tmpPinnedTaskList = formattedTasks?.filter(
+            (task: TaskDto) => task?.pinned
+          );
+          const pinnedTaskList = tmpPinnedTaskList;
+          setTasks(pinnedTaskList || []);
+
+          setTableParamsPinned({
+            ...tableParamsPinned,
+            pagination: {
+              ...tableParamsPinned.pagination,
+              total: pinnedTaskList.length,
+            },
+          });
+        }
+      } catch (error) {
+        console.log("🚀 ~ file: index.tsx:238 ~ getTasks ~ error:", error);
+      }
+    };
+
+    const getData = async () => {
+      await getTasks();
+      await getProjectWiseHour();
+      await getSpentTimePerDay();
+      setDataFetched(true);
+    };
     getData();
-    // getTasks();
-    // getProjectWiseHour();
-    // getSpentTimePerDay();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setTasks]);
 
   return (
     <>
       {dataFetched ? (
-        <div className="flex flex-col gap-6 pb-12">
+        <div className="flex flex-col gap-6 px-8 pt-2 pb-12">
           <div className="grid grid-cols-1">
             {/* <div className="grid grid-cols-2"> */}
             <DashboardSection
@@ -227,10 +197,6 @@ const Dashboard = () => {
               <Empty className="py-20" description="No Data" />
             )}
           </DashboardSection>
-
-          {/* <div>
-        <MyTasks />
-      </div> */}
           <GlobalModal
             isModalOpen={warningModalOpen}
             setIsModalOpen={setWarningModalOpen}

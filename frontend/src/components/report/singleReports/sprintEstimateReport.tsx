@@ -9,11 +9,13 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SpritEstimateReportComponent from "../components/sprintEstimateReportComponent";
+import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 
 type Props = {
   reportData: ReportData;
+  inView: Boolean;
 };
-const SprintEstimateReport = ({ reportData }: Props) => {
+const SprintEstimateReport = ({ reportData, inView }: Props) => {
   const [sprintEstimateReportData, setSprintEstimateReportData] =
     useState<SprintUserReportDto>();
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +39,11 @@ const SprintEstimateReport = ({ reportData }: Props) => {
           res?.error?.message ? res?.error?.message : "Export Failed"
         );
       } else {
+        if (window.gtag) {
+          window.gtag("event", "download_report", {
+            value: "Sprint Estimation Report",
+          });
+        }
         ExcelExport({ file: res, name: "Tracker 23 Sprint Report" });
       }
     } catch (error) {
@@ -45,6 +52,7 @@ const SprintEstimateReport = ({ reportData }: Props) => {
     setDownloading(false);
   };
   const getSprintUserReport = async () => {
+    if (!inView) return;
     setIsLoading(true);
     const res: SprintUserReportDto = await userAPI.getSprintUserReport({
       sprints: reportData?.config?.sprintIds
@@ -63,7 +71,7 @@ const SprintEstimateReport = ({ reportData }: Props) => {
 
   useEffect(() => {
     getSprintUserReport();
-  }, [reportData?.config]);
+  }, [reportData?.config, inView]);
 
   return (
     <>
@@ -82,9 +90,15 @@ const SprintEstimateReport = ({ reportData }: Props) => {
             Export to Excel
           </Button>
         }
+        extraFilterComponent={
+          <ReportConfigDescription reportData={reportData} />
+        }
       />
       <Spin className="custom-spin" spinning={isLoading}>
-        <SpritEstimateReportComponent data={sprintEstimateReportData} />
+        <SpritEstimateReportComponent
+          data={sprintEstimateReportData}
+          reportData={reportData}
+        />
       </Spin>
     </>
   );

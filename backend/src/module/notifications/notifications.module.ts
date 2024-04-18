@@ -12,9 +12,11 @@ import { UsersDatabase } from 'src/database/users';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { ProjectDatabase } from 'src/database/projects';
 import { TasksDatabase } from 'src/database/tasks';
+import { ReportsModule } from '../reports/reports.module';
+import { PagesModule } from '../pages/pages.module';
 
 @Module({
-  imports: [HttpModule.register({})],
+  imports: [HttpModule.register({}), ReportsModule, PagesModule],
   controllers: [NotificationController],
   providers: [
     NotificationsService,

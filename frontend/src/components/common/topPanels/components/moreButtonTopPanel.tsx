@@ -22,7 +22,7 @@ const MoreButtonTopPanel = ({
         <div className="custom-dropdown-bg float-right">{menu}</div>
       )}
       trigger={["click"]}
-      className="custom-dropdown-bg flex h-[33px] items-center rounded-lg border-[1px] border-secondary p-2"
+      className="custom-dropdown-bg flex h-[33px] items-center justify-center rounded-lg border-[1px]  p-2"
     >
       <div>
         <LuMoreVertical />

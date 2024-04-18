@@ -20,6 +20,8 @@ const AddNewReport = ({ setIsModalOpen }: { setIsModalOpen: Function }) => {
     ? parseInt(router.query?.reportPageId as string)
     : -1;
 
+  const [form] = Form.useForm();
+
   const [isLoading, setIsLoading] = useState(false);
 
   const createReport = async (data: CreateReportDto) => {
@@ -32,16 +34,18 @@ const AddNewReport = ({ setIsModalOpen }: { setIsModalOpen: Function }) => {
     setIsLoading(false);
   };
 
-  const onFinish = (values: any) => {
-    createReport({ ...values, pageId });
+  const onFinish = async (values: any) => {
+    await createReport({ ...values, pageId });
+    form.resetFields();
   };
 
   return (
     <Spin spinning={isLoading}>
       <Form
+        form={form}
         onFinish={onFinish}
         layout="vertical"
-        initialValues={{ reportType: ReportTypes[0] }}
+        initialValues={{ reportType: ReportTypes[0], name: "" }}
       >
         <Form.Item name="name" label="Name" rules={[{ required: true }]}>
           <Input />

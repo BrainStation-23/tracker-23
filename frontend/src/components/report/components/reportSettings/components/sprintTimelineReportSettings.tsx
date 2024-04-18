@@ -1,4 +1,4 @@
-import { message } from "antd";
+import { Checkbox, CheckboxProps, message } from "antd";
 import { userAPI } from "APIs";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -14,12 +14,20 @@ import {
 
 import TypeDependentSection from "../../typeDependentSection";
 import ReportSettingsWrapper from "./reportSettingsWrapper";
+import { FilterDateType, UpdateReportDto } from "models/reports";
 
 type Props = {
   reportData: ReportData;
 };
 const SprintTimelineReportSettings = ({ reportData }: Props) => {
   const dispatch = useDispatch();
+  const [filterDateType, setFilterDateType] = useState(
+    FilterDateType.THIS_WEEK
+  );
+  const [excludeUnworkedTasks, setExcludeUnworkedTasks] = useState(
+    reportData?.config?.excludeUnworkedTasks
+  );
+
   const [sprint, setSprint] = useState<number>(
     reportData?.config?.sprintIds?.length > 0
       ? reportData?.config?.sprintIds[0]
@@ -30,18 +38,20 @@ const SprintTimelineReportSettings = ({ reportData }: Props) => {
       ? reportData?.config?.projectIds[0]
       : null
   );
-  //@ts-ignore
   const [dateRange, setDateRange] = useState(
-    reportData?.config?.startDate
+    reportData?.config?.startDate && reportData?.config?.endDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray("this-week")
+      : getDateRangeArray(reportData?.config?.filterDateType)
   );
-  const saveConfig = async () => {
+  const saveConfig = async (extraData?: UpdateReportDto) => {
     const res = await userAPI.updateReport(reportData.id, {
       projectIds: [project],
       sprintIds: [sprint],
       startDate: dateRange[0],
       endDate: dateRange[1],
+      filterDateType,
+      excludeUnworkedTasks,
+      ...(extraData ?? {}),
     });
     if (res) {
       dispatch(updateReportSlice(res));
@@ -49,6 +59,16 @@ const SprintTimelineReportSettings = ({ reportData }: Props) => {
       dispatch(setReportInEditSlice(null));
     }
   };
+  const getFilterDateType = (type: FilterDateType) => {
+    setFilterDateType(type);
+  };
+
+  const onChangeExcludeUnworkedTasksCheckbox: CheckboxProps["onChange"] = (
+    e
+  ) => {
+    setExcludeUnworkedTasks(e.target.checked);
+  };
+
   return (
     <ReportSettingsWrapper
       {...{
@@ -59,7 +79,15 @@ const SprintTimelineReportSettings = ({ reportData }: Props) => {
       <DateRangePicker
         selectedDate={dateRange}
         setSelectedDate={setDateRange}
+        setFilterDateType={getFilterDateType}
       />
+
+      <Checkbox
+        checked={excludeUnworkedTasks}
+        onChange={onChangeExcludeUnworkedTasksCheckbox}
+      >
+        Exclude unworked tasks
+      </Checkbox>
 
       <TypeDependentSection
         {...{

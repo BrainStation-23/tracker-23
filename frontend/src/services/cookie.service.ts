@@ -7,10 +7,7 @@ const SetCookie = (cookieName: string, value: any) => {
     sameSite: "strict",
     path: "/",
   });
-  console.log(cookieName, "set");
 };
-
-const CookieNames = ["access_token"];
 
 const RemoveCookie = (cookieName: string) => {
   try {
@@ -27,7 +24,6 @@ const GetCookie = (cookieName: string) => {
 const RemoveAllCookies = () => {
   const cookieNames = getCookieNames();
   cookieNames.map((cookieName: string) => RemoveCookie(cookieName));
-  console.log("Cookies Removed");
 };
 
 const getCookieNames = () => {

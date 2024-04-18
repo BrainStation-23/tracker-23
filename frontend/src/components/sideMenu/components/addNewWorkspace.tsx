@@ -1,7 +1,6 @@
 import { Checkbox, Form, Input, message } from "antd";
 import { userAPI } from "APIs";
 import { CreateWorkspaceModel } from "models/apiParams";
-import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import PrimaryButton from "@/components/common/buttons/primaryButton";
@@ -17,11 +16,9 @@ type Props = {
 const AddNewWorkspace = ({ setIsModalOpen, setIsModalLoading }: Props) => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
-  const [switchWorkspace, setSwitchWorkspace] = useState(false);
 
   const onFinish = async (values: CreateWorkspaceModel) => {
     setIsModalLoading(true);
-    console.log("Form values:", values);
     const res = await userAPI.createWorkspace(values);
     res && message.success("Workspace created Successfully");
     res && dispatch(addWorkspaceSlice(res));
@@ -30,8 +27,6 @@ const AddNewWorkspace = ({ setIsModalOpen, setIsModalLoading }: Props) => {
       dispatch(changeWorkspaceReloadStatusSlice());
     }
     setIsModalOpen(false);
-    // Here you can perform actions based on the form values, e.g., create a workspace.
-    // If switchWorkspace is true, you can switch to the newly created workspace.
     setIsModalLoading(false);
   };
 
@@ -45,9 +40,7 @@ const AddNewWorkspace = ({ setIsModalOpen, setIsModalLoading }: Props) => {
         <Input />
       </Form.Item>
       <Form.Item name="changeWorkspace" valuePropName="checked">
-        <Checkbox onChange={(e) => setSwitchWorkspace(e.target.checked)}>
-          Switch to newly created workspace
-        </Checkbox>
+        <Checkbox>Switch to newly created workspace</Checkbox>
       </Form.Item>
       <Form.Item>
         <PrimaryButton htmlType="submit"> Create Workspace</PrimaryButton>
