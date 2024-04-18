@@ -1197,6 +1197,15 @@ export class TasksService {
         });
       }
 
+      if (status === StatusEnum.DONE) {
+        return await this.prisma.callSync.update({
+          where: { id: doesExist.id },
+          data: {
+            status: status,
+            lastSync: new Date(Date.now()),
+          },
+        });
+      }
       return await this.prisma.callSync.update({
         where: { id: doesExist.id },
         data: {
