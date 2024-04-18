@@ -388,7 +388,24 @@ export class WorkerService {
     const settings = await this.tasksDatabase.getSettings(user);
     const syncTime: number = settings ? settings.syncTime : 6;
 
-    const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND created >= startOfMonth(-${syncTime}M) AND created <= endOfDay()&maxResults=1000`;
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    const syncState = await this.tasksDatabase.callSync({
+      userWorkspaceId: userWorkspace.id,
+    });
+    let urlParam;
+    if (syncState?.lastSync) {
+      const day = new Date().getDay() - new Date(syncState.lastSync).getDay();
+      if (day === 0) {
+        urlParam = `Updated >= startOfDay()`;
+      } else {
+        urlParam = `Updated >= startOfDay("-${day}")`;
+      }
+    } else {
+      urlParam = `created >= startOfMonth(-${syncTime}M) AND created <= endOfDay()`;
+    }
+
+    // const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND created >= startOfMonth(-${syncTime}M) AND created <= endOfDay()&maxResults=1000`;
+    const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND ${urlParam} &maxResults=1000`;
     const fields =
       'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority, parent';
     let respTasks;
@@ -1081,6 +1098,7 @@ export class WorkerService {
         //   ' Project Synced Successfully!',
         // ),
         await this.syncCall(StatusEnum.DONE, user),
+        await this.updateSyncCall(user, new Date(Date.now())),
       ]);
       return { message: syncedProjects + ' Projects Imported Successfully!' };
     } catch (error) {
@@ -1094,6 +1112,14 @@ export class WorkerService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  private async updateSyncCall(user: User, time: Date) {
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    await this.tasksDatabase.updateCallSync(
+      { userWorkspaceId: userWorkspace.id },
+      { lastSync: time },
+    );
   }
 
   async getCallSync(user: User) {
@@ -1139,6 +1165,16 @@ export class WorkerService {
           data: {
             status,
             userWorkspaceId: userWorkspace.id,
+          },
+        });
+      }
+
+      if (status === StatusEnum.DONE) {
+        return await this.prisma.callSync.update({
+          where: { id: doesExist.id },
+          data: {
+            status: status,
+            lastSync: new Date(Date.now()),
           },
         });
       }

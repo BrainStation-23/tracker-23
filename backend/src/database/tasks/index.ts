@@ -308,4 +308,33 @@ export class TasksDatabase {
       return [];
     }
   }
+
+  async callSync(query: Record<string, any>) {
+    try {
+      return await this.prisma.callSync.findFirst({
+        where: query,
+      });
+    } catch (err) {
+      console.log('🚀 ~ TasksDatabase ~ syncCall ~ err:', err);
+      return null;
+    }
+  }
+
+  async updateCallSync(
+    query: Record<string, any>,
+    update: Record<string, any>,
+  ) {
+    try {
+      const callSync = await this.prisma.callSync.findFirst({
+        where: query,
+      });
+      return await this.prisma.callSync.update({
+        where: { id: callSync?.id },
+        data: update,
+      });
+    } catch (err) {
+      console.log('🚀 ~ TasksDatabase ~ syncCall ~ err:', err);
+      return null;
+    }
+  }
 }
