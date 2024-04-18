@@ -408,11 +408,12 @@ export class SprintsService {
     const data: any[] = [];
     let done = 0;
     let flag = true;
+    const oneDayMilliseconds = 3600 * 1000 * 24;
 
     for (
       let idx = new Date(query.startDate).getTime();
       idx <= new Date(query.endDate).getTime();
-      idx += 3600 * 1000 * 24
+      idx += oneDayMilliseconds
     ) {
       for (const task of tasks) {
         if (
@@ -423,8 +424,7 @@ export class SprintsService {
             task.userWorkspaceId,
           );
 
-          //can not how "new Date(task.createdAt).getTime()" works
-          if (new Date(task.createdAt).getTime() - 3600 * 1000 * 24 <= idx) {
+          if (new Date(task.createdAt).getTime() - oneDayMilliseconds <= idx) {
             if (task.status === 'Done') existingUser.devProgress.done += 1;
             existingUser.devProgress.total += 1;
             const assignTask = {
@@ -433,15 +433,24 @@ export class SprintsService {
               status: task.status,
               statusCategoryName: task.statusCategoryName,
             };
-            existingUser.assignedTasks.push(assignTask);
 
             const doesTodayTask = this.doesTodayTask(idx, task.sessions);
             const doesYesterDayTask = this.doesTodayTask(
-              idx - 3600 * 1000 * 24,
+              idx - oneDayMilliseconds,
               task.sessions,
             );
             if (doesTodayTask) existingUser.todayTasks.push(assignTask);
             if (doesYesterDayTask) existingUser.yesterdayTasks.push(assignTask);
+
+            // Use excludeUnworkedTasks property to exclude tasks that are not currently active in the session list.
+            if (
+              query.excludeUnworkedTasks &&
+              (doesTodayTask || doesYesterDayTask)
+            ) {
+              existingUser.assignedTasks.push(assignTask);
+            } else if (!query.excludeUnworkedTasks) {
+              existingUser.assignedTasks.push(assignTask);
+            }
             mappedUserWithWorkspaceId.set(task.userWorkspaceId, existingUser);
           }
         }
@@ -509,7 +518,7 @@ export class SprintsService {
 
       //Push the real data into rows
       for (const [key, value] of mappedKeyAndValueForRow.entries()) {
-        const { keyType, userW } = JSON.parse(key); // keyType string of date. example : "2023-12-18T18:00:00.000Z"
+        const { keyType, userW } = JSON.parse(key); // keyType is string of date. example : "2023-12-18T18:00:00.000Z"
         const data = mappedSpentTimeWithDateAndUserWorkspaceId.get(key); //if finds, that means date-wise spent-time otherwise assignTask spent-time
 
         //mapping dates with every userWorkspaceIds -->start
@@ -671,7 +680,7 @@ export class SprintsService {
       mappedKeyAndValueForRow,
       assignTasksSessionTime,
       assignTasksEstimatedTime,
-    } = this.taskSpentTime(taskList, mappedUserWithWorkspaceId);
+    } = this.taskSpentTime(query, taskList, mappedUserWithWorkspaceId);
 
     //assign the spentTime to the assignTasks
     //Column
@@ -918,6 +927,7 @@ export class SprintsService {
   }
 
   private taskSpentTime(
+    query: NewSprintViewQueryDto,
     taskList: any[],
     mappedUserWithWorkspaceId: Map<number, any>,
   ) {
@@ -926,6 +936,11 @@ export class SprintsService {
     let assignTasksSessionTime = 0,
       assignTasksEstimatedTime = 0;
     for (const task of taskList) {
+      //check this task is eligible for processing
+      if (query.excludeUnworkedTasks) {
+        const validTask = this.taskValidityCheck(query, task);
+        if (!validTask) continue;
+      }
       const sessions = task.sessions;
       if (mappedUserWithWorkspaceId.has(task.userWorkspaceId)) {
         assignTasksEstimatedTime += task.estimation;
@@ -1001,6 +1016,21 @@ export class SprintsService {
       assignTasksSessionTime,
       assignTasksEstimatedTime,
     };
+  }
+
+  private taskValidityCheck(query: NewSprintViewQueryDto, task: any) {
+    const sessions = task.sessions;
+    for (let index = 0; index < sessions.length; index++) {
+      const session: Session = sessions[index];
+      if (
+        new Date(session.startTime).getTime() <=
+          new Date(query.endDate).getTime() &&
+        new Date(session.startTime).getTime() >=
+          new Date(query.startDate).getTime()
+      )
+        return true;
+    }
+    return false;
   }
 
   async getReportPageSprints(user: User) {

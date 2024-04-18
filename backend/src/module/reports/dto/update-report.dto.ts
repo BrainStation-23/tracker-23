@@ -1,4 +1,4 @@
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
 export class UpdateReportDto {
   @IsString()
   @IsOptional()
@@ -35,6 +35,10 @@ export class UpdateReportDto {
   @IsArray()
   @IsOptional()
   types?: string[];
+
+  @IsBoolean()
+  @IsOptional()
+  excludeUnworkedTasks?: boolean;
 }
 
 export enum FilterDateType {

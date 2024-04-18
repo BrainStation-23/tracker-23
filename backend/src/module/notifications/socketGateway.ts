@@ -1,4 +1,4 @@
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
 import { OnModuleInit } from '@nestjs/common';
 import {
@@ -9,6 +9,8 @@ import {
 } from '@nestjs/websockets';
 import { AuthService } from 'src/module/auth/auth.service';
 import { tokenParse } from 'src/utils/socket';
+
+const CONNECTIONS = new Map<string, Socket>();
 
 const corsOption = {
   origin: `${
@@ -37,12 +39,15 @@ export class MyGateway implements OnModuleInit {
         if (!user) {
           return next(new Error('Invalid token'));
         }
+        CONNECTIONS.set(user.id.toString(), socket);
         return next();
       }
     });
+
     this.server.on('connection', async (socket) => {
       console.log('Connected', socket.id);
     });
+
     this.server.on('disconnect', (socket) => {
       console.log('disconnect', socket.id);
     });
@@ -57,9 +62,10 @@ export class MyGateway implements OnModuleInit {
     });
   }
 
-  sendNotification(eventName: string, data: any) {
-    //console.log(eventName, data);
-    const not = this.server.emit(eventName, data);
+  sendNotification(userId: string, data: any) {
+    // console.log(userId, data);
+    const not = CONNECTIONS.get(userId)?.emit('onNotification', data);
+    // const not = this.server.emit(eventName, data);
     console.log(
       '🚀 ~ file: socketGateway.ts:63 ~ MyGateway ~ sendNotification ~ not:',
       not,

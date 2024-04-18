@@ -102,6 +102,7 @@ export class WorkspacesService {
       endDate: endFormatted,
       userIds: [modifiedUser.id],
       startDate: startFormatted,
+      excludeUnworkedTasks: false,
     };
     const reportData = {
       name: 'Task List',
@@ -288,6 +289,7 @@ export class WorkspacesService {
             endDate: endFormatted,
             userIds: [newUser.id],
             startDate: startFormatted,
+            excludeUnworkedTasks: false,
           };
           const reportData = {
             name: 'Task List',
@@ -367,6 +369,7 @@ export class WorkspacesService {
           endDate: endFormatted,
           userIds: [invitedUser.id],
           startDate: startFormatted,
+          excludeUnworkedTasks: false,
         };
         console.log(
           '🚀 ~ WorkspacesService ~ sendInvitation ~ config:',
