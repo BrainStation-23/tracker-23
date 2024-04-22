@@ -39,7 +39,7 @@ export class TasksController {
 
   async onApplicationBootstrap() {
     await this.rabbitMQService.connect();
-
+    console.log('hello from starting consume');
     await Promise.all([
       this.rabbitMQService.consume(QueuePayloadType.SYNC_ALL),
       this.rabbitMQService.consume(QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK),

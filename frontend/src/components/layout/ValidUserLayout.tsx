@@ -157,9 +157,8 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   // Side Effect
   useEffect(() => {
     const connectSocket = async () => {
-      GetCookie("access_token") &&
-        !connectedSocket &&
-        (await initializeSocket());
+      const cookieValue = GetCookie("access_token");
+      cookieValue && !connectedSocket && (await initializeSocket());
     };
     let timeout: NodeJS.Timeout;
     timeout =
