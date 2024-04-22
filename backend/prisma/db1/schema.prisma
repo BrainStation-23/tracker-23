@@ -111,8 +111,8 @@ model User {
 }
 
 model OTP {
-  id         Int       @id @default(autoincrement())
-  email      String    @unique
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
   code       String
   expireTime DateTime
 }
@@ -285,10 +285,11 @@ model Session {
 }
 
 model callSync {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   status    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  lastSync  DateTime?
 
   UserWorkspace   UserWorkspace @relation(fields: [userWorkspaceId], references: [id], onDelete: Cascade)
   userWorkspaceId Int
