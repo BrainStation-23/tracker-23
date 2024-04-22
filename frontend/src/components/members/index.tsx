@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
 import PrimaryButton from "@/components/common/buttons/primaryButton";
-import InviteToWorkspace from "@/components/invitations/components/inviteToWorkspace";
+import InviteToWorkspace from "@/components/invitations/inviteToWorkspace";
 import GlobalModal from "@/components/modals/globalModal";
 
 import MemberList from "./components/memberList";

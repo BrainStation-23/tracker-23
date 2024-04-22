@@ -13,8 +13,8 @@ const MoreButtonTopPanel = ({
   return (
     <Dropdown
       menu={menuProps}
-      placement="bottomRight"
       open={dropdownOpen}
+      placement="bottomRight"
       onOpenChange={(open) => {
         setDropdownOpen(open);
       }}
@@ -22,9 +22,9 @@ const MoreButtonTopPanel = ({
         <div className="custom-dropdown-bg float-right">{menu}</div>
       )}
       trigger={["click"]}
-      className="custom-dropdown-bg flex h-[33px] items-center justify-center rounded-lg border-[1px]  p-2"
+      className="custom-dropdown-bg flex h-8 items-center justify-center rounded-lg border p-2"
     >
-      <div>
+      <div className="flex items-center justify-center">
         <LuMoreVertical />
       </div>
     </Dropdown>

@@ -30,10 +30,6 @@ import { LoadingOutlined } from "@ant-design/icons";
 import DeleteReportPageWarning from "./components/deletePageWarning";
 import WorkspaceNav from "./components/workspaceNav";
 
-type SideMenuProps = {
-  option: { link: any; title: String; icon: any };
-  active: boolean;
-};
 const { Text } = Typography;
 
 export const sideMenuOptions = [
@@ -122,7 +118,7 @@ export const sideMenuManageOptions = [
   },
 ];
 
-const SideMenu = () => {
+const SideMenu = ({ toggleCollapsed }: { toggleCollapsed: () => void }) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const reportPages = useAppSelector(
@@ -197,8 +193,9 @@ const SideMenu = () => {
                 <div className="flex flex-col gap-1">
                   {sideMenuFucntionOptions?.map((option) => (
                     <SideMenuOption
-                      key={option.title}
                       option={option}
+                      key={option.title}
+                      toggleCollapsed={toggleCollapsed}
                       active={router.asPath.includes(option.link)}
                     />
                   ))}
@@ -225,8 +222,9 @@ const SideMenu = () => {
                 <div className="flex flex-col gap-1">
                   {sideMenuManageOptions?.map((option) => (
                     <SideMenuOption
-                      key={option.title}
                       option={option}
+                      key={option.title}
+                      toggleCollapsed={toggleCollapsed}
                       active={router.asPath.includes(option.link)}
                     />
                   ))}
@@ -303,6 +301,7 @@ const SideMenu = () => {
                             }`}
                           >
                             <MyLink
+                              onClick={toggleCollapsed}
                               href={"/reports/" + reportPage.id}
                               className="flex items-center gap-2 px-2 py-1"
                             >
@@ -337,8 +336,8 @@ const SideMenu = () => {
                                 onClick: () => {},
                               }}
                               trigger={["click"]}
-                              className="relative "
-                              overlayClassName="absolute left-[-200px] "
+                              className="relative"
+                              overlayClassName="absolute left-[-200px]"
                               placement="bottomRight"
                             >
                               <Button className="relative flex h-4 w-4 items-center justify-center p-0">
@@ -376,18 +375,26 @@ const SideMenu = () => {
 
 export default SideMenu;
 
-const SideMenuOption = ({ option, active }: SideMenuProps) => {
+type SideMenuProps = {
+  active: boolean;
+  toggleCollapsed: () => void;
+  option: { link: any; title: String; icon: any };
+};
+
+const SideMenuOption = ({ option, active, toggleCollapsed }: SideMenuProps) => {
   const router = useRouter();
+  const handleClick = () => {
+    toggleCollapsed();
+    option.link === "suggestion"
+      ? window.open("https://tracker23.canny.io/feature-request")
+      : router.push(option.link);
+  };
   return (
     <div
       className={`group flex items-center gap-2 rounded-lg py-[6px] px-1 hover:cursor-pointer hover:bg-[#ECECED] hover:text-primary ${
         active ? "bg-[#ECECED] text-primary" : ""
       }`}
-      onClick={() => {
-        option.link === "suggestion"
-          ? window.open("https://tracker23.canny.io/feature-request")
-          : router.push(option.link);
-      }}
+      onClick={handleClick}
     >
       <div
         className={` flex w-5 items-center text-xl group-hover:stroke-primary group-hover:text-primary ${

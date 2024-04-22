@@ -53,7 +53,7 @@ const TableComponent = ({
                   onClick={() => {
                     handlePin(task);
                   }}
-                  type="ghost"
+                  type="default"
                 >
                   {task.pinned ? <PinFilledIconSvg /> : <PinIconSvg />}
                 </Button>

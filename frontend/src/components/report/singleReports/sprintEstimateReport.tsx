@@ -10,6 +10,7 @@ import { ReportData } from "@/storage/redux/reportsSlice";
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SpritEstimateReportComponent from "../components/sprintEstimateReportComponent";
 import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
+import { useMediaQuery } from "react-responsive";
 
 type Props = {
   reportData: ReportData;
@@ -20,6 +21,7 @@ const SprintEstimateReport = ({ reportData, inView }: Props) => {
     useState<SprintUserReportDto>();
   const [isLoading, setIsLoading] = useState(false);
   const [downloading, setDownloading] = useState<boolean>(false);
+  const isMobile = useMediaQuery({ maxWidth: 767 });
   const excelExport = async () => {
     setDownloading(true);
     try {
@@ -81,13 +83,13 @@ const SprintEstimateReport = ({ reportData, inView }: Props) => {
         setIsLoading={setIsLoading}
         exportButton={
           <Button
-            type="ghost"
+            type="default"
             className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
             icon={<LuDownload className="text-xl" />}
             loading={downloading}
-            onClick={() => excelExport()}
+            onClick={excelExport}
           >
-            Export to Excel
+            {!isMobile && "Export to Excel"}
           </Button>
         }
         extraFilterComponent={

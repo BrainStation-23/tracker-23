@@ -106,8 +106,8 @@ const Navbar = ({ extraComponent, collapsed, toggleCollapsed }: Props) => {
   }, [userDetails, path]);
 
   return (
-    <div className="flex h-16 w-full items-center justify-between border-b border-b-gray-100 bg-white px-8">
-      <div className="flex items-start justify-center gap-4 py-6">
+    <div className="flex h-16 w-full items-center justify-between border-b border-b-gray-100 bg-white px-2 md:px-8">
+      <div className="flex items-center justify-center gap-4 py-6">
         <div className="md:hidden">
           {toggleCollapsed && (
             <Button type="text" onClick={toggleCollapsed} size="small">
@@ -119,13 +119,11 @@ const Navbar = ({ extraComponent, collapsed, toggleCollapsed }: Props) => {
           (option) =>
             router.asPath.includes(option.link) && (
               <div
-                key={Math.random()}
-                className={`flex items-center gap-2 rounded-lg text-black `}
+                key={option.link}
+                className="flex items-center gap-2 rounded-lg text-black"
               >
-                <div className=" stroke-black">{option.icon}</div>
-                <div
-                  className={`flex items-center gap-1 text-base font-semibold`}
-                >
+                <div className="stroke-black">{option.icon}</div>
+                <div className="flex items-center gap-1 text-base font-semibold">
                   <div className="justify-center">{option.title}</div>
                   {router.asPath.includes("report") && reportPageData?.name && (
                     <div>/</div>

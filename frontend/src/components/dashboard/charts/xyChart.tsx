@@ -7,11 +7,8 @@ import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 export default function XYChart({ data }: any) {
   useEffect(() => {
     am4core.useTheme(am4themes_animated);
-
     const chart = am4core.create("chartDiv", am4charts.XYChart);
-
     chart.data = data;
-
     const categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
     categoryAxis.dataFields.category = "day";
     categoryAxis.renderer.grid.template.location = null;
@@ -22,32 +19,29 @@ export default function XYChart({ data }: any) {
     });
 
     const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+    valueAxis.min = 0;
+    valueAxis.renderer.minGridDistance = 50;
     valueAxis.renderer.labels.template.fontSize = 16; // set font size
     valueAxis.renderer.labels.template.fontWeight = "500"; // set font weight
-
     valueAxis.renderer.grid.template.strokeDasharray = "3,3";
-    valueAxis.renderer.minGridDistance = 50;
-    valueAxis.min = 0;
 
     const series = chart.series.push(new am4charts.ColumnSeries());
+    series.name = "hours";
     series.dataFields.valueY = "hours";
     series.dataFields.categoryX = "day";
-    series.name = "hours";
-    series.columns.template.tooltipText = "{categoryX}: [bold]{valueY}[/]";
     series.columns.template.fillOpacity = 1;
+    series.columns.template.tooltipText = "{categoryX}: [bold]{valueY}[/]";
 
     const columnTemplate = series.columns.template;
+    columnTemplate.width = 19;
     columnTemplate.strokeWidth = 2;
     columnTemplate.strokeOpacity = 1;
-    columnTemplate.width = 19;
     //@ts-ignore
     columnTemplate.fill = "#00A3DE";
 
     // Clean up
-    return () => {
-      chart.dispose();
-    };
+    return () => chart.dispose();
   }, [data]);
 
-  return <div id="chartDiv" style={{ width: "90%", height: "500px" }}></div>;
+  return <div id="chartDiv" style={{ width: "100%", height: "500px" }}></div>;
 }

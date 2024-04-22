@@ -1,8 +1,9 @@
 import Head from "next/head";
 import classNames from "classnames";
-import { message, Spin, Layout, Drawer } from "antd";
 import { useRouter } from "next/router";
 import { ToastContainer } from "react-toastify";
+import { useMediaQuery } from "react-responsive";
+import { message, Spin, Layout, Drawer } from "antd";
 import { ReactNode, useEffect, useState } from "react";
 
 // Models
@@ -39,7 +40,6 @@ import { setNotifications } from "@/storage/redux/notificationsSlice";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 
 import "react-toastify/dist/ReactToastify.css";
-import { useMediaQuery } from "react-responsive";
 
 const layoutStyle = {
   // borderRadius: 8,
@@ -89,19 +89,20 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
 
   // State
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(syncRunning);
-
   const [collapsed, setCollapsed] = useState(false);
-
-  const toggleCollapsed = () => {
-    setCollapsed(!collapsed);
-  };
+  const [syncing, setSyncing] = useState(syncRunning);
 
   // Constant
   const path = router.asPath;
   const isPublicRoute = publicRoutes.some((route) => path.includes(route));
 
   // handler
+  const toggleCollapsed = () => {
+    if (isMobile) {
+      setCollapsed((prev) => !prev);
+    }
+  };
+
   const getProjectWiseStatues = async () => {
     if (!projectStatuses) {
       {
@@ -185,38 +186,36 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
     };
     let timeout: NodeJS.Timeout;
     timeout =
-      !publicRoutes.some((route) => path.includes(route)) &&
-      !connectedSocket &&
-      setTimeout(connectSocket, 2000);
+      !isPublicRoute && !connectedSocket && setTimeout(connectSocket, 2000);
 
     return () => clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
-    if (!publicRoutes.some((route) => path.includes(route))) {
+    if (!isPublicRoute) {
       userInfo?.activeWorkspace && initialLoading();
     }
   }, [userInfo?.activeWorkspace.id]);
 
-  useEffect(() => {
-    const getSyncStatus = async () => {
-      const res = await userAPI.syncStatus();
-      res && dispatch(setSyncStatus(res));
-      if (res.status === "IN_PROGRESS") {
-        dispatch(setSyncRunning(true));
-      } else if (res.status === "DONE") {
-        syncing && message.success("Sync Completed");
-        dispatch(setSyncRunning(false));
-      }
-    };
-    let timeout: NodeJS.Timeout;
-    timeout =
-      !publicRoutes.some((route) => path.includes(route)) &&
-      userInfo?.activeWorkspace &&
-      setTimeout(getSyncStatus, 2000);
+  // useEffect(() => {
+  //   const getSyncStatus = async () => {
+  //     const res = await userAPI.syncStatus();
+  //     res && dispatch(setSyncStatus(res));
+  //     if (res.status === "IN_PROGRESS") {
+  //       dispatch(setSyncRunning(true));
+  //     } else if (res.status === "DONE") {
+  //       syncing && message.success("Sync Completed");
+  //       dispatch(setSyncRunning(false));
+  //     }
+  //   };
+  //   let timeout: NodeJS.Timeout;
+  //   timeout =
+  //     !isPublicRoute &&
+  //     userInfo?.activeWorkspace &&
+  //     setTimeout(getSyncStatus, 2000);
 
-    return () => clearTimeout(timeout);
-  }, [publicRoutes.some((route) => path.includes(route))]);
+  //   return () => clearTimeout(timeout);
+  // }, [publicRoutes.some((route) => path.includes(route))]);
 
   useEffect(() => {
     let myTimeout: NodeJS.Timeout;
@@ -239,33 +238,11 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
     }
 
     return () => clearTimeout(myTimeout);
-  }, [dispatch, syncing, router]);
+  }, [syncing, publicRoutes.some((route) => path.includes(route))]);
 
   useEffect(() => {
     if (syncRunning !== syncing) setSyncing(syncRunning);
   }, [syncing, syncRunning]);
-
-  useEffect(() => {
-    if (
-      !publicRoutes.some((route) => path.includes(route)) &&
-      !path.includes("socialLogin")
-    ) {
-      if (!(workspacesList?.length > 0)) {
-        setLoading(true);
-        getWorkspaces();
-      } else setLoading(false);
-    }
-  }, [router, path]);
-
-  useEffect(() => {
-    if (
-      !publicRoutes.some((route) => path.includes(route)) &&
-      !path.includes("socialLogin")
-    ) {
-      setLoading(true);
-      getWorkspaces();
-    }
-  }, [reloadWorkspace]);
 
   useEffect(() => {
     if (userInfo?.status === "ONBOARD") {
@@ -273,25 +250,33 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
     } else if (userInfo?.status === "ACTIVE") {
       path.includes("onBoarding") && router.push("/taskList");
     }
-  }, [router, path, userInfo]);
 
-  useEffect(() => {
     !["/inviteLink", "/socialLogin/redirect"].some((route) =>
       path.includes(route)
     ) && deleteFromLocalStorage("invitationCode");
+
+    if (!isPublicRoute && !path.includes("socialLogin")) {
+      if (!(workspacesList?.length > 0)) {
+        setLoading(true);
+        getWorkspaces();
+      } else setLoading(false);
+    }
   }, [path]);
+
+  useEffect(() => {
+    if (!isPublicRoute && !path.includes("socialLogin")) {
+      setLoading(true);
+      getWorkspaces();
+    }
+  }, [reloadWorkspace]);
 
   return (
     <>
       <Layout style={layoutStyle}>
-        {loading &&
-        !path.includes("socialLogin") &&
-        !publicRoutes.some((route) => path.includes(route)) ? (
+        {loading && !path.includes("socialLogin") && !isPublicRoute ? (
           <div className="h-screen">
             <Spin
-              spinning={
-                loading && !publicRoutes.some((route) => path.includes(route))
-              }
+              spinning={loading && !isPublicRoute}
               tip={"Loading..."}
               className="inset-0 m-auto h-full"
             >
@@ -304,51 +289,57 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
               <link rel="icon" href="/images/bsIcon.png" />
               <title>Tracker 23</title>
             </Head>
-            {!publicRoutes.some((route) => path.includes(route)) &&
-              !path.includes("onBoarding") && (
-                <div
-                  className={classNames(
-                    `hidden h-screen md:block min-w-[${
-                      reportInEdit ? "350px" : "250px"
-                    }] max-w-[${reportInEdit ? "350px" : "250px"}]`
-                  )}
-                >
-                  {reportInEdit ? <ReportSettings /> : <SideMenu />}
-                </div>
-              )}
+            {!isPublicRoute && !path.includes("onBoarding") && (
+              <div
+                className={classNames(
+                  `hidden h-screen md:block min-w-[${
+                    reportInEdit ? "350px" : "250px"
+                  }] max-w-[${reportInEdit ? "350px" : "250px"}]`
+                )}
+              >
+                {reportInEdit ? (
+                  <ReportSettings />
+                ) : (
+                  <SideMenu toggleCollapsed={toggleCollapsed} />
+                )}
+              </div>
+            )}
 
-            {!publicRoutes.some((route) => path.includes(route)) &&
-              !path.includes("onBoarding") && (
-                <Drawer
-                  placement="left"
-                  closable={isVerySmallDevice}
-                  onClose={toggleCollapsed}
-                  open={!collapsed || (isMobile && Boolean(reportInEdit))}
-                  maskClosable={!Boolean(reportInEdit)}
-                  style={{
-                    padding: 0,
+            {!isPublicRoute && !path.includes("onBoarding") && (
+              <Drawer
+                key="left"
+                placement="left"
+                onClose={toggleCollapsed}
+                closable={isVerySmallDevice}
+                maskClosable={!Boolean(reportInEdit)}
+                width={reportInEdit ? "350px" : "250px"}
+                open={collapsed || (isMobile && Boolean(reportInEdit))}
+                style={{
+                  margin: 0,
+                  padding: 0,
+                }}
+                styles={{
+                  body: {
                     margin: 0,
-                  }}
-                  styles={{
-                    body: {
-                      padding: 0,
-                      margin: 0,
-                    },
-                  }}
-                  key="left"
-                  width={reportInEdit ? "350px" : "250px"}
-                  className={classNames(
-                    `hidden h-screen sm:block min-w-[${
-                      reportInEdit ? "350px" : "250px"
-                    }] max-w-[${reportInEdit ? "350px" : "250px"}]`
-                  )}
-                >
-                  {reportInEdit ? <ReportSettings /> : <SideMenu />}
-                </Drawer>
-              )}
+                    padding: 0,
+                  },
+                }}
+                className={classNames(
+                  `hidden h-screen sm:block min-w-[${
+                    reportInEdit ? "350px" : "250px"
+                  }] max-w-[${reportInEdit ? "350px" : "250px"}]`
+                )}
+              >
+                {reportInEdit ? (
+                  <ReportSettings />
+                ) : (
+                  <SideMenu toggleCollapsed={toggleCollapsed} />
+                )}
+              </Drawer>
+            )}
             {userInfo?.activeWorkspace ||
             path.includes("socialLogin") ||
-            publicRoutes.some((route) => path.includes(route)) ? (
+            isPublicRoute ? (
               <div
                 className={classNames(
                   "flex max-h-screen w-full flex-col overflow-auto overflow-y-auto bg-white"
@@ -383,13 +374,13 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
         )}
       </Layout>
       <ToastContainer
-        position="top-right"
-        autoClose={8000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        draggable={false}
-        closeOnClick
         pauseOnHover
+        closeOnClick
+        autoClose={8000}
+        draggable={false}
+        newestOnTop={false}
+        position="top-right"
+        hideProgressBar={false}
       />
     </>
   );
