@@ -32,8 +32,13 @@ export class MyGateway implements OnModuleInit {
     let user;
     this.server.use(async (socket, next) => {
       const cookieString = socket.handshake.headers.cookie;
+      console.log("🚀 ~ MyGateway ~ this.server.use ~ cookieString:", cookieString)
       const token = cookieString && tokenParse(cookieString);
-      console.log('🚀 ~ MyGateway ~ this.server.use ~ token:', token);
+      console.log(
+        '🚀 ~ MyGateway ~ this.server.use ~ token:',
+        token,
+        socket.handshake.headers,
+      );
       if (!token) return next(new Error('Invalid token'));
       else {
         user = await this.authService.getUserFromAccessToken(`${token}`);
