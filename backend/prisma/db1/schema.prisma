@@ -1,6 +1,5 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-// npx prisma generate
 // npx prisma migrate dev
 // npx prisma migrate reset --force
 // npx prisma studio
