@@ -32,13 +32,12 @@ export class MyGateway implements OnModuleInit {
     let user;
     this.server.use(async (socket, next) => {
       const cookieString = socket.handshake.headers.cookie;
-      console.log("🚀 ~ MyGateway ~ this.server.use ~ cookieString:", cookieString)
-      const token = cookieString && tokenParse(cookieString);
       console.log(
-        '🚀 ~ MyGateway ~ this.server.use ~ token:',
-        token,
-        socket.handshake.headers,
+        '🚀 ~ MyGateway ~ this.server.use ~ cookieString:',
+        cookieString,
       );
+      const token = cookieString && tokenParse(cookieString);
+      console.log('🚀 ~ MyGateway ~ this.server.use ~ token:', token);
       if (!token) return next(new Error('Invalid token'));
       else {
         user = await this.authService.getUserFromAccessToken(`${token}`);
@@ -56,6 +55,13 @@ export class MyGateway implements OnModuleInit {
 
     this.server.on('disconnect', (socket) => {
       console.log('disconnect', socket.id);
+    });
+
+    this.server.on('connected', (cookieValue: string) => {
+      console.log(
+        '🚀 ~ MyGateway ~ this.server.on ~ cookieValue:',
+        cookieValue,
+      );
     });
   }
 
