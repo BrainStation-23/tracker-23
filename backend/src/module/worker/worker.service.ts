@@ -395,7 +395,7 @@ export class WorkerService {
     let urlParam;
     if (syncState?.lastSync) {
       const day = new Date().getDay() - new Date(syncState.lastSync).getDay();
-      if (day === 0) {
+      if (day <= 0) {
         urlParam = `Updated >= startOfDay()`;
       } else {
         urlParam = `Updated >= startOfDay("-${day}")`;
