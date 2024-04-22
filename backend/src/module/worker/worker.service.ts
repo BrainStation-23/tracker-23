@@ -52,6 +52,7 @@ export class WorkerService {
         );
 
         worker.on('message', async (result) => {
+          console.log('🚀 ~ WorkerService ~ worker.on ~ result:', result);
           await this.processData(result);
           resolve(result);
         });
@@ -66,6 +67,10 @@ export class WorkerService {
           }
         });
       } else if (parentPort) {
+        console.log(
+          '🚀 ~ WorkerService ~ returnnewPromise ~ parentPort:',
+          parentPort,
+        );
         // Worker thread logic
         const result = this.processData(data);
         parentPort.postMessage(result);
@@ -78,6 +83,7 @@ export class WorkerService {
 
   private async processData(data: any) {
     const { payloadType, user, projectId } = data;
+    console.log('🚀 ~ WorkerService ~ processData ~ payloadType:', payloadType);
     if (payloadType === QueuePayloadType.SYNC_ALL) {
       return await this.syncAllAndUpdateTasks(user);
     } else if (payloadType === QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK) {
