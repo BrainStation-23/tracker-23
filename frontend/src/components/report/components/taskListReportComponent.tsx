@@ -173,9 +173,10 @@ const TaskListReportComponent = ({
     <div className="flex w-full flex-col justify-center gap-4">
       {tasks.length ? (
         <Table
+          rowKey={"id"}
           columns={columns}
           dataSource={tasks}
-          rowKey={"id"}
+          scroll={{ x: 1500 }}
           pagination={{ position: ["bottomCenter"] }}
         />
       ) : (

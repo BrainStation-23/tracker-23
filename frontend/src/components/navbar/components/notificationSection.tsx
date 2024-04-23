@@ -56,22 +56,20 @@ const NotificationSection = () => {
       label: (
         <div className=" py-1">
           <div className="max-w-[150px]">{notification.description}</div>
-          <div className=" right-0 top-0 text-xs">{elapsedTime}</div>
+          <div className="right-0 top-0 text-xs">{elapsedTime}</div>
         </div>
       ),
       key: notification.id,
       icon: <CheckCircleOutlined className="text-green-500" />,
       disabled: notification.seen,
       className: notification.seen ? "bg-gray-100" : "",
-      onClick: (item: any) => {
-        handleClickNotification(item);
-      },
+      onClick: (item: any) => handleClickNotification(item),
     };
   });
 
   const menuProps = {
     items,
-    onClick: () => {},
+    // onClick: () => {},
   };
 
   const { token } = useToken();
@@ -91,7 +89,7 @@ const NotificationSection = () => {
         onOpenChange={(open) => {
           !open && handleMarkAllSeen();
         }}
-        dropdownRender={(menu) => (
+        dropdownRender={(menu: React.ReactNode) => (
           <div style={contentStyle}>
             <div className="max-h-[500px] overflow-y-auto">
               {React.cloneElement(menu as React.ReactElement, {
@@ -101,18 +99,12 @@ const NotificationSection = () => {
             {notifications.length > 0 ? (
               <>
                 <Divider style={{ margin: 0 }} />
-                <Button
-                  className="w-full"
-                  onClick={() => handleMarkAllCleared()}
-                >
+                <Button className="w-full" onClick={handleMarkAllCleared}>
                   Clear All
                 </Button>
               </>
             ) : (
-              <Empty
-                description="No new Notifications"
-                className="py-2"
-              ></Empty>
+              <Empty description="No new Notifications" className="py-2" />
             )}
           </div>
         )}
@@ -128,9 +120,9 @@ const NotificationSection = () => {
           }}
         >
           <Badge
-            count={newNotificationNumber}
             size="small"
             overflowCount={10}
+            count={newNotificationNumber}
             style={{ backgroundColor: "#52c41a" }}
           >
             <BellIconSvg />

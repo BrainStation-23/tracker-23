@@ -41,7 +41,6 @@ export default function PrioritySelectorComponent({
           placeholder="Select Priority"
           mode="multiple"
           className="w-full"
-          showArrow
           value={priority}
           tagRender={(value) => TagRender({ ...value, priority })}
           maxTagCount={1}

@@ -16,7 +16,6 @@ const OnboardingSteps: React.FC = () => {
   const dispatch = useDispatch();
   const user = useAppSelector((state: RootState) => state.userSlice.user);
   const { onboadingSteps } = user;
-
   const { token } = theme.useToken();
 
   const findCurrentStep = () => {
@@ -162,8 +161,8 @@ const OnboardingSteps: React.FC = () => {
       });
     } else {
       res = await updateOnboarding({
-        index: current + 1,
         completed: true,
+        index: current + 1,
         emails: emails.toString(), // Doing this because backend wants this way
       });
       if (res) {
@@ -183,7 +182,7 @@ const OnboardingSteps: React.FC = () => {
     console.log("🚀 ~ file: namingSection.tsx:7 ~ onFinish ~ value:", value);
   };
   return (
-    <div className="flex flex-col justify-center gap-12 p-20">
+    <div className="flex flex-col justify-center gap-12 px-4 py-4 md:py-20 md:px-20">
       <div className="flex flex-col gap-2">
         <div className="text-xl font-semibold">Hello {user.firstName}</div>
         <div>Let&apos;s start with some basic questions to get you started</div>
@@ -191,13 +190,13 @@ const OnboardingSteps: React.FC = () => {
       <Spin spinning={loading}>
         <Form
           name="basic"
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
           autoComplete="off"
+          onFinish={onFinish}
           layout="horizontal"
           requiredMark={false}
+          onFinishFailed={onFinishFailed}
         >
-          <div className="w-[560px]">
+          <div className="w-full md:w-[560px]">
             <Steps current={current} items={items} />
             <div style={contentStyle} className="py-2">
               {steps[current]?.content}

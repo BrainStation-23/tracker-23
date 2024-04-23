@@ -90,7 +90,6 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   // State
   const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
-  const [syncing, setSyncing] = useState(syncRunning);
 
   // Constant
   const path = router.asPath;
@@ -131,6 +130,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
 
   const getNotifications = async () => {
     const notifications = await userAPI.getNotifications();
+
     if (!(notificationsSlice?.length > 0) && notifications) {
       dispatch(setNotifications(notifications));
     }
@@ -204,7 +204,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   //     if (res.status === "IN_PROGRESS") {
   //       dispatch(setSyncRunning(true));
   //     } else if (res.status === "DONE") {
-  //       syncing && message.success("Sync Completed");
+  //       syncRunning && message.success("Sync Completed");
   //       dispatch(setSyncRunning(false));
   //     }
   //   };
@@ -226,7 +226,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
         dispatch(setSyncRunning(true));
         myTimeout = setTimeout(getSyncStatus, 5000);
       } else if (res.status === "DONE") {
-        syncing && message.success("Sync Completed");
+        syncRunning && message.success("Sync Completed");
         dispatch(setSyncRunning(false));
       }
     };
@@ -238,11 +238,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
     }
 
     return () => clearTimeout(myTimeout);
-  }, [syncing, publicRoutes.some((route) => path.includes(route))]);
-
-  useEffect(() => {
-    if (syncRunning !== syncing) setSyncing(syncRunning);
-  }, [syncing, syncRunning]);
+  }, [syncRunning, publicRoutes.some((route) => path.includes(route))]);
 
   useEffect(() => {
     if (userInfo?.status === "ONBOARD") {

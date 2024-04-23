@@ -4,7 +4,7 @@ import BtnComponent from "./Components/BtnComponent";
 import { userAPI } from "APIs";
 import { getTotalSpentTime } from "@/services/timeActions";
 import { message } from "antd";
-import { TaskContext } from "@/components/tasks";
+import { TaskContext } from "@/pages/taskList";
 import { TaskDto } from "models/tasks";
 
 type Props = {

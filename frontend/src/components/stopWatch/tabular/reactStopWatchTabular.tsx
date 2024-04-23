@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import DisplayComponent from "./Components/DisplayComponent";
 import { getTotalSpentTime } from "@/services/timeActions";
-import { TaskContext } from "@/components/tasks";
+import { TaskContext } from "@/pages/taskList";
 import { TaskDto } from "models/tasks";
 
 type Props = {

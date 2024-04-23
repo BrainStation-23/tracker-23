@@ -64,7 +64,6 @@ export default function SourceSelectorComponent({
         tagRender={(props) => tagRender(props, selectedSource)}
         value={selectedSource}
         className="w-full"
-        showArrow
         maxTagCount={1}
         options={Options}
         onChange={(value) => {

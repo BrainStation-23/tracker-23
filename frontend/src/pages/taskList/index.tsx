@@ -86,6 +86,11 @@ const TasksPage = () => {
     status: [],
   });
 
+  // Handler
+  const getPinnedTasks = () => {
+    return tasks.filter((task) => task.pinned);
+  };
+
   const createTask = async (data: CreateTaskDto) => {
     setLoading(true);
     try {
@@ -118,7 +123,6 @@ const TasksPage = () => {
     }
   };
 
-  // Handler
   const handleWarning = async (tmpTask: any) => {
     setWarningData(tmpTask);
     setWarningModalOpen(true);
@@ -361,10 +365,6 @@ const TasksPage = () => {
     getSprintList();
     getActiveSprintTasks();
   }, []);
-
-  const getPinnedTasks = () => {
-    return tasks.filter((task) => task.pinned);
-  };
 
   useEffect(() => {
     !loading && getTasks();

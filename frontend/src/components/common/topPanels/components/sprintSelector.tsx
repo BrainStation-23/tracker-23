@@ -95,7 +95,6 @@ export default function SprintSelectorComponent({
             tagRender={(props) => tagRender({ ...props, sprints })}
             value={sprints[0] ? sprints : null}
             className="w-full"
-            showArrow
             maxTagCount={1}
             options={Options}
             onChange={(value) => setSprints(value)}
@@ -108,7 +107,6 @@ export default function SprintSelectorComponent({
             value={sprints}
             defaultValue={[]}
             className="w-full"
-            showArrow
             maxTagCount={1}
             options={Options}
             onChange={(value) => setSprints(value)}

@@ -70,7 +70,6 @@ export default function StatusSelectorComponent({
     >
       <SortStatusIconSvg />
       <Select
-        showArrow
         value={status}
         mode="multiple"
         maxTagCount={1}

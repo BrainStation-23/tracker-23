@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import DisplayComponent from "./Components/DisplayComponent";
 import BtnComponent from "./Components/BtnComponent";
 import { getTotalSpentTime } from "@/services/timeActions";
-import { TaskContext } from "@/components/tasks";
+import { TaskContext } from "@/pages/taskList";
 
 function ReactStopWatchCopy({ task }: any) {
   const { sessions } = task;

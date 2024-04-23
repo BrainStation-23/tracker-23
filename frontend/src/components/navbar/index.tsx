@@ -190,7 +190,7 @@ const Navbar = ({ extraComponent, collapsed, toggleCollapsed }: Props) => {
         {syncing && (
           <Tooltip
             placement="bottom"
-            title={"Syncing "}
+            title={"Syncing"}
             className="flex h-9 w-9 cursor-pointer items-center justify-center text-green-500"
           >
             <SyncOutlined spin={syncing} />

@@ -54,7 +54,6 @@ export default function ProjectSelectorComponent({
       <LuFolderOpen size={20} />
       {mode == "single" ? (
         <Select
-          showArrow
           maxTagCount={1}
           options={selectOptions}
           className="w-full"
@@ -65,7 +64,6 @@ export default function ProjectSelectorComponent({
         />
       ) : (
         <Select
-          showArrow
           maxTagCount={1}
           mode="multiple"
           options={selectOptions}

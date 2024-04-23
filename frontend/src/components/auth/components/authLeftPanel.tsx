@@ -23,11 +23,7 @@ const AuthLeftPanel = () => {
             </div>
           </div>
           {!router.asPath.includes("registration") && (
-            <PrimaryButton2
-              onClick={() => {
-                router.push("/registration");
-              }}
-            >
+            <PrimaryButton2 onClick={() => router.push("/registration")}>
               Try Tracker23 Now
             </PrimaryButton2>
           )}
