@@ -31,7 +31,6 @@ import { RootState } from "@/storage/redux/store";
 import { setPriorities } from "@/storage/redux/prioritySlice";
 import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import { setSprintListReducer } from "@/storage/redux/tasksSlice";
-import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 import { setProjectsSlice, StatusType } from "@/storage/redux/projectsSlice";
 
 export const TaskContext = createContext<any>({
@@ -383,24 +382,24 @@ const TasksPage = () => {
     }
   }, [syncRunning]);
 
-  useEffect(() => {
-    const getSyncStatus = async () => {
-      const res = await userAPI.syncStatus();
-      res && dispatch(setSyncStatus(res));
-      if (res.status === "IN_PROGRESS") {
-        dispatch(setSyncRunning(true));
-      } else if (res.status === "DONE") {
-        syncRunning && message.success("Sync Completed");
-        dispatch(setSyncRunning(false));
-      }
-    };
-    let timeout: NodeJS.Timeout;
-    timeout =
-      !publicRoutes.some((route) => path.includes(route)) &&
-      setTimeout(getSyncStatus, 5000);
+  // useEffect(() => {
+  //   const getSyncStatus = async () => {
+  //     const res = await userAPI.syncStatus();
+  //     res && dispatch(setSyncStatus(res));
+  //     if (res.status === "IN_PROGRESS") {
+  //       dispatch(setSyncRunning(true));
+  //     } else if (res.status === "DONE") {
+  //       syncRunning && message.success("Sync Completed");
+  //       dispatch(setSyncRunning(false));
+  //     }
+  //   };
+  //   let timeout: NodeJS.Timeout;
+  //   timeout =
+  //     !publicRoutes.some((route) => path.includes(route)) &&
+  //     setTimeout(getSyncStatus, 5000);
 
-    return () => clearTimeout(timeout);
-  }, [publicRoutes.some((route) => path.includes(route))]);
+  //   return () => clearTimeout(timeout);
+  // }, [publicRoutes.some((route) => path.includes(route))]);
 
   useEffect(() => {
     let myTimeout: NodeJS.Timeout;

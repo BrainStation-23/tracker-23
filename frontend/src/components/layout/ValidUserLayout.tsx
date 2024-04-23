@@ -8,7 +8,11 @@ import { ReactNode, useEffect, useState } from "react";
 
 // Models
 import { GetWorkspaceListWithUserDto } from "models/workspaces";
-import { IntegrationDto, IntegrationType } from "models/integration";
+import {
+  AuthorizationErrorMessage,
+  IntegrationDto,
+  IntegrationType,
+} from "models/integration";
 
 // Components
 import Navbar from "@/components/navbar";
@@ -24,6 +28,7 @@ import { initializeSocket } from "@/services/socket.service";
 
 // Storage
 import {
+  setAuthorizationSlice,
   setIntegrationsSlice,
   setIntegrationTypesSlice,
 } from "@/storage/redux/integrationsSlice";
@@ -181,9 +186,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const connectSocket = async () => {
       const getCookie = GetCookie("access_token");
-      getCookie &&
-      !connectedSocket &&
-      (await initializeSocket(getCookie));
+      getCookie && !connectedSocket && (await initializeSocket(getCookie));
     };
     let timeout: NodeJS.Timeout;
     timeout =
@@ -222,6 +225,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
     let myTimeout: NodeJS.Timeout;
     const getSyncStatus = async () => {
       const res = await userAPI.syncStatus();
+
       res && dispatch(setSyncStatus(res));
       if (res.status === "IN_PROGRESS") {
         dispatch(setSyncRunning(true));
@@ -229,6 +233,16 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
       } else if (res.status === "DONE") {
         syncRunning && message.success("Sync Completed");
         dispatch(setSyncRunning(false));
+      } else if (
+        res.status === AuthorizationErrorMessage.INVALID_JIRA_REFRESH_TOKEN
+      ) {
+        dispatch(setSyncRunning(false));
+        dispatch(setAuthorizationSlice({ type: "JIRA", value: true }));
+      } else if (
+        res.status === AuthorizationErrorMessage.INVALID_OUTLOOK_REFRESH_TOKEN
+      ) {
+        dispatch(setSyncRunning(false));
+        dispatch(setAuthorizationSlice({ type: "OUTLOOK", value: true }));
       }
     };
 

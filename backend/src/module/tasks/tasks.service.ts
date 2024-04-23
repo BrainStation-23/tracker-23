@@ -39,6 +39,7 @@ import {
 import { UpdateIssuePriorityReqBodyDto } from './dto/update.issue.req.dto';
 import { QueuePayloadType } from 'src/module/queue/types';
 import { RabbitMQService } from '../queue/queue.service';
+import { ErrorMessage } from '../integrations/dto/get.userIntegrations.filter.dto';
 
 @Injectable()
 export class TasksService {
@@ -1287,6 +1288,11 @@ export class TasksService {
             this.jiraApiCalls.getTransitions,
             url,
           );
+          console.log(
+            '🚀 ~ TasksService ~ updateIssueStatus ~ transitions:',
+            transitions,
+          );
+
           for (const transition of transitions) {
             if (task.projectId && statusNames.includes(transition.name)) {
               await this.prisma.statusDetail.update({
@@ -1341,7 +1347,7 @@ export class TasksService {
       } else
         throw new APIException('Something went wrong!', HttpStatus.BAD_REQUEST);
     } catch (err) {
-      return null;
+      throw err;
     }
   }
 
