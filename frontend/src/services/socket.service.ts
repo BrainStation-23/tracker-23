@@ -1,21 +1,27 @@
 import { LoginResponseDto } from "models/auth";
 import { config } from "config";
-import io from "socket.io-client";
+import io, { Socket } from "socket.io-client";
 import { getLocalStorage } from "@/storage/storage";
 import { store } from "@/storage/redux/store";
 import { addNotification, setSocket } from "@/storage/redux/notificationsSlice";
 
-const socket = io(config?.baseUrl, {
-  withCredentials: true,
-});
+let socket: Socket;
 
-export async function initializeSocket() {
+export async function initializeSocket(getCookie: string) {
+  // console.log("🚀 ~ initializeSocket ~ getCookie:", getCookie)
+  socket = io(config?.baseUrl, {
+    extraHeaders: {
+      Cookie_token: getCookie,
+    },
+    withCredentials: true,
+  });
+  console.log("🚀 ~ initializeSocket ~ socket:", socket)
   socket.on("connect", () => {
-    // console.log("Connected to socket");
+    console.log("Connected to socket");
     store.dispatch(setSocket(socket.id));
   });
   socket.on("error", () => {
-    // console.log("Error");
+    console.log("Error");
   });
   socket.on("onNotification", (payload) => {
     store.dispatch(addNotification(payload));
