@@ -27,7 +27,7 @@ const RegistrationPanel = () => {
         closable={false}
         centered
         className="z-50 w-20 bg-transparent"
-        maskStyle={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+        style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
       >
         <div className="flex h-40 flex-col items-center justify-center gap-4">
           <Spin

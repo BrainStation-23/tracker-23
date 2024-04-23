@@ -1112,11 +1112,11 @@ export class WorkerService {
         '🚀 ~ file: tasks.service.ts:1437 ~ TasksService ~ syncAll ~ error:',
         error,
       );
-      throw new APIException(
-        'Could not sync all of you project : ' +
+      return {
+        message:
+          'Could not sync all of you project : ' +
           `${syncedProjects} synced out of ${jiraProjectIds?.length} projects`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      };
     }
   }
 

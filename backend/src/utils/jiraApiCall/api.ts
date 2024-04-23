@@ -3,6 +3,10 @@ import axios from 'axios';
 
 export class JiraApiCalls {
   async getTransitions(userIntegration: UserIntegration, url: string) {
+    console.log(
+      '🚀 ~ JiraApiCalls ~ getTransitions ~ userIntegration:',
+      userIntegration,
+    );
     try {
       const config = {
         method: 'get',

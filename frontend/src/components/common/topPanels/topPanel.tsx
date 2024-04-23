@@ -162,11 +162,10 @@ const TopPanel = ({
   });
   const menuProps = {
     items,
-    // onClick: (item: any) => {},
   };
   return (
-    <div className="my-5 flex w-full justify-between">
-      <div className="flex gap-2">
+    <div className="my-5 flex w-full flex-col gap-4 md:flex-row md:justify-between">
+      <div className="flex min-w-full justify-center gap-2 md:min-w-fit">
         {tabs?.map((tab, index) => {
           return activeTab === tab ? (
             <MyActiveTab {...{ tab, setActiveTab }} key={index}>
@@ -187,84 +186,73 @@ const TopPanel = ({
           );
         })}
       </div>
-      <div className="flex items-center justify-end gap-2">
-        <div className="flex justify-end gap-4">
+      <div className="flex flex-wrap justify-center gap-2 md:justify-end">
+        <div>
           {!(sprints?.length > 0) && activeTab !== "ActiveSprint" && (
             <DateRangePicker
+              className="w-full min-w-[270px]"
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
-              className="min-w-[280px]"
             />
           )}
-          {checkedOptionList.includes("Search") && (
-            <div className="min-w-[210px]">
-              <Input
-                className="w-full"
-                placeholder="Search"
-                prefix={<SearchIconSvg />}
-                defaultValue={searchParams.searchText}
-                onChange={(event) => {
-                  event.persist();
-                  debouncedHandleInputChange(event);
-                }}
-                allowClear
-              />
-            </div>
-          )}
-          {
-            <SourceSelectorComponent
-              {...{ selectedSource, setSelectedSource }}
-            />
-          }
-          {checkedOptionList.includes("Priority") && (
-            <div>
-              <PrioritySelectorComponent
-                key={Math.random()}
-                {...{ priority, setPriority }}
-                className="w-[210px]"
-              />
-            </div>
-          )}
-          {checkedOptionList.includes("Status") && (
-            <div>
-              <StatusSelectorComponent
-                key={Math.random()}
-                {...{ status, setStatus }}
-                className="w-[210px]"
-              />
-            </div>
-          )}
-          {checkedOptionList.includes("Project") &&
-            selectedSource?.includes("JIRA") && (
-              <div>
-                <ProjectSelectorComponent
-                  key={Math.random()}
-                  {...{ projectIds, setProjectIds }}
-                  className="w-[210px]"
-                />
-              </div>
-            )}
-          {checkedOptionList.includes("Sprint") && (
-            <div>
-              {sprintList.length > 0 && (
-                <SprintSelectorComponent
-                  {...{ sprints, setSprints }}
-                  className="w-[210px]"
-                />
-              )}
-            </div>
-          )}
-          {checkedOptionList.includes("Calendar") &&
-            selectedSource?.includes("OUTLOOK") && (
-              <div>
-                <CalendarSelectorComponent
-                  key={Math.random()}
-                  {...{ calendarIds, setCalendarIds }}
-                  className="w-[210px]"
-                />
-              </div>
-            )}
         </div>
+        {checkedOptionList.includes("Search") && (
+          <div className="min-w-[210px]">
+            <Input
+              allowClear
+              className="w-full"
+              placeholder="Search"
+              prefix={<SearchIconSvg />}
+              defaultValue={searchParams.searchText}
+              onChange={(event) => {
+                event.persist();
+                debouncedHandleInputChange(event);
+              }}
+            />
+          </div>
+        )}
+        {<SourceSelectorComponent {...{ selectedSource, setSelectedSource }} />}
+        {checkedOptionList.includes("Priority") && (
+          <div>
+            <PrioritySelectorComponent
+              key={Math.random()}
+              {...{ priority, setPriority }}
+            />
+          </div>
+        )}
+        {checkedOptionList.includes("Status") && (
+          <div>
+            <StatusSelectorComponent
+              key={Math.random()}
+              {...{ status, setStatus }}
+            />
+          </div>
+        )}
+        {checkedOptionList.includes("Project") && (
+          <div>
+            <ProjectSelectorComponent
+              key={Math.random()}
+              {...{ projectIds, setProjectIds }}
+            />
+          </div>
+        )}
+        {checkedOptionList.includes("Sprint") && (
+          <div>
+            {sprintList.length > 0 && (
+              <SprintSelectorComponent {...{ sprints, setSprints }} />
+            )}
+          </div>
+        )}
+        {checkedOptionList.includes("Calendar") &&
+          selectedSource?.includes("OUTLOOK") && (
+            <div>
+              <CalendarSelectorComponent
+                key={Math.random()}
+                {...{ calendarIds, setCalendarIds }}
+              />
+            </div>
+          )}
+
         <MoreButtonTopPanel {...{ menuProps, dropdownOpen, setDropdownOpen }} />
       </div>
     </div>

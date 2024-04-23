@@ -51,7 +51,7 @@ export default function SourceSelectorComponent({
 
   return (
     <div
-      className={`flex w-full min-w-[210px] items-center gap-2 text-sm font-normal text-black ${
+      className={`flex min-w-[210px] items-center gap-2 text-sm font-normal text-black ${
         className ? className : ""
       }`}
     >
@@ -64,7 +64,6 @@ export default function SourceSelectorComponent({
         tagRender={(props) => tagRender(props, selectedSource)}
         value={selectedSource}
         className="w-full"
-        showArrow
         maxTagCount={1}
         options={Options}
         onChange={(value) => {

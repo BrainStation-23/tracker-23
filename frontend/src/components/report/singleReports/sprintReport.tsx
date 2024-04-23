@@ -11,6 +11,7 @@ import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SprintReportComponent from "../components/sprintReportComponents";
 import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 import { ExcelExport } from "@/services/exportHelpers";
+import { useMediaQuery } from "react-responsive";
 
 type Props = {
   reportData: ReportData;
@@ -25,6 +26,8 @@ const SprintReport = ({ reportData, inView }: Props) => {
     reportData?.config?.startDate && reportData?.config?.endDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
       : getDateRangeArray(reportData?.config?.filterDateType);
+
+  const isMobile = useMediaQuery({ maxWidth: 767 });
 
   const getSprintReport = async () => {
     if (!inView) return;
@@ -92,6 +95,7 @@ const SprintReport = ({ reportData, inView }: Props) => {
   useEffect(() => {
     getSprintReport();
   }, [reportData?.config, inView]);
+
   return (
     <>
       <ReportHeaderComponent
@@ -102,11 +106,11 @@ const SprintReport = ({ reportData, inView }: Props) => {
           <Button
             className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
             icon={<LuDownload className="text-xl" />}
-            onClick={() => excelExport()}
-            type="ghost"
+            onClick={excelExport}
             loading={downloading}
+            type="default"
           >
-            Export to Excel
+            {!isMobile && "Export to Excel"}
           </Button>
         }
         extraFilterComponent={

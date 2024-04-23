@@ -10,7 +10,11 @@ import { useAppSelector } from "@/storage/redux";
 import { updateReportPageNameSlice } from "@/storage/redux/reportsSlice";
 import { RootState } from "@/storage/redux/store";
 import { getLocalStorage } from "@/storage/storage";
-import { SyncOutlined } from "@ant-design/icons";
+import {
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  SyncOutlined,
+} from "@ant-design/icons";
 
 import { sideMenuOptions } from "../sideMenu";
 import NotificationSection from "./components/notificationSection";
@@ -18,9 +22,11 @@ import classNames from "classnames";
 
 type Props = {
   extraComponent?: any;
+  collapsed?: boolean;
+  toggleCollapsed?: () => void;
 };
 
-const Navbar = ({ extraComponent }: Props) => {
+const Navbar = ({ extraComponent, collapsed, toggleCollapsed }: Props) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { reauthorization: isAuthorizationNeeded, type: reauthorizationType } =
@@ -100,20 +106,25 @@ const Navbar = ({ extraComponent }: Props) => {
   }, [userDetails, path]);
 
   return (
-    <div className="flex h-16 w-full items-center justify-between border-b border-b-gray-100 bg-white px-8">
-      <div className="py-6">
+    <div className="flex h-16 w-full items-center justify-between border-b border-b-gray-100 bg-white px-2 md:px-8">
+      <div className="flex items-center justify-center gap-4 py-6">
+        <div className="md:hidden">
+          {toggleCollapsed && (
+            <Button type="text" onClick={toggleCollapsed} size="small">
+              {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            </Button>
+          )}
+        </div>
         {sideMenuOptions?.map(
           (option) =>
             router.asPath.includes(option.link) && (
               <div
-                key={Math.random()}
-                className={`flex items-center gap-2 rounded-lg text-black `}
+                key={option.link}
+                className="flex items-center gap-2 rounded-lg text-black"
               >
-                <div className=" stroke-black">{option.icon}</div>
-                <div
-                  className={`flex items-center gap-1 text-base font-semibold`}
-                >
-                  <div>{option.title}</div>
+                <div className="stroke-black">{option.icon}</div>
+                <div className="flex items-center gap-1 text-base font-semibold">
+                  <div className="justify-center">{option.title}</div>
                   {router.asPath.includes("report") && reportPageData?.name && (
                     <div>/</div>
                   )}
@@ -179,7 +190,7 @@ const Navbar = ({ extraComponent }: Props) => {
         {syncing && (
           <Tooltip
             placement="bottom"
-            title={"Syncing "}
+            title={"Syncing"}
             className="flex h-9 w-9 cursor-pointer items-center justify-center text-green-500"
           >
             <SyncOutlined spin={syncing} />

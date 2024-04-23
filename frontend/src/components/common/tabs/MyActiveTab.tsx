@@ -6,8 +6,8 @@ type Props = {
 const MyActiveTab = ({ children, tab }: Props) => {
   return (
     <div
-      key={Math.random()}
-      className="flex h-fit cursor-pointer items-center gap-2 rounded-lg border-[1px] border-primary p-[11px] py-2"
+      key={tab}
+      className="flex h-fit cursor-pointer items-center gap-2 rounded-lg border-[1px] border-primary px-2 py-1"
     >
       {children && (
         <div className="rounded bg-primary px-1 text-xs font-medium text-white">

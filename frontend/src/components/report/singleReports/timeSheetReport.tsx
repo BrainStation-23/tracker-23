@@ -1,14 +1,15 @@
-import { Button, message, Spin } from "antd";
 import { userAPI } from "APIs";
 import { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
+import { Button, message, Spin } from "antd";
+import { useMediaQuery } from "react-responsive";
 
-import { getDateRangeArray } from "@/components/common/datePicker";
 import { ExcelExport } from "@/services/exportHelpers";
 import { ReportData } from "@/storage/redux/reportsSlice";
 
-import ReportHeaderComponent from "../components/reportHeaderComponent";
 import TableComponent from "../components/tableComponentReport";
+import { getDateRangeArray } from "@/components/common/datePicker";
+import ReportHeaderComponent from "../components/reportHeaderComponent";
 import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 
 type Props = {
@@ -26,6 +27,8 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [dateRangeArray, setDateRangeArray] = useState([]);
   const [downloading, setDownloading] = useState<boolean>(false);
+
+  const isMobile = useMediaQuery({ maxWidth: 767 });
 
   const excelExport = async () => {
     setDownloading(true);
@@ -94,13 +97,13 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
         setIsLoading={setIsLoading}
         exportButton={
           <Button
-            type="ghost"
+            type="default"
             loading={downloading}
-            onClick={() => excelExport()}
+            onClick={excelExport}
             icon={<LuDownload className="text-xl" />}
             className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
           >
-            Export to Excel
+            {!isMobile && "Export to Excel"}
           </Button>
         }
         extraFilterComponent={

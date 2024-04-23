@@ -1,19 +1,20 @@
 import {
-  Avatar,
   Empty,
   Table,
-  TablePaginationConfig,
+  Avatar,
   Tooltip,
   Typography,
+  TablePaginationConfig,
 } from "antd";
-import { FilterValue, SorterResult } from "antd/es/table/interface";
-import { TableParams } from "models/tasks";
 import { useState } from "react";
+import { TableParams } from "models/tasks";
 import { LuHelpCircle } from "react-icons/lu";
+import { useMediaQuery } from "react-responsive";
+import { FilterValue, SorterResult } from "antd/es/table/interface";
 
-import FormatTimeForSettings from "@/components/common/time/formatTimeForSettings";
 import { ReportData } from "@/storage/redux/reportsSlice";
 import EditReportConfigComponent from "./editReportConfigComponent";
+import FormatTimeForSettings from "@/components/common/time/formatTimeForSettings";
 
 const { Text } = Typography;
 type Props = {
@@ -25,35 +26,32 @@ type Props = {
 const TableComponent = ({
   data,
   column,
-  dateRangeArray,
   reportData,
+  dateRangeArray,
 }: Props) => {
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+
   const columns: any = [
     {
+      key: "name",
+      fixed: "left",
       title: "User",
       dataIndex: "name",
-      key: "name",
-      width: 200,
-      fixed: "left",
+      width: isMobile ? 50 : 200,
       render: (_: any, v: any, idx: number) => (
         <div className="flex items-center gap-2" key={idx}>
-          <div className=" ">
+          <div>
             {v?.picture ? (
-              <Avatar src={v.picture} alt="N" className="h-[40px] w-[40px]" />
+              <Avatar src={v.picture} alt="N" className="h-10 w-10" />
             ) : (
               <Avatar
-                src={
-                  "https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
-                }
                 alt="N"
-                className="h-[40px] w-[40px]"
+                className="h-10 w-10"
+                src="https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
               />
             )}
           </div>
-          <Text
-            className="w-[100px] cursor-pointer"
-            ellipsis={{ tooltip: v?.name }}
-          >
+          <Text className="cursor-pointer" ellipsis={{ tooltip: v?.name }}>
             {v?.name}
           </Text>
         </div>
@@ -76,10 +74,10 @@ const TableComponent = ({
           )}
         </div>
       ),
-      dataIndex: date,
       key: date,
+      dataIndex: date,
       align: "center",
-      width: 150,
+      width: isMobile ? 50 : 150,
       render: (_: any, v: any) => (
         <div className="w-full cursor-pointer rounded px-2 text-center text-black">
           <FormatTimeForSettings time={v[date]} />
@@ -89,12 +87,12 @@ const TableComponent = ({
   });
 
   columns.push({
+    width: isMobile ? 50 : 100,
     title: "Total",
-    dataIndex: "totalTime",
-    key: "totalTime",
     align: "center",
-    fixed: "right",
-    width: 100,
+    key: "totalTime",
+    dataIndex: "totalTime",
+    fixed: isMobile ? "" : "right",
     render: (_: any, { totalTime }: any) => (
       <div className="w-full rounded px-2 text-center text-black">
         <FormatTimeForSettings time={totalTime} />

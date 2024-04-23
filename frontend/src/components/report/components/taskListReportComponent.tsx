@@ -5,7 +5,7 @@ import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 import TablePriorityComponent from "@/components/common/tableComponents/tablePriorityComponent";
 import FormatTimeForSettings from "@/components/common/time/formatTimeForSettings";
 import { integrationIcons } from "@/components/integrations/components/importCard";
-import TimeDisplayComponent from "@/components/tasks/components/timeDisplayComponent";
+import TimeDisplayComponent from "@/components/tasks/timeDisplayComponent";
 import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";
 import {
   formatDate,
@@ -173,9 +173,10 @@ const TaskListReportComponent = ({
     <div className="flex w-full flex-col justify-center gap-4">
       {tasks.length ? (
         <Table
+          rowKey={"id"}
           columns={columns}
           dataSource={tasks}
-          rowKey={"id"}
+          scroll={{ x: 1500 }}
           pagination={{ position: ["bottomCenter"] }}
         />
       ) : (

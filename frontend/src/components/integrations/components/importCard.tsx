@@ -37,7 +37,7 @@ const ImportCard = ({
   return (
     <Card
       hoverable
-      className={`relative flex w-72 flex-col justify-between  hover:cursor-default`}
+      className={`relative flex w-96 flex-col justify-between hover:cursor-default  md:w-72`}
     >
       <div>
         {data.site && adminMode && (

@@ -1,27 +1,28 @@
 import { Spin } from "antd";
 import { userAPI } from "APIs";
-import { IntegrationDto } from "models/integration";
-import { useEffect, useState } from "react";
 import { Roles } from "utils/constants";
+import { useEffect, useState } from "react";
+import { IntegrationDto } from "models/integration";
 
-import { useAppDispatch, useAppSelector } from "@/storage/redux";
 import {
   deleteIntegrationsSlice,
   setIntegrationsSlice,
 } from "@/storage/redux/integrationsSlice";
-import { resetProjectsSlice } from "@/storage/redux/projectsSlice";
 import { RootState } from "@/storage/redux/store";
+import { useAppDispatch, useAppSelector } from "@/storage/redux";
+import { resetProjectsSlice } from "@/storage/redux/projectsSlice";
 
 import ImportSelect from "./components/importSelect";
 
 const IntegrationsPageComponent = () => {
   const dispatch = useAppDispatch();
-  const [integratedTypes, setIntegratedTypes] = useState<string[] | null>(null);
+
+  const [loading, setLoading] = useState(true);
+  const [loadingTip, setLoadingTip] = useState("");
   const [integrations, setIntegrations] = useState<IntegrationDto[] | null>(
     null
   );
-  const [loading, setLoading] = useState(true);
-  const [loadingTip, setLoadingTip] = useState("");
+  const [integratedTypes, setIntegratedTypes] = useState<string[] | null>(null);
 
   const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
 
@@ -70,7 +71,7 @@ const IntegrationsPageComponent = () => {
   }, []);
 
   return (
-    <div className="flex h-full w-full flex-col gap-2 px-8 pt-4">
+    <div className="flex h-full w-full flex-col gap-2 px-4 pt-4 md:px-8">
       <div className="flex flex-col gap-4">
         <div className="flex justify-between">
           <div className="text-2xl font-bold">Select Source of Import</div>
@@ -80,13 +81,13 @@ const IntegrationsPageComponent = () => {
             <ImportSelect
               adminMode={userInfo.role === Roles.ADMIN}
               {...{
-                integratedTypes,
                 integrations,
-                handleUninstallIntegration,
+                integratedTypes,
                 handleDeleteIntegration,
+                handleUninstallIntegration,
               }}
-              handleUninstallIntegration={handleUninstallIntegration}
               handleDeleteIntegration={handleDeleteIntegration}
+              handleUninstallIntegration={handleUninstallIntegration}
             />
           ) : (
             <div className="h-[500px]" />
