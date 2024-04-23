@@ -1,11 +1,11 @@
 import { LoginResponseDto } from "models/auth";
 import { config } from "config";
-import io from "socket.io-client";
+import io, { Socket } from "socket.io-client";
 import { getLocalStorage } from "@/storage/storage";
 import { store } from "@/storage/redux/store";
 import { addNotification, setSocket } from "@/storage/redux/notificationsSlice";
 
-let socket: any;
+let socket: Socket;
 
 export async function initializeSocket(getCookie: string) {
   // console.log("🚀 ~ initializeSocket ~ getCookie:", getCookie)
