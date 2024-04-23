@@ -8,8 +8,6 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { AuthService } from 'src/module/auth/auth.service';
-import { tokenParse } from 'src/utils/socket';
-
 const CONNECTIONS = new Map<string, Socket>();
 
 const corsOption = {
@@ -17,7 +15,7 @@ const corsOption = {
     process.env.HOST_URL ? process.env.HOST_URL : 'http://localhost:3001'
   }`,
   methods: ['GET', 'POST'],
-  allowedHeaders: ['my-custom-header'],
+  allowedHeaders: ['my-custom-header', 'Cookie_token'],
   credentials: true,
 };
 @WebSocketGateway({
@@ -31,13 +29,12 @@ export class MyGateway implements OnModuleInit {
   onModuleInit() {
     let user;
     this.server.use(async (socket, next) => {
-      const cookieString = socket.handshake.headers.cookie;
+      const token = socket.handshake.headers.cookie_token;
       console.log(
         '🚀 ~ MyGateway ~ this.server.use ~ cookieString:',
-        cookieString,
+        socket.handshake.headers,
       );
-      const token = cookieString && tokenParse(cookieString);
-      console.log('🚀 ~ MyGateway ~ this.server.use ~ token:', token);
+      // const token = cookieString;
       if (!token) return next(new Error('Invalid token'));
       else {
         user = await this.authService.getUserFromAccessToken(`${token}`);
@@ -45,6 +42,10 @@ export class MyGateway implements OnModuleInit {
           return next(new Error('Invalid token'));
         }
         CONNECTIONS.set(user.id.toString(), socket);
+        console.log(
+          '🚀 ~ MyGateway ~ this.server.use ~ CONNECTIONS:',
+          CONNECTIONS.keys(),
+        );
         return next();
       }
     });
