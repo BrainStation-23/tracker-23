@@ -25,6 +25,7 @@ export class RabbitMQService {
   }
 
   async publishMessage(queue: string, message: any) {
+    console.log("🚀 ~ RabbitMQService ~ publishMessage ~ queue:", queue)
     try {
       if (!this.connection) {
         await this.connect();
@@ -37,6 +38,7 @@ export class RabbitMQService {
   }
 
   async consume(queue: string) {
+    console.log('🚀 ~ RabbitMQService ~ consume ~ queue:', queue);
     try {
       if (!this.connection) {
         await this.connect();
@@ -45,8 +47,10 @@ export class RabbitMQService {
       await this.channel.consume(
         queue,
         async (msg) => {
+          console.log('🚀 ~ RabbitMQService ~ msg:', msg);
           if (msg !== null) {
             const payload = JSON.parse(msg.content.toString());
+            console.log('🚀 ~ RabbitMQService ~ payload:', payload);
             await this.workerService.queueHandler(payload);
           }
         },
