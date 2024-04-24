@@ -32,6 +32,7 @@ export class MyGateway implements OnModuleInit {
       const token = socket.handshake.headers.cookie_token;
       console.log(
         '🚀 ~ MyGateway ~ this.server.use ~ cookieString:',
+        socket.handshake,
         socket.handshake.headers,
       );
       // const token = cookieString;
@@ -43,7 +44,7 @@ export class MyGateway implements OnModuleInit {
         }
         CONNECTIONS.set(user.id.toString(), socket);
         console.log(
-          '🚀 ~ MyGateway ~ this.server.use ~ CONNECTIONS:',
+          '🚀 ~ MyGateway ~ this.server.use ~ CONNECTIONS 46:',
           CONNECTIONS.keys(),
         );
         return next();
