@@ -123,7 +123,7 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
             className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
             icon={<LuDownload className="text-xl" />}
             onClick={excelExport}
-            type="default"
+            type="ghost"
             loading={downloading}
           >
             {!isMobile && "Export to Excel"}

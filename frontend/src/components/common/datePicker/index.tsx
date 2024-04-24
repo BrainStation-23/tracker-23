@@ -210,7 +210,7 @@ const DateRangePicker = ({
                 >
                   <Button
                     className="flex w-full items-center pl-1.5 text-left hover:bg-gray-100"
-                    type="default"
+                    type="ghost"
                     style={{
                       clear: "both",
                       margin: 0,

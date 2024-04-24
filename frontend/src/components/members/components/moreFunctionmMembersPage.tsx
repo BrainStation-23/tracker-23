@@ -33,7 +33,7 @@ const MoreFunctionMembersPageComponent = ({ member, updateMember }: Props) => {
           onClick={() => {
             changeStatus("INACTIVE");
           }}
-          type="default"
+          type={user.role !== "ADMIN" ? "default" : "ghost"}
           disabled={user.role !== "ADMIN"}
         >
           <LuX />
@@ -49,7 +49,7 @@ const MoreFunctionMembersPageComponent = ({ member, updateMember }: Props) => {
           onClick={() => {
             changeStatus("DELETED");
           }}
-          type="default"
+          type={user.role !== "ADMIN" ? "default" : "ghost"}
           disabled={user.role !== "ADMIN"}
         >
           <LuX />
@@ -66,7 +66,7 @@ const MoreFunctionMembersPageComponent = ({ member, updateMember }: Props) => {
           onClick={() => {
             changeStatus("ACTIVE");
           }}
-          type="default"
+          type={user.role !== "ADMIN" ? "default" : "ghost"}
           disabled={user.role !== "ADMIN"}
         >
           <LuCheck />
@@ -82,7 +82,7 @@ const MoreFunctionMembersPageComponent = ({ member, updateMember }: Props) => {
           onClick={() => {
             changeStatus("DELETED");
           }}
-          type="default"
+          type={user.role !== "ADMIN" ? "default" : "ghost"}
           disabled={user.role !== "ADMIN"}
         >
           <LuX />
@@ -99,7 +99,7 @@ const MoreFunctionMembersPageComponent = ({ member, updateMember }: Props) => {
           onClick={() => {
             changeStatus("INVITED");
           }}
-          type="default"
+          type={user.role !== "ADMIN" ? "default" : "ghost"}
           disabled={user.role !== "ADMIN"}
         >
           <LuCheck />

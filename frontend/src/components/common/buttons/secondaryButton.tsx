@@ -4,7 +4,7 @@ type Props = {
   children: React.ReactNode;
   onClick?: Function;
   htmlType?: "button" | "submit" | "reset";
-  type?: "link" | "text" | "default" | "primary" | "dashed";
+  type?: "link" | "text" | "default" | "primary" | "dashed" | "ghost";
   className?: string;
 };
 const SecondaryButton = ({
