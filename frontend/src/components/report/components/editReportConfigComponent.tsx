@@ -18,7 +18,7 @@ export default function EditReportConfigComponent({
   return (
     <Button
       className="bg-black text-white hover:text-white focus:text-white"
-      ghost
+      type="ghost"
       onClick={handleEdit}
     >
       {title ?? "Edit Report"}

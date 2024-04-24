@@ -108,7 +108,6 @@ const SprintReport = ({ reportData, inView }: Props) => {
             icon={<LuDownload className="text-xl" />}
             onClick={excelExport}
             loading={downloading}
-            type="default"
           >
             {!isMobile && "Export to Excel"}
           </Button>

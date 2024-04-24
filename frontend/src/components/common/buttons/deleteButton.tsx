@@ -12,7 +12,7 @@ const DeleteButton = ({ children, onClick, className }: Props) => {
     <Button
       className={`${className ? className : "flex items-center gap-2 p-1"}`}
       onClick={() => onClick && onClick()}
-      ghost
+      type="ghost"
     >
       <DeleteIconSvg /> {children}
     </Button>

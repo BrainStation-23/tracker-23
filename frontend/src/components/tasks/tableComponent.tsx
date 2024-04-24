@@ -55,9 +55,8 @@ const TableComponent = ({
             {task.pinned && (
               <Tooltip title={`Click To ${task.pinned ? "unpin" : "pin"}`}>
                 <Button
-                  className="absolute top-0 left-0 flex gap-3 p-1"
+                  className="absolute left-0 top-0 flex gap-3 p-1"
                   onClick={() => handlePin(task)}
-                  type="default"
                 >
                   {task.pinned ? <PinFilledIconSvg /> : <PinIconSvg />}
                 </Button>
