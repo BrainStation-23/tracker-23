@@ -175,7 +175,6 @@ const WorkspaceNav = () => {
       <div style={{ padding: 8 }}></div>
       <div className="flex w-full ">
         <SyncButtonComponent
-          type="ghost"
           className="mx-4 w-full gap-3 rounded p-0 py-2 pl-4"
           text="Sync"
           onClick={syncFunction}

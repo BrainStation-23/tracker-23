@@ -32,7 +32,7 @@ const MoreFunctionComponent = ({
           onClick={() => {
             handleAddManualWorkLog(task);
           }}
-          type="ghost"
+          ghost
         >
           <EditOutlined />
           Add Work Log
@@ -47,7 +47,7 @@ const MoreFunctionComponent = ({
           onClick={() => {
             deleteTask(task.id);
           }}
-          type="ghost"
+          ghost
         >
           <DeleteIconSvg />
           Delete
@@ -62,7 +62,7 @@ const MoreFunctionComponent = ({
           onClick={() => {
             handlePin(task);
           }}
-          type="ghost"
+          ghost
         >
           {task.pinned ? <PinFilledIconSvg /> : <PinIconSvg />}
           {task.pinned ? "Unpin" : "Pin"}

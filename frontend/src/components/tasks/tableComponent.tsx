@@ -56,9 +56,7 @@ const TableComponent = ({
               <Tooltip title={`Click To ${task.pinned ? "unpin" : "pin"}`}>
                 <Button
                   className="absolute top-0 left-0 flex gap-3 p-1"
-                  onClick={() => {
-                    handlePin(task);
-                  }}
+                  onClick={() => handlePin(task)}
                   type="default"
                 >
                   {task.pinned ? <PinFilledIconSvg /> : <PinIconSvg />}
@@ -92,14 +90,16 @@ const TableComponent = ({
             ) : (
               <div className="h-1 p-4"></div>
             )}
-            <div className="flex flex-col gap-2">
+            <div
+              className="flex flex-col gap-2"
+              onClick={() => {
+                setSelectedTask(task);
+                setTaskViewModalOpen(true);
+              }}
+            >
               <Text
                 className="w-[180px] cursor-pointer"
                 ellipsis={{ tooltip: task?.title }}
-                onClick={() => {
-                  setSelectedTask(task);
-                  setTaskViewModalOpen(true);
-                }}
               >
                 {task?.title}
               </Text>
