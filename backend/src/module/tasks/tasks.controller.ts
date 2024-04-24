@@ -124,6 +124,12 @@ export class TasksController {
     return await this.tasksService.syncAll(user);
   }
 
+  @Get('reload')
+  @UseGuards(JwtAuthGuard)
+  async reload(@GetUser() user: User) {
+    return await this.tasksService.reload(user);
+  }
+
   @Patch('update/status/:taskId')
   @UseGuards(JwtAuthGuard)
   async updateIssueStatus(

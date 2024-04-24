@@ -1135,6 +1135,11 @@ export class TasksService {
     return await this.syncCall(StatusEnum.IN_PROGRESS, user);
   }
 
+  async reload(user: User) {
+    this.sendQueue(user, QueuePayloadType.RELOAD);
+    return await this.syncCall(StatusEnum.IN_PROGRESS, user);
+  }
+
   async syncAndGetTasks(user: User, projectId: number) {
     this.sendQueue(user, QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK, projectId);
     return await this.syncCall(StatusEnum.IN_PROGRESS, user);
