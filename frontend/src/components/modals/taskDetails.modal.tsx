@@ -70,10 +70,10 @@ const TaskDetailsModal = ({
   };
   return (
     <Modal
-      title={<div className=" text-base font-semibold "> Task Details</div>}
+      title={<div className="text-base font-semibold"> Task Details</div>}
+      onCancel={handleCancel}
       open={isModalOpen}
       onOk={handleOk}
-      onCancel={handleCancel}
       footer={null}
       width={850}
     >
@@ -104,7 +104,7 @@ const TaskDetailsModal = ({
                   setIsModalOpen(true);
                 }}
               >
-                {taskDetails?.url}
+                {taskDetails?.url?.split("/").at(-1)}
               </OpenLinkInNewTab>
             </div>
           )}

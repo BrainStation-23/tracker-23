@@ -329,12 +329,6 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
                   margin: 0,
                   padding: 0,
                 }}
-                styles={{
-                  body: {
-                    margin: 0,
-                    padding: 0,
-                  },
-                }}
                 className={classNames(
                   `hidden h-screen sm:block min-w-[${
                     reportInEdit ? "350px" : "250px"

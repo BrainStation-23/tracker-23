@@ -8,7 +8,7 @@ type Props = {
 const PrimaryButton = ({ children, onClick, htmlType, className }: Props) => {
   return (
     <Button
-      type="ghost"
+      ghost
       htmlType={htmlType}
       className={` ${className} flex items-center gap-2 border-none bg-primary py-4 text-[15px] text-white hover:text-white `}
       onClick={() => onClick && onClick()}
