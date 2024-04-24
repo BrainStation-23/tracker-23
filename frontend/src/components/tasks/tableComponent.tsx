@@ -5,9 +5,11 @@ import {
   Tooltip,
   Typography,
 } from "antd";
-import { FilterValue, SorterResult } from "antd/es/table/interface";
-import { TableParams, TaskDto } from "models/tasks";
+import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
+import Link from "next/link";
 import { useState } from "react";
+import { TableParams, TaskDto } from "models/tasks";
+import { FilterValue, SorterResult } from "antd/es/table/interface";
 
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
@@ -24,19 +26,23 @@ import MoreFunctionComponent from "./moreFunction";
 import TimeDisplayComponent from "./timeDisplayComponent";
 import PinFilledIconSvg from "@/assets/svg/PinFilledIconSvg";
 import PinIconSvg from "@/assets/svg/PinIconSvg";
-
+import StatusDropdownComponent from "./statusDropdown";
+import EstimationComponent from "./estimationComponent";
 const { Text } = Typography;
 const TableComponent = ({
   tasks,
-  runningTask,
-  setSelectedTask,
-  setTaskViewModalOpen,
   deleteTask,
-  startSession,
+  setLoading,
   stopSession,
-  setManualTimeEntryModalOpen,
-  sessionActionLoading,
+  runningTask,
+  startSession,
   handlePinTask,
+  setSelectedTask,
+  handleStatusChange,
+  sessionActionLoading,
+  setTaskViewModalOpen,
+  handleEstimationChange,
+  setManualTimeEntryModalOpen,
 }: any) => {
   const columns: any = [
     {
@@ -49,11 +55,8 @@ const TableComponent = ({
             {task.pinned && (
               <Tooltip title={`Click To ${task.pinned ? "unpin" : "pin"}`}>
                 <Button
-                  className="absolute top-0 left-0 flex gap-3 p-1"
-                  onClick={() => {
-                    handlePin(task);
-                  }}
-                  type="ghost"
+                  className="absolute left-0 top-0 flex gap-3 p-1"
+                  onClick={() => handlePin(task)}
                 >
                   {task.pinned ? <PinFilledIconSvg /> : <PinIconSvg />}
                 </Button>
@@ -86,14 +89,16 @@ const TableComponent = ({
             ) : (
               <div className="h-1 p-4"></div>
             )}
-            <div className="flex flex-col gap-2">
+            <div
+              className="flex flex-col gap-2"
+              onClick={() => {
+                setSelectedTask(task);
+                setTaskViewModalOpen(true);
+              }}
+            >
               <Text
                 className="w-[180px] cursor-pointer"
                 ellipsis={{ tooltip: task?.title }}
-                onClick={() => {
-                  setSelectedTask(task);
-                  setTaskViewModalOpen(true);
-                }}
               >
                 {task?.title}
               </Text>
@@ -128,19 +133,58 @@ const TableComponent = ({
       },
     },
     {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      // align: "center",
+      render: (_: any, task: TaskDto) => (
+        <StatusDropdownComponent
+          selectedStatus={{
+            name: task.status,
+            statusCategoryName: task.statusCategoryName,
+          }}
+          task={task}
+          setLoading={setLoading}
+          handleStatusChange={handleStatusChange}
+        >
+          <div
+            style={{
+              backgroundColor: statusBGColorEnum[task.statusCategoryName],
+              border: `1px solid ${
+                statusBorderColorEnum[task.statusCategoryName]
+              }`,
+              borderRadius: "36px",
+            }}
+            className="relative flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
+          >
+            <div
+              className="h-2 w-2 rounded-full"
+              style={{
+                backgroundColor: statusBorderColorEnum[task.statusCategoryName],
+              }}
+            />
+            <div className="max-w-[90px]">
+              <Text className="" ellipsis={{ tooltip: task?.status }}>
+                {task.status}
+              </Text>
+            </div>
+          </div>
+        </StatusDropdownComponent>
+      ),
+    },
+    {
       title: "Source",
       dataIndex: "dataSource",
       key: "dataSource",
       // align: "center",
-      render: (dataSource: any, task: TaskDto) => (
+      render: (dataSource: string, task: TaskDto) => (
         <div className="flex max-w-[150px] items-center gap-2 ">
           <div>{integrationIcons[task.source]} </div>
-          <Text
-            className="w-min cursor-pointer"
-            ellipsis={{ tooltip: dataSource }}
-          >
-            {dataSource}
-          </Text>
+          {dataSource && (
+            <Link target="_blank" className="underline" href={dataSource}>
+              {dataSource.split("/").at(-1)}
+            </Link>
+          )}
         </div>
       ),
     },
@@ -198,6 +242,15 @@ const TableComponent = ({
         </>
       ),
       align: "center",
+    },
+    {
+      title: "Estimation",
+      dataIndex: "estimation",
+      key: "estimation",
+      render: (_: any, task: TaskDto) => (
+        <EstimationComponent {...{ task, handleEstimationChange }} />
+      ),
+      sorter: (a: any, b: any) => a.estimation - b.estimation,
     },
     {
       title: "Total Spent",

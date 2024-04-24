@@ -40,7 +40,6 @@ const UsersSelectorComponent = ({
     >
       <LuUsers size={20} />
       <Select
-        showArrow
         mode="multiple"
         maxTagCount={1}
         className="w-full"

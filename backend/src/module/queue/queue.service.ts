@@ -8,7 +8,10 @@ import { queueConfig } from 'config/queue';
 export class RabbitMQService {
   private connection: Connection;
   private channel: Channel;
-  constructor(private readonly workerService: WorkerService) {}
+  private environment: string;
+  constructor(private readonly workerService: WorkerService) {
+    this.environment = process.env.NODE_ENV || 'DEVELOPMENT';
+  }
 
   async connect() {
     try {
@@ -24,33 +27,34 @@ export class RabbitMQService {
     }
   }
 
+  private getQueueName(queue: string): string {
+    return `${this.environment}_${queue}`;
+  }
   async publishMessage(queue: string, message: any) {
-    console.log("🚀 ~ RabbitMQService ~ publishMessage ~ queue:", queue)
     try {
       if (!this.connection) {
         await this.connect();
       }
-      await this.channel.assertQueue(queue, { durable: true });
-      this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)));
+      const queueName = this.getQueueName(queue);
+      await this.channel.assertQueue(queueName, { durable: true });
+      this.channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)));
     } catch (error: any) {
       console.log(error.message);
     }
   }
 
   async consume(queue: string) {
-    console.log('🚀 ~ RabbitMQService ~ consume ~ queue:', queue);
     try {
       if (!this.connection) {
         await this.connect();
       }
-      await this.channel.assertQueue(queue, { durable: true });
+      const queueName = this.getQueueName(queue);
+      await this.channel.assertQueue(queueName, { durable: true });
       await this.channel.consume(
-        queue,
+        queueName,
         async (msg) => {
-          console.log('🚀 ~ RabbitMQService ~ msg:', msg);
           if (msg !== null) {
             const payload = JSON.parse(msg.content.toString());
-            console.log('🚀 ~ RabbitMQService ~ payload:', payload);
             await this.workerService.queueHandler(payload);
           }
         },

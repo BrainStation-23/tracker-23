@@ -46,6 +46,7 @@ export class JiraClientService {
           await lastValueFrom(this.httpService.post(url, data, headers))
         ).data;
       } catch (err) {
+        // console.log('🚀 ~ JiraClientService ~ err:', 'hello from inside');
         throw new APIException(
           ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
           HttpStatus.GONE,
@@ -65,10 +66,6 @@ export class JiraClientService {
             expiration_time: new Date(token_expire),
           },
         ));
-      // console.log(
-      //   '🚀 ~ file: client.ts:62 ~ JiraClient ~ newUserIntegration:',
-      //   newUserIntegration,
-      // );
       return await apiCaller(newUserIntegration, ...rest);
     }
   }

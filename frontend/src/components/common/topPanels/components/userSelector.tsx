@@ -71,7 +71,6 @@ const UserSelectorComponent = ({
         tagRender={(props) => tagRender(props)}
         value={selectedUser}
         className="w-full"
-        showArrow
         maxTagCount={1}
         options={Options}
         onChange={(value) => {

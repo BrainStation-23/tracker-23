@@ -80,7 +80,6 @@ const SettingComponent = () => {
               value={syncTime}
               defaultValue={1}
               className="w-[200px]"
-              showArrow
               options={Options}
               onChange={(value) => {
                 handleSyncTimeChange(value);
@@ -103,11 +102,8 @@ const SettingComponent = () => {
               value={timeFormat}
               defaultValue={"Day"}
               className="w-[200px]"
-              showArrow
               options={TimeFormatOptions}
-              onChange={(value: any) => {
-                handleTimeFormatChange(value);
-              }}
+              onChange={(value: any) => handleTimeFormatChange(value)}
             />
           </div>
         </div>

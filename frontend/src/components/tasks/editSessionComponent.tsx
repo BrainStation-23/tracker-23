@@ -6,7 +6,7 @@ import { useState } from "react";
 import PrimaryButton from "@/components/common/buttons/primaryButton";
 import { localFormat } from "@/components/common/datePicker";
 
-import { timeFormat } from "../../common/datePicker/index";
+import { timeFormat } from "../common/datePicker/index";
 
 type Props = {
   task: TaskDto;

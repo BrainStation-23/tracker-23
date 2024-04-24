@@ -24,17 +24,17 @@ import { CalendarOutlined, EditOutlined } from "@ant-design/icons";
 import { FilterDateType, FilterReverseDateType } from "models/reports";
 import classNames from "classnames";
 type Props = {
+  className?: string;
   selectedDate: string[];
   setSelectedDate: (data: string[]) => void;
   setFilterDateType?: (text: FilterDateType) => void;
-  className?: string;
 };
 
 const DateRangePicker = ({
+  className,
   selectedDate,
   setSelectedDate,
   setFilterDateType,
-  className,
 }: Props) => {
   const [customDateValue, setCustomDateValue] = useState<any>([
     dayjs(),
@@ -138,10 +138,8 @@ const DateRangePicker = ({
       </Tooltip>
       <div className="flex w-full items-center">
         <div
-          className={classNames(
-            "cursor-pointer rounded-l bg-inherit bg-thirdLight py-1.5 pl-1.5 text-xl hover:bg-[#F3F4F6]"
-          )}
-          onClick={() => handlePreviousClick()}
+          className="cursor-pointer rounded-l bg-inherit bg-thirdLight py-1.5 pl-1.5 text-xl hover:bg-[#F3F4F6]"
+          onClick={handlePreviousClick}
         >
           <LuChevronLeft />
         </div>
@@ -244,10 +242,8 @@ const DateRangePicker = ({
           </div>
         </Dropdown>
         <div
-          className={classNames(
-            "cursor-pointer rounded-r bg-thirdLight py-1.5 pr-1.5 text-xl hover:bg-[#F3F4F6]"
-          )}
-          onClick={() => handleNext()}
+          className="cursor-pointer rounded-r bg-thirdLight py-1.5 pr-1.5 text-xl hover:bg-[#F3F4F6]"
+          onClick={handleNext}
         >
           <LuChevronRight />
         </div>

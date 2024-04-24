@@ -22,10 +22,10 @@ import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
 import RecurrentTaskCreationComponent from "./recurrentTaskCreationComponent";
-import AddLocalProject from "@/components/integrations/projectImport/components/addLocalProject";
+import AddLocalProject from "@/components/integrations/projectImport/addLocalProject";
 import { CreateTaskDto, CreateTaskValues } from "models/tasks";
 
-const CreateTaskComponent = ({ taskList, createTask }: any) => {
+const CreateTaskComponent = ({ createTask }: any) => {
   const elementRef = useRef(null);
 
   const [startDate, setStartDate] = useState(dayjs());
@@ -33,7 +33,7 @@ const CreateTaskComponent = ({ taskList, createTask }: any) => {
   const onFinish = async (values: CreateTaskValues) => {
     setCreatingTask(true);
     const formattedValues: CreateTaskDto = getFormattedValues(values);
-    const res = await createTask(formattedValues);
+    await createTask(formattedValues);
     setCreatingTask(false);
   };
 

@@ -64,13 +64,12 @@ export default function StatusSelectorComponent({
 
   return (
     <div
-      className={`flex w-full items-center gap-2 text-sm font-normal text-black ${
+      className={`flex w-full min-w-[210px] items-center gap-2 text-sm font-normal text-black ${
         className ? className : ""
       }`}
     >
       <SortStatusIconSvg />
       <Select
-        showArrow
         value={status}
         mode="multiple"
         maxTagCount={1}

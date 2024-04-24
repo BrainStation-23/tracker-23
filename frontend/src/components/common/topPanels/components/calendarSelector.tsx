@@ -67,7 +67,7 @@ export default function CalendarSelectorComponent({
 
   return (
     <div
-      className={`flex w-full items-center gap-2 text-sm font-normal text-black ${
+      className={`flex w-full min-w-[210px] items-center gap-2 text-sm font-normal text-black ${
         className ? className : ""
       }`}
     >
@@ -78,12 +78,9 @@ export default function CalendarSelectorComponent({
           tagRender={(props) => tagRender(props, calendarIds)}
           value={calendarIds[0] ? calendarIds : null}
           className="w-full"
-          showArrow
           maxTagCount={1}
           options={Options}
-          onChange={(value) => {
-            setCalendarIds(value);
-          }}
+          onChange={(value) => setCalendarIds(value)}
         />
       ) : (
         <Select
@@ -92,7 +89,6 @@ export default function CalendarSelectorComponent({
           tagRender={(props) => tagRender(props, calendarIds)}
           value={calendarIds}
           className="w-full"
-          showArrow
           maxTagCount={1}
           options={Options}
           onChange={(value) => {

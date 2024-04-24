@@ -47,14 +47,13 @@ export default function ProjectSelectorComponent({
 
   return (
     <div
-      className={`flex w-full items-center gap-2 text-sm font-normal text-black ${
+      className={`flex w-full min-w-[210px] items-center gap-2 text-sm font-normal text-black ${
         className ? className : ""
       }`}
     >
       <LuFolderOpen size={20} />
       {mode == "single" ? (
         <Select
-          showArrow
           maxTagCount={1}
           options={selectOptions}
           className="w-full"
@@ -65,7 +64,6 @@ export default function ProjectSelectorComponent({
         />
       ) : (
         <Select
-          showArrow
           maxTagCount={1}
           mode="multiple"
           options={selectOptions}

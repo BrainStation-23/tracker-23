@@ -47,12 +47,12 @@ import { apiEndPoints } from "utils/apiEndPoints";
 // Service
 import { sortByStatus } from "../src/services/taskActions";
 import { disconnectSocket } from "@/services/socket.service";
-import { RemoveCookie, SetCookie } from "@/services/cookie.service";
+import { SetCookie } from "@/services/cookie.service";
 import { getLabels, getStringFromArray } from "@/services/taskActions";
 
 // Storage
 import { ReportData } from "@/storage/redux/reportsSlice";
-import { clearLocalStorage, setLocalStorage } from "@/storage/storage";
+import { setLocalStorage } from "@/storage/storage";
 
 export async function loginRest(
   data: LoginDto
@@ -171,14 +171,11 @@ export async function resetPasswordRest(
 
 export async function logoutRest() {
   try {
-    RemoveCookie("access_token");
-    clearLocalStorage();
     await disconnectSocket();
-    Router.push("/login");
-    return true;
   } catch (error: any) {
-    message.error("Failed to Log Out");
-    return false;
+    message.error("Failed to disconnect socket");
+  } finally {
+    Router.push("/login");
   }
 }
 

@@ -1,19 +1,20 @@
-import { Table, TablePaginationConfig, Typography } from "antd";
-import { FilterValue, SorterResult } from "antd/es/table/interface";
-import { TableParams, TaskDto } from "models/tasks";
 import { useState } from "react";
+import { TableParams, TaskDto } from "models/tasks";
+import { FilterValue, SorterResult } from "antd/es/table/interface";
+import { Table, TablePaginationConfig, Typography } from "antd";
 
-import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
-import { integrationIcons } from "@/components/integrations/components/importCard";
+import PauseIconSvg from "@/assets/svg/pauseIconSvg";
 import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
-import TimeDisplayComponent from "@/components/tasks/components/timeDisplayComponent";
+import TimeDisplayComponent from "@/components/tasks/timeDisplayComponent";
 import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";
+import { integrationIcons } from "@/components/integrations/components/importCard";
 import {
   formatDate,
   getFormattedTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
+import { useMediaQuery } from "react-responsive";
 
 const { Text } = Typography;
 const DashboardTableComponent = ({
@@ -22,14 +23,18 @@ const DashboardTableComponent = ({
   startSession,
   stopSession,
 }: any) => {
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+
   const columns: any = [
     {
+      key: "title",
+      fixed: "left",
       title: "Task Name",
       dataIndex: "title",
-      key: "title",
+      width: isMobile ? 50 : 200,
       render: (_: any, task: TaskDto) => {
         return (
-          <div className=" flex items-center gap-2">
+          <div className="flex items-center gap-2">
             {task.source !== "OUTLOOK" ? (
               <>
                 {runningTask?.id != task.id ? (
@@ -51,10 +56,10 @@ const DashboardTableComponent = ({
                 )}
               </>
             ) : (
-              <div className="h-1 p-4"></div>
+              <div className="h-1 p-4" />
             )}
             <div className="flex flex-col gap-2">
-              <Text className="w-[200px] " ellipsis={{ tooltip: task?.title }}>
+              <Text className="w-48" ellipsis={{ tooltip: task?.title }}>
                 {task?.title}
               </Text>
               <div className="flex cursor-pointer gap-2">
@@ -78,8 +83,9 @@ const DashboardTableComponent = ({
     },
     {
       title: "Source",
-      dataIndex: "dataSource",
       key: "dataSource",
+      dataIndex: "dataSource",
+      width: isMobile ? 50 : 200,
       render: (dataSource: any, task: TaskDto) => (
         <div className="flex max-w-[150px] items-center gap-2 ">
           <div>{integrationIcons[task.source]} </div>
@@ -95,17 +101,19 @@ const DashboardTableComponent = ({
 
     {
       title: "Created",
-      dataIndex: "createdAt",
       key: "createdAt",
-      render: (createdAt: any, task: TaskDto) => {
+      dataIndex: "createdAt",
+      width: isMobile ? 50 : 200,
+      render: (_: any, task: TaskDto) => {
         return <>{getFormattedTime(formatDate(task.createdAt))}</>;
       },
     },
     {
+      key: "started",
       title: "Started",
       dataIndex: "started",
-      key: "started",
-      render: (started: any, task: TaskDto) => (
+      width: isMobile ? 50 : 200,
+      render: (_: any, task: TaskDto) => (
         <>
           {task.sessions?.length > 0
             ? getFormattedTime(formatDate(task.sessions[0].startTime))
@@ -118,10 +126,11 @@ const DashboardTableComponent = ({
       },
     },
     {
+      key: "ended",
       title: "Ended",
       dataIndex: "ended",
-      key: "ended",
-      render: (ended: any, task: TaskDto) => (
+      width: isMobile ? 50 : 200,
+      render: (_: any, task: TaskDto) => (
         <>
           {task.sessions?.length > 0 && !checkIfRunningTask(task.sessions)
             ? getFormattedTime(
@@ -135,9 +144,11 @@ const DashboardTableComponent = ({
       align: "center",
     },
     {
-      title: "Total Spent",
-      dataIndex: "total",
       key: "total",
+      dataIndex: "total",
+      title: "Total Spent",
+      width: isMobile ? 50 : 100,
+      fixed: isMobile ? "" : "right",
       render: (_: any, task: TaskDto) =>
         runningTask?.id !== task.id ? (
           <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
@@ -150,8 +161,8 @@ const DashboardTableComponent = ({
     pagination: {
       current: 1,
       pageSize: 10,
-      showSizeChanger: true,
       showLessItems: true,
+      showSizeChanger: true,
       position: ["bottomRight", "bottomLeft"],
     },
   });
@@ -192,16 +203,16 @@ const DashboardTableComponent = ({
     });
   };
   return (
-    <div className="w-full">
-      <Table
-        columns={columns}
-        dataSource={tasks}
-        rowKey={(task) => task.id}
-        pagination={tableParams.pagination}
-        rowClassName={getRowClassName}
-        onChange={handleTableChange}
-      />
-    </div>
+    <Table
+      columns={columns}
+      dataSource={tasks}
+      scroll={{ x: 1550 }}
+      rowKey={(task) => task.id}
+      onChange={handleTableChange}
+      rowClassName={getRowClassName}
+      bordered={isMobile ? true : false}
+      pagination={tableParams.pagination}
+    />
   );
 };
 

@@ -11,6 +11,7 @@ import ReportHeaderComponent from "../components/reportHeaderComponent";
 import SprintViewTimelineReportComponent from "../components/sprintViewTimelineReportComponent";
 import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 import { ExcelExport } from "@/services/exportHelpers";
+import { useMediaQuery } from "react-responsive";
 
 type Props = {
   reportData: ReportData;
@@ -27,6 +28,8 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
   const [sprintTimelineReportData, setSprintTimelineReportData] =
     useState<SprintViewTimelineReportDto>();
   const [downloading, setDownloading] = useState<boolean>(false);
+
+  const isMobile = useMediaQuery({ maxWidth: 767 });
 
   const getSprintViewTimelineReport = async () => {
     if (!inView) return;
@@ -119,11 +122,11 @@ export default function SprintTimelineReport({ reportData, inView }: Props) {
           <Button
             className="flex items-center gap-2 rounded-md bg-[#016C37] py-4 text-white hover:bg-[#1d8b56] hover:text-white"
             icon={<LuDownload className="text-xl" />}
-            onClick={() => excelExport()}
+            onClick={excelExport}
             type="ghost"
             loading={downloading}
           >
-            Export to Excel
+            {!isMobile && "Export to Excel"}
           </Button>
         }
         extraFilterComponent={
