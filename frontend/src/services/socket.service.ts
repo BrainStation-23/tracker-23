@@ -8,14 +8,14 @@ import { addNotification, setSocket } from "@/storage/redux/notificationsSlice";
 let socket: Socket;
 
 export async function initializeSocket(getCookie: string) {
-  // console.log("🚀 ~ initializeSocket ~ getCookie:", getCookie)
+  console.log("🚀 ~ initializeSocket ~ getCookie 11:", getCookie)
   socket = io(config?.baseUrl, {
     extraHeaders: {
       Cookie_token: getCookie,
     },
     withCredentials: true,
   });
-  console.log("🚀 ~ initializeSocket ~ socket:", socket)
+  console.log("🚀 ~ initializeSocket ~ socket 18:", socket)
   socket.on("connect", () => {
     console.log("Connected to socket");
     store.dispatch(setSocket(socket.id));
