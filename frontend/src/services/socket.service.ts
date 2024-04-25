@@ -1,21 +1,19 @@
-import { LoginResponseDto } from "models/auth";
 import { config } from "config";
-import io, { Socket } from "socket.io-client";
-import { getLocalStorage } from "@/storage/storage";
 import { store } from "@/storage/redux/store";
+import io, { Socket } from "socket.io-client";
+import { LoginResponseDto } from "models/auth";
+import { getLocalStorage } from "@/storage/storage";
 import { addNotification, setSocket } from "@/storage/redux/notificationsSlice";
 
 let socket: Socket;
 
 export async function initializeSocket(getCookie: string) {
-  console.log("🚀 ~ initializeSocket ~ getCookie 11:", getCookie)
   socket = io(config?.baseUrl, {
     extraHeaders: {
       Cookie_token: getCookie,
     },
     withCredentials: true,
   });
-  console.log("🚀 ~ initializeSocket ~ socket 18:", socket)
   socket.on("connect", () => {
     console.log("Connected to socket");
     store.dispatch(setSocket(socket.id));
@@ -33,6 +31,6 @@ export async function initializeSocket(getCookie: string) {
 }
 
 export async function disconnectSocket() {
-  // console.log("off");
+  console.log("Socket disconnected !!");
   socket.disconnect();
 }

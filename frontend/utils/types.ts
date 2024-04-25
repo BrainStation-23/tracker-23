@@ -150,4 +150,5 @@ export interface apiFunction {
   getIntegrationTypesReportPage: () => Promise<any>;
   exportSprintViewSheet: (reportData: ReportData) => Promise<any>;
   exportTimeLineSheet: (reportData: ReportData) => Promise<any>;
+  taskReload: () => Promise<any>;
 }

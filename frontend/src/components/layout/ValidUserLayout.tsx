@@ -319,21 +319,21 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
             {!isPublicRoute && !path.includes("onBoarding") && (
               <Drawer
                 key="left"
+                style={{
+                  margin: 0,
+                  padding: 0,
+                }}
                 placement="left"
                 onClose={toggleCollapsed}
                 closable={isVerySmallDevice}
                 maskClosable={!Boolean(reportInEdit)}
                 width={reportInEdit ? "350px" : "250px"}
-                open={collapsed || (isMobile && Boolean(reportInEdit))}
-                style={{
-                  margin: 0,
-                  padding: 0,
-                }}
                 className={classNames(
                   `hidden h-screen sm:block min-w-[${
                     reportInEdit ? "350px" : "250px"
                   }] max-w-[${reportInEdit ? "350px" : "250px"}]`
                 )}
+                open={collapsed || (isMobile && Boolean(reportInEdit))}
               >
                 {reportInEdit ? (
                   <ReportSettings />

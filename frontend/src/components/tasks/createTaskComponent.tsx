@@ -242,10 +242,6 @@ const CreateTaskComponent = ({ createTask }: any) => {
 export default CreateTaskComponent;
 
 const getFormattedValues = (values: CreateTaskValues) => {
-  console.log(
-    "🚀 ~ file: createTaskComponent.tsx:661 ~ getFormattedValues ~ values:",
-    values
-  );
   const formattedValues = {
     ...values,
     estimation:

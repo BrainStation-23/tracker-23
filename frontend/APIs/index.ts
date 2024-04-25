@@ -86,6 +86,7 @@ import {
   userListByProjectRest,
   exportSprintViewSheetRest,
   exportTimeLineSheetRest,
+  allTaskReload,
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -174,6 +175,7 @@ const restApi: apiFunction = {
   deleteReportPage: deleteReportPageRest,
   exportSprintViewSheet: exportSprintViewSheetRest,
   exportTimeLineSheet: exportTimeLineSheetRest,
+  taskReload: allTaskReload,
 };
 
 export const userAPI: apiFunction = restApi;
