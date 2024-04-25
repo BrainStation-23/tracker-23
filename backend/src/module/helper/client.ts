@@ -24,11 +24,11 @@ export class JiraClientService {
     ...rest: any
   ) {
     if (userIntegration.expiration_time.getTime() > Date.now()) {
-      console.log(
-        '🚀 ~ file: client.ts:22 ~ JiraClientService ~ userIntegration.expiration_time.getTime():',
-        userIntegration.expiration_time.getTime(),
-        Date.now(),
-      );
+      // console.log(
+      //   '🚀 ~ file: client.ts:22 ~ JiraClientService ~ userIntegration.expiration_time.getTime():',
+      //   userIntegration.expiration_time.getTime(),
+      //   Date.now(),
+      // );
       return await apiCaller(userIntegration, ...rest);
     } else {
       const url = 'https://auth.atlassian.com/oauth/token';
@@ -46,7 +46,7 @@ export class JiraClientService {
           await lastValueFrom(this.httpService.post(url, data, headers))
         ).data;
       } catch (err) {
-        console.log('🚀 ~ JiraClientService ~ err:', 'hello from inside');
+        // console.log('🚀 ~ JiraClientService ~ err:', 'hello from inside');
         throw new APIException(
           ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
           HttpStatus.GONE,
@@ -66,10 +66,6 @@ export class JiraClientService {
             expiration_time: new Date(token_expire),
           },
         ));
-      console.log(
-        '🚀 ~ file: client.ts:62 ~ JiraClient ~ newUserIntegration:',
-        newUserIntegration,
-      );
       return await apiCaller(newUserIntegration, ...rest);
     }
   }

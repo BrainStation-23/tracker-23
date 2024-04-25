@@ -83,9 +83,11 @@ export class WorkerService {
 
   private async processData(data: any) {
     const { payloadType, user, projectId } = data;
-    console.log('🚀 ~ WorkerService ~ processData ~ payloadType:', payloadType);
-    if (payloadType === QueuePayloadType.SYNC_ALL) {
-      return await this.syncAllAndUpdateTasks(user);
+    if (
+      payloadType === QueuePayloadType.SYNC_ALL ||
+      payloadType === QueuePayloadType.RELOAD
+    ) {
+      return await this.syncAllAndUpdateTasks(user, payloadType);
     } else if (payloadType === QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK) {
       return await this.syncSingleProjectOrCalendar(user, projectId);
     }
@@ -383,6 +385,7 @@ export class WorkerService {
     user: User,
     project: Project,
     userIntegration: UserIntegration,
+    type: QueuePayloadType,
   ) {
     const headers: any = {
       'Content-Type': 'application/json',
@@ -410,8 +413,13 @@ export class WorkerService {
       urlParam = `created >= startOfMonth(-${syncTime}M) AND created <= endOfDay()`;
     }
 
-    // const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND created >= startOfMonth(-${syncTime}M) AND created <= endOfDay()&maxResults=1000`;
-    const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND ${urlParam} &maxResults=1000`;
+    let url: string;
+    if (type === QueuePayloadType.RELOAD) {
+      url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND created >= startOfMonth(-${syncTime}M) AND created <= endOfDay()&maxResults=1000`;
+    } else {
+      url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND ${urlParam} &maxResults=1000`;
+    }
+    console.log('🚀 ~ WorkerService ~ type:', type, url);
     const fields =
       'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority, parent';
     let respTasks;
@@ -738,7 +746,11 @@ export class WorkerService {
     if (project.integration?.type === IntegrationType.OUTLOOK) {
       return await this.syncEvents(user, project.id);
     } else if (project.integration?.type === IntegrationType.JIRA) {
-      return await this.syncTasks(user, project.id);
+      return await this.syncTasks(
+        user,
+        project.id,
+        QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK,
+      );
     }
   }
 
@@ -986,7 +998,7 @@ export class WorkerService {
     }
   }
 
-  async syncTasks(user: User, projId: number) {
+  async syncTasks(user: User, projId: number, type: QueuePayloadType) {
     const project = await this.prisma.project.findUnique({
       where: { id: projId },
       include: { integration: true },
@@ -1040,6 +1052,7 @@ export class WorkerService {
           user,
           project,
           updatedUserIntegration,
+          type,
         ),
         await this.sprintService.createSprintAndTask(
           user,
@@ -1081,7 +1094,7 @@ export class WorkerService {
     });
   }
 
-  async syncAllAndUpdateTasks(user: User) {
+  async syncAllAndUpdateTasks(user: User, type: QueuePayloadType) {
     const [jiraProjectIds, outLookCalendarIds] = await Promise.all([
       await this.sprintService.getProjectIds(user),
       await this.sprintService.getCalenderIds(user),
@@ -1091,7 +1104,7 @@ export class WorkerService {
     let syncedProjects = 0;
     try {
       for await (const projectId of jiraProjectIds) {
-        const synced = await this.syncTasks(user, projectId);
+        const synced = await this.syncTasks(user, projectId, type);
         if (synced) syncedProjects++;
       }
       for await (const calendarId of outLookCalendarIds) {
