@@ -93,14 +93,17 @@ const StatusDropdownComponent = ({
   return (
     <Dropdown
       menu={menuProps}
-      dropdownRender={dropdownRender}
       trigger={["click"]}
-      className="w-max cursor-pointer"
       placement="bottomLeft"
+      dropdownRender={dropdownRender}
+      className="w-max cursor-pointer"
     >
       <div
+        onClick={(event) => {
+          event.stopPropagation();
+          setDropdownOpen(!dropDownOpen);
+        }}
         className="relative flex h-10 items-center p-2"
-        onClick={() => setDropdownOpen(!dropDownOpen)}
       >
         {children}
       </div>

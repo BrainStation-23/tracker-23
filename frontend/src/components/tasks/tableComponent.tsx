@@ -28,6 +28,7 @@ import PinFilledIconSvg from "@/assets/svg/PinFilledIconSvg";
 import PinIconSvg from "@/assets/svg/PinIconSvg";
 import StatusDropdownComponent from "./statusDropdown";
 import EstimationComponent from "./estimationComponent";
+import { urlToKeyword } from "@/services/helpers";
 const { Text } = Typography;
 const TableComponent = ({
   tasks,
@@ -51,7 +52,14 @@ const TableComponent = ({
       key: "title",
       render: (_: any, task: TaskDto) => {
         return (
-          <div className="flex items-center gap-2" aria-disabled="true">
+          <div
+            className="flex items-center gap-2"
+            aria-disabled="true"
+            onClick={() => {
+              setSelectedTask(task);
+              setTaskViewModalOpen(true);
+            }}
+          >
             {task.pinned && (
               <Tooltip title={`Click To ${task.pinned ? "unpin" : "pin"}`}>
                 <Button
@@ -89,13 +97,7 @@ const TableComponent = ({
             ) : (
               <div className="h-1 p-4"></div>
             )}
-            <div
-              className="flex flex-col gap-2"
-              onClick={() => {
-                setSelectedTask(task);
-                setTaskViewModalOpen(true);
-              }}
-            >
+            <div className="flex flex-col gap-2">
               <Text
                 className="w-[180px] cursor-pointer"
                 ellipsis={{ tooltip: task?.title }}
@@ -136,7 +138,7 @@ const TableComponent = ({
       title: "Status",
       dataIndex: "status",
       key: "status",
-      // align: "center",
+      align: "center",
       render: (_: any, task: TaskDto) => (
         <StatusDropdownComponent
           selectedStatus={{
@@ -176,13 +178,16 @@ const TableComponent = ({
       title: "Source",
       dataIndex: "dataSource",
       key: "dataSource",
-      // align: "center",
+      align: "center",
       render: (dataSource: string, task: TaskDto) => (
-        <div className="flex max-w-[150px] items-center gap-2 ">
+        <div
+          className="flex max-w-[150px] items-center gap-2"
+          onClick={(event) => event.stopPropagation()}
+        >
           <div>{integrationIcons[task.source]} </div>
           {dataSource && (
-            <Link target="_blank" className="underline" href={dataSource}>
-              {dataSource.split("/").at(-1)}
+            <Link target="_blank" href={dataSource}>
+              {urlToKeyword(task.source, dataSource)}
             </Link>
           )}
         </div>
@@ -275,7 +280,10 @@ const TableComponent = ({
       key: "",
       width: 70,
       render: (_: any, task: TaskDto) => (
-        <div className="flex justify-end gap-2">
+        <div
+          className="flex cursor-pointer justify-end gap-2"
+          onClick={(event) => event.stopPropagation()}
+        >
           <MoreFunctionComponent
             {...{ task, deleteTask, handlePin, handleAddManualWorkLog }}
           />
@@ -323,6 +331,15 @@ const TableComponent = ({
     <Table
       columns={columns}
       dataSource={tasks}
+      scroll={{ x: 1500 }}
+      onRow={(task) => {
+        return {
+          onClick: () => {
+            setSelectedTask(task);
+            setTaskViewModalOpen(true);
+          },
+        };
+      }}
       rowKey={(task) => task.id}
       pagination={tableParams.pagination}
       rowClassName={getRowClassName}
