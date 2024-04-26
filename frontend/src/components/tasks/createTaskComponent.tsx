@@ -10,32 +10,28 @@ import {
   Spin,
   TimePicker,
 } from "antd";
-import { CheckboxChangeEvent } from "antd/es/checkbox";
-import { SizeType } from "antd/es/config-provider/SizeContext";
 import dayjs from "dayjs";
+import { CheckboxChangeEvent } from "antd/es/checkbox";
 import React, { useEffect, useRef, useState } from "react";
+import { SizeType } from "antd/es/config-provider/SizeContext";
 
 import PrimaryButton from "@/components/common/buttons/primaryButton";
 import SecondaryButton from "@/components/common/buttons/secondaryButton";
 import MyInputCreateTask from "@/components/common/form/MyInputCreateTask";
+
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
+import { CreateTaskDto, CreateTaskValues } from "models/tasks";
 import RecurrentTaskCreationComponent from "./recurrentTaskCreationComponent";
 import AddLocalProject from "@/components/integrations/projectImport/addLocalProject";
-import { CreateTaskDto, CreateTaskValues } from "models/tasks";
+
+const size: SizeType = "middle";
+const options: SelectProps["options"] = [];
 
 const CreateTaskComponent = ({ createTask }: any) => {
-  const elementRef = useRef(null);
-
-  const [startDate, setStartDate] = useState(dayjs());
   const [form] = Form.useForm();
-  const onFinish = async (values: CreateTaskValues) => {
-    setCreatingTask(true);
-    const formattedValues: CreateTaskDto = getFormattedValues(values);
-    await createTask(formattedValues);
-    setCreatingTask(false);
-  };
+  const elementRef = useRef(null);
 
   const allProjects = useAppSelector(
     (state: RootState) => state.projectList.projects
@@ -57,12 +53,12 @@ const CreateTaskComponent = ({ createTask }: any) => {
         };
       })
     : [];
-  const onReset = () => {
-    form.resetFields();
+
+  const initialValues = {
+    projectId: projectData[0]?.value,
   };
-  const [size] = useState<SizeType>("middle");
-  const [recurrentTask, setRecurrentTask] = useState<boolean>(false);
-  const [CreatingTask, setCreatingTask] = useState<boolean>(false);
+
+  const [startDate, setStartDate] = useState(dayjs());
   const [selectedProject, setSelectedProject] = useState<number>(
     projectData[0]?.value
   );
@@ -71,25 +67,17 @@ const CreateTaskComponent = ({ createTask }: any) => {
       .filter((p) => p.projectId === selectedProject)
       .map((pp) => pp.name)
   );
-  useEffect(() => {
-    // console.log(
-    //   "XXXXXX",
-    //   priorityNames,
-    //   selectedProject,
-    //   priorities,
-    //   priorities.filter((p) => {
-    //     console.log("XXXXX", p.projectId, selectedProject);
 
-    //     return p.projectId == selectedProject;
-    //   })
-    // );
+  const [CreatingTask, setCreatingTask] = useState<boolean>(false);
+  const [recurrentTask, setRecurrentTask] = useState<boolean>(false);
 
-    setPriorityNames(
-      priorities
-        .filter((p) => p.projectId == selectedProject)
-        .map((pp) => pp.name)
-    );
-  }, [priorities, selectedProject]);
+  const onFinish = async (values: CreateTaskValues) => {
+    setCreatingTask(true);
+    const formattedValues: CreateTaskDto = getFormattedValues(values);
+    await createTask(formattedValues);
+    setCreatingTask(false);
+    form.resetFields();
+  };
 
   const handleFrequencyChange = (value: string) => {
     console.log(`Selected: ${value}`);
@@ -97,23 +85,27 @@ const CreateTaskComponent = ({ createTask }: any) => {
   const handleTagsChange = (value: string[]) => {
     console.log(`Selected: ${value}`);
   };
-  const options: SelectProps["options"] = [];
-  const initialValues = {
-    projectId: projectData[0]?.value,
-  };
 
   const onCheckBoxChange = (e: CheckboxChangeEvent) => {
     setRecurrentTask(e.target.checked);
   };
 
+  useEffect(() => {
+    setPriorityNames(
+      priorities
+        .filter((p) => p.projectId == selectedProject)
+        .map((pp) => pp.name)
+    );
+  }, [priorities, selectedProject]);
+
   return (
     <Spin spinning={CreatingTask} tip={"Processing"}>
       <Form
         form={form}
-        name="control-hooks"
         onFinish={onFinish}
-        initialValues={initialValues}
+        name="control-hooks"
         requiredMark={false}
+        initialValues={initialValues}
         className="custom-create-task-css"
       >
         <div ref={elementRef} className="mb-2 max-h-[650px] overflow-auto">
@@ -124,21 +116,47 @@ const CreateTaskComponent = ({ createTask }: any) => {
             rules={[{ required: true, message: "Task Name is Required" }]}
           />
           <MyInputCreateTask
+            type="TextArea"
             name="description"
             label="Description"
             placeholder="Enter text here..."
-            type="TextArea"
           />
 
           <div className="grid w-full grid-cols-2 gap-3">
             <MyInputCreateTask
               name="estimation"
-              // initialValue={2}
               label="Estimation (in hours)"
               rules={[{ required: true, message: "Estimation is Required" }]}
             >
               <Input type="number" placeholder="hours" />
             </MyInputCreateTask>
+            <MyInputCreateTask
+              label="Project"
+              name="projectId"
+              rules={[{ required: true, message: "Project is Required" }]}
+            >
+              <Select
+                placeholder="Select Project"
+                onChange={(e) => setSelectedProject(e)}
+                dropdownRender={(menu) => (
+                  <>
+                    <div className="max-h-24 overflow-auto">{menu}</div>
+                    <Divider style={{ margin: "8px 0" }} />
+                    <Space style={{ padding: "0 8px 4px" }}>
+                      <AddLocalProject
+                        type={2}
+                        setIsModalOpen={() => {}}
+                        setSpinning={setCreatingTask}
+                        closeDropdowns={() => form.resetFields(["projectName"])}
+                      />
+                    </Space>
+                  </>
+                )}
+                options={projectData}
+              />
+            </MyInputCreateTask>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <MyInputCreateTask
               name="priority"
               label="Priority"
@@ -147,67 +165,31 @@ const CreateTaskComponent = ({ createTask }: any) => {
               <Select
                 onChange={handleFrequencyChange}
                 placeholder="Select Priority"
-                options={priorityNames?.map((priorityName) => {
-                  return { value: priorityName, label: priorityName };
-                })}
-              />
-            </MyInputCreateTask>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <MyInputCreateTask
-              name="projectId"
-              label="Project"
-              rules={[{ required: true, message: "Project is Required" }]}
-            >
-              <Select
-                placeholder="Select Project"
-                onChange={(e) => {
-                  setSelectedProject(e);
-                  // form.resetFields(["priority"]);
-                }}
-                dropdownRender={(menu) => (
-                  <>
-                    <div className="max-h-24 overflow-auto">{menu}</div>
-                    <Divider style={{ margin: "8px 0" }} />
-                    <Space style={{ padding: "0 8px 4px" }}>
-                      <AddLocalProject
-                        setSpinning={setCreatingTask}
-                        setIsModalOpen={() => {}}
-                        closeDropdowns={() => {
-                          form.resetFields(["projectName"]);
-                        }}
-                        type={2}
-                      />
-                    </Space>
-                  </>
-                )}
-                options={projectData}
+                options={priorityNames?.map((priorityName) => ({
+                  value: priorityName,
+                  label: priorityName,
+                }))}
               />
             </MyInputCreateTask>
             <MyInputCreateTask name="label" label="Label" initialValue={[]}>
               <Select
                 mode="tags"
                 size={size}
+                options={options}
+                style={{ width: "100%" }}
                 placeholder="Please select"
                 onChange={handleTagsChange}
-                style={{ width: "100%" }}
-                options={options}
               />
             </MyInputCreateTask>
           </div>
           <div className="grid grid-cols-2">
             <MyInputCreateTask
-              name={"startDate"}
               label="Date"
-              rules={[{ required: true }]}
+              name={"startDate"}
               initialValue={dayjs()}
+              rules={[{ required: true }]}
             >
-              <DatePicker
-                onChange={(e) => {
-                  setStartDate(e);
-                }}
-                className="m-0"
-              />
+              <DatePicker onChange={(e) => setStartDate(e)} className="m-0" />
             </MyInputCreateTask>
 
             <MyInputCreateTask name="timeRange" label="Time Range">
@@ -216,9 +198,9 @@ const CreateTaskComponent = ({ createTask }: any) => {
           </div>
 
           <Form.Item
+            className="mb-1"
             name="isRecurrent"
             valuePropName="checked"
-            className="mb-1"
           >
             <Checkbox onChange={onCheckBoxChange}>Recurrent Task</Checkbox>
           </Form.Item>
@@ -229,7 +211,7 @@ const CreateTaskComponent = ({ createTask }: any) => {
         <Form.Item>
           <div className="flex flex-row-reverse gap-3">
             <PrimaryButton htmlType="submit">Submit</PrimaryButton>
-            <SecondaryButton htmlType="button" onClick={onReset}>
+            <SecondaryButton htmlType="button" onClick={form.resetFields}>
               Reset
             </SecondaryButton>
           </div>
