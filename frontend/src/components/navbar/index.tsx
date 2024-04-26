@@ -189,8 +189,8 @@ const Navbar = ({ extraComponent, collapsed, toggleCollapsed }: Props) => {
       <div className="flex items-center gap-4">
         {syncing && (
           <Tooltip
-            placement="bottom"
             title={"Syncing"}
+            placement="bottom"
             className="flex h-9 w-9 cursor-pointer items-center justify-center text-green-500"
           >
             <SyncOutlined spin={syncing} />
@@ -199,8 +199,8 @@ const Navbar = ({ extraComponent, collapsed, toggleCollapsed }: Props) => {
         {isAuthorizationNeeded && (
           <Button
             htmlType="button"
-            className="flex items-center border-none bg-red-600 py-4 font-bold text-white hover:text-white"
             onClick={handleReauthorization}
+            className="flex items-center border-none bg-red-600 py-4 font-bold text-white hover:text-white"
           >
             {`Authorize ${reauthorizationType}`}
           </Button>

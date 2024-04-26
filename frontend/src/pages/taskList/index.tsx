@@ -438,7 +438,7 @@ const TasksPage = () => {
         setRunningTask,
       }}
     >
-      <div className="h-full overflow-y-auto px-8 pt-2">
+      <div className="h-full overflow-y-auto px-4 md:px-8 pt-2">
         <div className="mb-4 flex justify-between">
           <h2 className="text-2xl font-bold">Tasks</h2>
           <PrimaryButton onClick={() => setViewModalOpen(true)}>

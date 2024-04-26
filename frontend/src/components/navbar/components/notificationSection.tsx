@@ -69,7 +69,6 @@ const NotificationSection = () => {
 
   const menuProps = {
     items,
-    // onClick: () => {},
   };
 
   const { token } = useToken();
@@ -82,54 +81,51 @@ const NotificationSection = () => {
     boxShadow: "none",
   };
   return (
-    <>
-      <Dropdown
-        menu={menuProps}
-        placement="bottomRight"
-        onOpenChange={(open) => {
-          !open && handleMarkAllSeen();
-        }}
-        dropdownRender={(menu: React.ReactNode) => (
-          <div style={contentStyle}>
-            <div className="max-h-[500px] overflow-y-auto">
-              {React.cloneElement(menu as React.ReactElement, {
-                style: menuStyle,
-              })}
-            </div>
-            {notifications.length > 0 ? (
-              <>
-                <Divider style={{ margin: 0 }} />
-                <Button className="w-full" onClick={handleMarkAllCleared}>
-                  Clear All
-                </Button>
-              </>
-            ) : (
-              <Empty description="No new Notifications" className="py-2" />
-            )}
+    <Dropdown
+      menu={menuProps}
+      placement="bottomRight"
+      onOpenChange={(open) => {
+        !open && handleMarkAllSeen();
+      }}
+      dropdownRender={(menu: React.ReactNode) => (
+        <div style={contentStyle}>
+          <div className="max-h-[500px] overflow-y-auto">
+            {React.cloneElement(menu as React.ReactElement, {
+              style: menuStyle,
+            })}
           </div>
-        )}
-        trigger={["click"]}
-        className="transition-all delay-1000 duration-1000"
-        overlayClassName="duration-1000 delay-1000 transition-all w-[300px]"
-      >
-        <div
-          className="flex h-9 w-9 cursor-pointer items-center justify-center"
-          style={{
-            border: "1px solid #ECECED",
-            borderRadius: "8px",
-          }}
-        >
-          <Badge
-            size="small"
-            overflowCount={10}
-            count={newNotificationNumber}
-            style={{ backgroundColor: "#52c41a" }}
-          >
-            <BellIconSvg />
-          </Badge>
+          {notifications.length > 0 ? (
+            <>
+              <Divider style={{ margin: 0 }} />
+              <Button className="w-full" onClick={handleMarkAllCleared}>
+                Clear All
+              </Button>
+            </>
+          ) : (
+            <Empty description="No new Notifications" className="py-2" />
+          )}
         </div>
-      </Dropdown>
-    </>
+      )}
+      trigger={["click"]}
+      overlayClassName="w-[300px]"
+    >
+      <div
+        className="flex h-9 w-9 cursor-pointer items-center justify-center"
+        style={{
+          border: "1px solid #ECECED",
+          borderRadius: "8px",
+        }}
+      >
+        <Badge
+          size="small"
+          overflowCount={10}
+          count={newNotificationNumber}
+          style={{ backgroundColor: "#52c41a" }}
+        >
+          <BellIconSvg />
+        </Badge>
+      </div>
+    </Dropdown>
   );
 };
 

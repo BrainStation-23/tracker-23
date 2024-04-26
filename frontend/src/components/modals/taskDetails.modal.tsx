@@ -16,6 +16,7 @@ import {
 } from "@/services/timeActions";
 
 import Sessions from "./components/sessions";
+import { urlToKeyword } from "@/services/helpers";
 
 type Props = {
   task: TaskDto;
@@ -70,7 +71,7 @@ const TaskDetailsModal = ({
   };
   return (
     <Modal
-      title={<div className="text-base font-semibold"> Task Details</div>}
+      title={<div className="text-base font-semibold">Task Details</div>}
       onCancel={handleCancel}
       open={isModalOpen}
       onOk={handleOk}
@@ -104,7 +105,7 @@ const TaskDetailsModal = ({
                   setIsModalOpen(true);
                 }}
               >
-                {taskDetails?.url?.split("/").at(-1)}
+                {urlToKeyword(taskDetails.source, taskDetails.url)}
               </OpenLinkInNewTab>
             </div>
           )}

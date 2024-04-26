@@ -1664,12 +1664,10 @@ export async function exportSprintViewSheetRest(reportData: ReportData) {
   const url = `${
     apiEndPoints.exportSprintViewSheet
   }?${searchParams.toString()}`;
-  console.log("url: " + url);
   try {
     const res = await api.get(url, {
       responseType: "blob", // Set responseType to 'blob' to receive binary data
     });
-    console.log("exportSprintViewSheetRest:", res.data);
     return res.data;
   } catch (error: any) {
     return false;
@@ -1690,12 +1688,21 @@ export async function exportTimeLineSheetRest(reportData: ReportData) {
     }),
   });
   const url = `${apiEndPoints.exportTimeLineSheet}?${searchParams.toString()}`;
-  console.log("url: " + url);
   try {
     const res = await api.get(url, {
       responseType: "blob", // Set responseType to 'blob' to receive binary data
     });
-    console.log("exportTimeLineSheetRest:", res.data);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function allTaskReload() {
+  try {
+    const res = await api.get(`${apiEndPoints.allTaskReload}`);
+    console.log("res", res);
+
     return res.data;
   } catch (error: any) {
     return false;
