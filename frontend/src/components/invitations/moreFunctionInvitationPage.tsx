@@ -27,7 +27,7 @@ const MoreFunctionInvitationPageComponent = ({
           onClick={() => {
             acceptInvite(invitedUser);
           }}
-          type={invitedUser.status !== "INVITED" ? "default" : "ghost"}
+          type={invitedUser.status !== "INVITED" ? "default" : "text"}
           disabled={invitedUser.status !== "INVITED"}
         >
           <LuCheck />
@@ -43,7 +43,7 @@ const MoreFunctionInvitationPageComponent = ({
           onClick={() => {
             rejectInvite(invitedUser);
           }}
-          type={invitedUser.status !== "INVITED" ? "default" : "ghost"}
+          type={invitedUser.status !== "INVITED" ? "default" : "text"}
           disabled={invitedUser.status !== "INVITED"}
         >
           <LuX />

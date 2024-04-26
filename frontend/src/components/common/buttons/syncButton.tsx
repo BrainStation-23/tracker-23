@@ -6,7 +6,7 @@ import { ProjectDto } from "models/projects";
 
 type Props = {
   text?: string;
-  type?: "text" | "link" | "ghost" | "default" | "primary" | "dashed";
+  type?: "text" | "link" | "default" | "primary" | "dashed";
   className?: string;
   onClick?: Function;
   project?: ProjectDto;

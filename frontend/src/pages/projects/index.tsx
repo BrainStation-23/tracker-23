@@ -5,9 +5,9 @@ import { GroupProjects, ProjectDto } from "models/projects";
 import { integrationName, IntegrationType } from "models/integration";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
+
 import GlobalModal from "@/components/modals/globalModal";
 import PrimaryButton from "@/components/common/buttons/primaryButton";
-
 import AddNewProject from "@/components/integrations/projectImport/addNewProject";
 import ImportedProjectsSection from "@/components/integrations/projectImport/importedProjectsSections";
 
@@ -65,7 +65,6 @@ const ProjectPage = () => {
   useEffect(() => {
     getAllProjects();
   }, [spinning]);
-  useEffect(() => {}, [groupProjects, initialLoadDone]);
 
   return (
     <Spin spinning={rootSpinning}>

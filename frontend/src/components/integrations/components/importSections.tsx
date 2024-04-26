@@ -6,18 +6,18 @@ import { Card } from "antd";
 type Props = {
   title: string;
   adminMode: boolean;
-  integrations: IntegrationDto[];
-  handleUninstallIntegration: Function;
-  handleDeleteIntegration: Function;
   installed?: boolean;
+  integrations: IntegrationDto[];
+  handleDeleteIntegration: Function;
+  handleUninstallIntegration: Function;
 };
 const IntegrationCard = ({
   title,
-  integrations,
   adminMode,
-  handleUninstallIntegration,
-  handleDeleteIntegration,
   installed,
+  integrations,
+  handleDeleteIntegration,
+  handleUninstallIntegration,
 }: Props) => {
   return (
     <Card
@@ -30,12 +30,12 @@ const IntegrationCard = ({
         <div className="flex flex-wrap gap-4">
           {integrations?.map((d) => (
             <ImportCard
-              key={Math.random()}
               data={d}
+              key={Math.random()}
               adminMode={adminMode}
-              handleUninstallIntegration={handleUninstallIntegration}
-              handleDeleteIntegration={handleDeleteIntegration}
               installed={installed}
+              handleDeleteIntegration={handleDeleteIntegration}
+              handleUninstallIntegration={handleUninstallIntegration}
             />
           ))}
         </div>

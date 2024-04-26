@@ -137,10 +137,10 @@ const SettingsPage = () => {
               :
             </div>
             <Button
-              type="ghost"
               disabled={syncing}
               onClick={handleClick}
-              className="flex w-fit items-center gap-2 border-none bg-primary py-4 text-base text-white hover:text-white"
+              className="flex items-center gap-2 border-none bg-primary text-base text-white"
+              style={{ color: "white", background: "#1D1D1D" }}
             >
               <SyncOutlined spin={syncing} />
               Sync All Task
