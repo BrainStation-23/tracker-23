@@ -280,10 +280,7 @@ const SideMenu = ({ toggleCollapsed }: { toggleCollapsed: () => void }) => {
                                     ? " cursor-not-allowed"
                                     : "cursor-pointer"
                                 }`}
-                                onClick={() =>
-                                  pageId !== reportPage.id &&
-                                  handleDeletePage(reportPage)
-                                }
+                                onClick={() => handleDeletePage(reportPage)}
                               >
                                 <DeleteIconSvg />
                                 Delete
@@ -391,7 +388,7 @@ const SideMenuOption = ({ option, active, toggleCollapsed }: SideMenuProps) => {
   };
   return (
     <div
-      className={`group flex items-center gap-2 rounded-lg py-[6px] px-1 hover:cursor-pointer hover:bg-[#ECECED] hover:text-primary ${
+      className={`group flex items-center gap-2 rounded-lg px-1 py-[6px] hover:cursor-pointer hover:bg-[#ECECED] hover:text-primary ${
         active ? "bg-[#ECECED] text-primary" : ""
       }`}
       onClick={handleClick}
