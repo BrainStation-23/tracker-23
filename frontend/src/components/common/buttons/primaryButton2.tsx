@@ -7,7 +7,6 @@ type Props = {
 const PrimaryButton2 = ({ children, onClick, htmlType }: Props) => {
   return (
     <Button
-      type="ghost"
       htmlType={htmlType}
       className="flex w-min items-center rounded-lg bg-white px-5 py-6 font-semibold transition-all duration-100 hover:scale-105 hover:text-primary md:py-8"
       onClick={() => onClick && onClick()}

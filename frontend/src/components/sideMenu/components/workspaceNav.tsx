@@ -50,7 +50,8 @@ const WorkspaceNav = () => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isModalLoading, setIsModalLoading] = useState(false);
   const [workspaceInMoreMode, setWorkspaceInMoreMode] = useState(null);
-  const [selectedWorkspace, setSelectedWorkspace] = useState<WorkspaceDto | null>();
+  const [selectedWorkspace, setSelectedWorkspace] =
+    useState<WorkspaceDto | null>();
 
   const workspaces = useAppSelector(
     (state: RootState) => state.workspacesSlice.workspaces
@@ -177,7 +178,7 @@ const WorkspaceNav = () => {
       <div className="flex w-full ">
         <SyncButtonComponent
           text="Sync"
-          type="ghost"
+          type="text"
           onClick={syncFunction}
           className="mx-4 w-full gap-3 rounded p-0 py-2 pl-4"
         />

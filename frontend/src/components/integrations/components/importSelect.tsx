@@ -21,11 +21,11 @@ const ImportSelect = ({
       <IntegrationCard
         title="Installed"
         {...{
-          integrations,
           adminMode,
-          handleUninstallIntegration,
-          handleDeleteIntegration,
+          integrations,
           installed: true,
+          handleDeleteIntegration,
+          handleUninstallIntegration,
         }}
       />
       <IntegrationCard

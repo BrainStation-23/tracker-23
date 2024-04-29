@@ -210,7 +210,7 @@ const DateRangePicker = ({
                 >
                   <Button
                     className="flex w-full items-center pl-1.5 text-left hover:bg-gray-100"
-                    type="ghost"
+                    type="text"
                     style={{
                       clear: "both",
                       margin: 0,
@@ -218,7 +218,7 @@ const DateRangePicker = ({
                       fontSize: "14px",
                       lineHeight: 1.5714285714285714,
                       cursor: "pointer",
-                      transition: " all 0.2s",
+                      transition: "all 0.2s",
                       borderRadius: "4px",
                     }}
                     onClick={() => setCustomDateOpen(!customDateOpen)}

@@ -30,10 +30,8 @@ const MoreFunctionMembersPageComponent = ({ member, updateMember }: Props) => {
       label: (
         <Button
           className=" flex items-center gap-2 border-none p-1"
-          onClick={() => {
-            changeStatus("INACTIVE");
-          }}
-          type={user.role !== "ADMIN" ? "default" : "ghost"}
+          onClick={() => changeStatus("INACTIVE")}
+          type={user.role !== "ADMIN" ? "default" : "text"}
           disabled={user.role !== "ADMIN"}
         >
           <LuX />
@@ -46,10 +44,8 @@ const MoreFunctionMembersPageComponent = ({ member, updateMember }: Props) => {
       label: (
         <Button
           className="flex w-full items-center gap-2 border-none p-1"
-          onClick={() => {
-            changeStatus("DELETED");
-          }}
-          type={user.role !== "ADMIN" ? "default" : "ghost"}
+          onClick={() => changeStatus("DELETED")}
+          type={user.role !== "ADMIN" ? "default" : "text"}
           disabled={user.role !== "ADMIN"}
         >
           <LuX />
@@ -63,10 +59,8 @@ const MoreFunctionMembersPageComponent = ({ member, updateMember }: Props) => {
       label: (
         <Button
           className=" flex items-center gap-2 border-none p-1"
-          onClick={() => {
-            changeStatus("ACTIVE");
-          }}
-          type={user.role !== "ADMIN" ? "default" : "ghost"}
+          onClick={() => changeStatus("ACTIVE")}
+          type={user.role !== "ADMIN" ? "default" : "text"}
           disabled={user.role !== "ADMIN"}
         >
           <LuCheck />
@@ -79,10 +73,8 @@ const MoreFunctionMembersPageComponent = ({ member, updateMember }: Props) => {
       label: (
         <Button
           className="flex w-full items-center gap-2 border-none p-1"
-          onClick={() => {
-            changeStatus("DELETED");
-          }}
-          type={user.role !== "ADMIN" ? "default" : "ghost"}
+          onClick={() => changeStatus("DELETED")}
+          type={user.role !== "ADMIN" ? "default" : "text"}
           disabled={user.role !== "ADMIN"}
         >
           <LuX />
@@ -96,10 +88,8 @@ const MoreFunctionMembersPageComponent = ({ member, updateMember }: Props) => {
       label: (
         <Button
           className=" flex items-center gap-2 border-none p-1"
-          onClick={() => {
-            changeStatus("INVITED");
-          }}
-          type={user.role !== "ADMIN" ? "default" : "ghost"}
+          onClick={() => changeStatus("INVITED")}
+          type={user.role !== "ADMIN" ? "default" : "text"}
           disabled={user.role !== "ADMIN"}
         >
           <LuCheck />
@@ -119,15 +109,15 @@ const MoreFunctionMembersPageComponent = ({ member, updateMember }: Props) => {
   return (
     <Dropdown
       menu={menuProps}
-      dropdownRender={dropdownRender}
       trigger={["click"]}
-      className="relative "
-      overlayClassName="absolute left-[-200px] "
+      className="relative"
       placement="bottomRight"
+      dropdownRender={dropdownRender}
+      overlayClassName="absolute left-[-200px] "
     >
       <Button
-        className="relative flex h-6 w-6 items-center justify-center p-2"
         onClick={() => setDropdownOpen(!dropDownOpen)}
+        className="relative flex h-6 w-6 items-center justify-center p-2"
       >
         <MoreOutlined className="mx-auto w-6" style={{ fontSize: "16px" }} />
       </Button>

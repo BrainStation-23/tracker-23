@@ -28,11 +28,9 @@ const MoreFunctionComponent = ({
       key: "1",
       label: (
         <Button
-          className=" flex items-center gap-2 p-1"
-          onClick={() => {
-            handleAddManualWorkLog(task);
-          }}
-          type="ghost"
+          className=" flex items-center gap-2 px-2 py-1"
+          onClick={() => handleAddManualWorkLog(task)}
+          type="text"
         >
           <EditOutlined />
           Add Work Log
@@ -43,11 +41,9 @@ const MoreFunctionComponent = ({
       key: "2",
       label: (
         <Button
-          className="flex w-full gap-2 p-1"
-          onClick={() => {
-            deleteTask(task.id);
-          }}
-          type="ghost"
+          className="flex w-full gap-2 px-2 py-1"
+          onClick={() => deleteTask(task.id)}
+          type="text"
         >
           <DeleteIconSvg />
           Delete
@@ -58,11 +54,9 @@ const MoreFunctionComponent = ({
       key: "3",
       label: (
         <Button
-          className=" flex w-full gap-3 p-1"
-          onClick={() => {
-            handlePin(task);
-          }}
-          type="ghost"
+          className=" flex w-full gap-3 px-2 py-1"
+          onClick={() => handlePin(task)}
+          type="text"
         >
           {task.pinned ? <PinFilledIconSvg /> : <PinIconSvg />}
           {task.pinned ? "Unpin" : "Pin"}
