@@ -12,6 +12,8 @@ import {
   deleteReportSlice,
   setReportInEditSlice,
 } from "@/storage/redux/reportsSlice";
+import { useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
 
 const { Text } = Typography;
 
@@ -33,7 +35,9 @@ export default function ReportHeaderComponent({
   extraFilterComponent,
 }: Props) {
   const dispatch = useDispatch();
-
+  const reportInEdit = useAppSelector(
+    (state: RootState) => state.reportsSlice.reportInEdit
+  );
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const filterOptions = [
     <SecondaryButton key={1} onClick={deleteReport}>
@@ -66,7 +70,13 @@ export default function ReportHeaderComponent({
   }
 
   function handleEdit() {
-    dispatch(setReportInEditSlice(reportData));
+    if (reportInEdit && reportData.id !== reportInEdit.id) {
+      message.error(
+        "Report is already in edit. Please save or cancel the previous report to edit different report"
+      );
+    } else {
+      dispatch(setReportInEditSlice(reportData));
+    }
   }
 
   return (
