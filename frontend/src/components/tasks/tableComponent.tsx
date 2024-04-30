@@ -75,7 +75,8 @@ const TableComponent = ({
                 {runningTask?.id != task.id ? (
                   <Tooltip title="Click To Start Task">
                     <div
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         !sessionActionLoading && startSession(task);
                       }}
                     >
@@ -85,7 +86,8 @@ const TableComponent = ({
                 ) : (
                   <Tooltip title="Click To Stop Task">
                     <div
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         !sessionActionLoading && stopSession(task);
                       }}
                     >
@@ -135,19 +137,20 @@ const TableComponent = ({
       },
     },
     {
-      title: "Status",
-      dataIndex: "status",
       key: "status",
+      title: "Status",
       align: "center",
+      dataIndex: "status",
       render: (_: any, task: TaskDto) => (
         <StatusDropdownComponent
+          task={task}
+          setLoading={setLoading}
+          isDisabled={runningTask?.id === task.id}
+          handleStatusChange={handleStatusChange}
           selectedStatus={{
             name: task.status,
             statusCategoryName: task.statusCategoryName,
           }}
-          task={task}
-          setLoading={setLoading}
-          handleStatusChange={handleStatusChange}
         >
           <div
             style={{

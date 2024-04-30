@@ -10,14 +10,16 @@ import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 type Props = {
   task: TaskDto;
   children: any;
-  selectedStatus: StatusType;
+  isDisabled: boolean;
   setLoading: Function;
+  selectedStatus: StatusType;
   handleStatusChange: Function;
 };
 
 const StatusDropdownComponent = ({
   task,
   children,
+  isDisabled,
   selectedStatus,
   handleStatusChange,
 }: Props) => {
@@ -94,6 +96,7 @@ const StatusDropdownComponent = ({
     <Dropdown
       menu={menuProps}
       trigger={["click"]}
+      disabled={isDisabled}
       placement="bottomLeft"
       dropdownRender={dropdownRender}
       className="w-max cursor-pointer"
