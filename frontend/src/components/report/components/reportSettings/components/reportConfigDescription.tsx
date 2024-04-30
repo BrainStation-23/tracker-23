@@ -1,4 +1,4 @@
-import { Tooltip, Typography } from "antd";
+import { Tooltip, Typography, message } from "antd";
 import { ReportData, setReportInEditSlice } from "@/storage/redux/reportsSlice";
 import { CalendarOutlined } from "@ant-design/icons";
 import {
@@ -10,6 +10,8 @@ import {
 } from "react-icons/lu";
 import { GiSprint } from "react-icons/gi";
 import { useDispatch } from "react-redux";
+import { useAppSelector } from "@/storage/redux";
+import { RootState } from "@/storage/redux/store";
 
 const { Text } = Typography;
 
@@ -20,8 +22,17 @@ const ReportConfigDescription = ({
 }) => {
   const dispatch = useDispatch();
 
+  const reportInEdit = useAppSelector(
+    (state: RootState) => state.reportsSlice.reportInEdit
+  );
   function handleEdit() {
-    dispatch(setReportInEditSlice(reportData));
+    if (reportInEdit && reportData.id !== reportInEdit.id) {
+      message.error(
+        "Report is already in edit. Please save or cancel the previous report to edit different report"
+      );
+    } else {
+      dispatch(setReportInEditSlice(reportData));
+    }
   }
 
   return (
