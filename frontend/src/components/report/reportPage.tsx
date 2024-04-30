@@ -28,10 +28,12 @@ import SprintReport from "./singleReports/sprintReport";
 import SprintTimelineReport from "./singleReports/sprintTimelineReport";
 import TaskListReport from "./singleReports/taskListReport";
 import TimeSheetReport from "./singleReports/timeSheetReport";
+import { useRouter } from "next/router";
 
 export default function ReportPageComponent({ pageId }: { pageId: number }) {
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
 
   const reportPageData = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages
@@ -80,8 +82,12 @@ export default function ReportPageComponent({ pageId }: { pageId: number }) {
     getProjectWiseStatues();
   }, []);
 
+  if (!reportPageData) {
+    router.replace("/reports/");
+  }
+
   return (
-    <div className="flex min-h-full w-full flex-col gap-7 bg-[#EDEDF0] px-2 pt-2 pb-5 md:px-8">
+    <div className="flex min-h-full w-full flex-col gap-7 bg-[#EDEDF0] px-2 pb-5 pt-2 md:px-8">
       <div className="flex items-center justify-end pt-2">
         <PrimaryButton onClick={() => setIsModalOpen(true)}>
           <PlusIconSvg /> Add New Report

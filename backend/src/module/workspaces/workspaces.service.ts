@@ -276,34 +276,41 @@ export class WorkspacesService {
               HttpStatus.INTERNAL_SERVER_ERROR,
             );
           }
-          //page and report create start
-          const page = await this.pagesService.createPage(newUser as User, {
-            name: 'Default Page',
-          });
-          const startOfWeek = dayjs().startOf('week');
-          const endOfWeek = dayjs().endOf('week');
-          const startFormatted = startOfWeek.format('MMM DD, YYYY');
-          const endFormatted = endOfWeek.format('MMM DD, YYYY');
-          const config = {
-            types: ['JIRA'],
-            endDate: endFormatted,
-            userIds: [newUser.id],
-            startDate: startFormatted,
-            excludeUnworkedTasks: false,
-          };
-          const reportData = {
-            name: 'Task List',
-            reportType: ReportType.TASK_LIST,
-            pageId: page?.id,
-            config: config,
-          };
-          await this.reportsService.createReport(reportData);
-          //page and report create start
 
           return newUserWorkspace;
         },
       );
       newUserWorkspace = transaction;
+
+      //page and report create start
+      const page = await this.pagesService.createPage(
+        {
+          id: newUserWorkspace.userId,
+          activeWorkspaceId: newUserWorkspace.workspaceId,
+        } as User,
+        {
+          name: 'Default Page',
+        },
+      );
+      const startOfWeek = dayjs().startOf('week');
+      const endOfWeek = dayjs().endOf('week');
+      const startFormatted = startOfWeek.format('MMM DD, YYYY');
+      const endFormatted = endOfWeek.format('MMM DD, YYYY');
+      const config = {
+        types: ['JIRA'],
+        endDate: endFormatted,
+        userIds: [newUserWorkspace.userId],
+        startDate: startFormatted,
+        excludeUnworkedTasks: false,
+      };
+      const reportData = {
+        name: 'Task List',
+        reportType: ReportType.TASK_LIST,
+        pageId: page?.id,
+        config: config,
+      };
+      await this.reportsService.createReport(reportData);
+      //page and report create start
     } else {
       //check if already invited
       const userWorkspace =
