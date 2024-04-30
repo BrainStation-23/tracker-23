@@ -463,6 +463,7 @@ const TasksPage = () => {
           <TopPanel
             {...{
               tasks,
+              loading,
               activeTab,
               setActiveTab,
               searchParams,
