@@ -11,51 +11,54 @@ import {
   Typography,
 } from "antd";
 import { userAPI } from "APIs";
-import { WorkspaceDto } from "models/workspaces";
 import React, { useState } from "react";
-import { LuMoreHorizontal, LuPenLine, LuTrash2 } from "react-icons/lu";
 import { useDispatch } from "react-redux";
+import { DownOutlined, UpOutlined } from "@ant-design/icons";
+import { LuMoreHorizontal, LuPenLine, LuTrash2 } from "react-icons/lu";
 
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
-import SyncButtonComponent from "@/components/common/buttons/syncButton";
-import LogOutButton from "@/components/logout/logOutButton";
-import GlobalModal from "@/components/modals/globalModal";
+
 import { useActiveUserWorkspace } from "@/hooks/useActiveUserWorkspace";
+
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 import { changeWorkspaceReloadStatusSlice } from "@/storage/redux/workspacesSlice";
-import { DownOutlined, UpOutlined } from "@ant-design/icons";
 
-import AddNewWorkspace from "./addNewWorkspace";
-import DeleteWorkspaceWarning from "./deleteWorkSpaceWarning";
 import EditWorkspace from "./editWorkspace";
+import AddNewWorkspace from "./addNewWorkspace";
+import { WorkspaceDto } from "models/workspaces";
+import GlobalModal from "@/components/modals/globalModal";
+import LogOutButton from "@/components/logout/logOutButton";
+import DeleteWorkspaceWarning from "./deleteWorkSpaceWarning";
+import SyncButtonComponent from "@/components/common/buttons/syncButton";
 
 const { Text } = Typography;
 
+const modalTitles = [
+  "Create Workspace",
+  "Update Workspace",
+  "Delete Workspace",
+];
+
 const WorkspaceNav = () => {
   const dispatch = useDispatch();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModalLoading, setIsModalLoading] = useState(false);
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const [workspaceInMoreMode, setWorkspaceInMoreMode] = useState(null);
+  const activeUserWorkspace = useActiveUserWorkspace();
+
   const [mode, setMode] = useState(0);
-  const modalTitles = [
-    "Create Workspace",
-    "Update Workspace",
-    "Delete Workspace",
-  ];
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [isModalLoading, setIsModalLoading] = useState(false);
+  const [workspaceInMoreMode, setWorkspaceInMoreMode] = useState(null);
+  const [selectedWorkspace, setSelectedWorkspace] =
+    useState<WorkspaceDto | null>();
 
   const workspaces = useAppSelector(
     (state: RootState) => state.workspacesSlice.workspaces
   );
-
-  const [selectedWorkspace, setSelectedWorkspace] =
-    useState<WorkspaceDto | null>();
   const activeWorkspace = useAppSelector(
     (state: RootState) => state.workspacesSlice.activeWorkspace
   );
-  const activeUserWorkspace = useActiveUserWorkspace();
 
   const handleChangeWorkspaceClick = async (workspace: WorkspaceDto) => {
     if (activeWorkspace?.id !== workspace.id) {
@@ -70,7 +73,6 @@ const WorkspaceNav = () => {
 
   const handleWorkspaceDeleteClick = async (workspace: WorkspaceDto) => {
     setMode(2);
-    // const response = await userAPI.deleteWorkspace(workspace.id);
     setSelectedWorkspace(workspace);
     setIsModalOpen(true);
   };
@@ -134,14 +136,14 @@ const WorkspaceNav = () => {
                   </div>
                 </Radio>
                 <Dropdown
-                  menu={{ items: menuItems }}
                   trigger={["click"]}
                   placement="bottomRight"
+                  menu={{ items: menuItems }}
+                  open={workspace.id === workspaceInMoreMode}
                   dropdownRender={(dropdownRender) =>
                     workspaceMoreDropdown(dropdownRender, workspace)
                   }
                   className=" flex h-fit w-[20px] items-center justify-center rounded p-1"
-                  open={workspace.id === workspaceInMoreMode}
                   onOpenChange={(v) => {
                     if (v) setWorkspaceInMoreMode(workspace.id);
                     else if (workspaceInMoreMode === workspace.id) {
@@ -175,9 +177,10 @@ const WorkspaceNav = () => {
       <div style={{ padding: 8 }}></div>
       <div className="flex w-full ">
         <SyncButtonComponent
-          className="mx-4 w-full gap-3 rounded p-0 py-2 pl-4"
           text="Sync"
+          type="text"
           onClick={syncFunction}
+          className="mx-4 w-full gap-3 rounded p-0 py-2 pl-4"
         />
       </div>
       <div style={{ padding: 2 }}></div>
@@ -301,9 +304,9 @@ const WorkspaceNav = () => {
           {mode === 2 && (
             <DeleteWorkspaceWarning
               workspace={selectedWorkspace}
-              setSelectedWorkspace={setSelectedWorkspace}
               setIsModalOpen={setIsModalOpen}
               setIsModalLoading={setIsModalLoading}
+              setSelectedWorkspace={setSelectedWorkspace}
             />
           )}
           {mode === 0 && (

@@ -24,6 +24,7 @@ import CalendarSelectorComponent from "./components/calendarSelector";
 
 type Props = {
   tasks: TaskDto[];
+  loading: boolean;
   activeTab: string;
   setActiveTab: Function;
   setSearchParams: Function;
@@ -34,6 +35,7 @@ type Props = {
 };
 const TopPanel = ({
   tasks,
+  loading,
   activeTab,
   setActiveTab,
   searchParams,
@@ -190,8 +192,9 @@ const TopPanel = ({
         <div>
           {!(sprints?.length > 0) && activeTab !== "ActiveSprint" && (
             <DateRangePicker
-              className="w-full min-w-[270px]"
+              loading={loading}
               selectedDate={selectedDate}
+              className="w-full min-w-[270px]"
               setSelectedDate={setSelectedDate}
             />
           )}

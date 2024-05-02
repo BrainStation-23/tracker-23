@@ -206,7 +206,7 @@ const DashboardTableComponent = ({
     <Table
       columns={columns}
       dataSource={tasks}
-      scroll={{ x: 1550 }}
+      scroll={{ x: 1500 }}
       rowKey={(task) => task.id}
       onChange={handleTableChange}
       rowClassName={getRowClassName}

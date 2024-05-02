@@ -9,9 +9,9 @@ import { ReactNode, useEffect, useState } from "react";
 // Models
 import { GetWorkspaceListWithUserDto } from "models/workspaces";
 import {
-  AuthorizationErrorMessage,
   IntegrationDto,
   IntegrationType,
+  AuthorizationErrorMessage,
 } from "models/integration";
 
 // Components
@@ -28,8 +28,8 @@ import { initializeSocket } from "@/services/socket.service";
 
 // Storage
 import {
-  setAuthorizationSlice,
   setIntegrationsSlice,
+  setAuthorizationSlice,
   setIntegrationTypesSlice,
 } from "@/storage/redux/integrationsSlice";
 import { RootState } from "@/storage/redux/store";
@@ -47,11 +47,10 @@ import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
 import "react-toastify/dist/ReactToastify.css";
 
 const layoutStyle = {
-  // borderRadius: 8,
-  overflow: "hidden",
   width: "100%",
-  maxWidth: "100%",
   height: "100vh",
+  maxWidth: "100%",
+  overflow: "hidden",
   minHeight: "100vh",
 };
 
@@ -59,22 +58,13 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  // Define your media queries
-  const isVerySmallDevice = useMediaQuery({ maxWidth: 400 }); // screens smaller than 400px
-  const isMobile = useMediaQuery({ maxWidth: 767 }); // screens smaller than 768px
-  // const isTablet = useMediaQuery({ minWidth: 768, maxWidth: 1023 }); // screens between 768px and 1023px
-  // const isDesktop = useMediaQuery({ minWidth: 1024 }); // screens larger than 1023px
-
-  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
   const syncRunning = useAppSelector(
     (state: RootState) => state.syncStatus.syncRunning
   );
   const integrationsSlice = useAppSelector(
     (state: RootState) => state.integrations.integrations
   );
-  const notificationsSlice = useAppSelector(
-    (state: RootState) => state.notificationsSlice.notifications
-  );
+
   const connectedSocket = useAppSelector(
     (state: RootState) => state.notificationsSlice.socket
   );
@@ -91,6 +81,10 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   const reportInEdit = useAppSelector(
     (state: RootState) => state.reportsSlice.reportInEdit
   );
+  const notificationsSlice = useAppSelector(
+    (state: RootState) => state.notificationsSlice.notifications
+  );
+  const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
 
   // State
   const [loading, setLoading] = useState(true);
@@ -99,6 +93,10 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   // Constant
   const path = router.asPath;
   const isPublicRoute = publicRoutes.some((route) => path.includes(route));
+
+  // Define your media queries
+  const isMobile = useMediaQuery({ maxWidth: 767 }); // screens smaller than 768px
+  const isVerySmallDevice = useMediaQuery({ maxWidth: 400 }); // screens smaller than 400px
 
   // handler
   const toggleCollapsed = () => {
@@ -135,7 +133,6 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
 
   const getNotifications = async () => {
     const notifications = await userAPI.getNotifications();
-
     if (!(notificationsSlice?.length > 0) && notifications) {
       dispatch(setNotifications(notifications));
     }
@@ -200,26 +197,6 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
       userInfo?.activeWorkspace && initialLoading();
     }
   }, [userInfo?.activeWorkspace.id]);
-
-  // useEffect(() => {
-  //   const getSyncStatus = async () => {
-  //     const res = await userAPI.syncStatus();
-  //     res && dispatch(setSyncStatus(res));
-  //     if (res.status === "IN_PROGRESS") {
-  //       dispatch(setSyncRunning(true));
-  //     } else if (res.status === "DONE") {
-  //       syncRunning && message.success("Sync Completed");
-  //       dispatch(setSyncRunning(false));
-  //     }
-  //   };
-  //   let timeout: NodeJS.Timeout;
-  //   timeout =
-  //     !isPublicRoute &&
-  //     userInfo?.activeWorkspace &&
-  //     setTimeout(getSyncStatus, 2000);
-
-  //   return () => clearTimeout(timeout);
-  // }, [publicRoutes.some((route) => path.includes(route))]);
 
   useEffect(() => {
     let myTimeout: NodeJS.Timeout;
@@ -287,9 +264,9 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
         {loading && !path.includes("socialLogin") && !isPublicRoute ? (
           <div className="h-screen">
             <Spin
-              spinning={loading && !isPublicRoute}
               tip={"Loading..."}
               className="inset-0 m-auto h-full"
+              spinning={loading && !isPublicRoute}
             >
               <div className="h-screen" />
             </Spin>
@@ -325,9 +302,11 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
                 maskClosable={!Boolean(reportInEdit)}
                 width={reportInEdit ? "350px" : "250px"}
                 open={collapsed || (isMobile && Boolean(reportInEdit))}
-                style={{
-                  margin: 0,
-                  padding: 0,
+                styles={{
+                  body: {
+                    margin: 0,
+                    padding: 0,
+                  },
                 }}
                 className={classNames(
                   `hidden h-screen sm:block min-w-[${
@@ -345,11 +324,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
             {userInfo?.activeWorkspace ||
             path.includes("socialLogin") ||
             isPublicRoute ? (
-              <div
-                className={classNames(
-                  "flex max-h-screen w-full flex-col overflow-auto overflow-y-auto bg-white"
-                )}
-              >
+              <div className="flex max-h-screen w-full flex-col overflow-auto overflow-y-auto bg-white">
                 {!isPublicRoute &&
                   !path.includes("onBoarding") &&
                   !noNavbar.some((route) => path.includes(route)) && (
@@ -361,9 +336,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
                 <div className="h-full min-h-max w-full">{children}</div>
               </div>
             ) : (
-              <div
-                className={classNames("flex w-full flex-col overflow-y-auto")}
-              >
+              <div className="flex w-full flex-col overflow-y-auto">
                 <Navbar
                   collapsed={collapsed}
                   toggleCollapsed={toggleCollapsed}

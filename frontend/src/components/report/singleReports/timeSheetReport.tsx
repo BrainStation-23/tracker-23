@@ -97,7 +97,11 @@ const TimeSheetReport = ({ reportData, inView }: Props) => {
         setIsLoading={setIsLoading}
         exportButton={
           <Button
-            type="ghost"
+            style={{
+              backgroundColor: "#1d8b56",
+              color: "white",
+              border: "none",
+            }}
             loading={downloading}
             onClick={excelExport}
             icon={<LuDownload className="text-xl" />}

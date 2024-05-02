@@ -25,12 +25,14 @@ import { FilterDateType, FilterReverseDateType } from "models/reports";
 import classNames from "classnames";
 type Props = {
   className?: string;
+  loading?: boolean;
   selectedDate: string[];
   setSelectedDate: (data: string[]) => void;
   setFilterDateType?: (text: FilterDateType) => void;
 };
 
 const DateRangePicker = ({
+  loading,
   className,
   selectedDate,
   setSelectedDate,
@@ -49,7 +51,7 @@ const DateRangePicker = ({
   );
 
   const handleNext = () => {
-    if (selectedDate) {
+    if (selectedDate && !loading) {
       if (dateRangeType.includes("month")) {
         const date3 = dayjs(selectedDate[1]).add(1, "day").startOf("month");
         const date4 = dayjs(date3).endOf("month");
@@ -70,7 +72,7 @@ const DateRangePicker = ({
     }
   };
   const handlePreviousClick = () => {
-    if (selectedDate) {
+    if (selectedDate && !loading) {
       if (dateRangeType.includes("month")) {
         const date3 = dayjs(selectedDate[0])
           .subtract(1, "day")
@@ -137,12 +139,14 @@ const DateRangePicker = ({
         <CalendarOutlined size={20} />
       </Tooltip>
       <div className="flex w-full items-center">
-        <div
+        <Button
+          type="text"
           className="cursor-pointer rounded-l bg-inherit bg-thirdLight py-1.5 pl-1.5 text-xl hover:bg-[#F3F4F6]"
           onClick={handlePreviousClick}
+          disabled={loading}
         >
           <LuChevronLeft />
-        </div>
+        </Button>
         <Dropdown
           className="flex cursor-pointer items-center bg-gray-50 p-1.5 hover:bg-gray-100"
           menu={menuProps}
@@ -210,7 +214,7 @@ const DateRangePicker = ({
                 >
                   <Button
                     className="flex w-full items-center pl-1.5 text-left hover:bg-gray-100"
-                    type="ghost"
+                    type="text"
                     style={{
                       clear: "both",
                       margin: 0,
@@ -218,7 +222,7 @@ const DateRangePicker = ({
                       fontSize: "14px",
                       lineHeight: 1.5714285714285714,
                       cursor: "pointer",
-                      transition: " all 0.2s",
+                      transition: "all 0.2s",
                       borderRadius: "4px",
                     }}
                     onClick={() => setCustomDateOpen(!customDateOpen)}
@@ -241,12 +245,14 @@ const DateRangePicker = ({
             <DownArrowIconSvg />
           </div>
         </Dropdown>
-        <div
-          className="cursor-pointer rounded-r bg-thirdLight py-1.5 pr-1.5 text-xl hover:bg-[#F3F4F6]"
+        <Button
+          type="text"
+          disabled={loading}
           onClick={handleNext}
+          className="cursor-pointer rounded-r bg-thirdLight py-1.5 pr-1.5 text-xl hover:bg-[#F3F4F6]"
         >
           <LuChevronRight />
-        </div>
+        </Button>
       </div>
     </div>
   );

@@ -34,6 +34,7 @@ const Navbar = ({ extraComponent, collapsed, toggleCollapsed }: Props) => {
   const [userDetails, setUserDetails] = useState<LoginResponseDto>();
   const [editing, setEditing] = useState(false);
   const [form] = Form.useForm();
+  const formFieldId = Form.useWatch("id", form);
 
   const path = router.asPath;
   const pageId = router.query?.reportPageId
@@ -105,6 +106,15 @@ const Navbar = ({ extraComponent, collapsed, toggleCollapsed }: Props) => {
     if (!userDetails && tmp) setUserDetails(tmp);
   }, [userDetails, path]);
 
+  useEffect(() => {
+    if (pageId !== formFieldId && reportPageData) {
+      form.setFieldsValue({
+        name: reportPageData.name,
+        id: reportPageData.id,
+      });
+    }
+  }, [pageId]);
+
   return (
     <div className="flex h-16 w-full items-center justify-between border-b border-b-gray-100 bg-white px-2 md:px-8">
       <div className="flex items-center justify-center gap-4 py-6">
@@ -131,9 +141,13 @@ const Navbar = ({ extraComponent, collapsed, toggleCollapsed }: Props) => {
                   {router.asPath.includes("report") && reportPageData?.name ? (
                     <div onClick={() => setEditing(true)}>
                       <Form
+                        form={form}
                         name="titleEdit"
                         onFinish={onFinish}
-                        initialValues={{ name: reportPageData?.name }}
+                        initialValues={{
+                          name: reportPageData?.name,
+                          id: reportPageData?.id,
+                        }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             form.submit();
@@ -143,6 +157,9 @@ const Navbar = ({ extraComponent, collapsed, toggleCollapsed }: Props) => {
                           }
                         }}
                       >
+                        <Form.Item hidden={true} name="id" className="m-0">
+                          <Input />
+                        </Form.Item>
                         <div className="flex items-center gap-2  text-base font-semibold">
                           <Form.Item
                             name="name"
@@ -189,8 +206,8 @@ const Navbar = ({ extraComponent, collapsed, toggleCollapsed }: Props) => {
       <div className="flex items-center gap-4">
         {syncing && (
           <Tooltip
-            placement="bottom"
             title={"Syncing"}
+            placement="bottom"
             className="flex h-9 w-9 cursor-pointer items-center justify-center text-green-500"
           >
             <SyncOutlined spin={syncing} />
@@ -199,8 +216,8 @@ const Navbar = ({ extraComponent, collapsed, toggleCollapsed }: Props) => {
         {isAuthorizationNeeded && (
           <Button
             htmlType="button"
-            className="flex items-center border-none bg-red-600 py-4 font-bold text-white hover:text-white"
             onClick={handleReauthorization}
+            className="flex items-center border-none bg-red-600 py-4 font-bold text-white hover:text-white"
           >
             {`Authorize ${reauthorizationType}`}
           </Button>

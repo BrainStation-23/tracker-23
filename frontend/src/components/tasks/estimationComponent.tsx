@@ -36,7 +36,10 @@ const EstimationComponent = ({ task, handleEstimationChange }: Props) => {
   };
 
   return (
-    <div className={`group cursor-default`}>
+    <div
+      className={`group cursor-default`}
+      onClick={(event) => event.stopPropagation()}
+    >
       {editing ? (
         <Form
           form={form}
@@ -94,7 +97,7 @@ const EstimationComponent = ({ task, handleEstimationChange }: Props) => {
           </Tooltip>
         </Form>
       ) : (
-        <div className=" flex justify-center gap-2">
+        <div className="flex justify-center gap-2">
           {task.estimation ? (
             <div className="text-center">
               <FormatTimeForSettings time={task.estimation} />

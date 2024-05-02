@@ -97,7 +97,7 @@ model User {
   updatedAt            DateTime        @updatedAt
   passwordResetToken   String?
   passwordResetExpires DateTime?
-  approved             Boolean?        @default(false)
+  approved             Boolean?        @default(true)
   status               UserStatus?
   onboadingSteps       Json[]
   userWorkspaces       UserWorkspace[] @relation("User")

@@ -455,6 +455,7 @@ export class TasksService {
           projectName: project?.projectName,
           projectId: project?.id,
           createdAt: dto.startDate,
+          updatedAt: dto.startDate,
         },
       });
 
@@ -1135,6 +1136,11 @@ export class TasksService {
     return await this.syncCall(StatusEnum.IN_PROGRESS, user);
   }
 
+  async reload(user: User) {
+    this.sendQueue(user, QueuePayloadType.RELOAD);
+    return await this.syncCall(StatusEnum.IN_PROGRESS, user);
+  }
+
   async syncAndGetTasks(user: User, projectId: number) {
     this.sendQueue(user, QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK, projectId);
     return await this.syncCall(StatusEnum.IN_PROGRESS, user);
@@ -1287,10 +1293,6 @@ export class TasksService {
             userIntegration,
             this.jiraApiCalls.getTransitions,
             url,
-          );
-          console.log(
-            '🚀 ~ TasksService ~ updateIssueStatus ~ transitions:',
-            transitions,
           );
 
           for (const transition of transitions) {

@@ -5,7 +5,7 @@ import { useState } from "react";
 import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
 import PinFilledIconSvg from "@/assets/svg/PinFilledIconSvg";
 import PinIconSvg from "@/assets/svg/PinIconSvg";
-import { EditOutlined, MoreOutlined } from "@ant-design/icons";
+import { EditOutlined } from "@ant-design/icons";
 import { LuMoreVertical } from "react-icons/lu";
 
 type Props = {
@@ -28,11 +28,9 @@ const MoreFunctionComponent = ({
       key: "1",
       label: (
         <Button
-          className=" flex items-center gap-2 p-1"
-          onClick={() => {
-            handleAddManualWorkLog(task);
-          }}
-          type="ghost"
+          className=" flex items-center gap-2 px-2 py-1"
+          onClick={() => handleAddManualWorkLog(task)}
+          type="text"
         >
           <EditOutlined />
           Add Work Log
@@ -43,11 +41,9 @@ const MoreFunctionComponent = ({
       key: "2",
       label: (
         <Button
-          className="flex w-full gap-2 p-1"
-          onClick={() => {
-            deleteTask(task.id);
-          }}
-          type="ghost"
+          className="flex w-full gap-2 px-2 py-1"
+          onClick={() => deleteTask(task.id)}
+          type="text"
         >
           <DeleteIconSvg />
           Delete
@@ -58,11 +54,9 @@ const MoreFunctionComponent = ({
       key: "3",
       label: (
         <Button
-          className=" flex w-full gap-3 p-1"
-          onClick={() => {
-            handlePin(task);
-          }}
-          type="ghost"
+          className=" flex w-full gap-3 px-2 py-1"
+          onClick={() => handlePin(task)}
+          type="text"
         >
           {task.pinned ? <PinFilledIconSvg /> : <PinIconSvg />}
           {task.pinned ? "Unpin" : "Pin"}
@@ -79,16 +73,14 @@ const MoreFunctionComponent = ({
   return (
     <Dropdown
       menu={menuProps}
-      placement="bottomRight"
       open={dropDownOpen}
-      onOpenChange={(open) => {
-        setDropdownOpen(open);
-      }}
+      placement="bottomRight"
+      onOpenChange={(open) => setDropdownOpen(open)}
       dropdownRender={(menu: React.ReactNode) => (
         <div className="custom-dropdown-bg float-right">{menu}</div>
       )}
       trigger={["click"]}
-      className="custom-dropdown-bg flex h-[33px] items-center justify-center rounded-lg border-[1px]  p-2"
+      className="custom-dropdown-bg flex h-8 items-center justify-center rounded-lg border-[1px]  p-2"
     >
       <div>
         <LuMoreVertical />

@@ -10,14 +10,16 @@ import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 type Props = {
   task: TaskDto;
   children: any;
-  selectedStatus: StatusType;
+  isDisabled: boolean;
   setLoading: Function;
+  selectedStatus: StatusType;
   handleStatusChange: Function;
 };
 
 const StatusDropdownComponent = ({
   task,
   children,
+  isDisabled,
   selectedStatus,
   handleStatusChange,
 }: Props) => {
@@ -37,7 +39,7 @@ const StatusDropdownComponent = ({
       key: `${Math.random()}`,
       label: (
         <div
-          className="flex flex-col gap-2"
+          className="class-1 flex flex-col gap-2"
           onClick={() => {
             updateStatus(status);
           }}
@@ -77,7 +79,7 @@ const StatusDropdownComponent = ({
   );
   const menuProps = {
     items,
-    onClick: () => {},
+    // onClick: () => {},
   };
 
   const updateStatus = async (value: StatusType) => {
@@ -93,14 +95,18 @@ const StatusDropdownComponent = ({
   return (
     <Dropdown
       menu={menuProps}
-      dropdownRender={dropdownRender}
       trigger={["click"]}
-      className="w-max cursor-pointer"
+      disabled={isDisabled}
       placement="bottomLeft"
+      dropdownRender={dropdownRender}
+      className="w-max cursor-pointer"
     >
       <div
-        className="relative flex h-10 items-center p-2"
-        onClick={() => setDropdownOpen(!dropDownOpen)}
+        onClick={(event) => {
+          event.stopPropagation();
+          setDropdownOpen(!dropDownOpen);
+        }}
+        className="class-2 relative flex h-10 items-center p-2"
       >
         {children}
       </div>

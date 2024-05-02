@@ -100,17 +100,19 @@ const TasksPage = () => {
           setViewModalOpen(false);
           getTasks();
         } else {
-          setTasks((tasks) => [res, ...tasks]);
-          if (tasks) {
-            tasks.map((task) => {
-              if (
-                task.sessions &&
-                task.sessions[task.sessions?.length - 1]?.status === "STARTED"
-              ) {
-                setRunningTask(task);
-              }
-            });
-          }
+          getTasks();
+
+          // setTasks((tasks) => [res, ...tasks]);
+          // if (tasks) {
+          //   tasks.map((task) => {
+          //     if (
+          //       task.sessions &&
+          //       task.sessions[task.sessions?.length - 1]?.status === "STARTED"
+          //     ) {
+          //       setRunningTask(task);
+          //     }
+          //   });
+          // }
         }
       }
       setViewModalOpen(false);
@@ -438,7 +440,7 @@ const TasksPage = () => {
         setRunningTask,
       }}
     >
-      <div className="h-full overflow-y-auto px-8 pt-2">
+      <div className="h-full overflow-y-auto px-4 pt-2 md:px-8">
         <div className="mb-4 flex justify-between">
           <h2 className="text-2xl font-bold">Tasks</h2>
           <PrimaryButton onClick={() => setViewModalOpen(true)}>
@@ -463,6 +465,7 @@ const TasksPage = () => {
           <TopPanel
             {...{
               tasks,
+              loading,
               activeTab,
               setActiveTab,
               searchParams,
@@ -511,20 +514,20 @@ const TasksPage = () => {
                 <TableComponent
                   tasks={getPinnedTasks()}
                   {...{
-                    runningTask,
-                    setSelectedTask,
-                    setTaskViewModalOpen,
-                    setManualTimeEntryModalOpen,
-                    deleteTask,
-                    startSession,
-                    stopSession,
-                    setReload,
                     reload,
-                    sessionActionLoading,
+                    setReload,
+                    deleteTask,
                     setLoading,
-                    handleStatusChange,
-                    handleEstimationChange,
+                    runningTask,
+                    stopSession,
+                    startSession,
                     handlePinTask,
+                    setSelectedTask,
+                    handleStatusChange,
+                    setTaskViewModalOpen,
+                    sessionActionLoading,
+                    handleEstimationChange,
+                    setManualTimeEntryModalOpen,
                   }}
                 />
               </div>

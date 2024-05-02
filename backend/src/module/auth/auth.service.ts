@@ -108,9 +108,7 @@ export class AuthService {
     }
 
     const code = `${Math.floor(Math.random() * 900000) + 100000}`;
-    const expireTime = new Date();
-    expireTime.setDate(expireTime.getMinutes() + 2);
-
+    const expireTime = new Date(new Date().getTime() + 2 * 60 * 1000);
     const doesExistUserOTP = await this.usersDatabase.getUserOTP(dto.email);
     const userOTPData = {
       email,
@@ -186,11 +184,21 @@ export class AuthService {
 
     // Fetch the user OTP data
     const userOTPData = await this.usersDatabase.getUserOTP(email);
+    console.log('🚀 ~ AuthService ~ userOTPData:', userOTPData);
 
     // Check if user OTP data exists and the provided OTP code matches
     if (userOTPData && userOTPData.code === code) {
+      console.log(
+        '🚀 ~ AuthService ~ userOTPData.code === code:',
+        userOTPData.code === code,
+      );
       // Check if the OTP has not expired
       const currentDateTime = new Date();
+      console.log(
+        '🚀 ~ AuthService ~ currentDateTime:',
+        currentDateTime,
+        new Date(userOTPData.expireTime),
+      );
       if (currentDateTime <= new Date(userOTPData.expireTime)) {
         return true; // OTP is valid and not expired
       }

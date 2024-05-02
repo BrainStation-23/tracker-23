@@ -25,13 +25,13 @@ const TaskListReportComponent = ({
 }) => {
   const columns: any = [
     {
+      key: "title",
       title: "Title",
       dataIndex: "title",
-      key: "title",
       render: (_: any, { title }: TaskDto) => (
         <div className="w-min text-left">
           <Text
-            className=" mx-auto w-[220px] font-semibold"
+            className="mx-auto max-w-[200px] font-semibold"
             ellipsis={{
               tooltip: title,
             }}
@@ -49,7 +49,7 @@ const TaskListReportComponent = ({
         }
         return -1;
       },
-      align: "center",
+      align: "left",
     },
     {
       title: "Project / Calendar",

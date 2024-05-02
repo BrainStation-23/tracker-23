@@ -39,9 +39,9 @@ export class TasksController {
 
   async onApplicationBootstrap() {
     await this.rabbitMQService.connect();
-    console.log('hello from starting consume');
     await Promise.all([
       this.rabbitMQService.consume(QueuePayloadType.SYNC_ALL),
+      this.rabbitMQService.consume(QueuePayloadType.RELOAD),
       this.rabbitMQService.consume(QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK),
     ]);
   }
@@ -122,6 +122,12 @@ export class TasksController {
   @UseGuards(JwtAuthGuard)
   async syncAll(@GetUser() user: User) {
     return await this.tasksService.syncAll(user);
+  }
+
+  @Get('reload')
+  @UseGuards(JwtAuthGuard)
+  async reload(@GetUser() user: User) {
+    return await this.tasksService.reload(user);
   }
 
   @Patch('update/status/:taskId')
