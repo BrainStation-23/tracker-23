@@ -1,35 +1,43 @@
-import {
-  Button,
-  Table,
-  TablePaginationConfig,
-  Tooltip,
-  Typography,
-} from "antd";
-import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 import Link from "next/link";
 import { useState } from "react";
-import { TableParams, TaskDto } from "models/tasks";
+import {
+  Table,
+  Button,
+  Tooltip,
+  Typography,
+  TablePaginationConfig,
+} from "antd";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 
-import PauseIconSvg from "@/assets/svg/pauseIconSvg";
+// Model
+import { TableParams, TaskDto } from "models/tasks";
+
+// Assets
+import PinIconSvg from "@/assets/svg/PinIconSvg";
 import PlayIconSvg from "@/assets/svg/playIconSvg";
-import { integrationIcons } from "@/components/integrations/components/importCard";
-import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
-import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";
+import PauseIconSvg from "@/assets/svg/pauseIconSvg";
+import PinFilledIconSvg from "@/assets/svg/PinFilledIconSvg";
+
+// Services
 import {
   formatDate,
   getFormattedTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
+import { urlToKeyword } from "@/services/helpers";
+import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
+import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";
 
+// Components
 import MoreFunctionComponent from "./moreFunction";
-import TimeDisplayComponent from "./timeDisplayComponent";
-import PinFilledIconSvg from "@/assets/svg/PinFilledIconSvg";
-import PinIconSvg from "@/assets/svg/PinIconSvg";
 import StatusDropdownComponent from "./statusDropdown";
 import EstimationComponent from "./estimationComponent";
-import { urlToKeyword } from "@/services/helpers";
+import TimeDisplayComponent from "./timeDisplayComponent";
+import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
+import { integrationIcons } from "@/components/integrations/components/importCard";
+
 const { Text } = Typography;
+
 const TableComponent = ({
   tasks,
   deleteTask,
@@ -47,24 +55,24 @@ const TableComponent = ({
 }: any) => {
   const columns: any = [
     {
+      key: "title",
       title: "Task Name",
       dataIndex: "title",
-      key: "title",
       render: (_: any, task: TaskDto) => {
         return (
           <div
-            className="flex items-center gap-2"
             aria-disabled="true"
             onClick={() => {
               setSelectedTask(task);
               setTaskViewModalOpen(true);
             }}
+            className="flex items-center gap-2"
           >
             {task.pinned && (
               <Tooltip title={`Click To ${task.pinned ? "unpin" : "pin"}`}>
                 <Button
-                  className="absolute left-0 top-0 flex gap-3 p-1"
                   onClick={() => handlePin(task)}
+                  className="absolute left-0 top-0 flex gap-3 p-1"
                 >
                   {task.pinned ? <PinFilledIconSvg /> : <PinIconSvg />}
                 </Button>
@@ -145,8 +153,8 @@ const TableComponent = ({
         <StatusDropdownComponent
           task={task}
           setLoading={setLoading}
-          isDisabled={runningTask?.id === task.id}
           handleStatusChange={handleStatusChange}
+          isDisabled={runningTask?.id === task.id}
           selectedStatus={{
             name: task.status,
             statusCategoryName: task.statusCategoryName,
@@ -169,9 +177,7 @@ const TableComponent = ({
               }}
             />
             <div className="max-w-[90px]">
-              <Text className="" ellipsis={{ tooltip: task?.status }}>
-                {task.status}
-              </Text>
+              <Text ellipsis={{ tooltip: task?.status }}>{task.status}</Text>
             </div>
           </div>
         </StatusDropdownComponent>
@@ -179,31 +185,30 @@ const TableComponent = ({
     },
     {
       title: "Source",
-      dataIndex: "dataSource",
-      key: "dataSource",
       align: "center",
+      key: "dataSource",
+      dataIndex: "dataSource",
       render: (dataSource: string, task: TaskDto) => (
-        <div
-          className="flex max-w-[150px] items-center gap-2"
-          onClick={(event) => event.stopPropagation()}
-        >
+        <div className="flex max-w-[150px] items-center gap-2">
           <div>{integrationIcons[task.source]} </div>
-          {dataSource && (
-            <Link target="_blank" href={dataSource}>
-              {urlToKeyword(task.source, dataSource)}
-            </Link>
-          )}
+          {dataSource &&
+            (task.source === "TRACKER23" ? (
+              <>{urlToKeyword(task.source, dataSource)}</>
+            ) : (
+              <Link target="_blank" href={dataSource}>
+                {urlToKeyword(task.source, dataSource)}
+              </Link>
+            ))}
         </div>
       ),
     },
     {
       title: "Created",
-      dataIndex: "createdAt",
       key: "createdAt",
-      render: (createdAt: string) => {
-        return <>{getFormattedTime(formatDate(createdAt))}</>;
-      },
-
+      dataIndex: "createdAt",
+      render: (createdAt: string) => (
+        <>{getFormattedTime(formatDate(createdAt))}</>
+      ),
       sorter: (a: any, b: any) => {
         const aCreated = new Date(a.created);
         const bCreated = new Date(b.created);
@@ -219,10 +224,10 @@ const TableComponent = ({
       },
     },
     {
-      title: "Started",
-      dataIndex: "started",
       key: "started",
       align: "center",
+      title: "Started",
+      dataIndex: "started",
       render: (_: any, task: TaskDto) => (
         <>
           {task.sessions?.length > 0
@@ -235,9 +240,10 @@ const TableComponent = ({
       },
     },
     {
-      title: "Ended",
-      dataIndex: "ended",
       key: "ended",
+      title: "Ended",
+      align: "center",
+      dataIndex: "ended",
       render: (ended: any, task: TaskDto) => (
         <>
           {task.sessions?.length > 0 && !checkIfRunningTask(task.sessions)
@@ -249,22 +255,21 @@ const TableComponent = ({
             : "Not Started"}
         </>
       ),
-      align: "center",
     },
     {
+      key: "estimation",
       title: "Estimation",
       dataIndex: "estimation",
-      key: "estimation",
       render: (_: any, task: TaskDto) => (
         <EstimationComponent {...{ task, handleEstimationChange }} />
       ),
       sorter: (a: any, b: any) => a.estimation - b.estimation,
     },
     {
-      title: "Total Spent",
-      dataIndex: "total",
       key: "total",
       align: "center",
+      dataIndex: "total",
+      title: "Total Spent",
       render: (_: any, task: TaskDto) =>
         runningTask?.id !== task.id ? (
           <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
@@ -278,15 +283,12 @@ const TableComponent = ({
         getTotalSpentTime(a.sessions) - getTotalSpentTime(b.sessions),
     },
     {
-      title: "",
-      dataIndex: "",
       key: "",
+      title: "",
       width: 70,
+      dataIndex: "",
       render: (_: any, task: TaskDto) => (
-        <div
-          className="flex cursor-pointer justify-end gap-2"
-          onClick={(event) => event.stopPropagation()}
-        >
+        <div className="flex cursor-pointer justify-end gap-2">
           <MoreFunctionComponent
             {...{ task, deleteTask, handlePin, handleAddManualWorkLog }}
           />
@@ -298,8 +300,8 @@ const TableComponent = ({
     pagination: {
       current: 1,
       pageSize: 10,
-      showSizeChanger: true,
       showLessItems: true,
+      showSizeChanger: true,
       position: ["bottomRight", "bottomLeft"],
     },
   });
@@ -335,18 +337,10 @@ const TableComponent = ({
       columns={columns}
       dataSource={tasks}
       scroll={{ x: 1500 }}
-      onRow={(task) => {
-        return {
-          onClick: () => {
-            setSelectedTask(task);
-            setTaskViewModalOpen(true);
-          },
-        };
-      }}
       rowKey={(task) => task.id}
-      pagination={tableParams.pagination}
-      rowClassName={getRowClassName}
       onChange={handleTableChange}
+      rowClassName={getRowClassName}
+      pagination={tableParams.pagination}
     />
   );
 };

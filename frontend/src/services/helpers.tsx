@@ -35,7 +35,7 @@ export function urlToKeyword(source: IntegrationType, url: string) {
       key = "Card Link";
       break;
     default:
-      key = "TRACKER23 Task Link";
+      key = "TRACKER23";
       break;
   }
   return key;

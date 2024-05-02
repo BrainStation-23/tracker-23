@@ -39,7 +39,7 @@ const StatusDropdownComponent = ({
       key: `${Math.random()}`,
       label: (
         <div
-          className="flex flex-col gap-2"
+          className="class-1 flex flex-col gap-2"
           onClick={() => {
             updateStatus(status);
           }}
@@ -79,7 +79,7 @@ const StatusDropdownComponent = ({
   );
   const menuProps = {
     items,
-    onClick: () => {},
+    // onClick: () => {},
   };
 
   const updateStatus = async (value: StatusType) => {
@@ -106,7 +106,7 @@ const StatusDropdownComponent = ({
           event.stopPropagation();
           setDropdownOpen(!dropDownOpen);
         }}
-        className="relative flex h-10 items-center p-2"
+        className="class-2 relative flex h-10 items-center p-2"
       >
         {children}
       </div>
