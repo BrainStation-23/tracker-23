@@ -100,17 +100,19 @@ const TasksPage = () => {
           setViewModalOpen(false);
           getTasks();
         } else {
-          setTasks((tasks) => [res, ...tasks]);
-          if (tasks) {
-            tasks.map((task) => {
-              if (
-                task.sessions &&
-                task.sessions[task.sessions?.length - 1]?.status === "STARTED"
-              ) {
-                setRunningTask(task);
-              }
-            });
-          }
+          getTasks();
+
+          // setTasks((tasks) => [res, ...tasks]);
+          // if (tasks) {
+          //   tasks.map((task) => {
+          //     if (
+          //       task.sessions &&
+          //       task.sessions[task.sessions?.length - 1]?.status === "STARTED"
+          //     ) {
+          //       setRunningTask(task);
+          //     }
+          //   });
+          // }
         }
       }
       setViewModalOpen(false);
