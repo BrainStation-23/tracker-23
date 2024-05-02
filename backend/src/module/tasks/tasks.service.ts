@@ -1293,10 +1293,6 @@ export class TasksService {
             this.jiraApiCalls.getTransitions,
             url,
           );
-          console.log(
-            '🚀 ~ TasksService ~ updateIssueStatus ~ transitions:',
-            transitions,
-          );
 
           for (const transition of transitions) {
             if (task.projectId && statusNames.includes(transition.name)) {

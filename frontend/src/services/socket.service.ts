@@ -26,6 +26,7 @@ export async function initializeSocket(getCookie: string) {
   });
   const loggedInUser: LoginResponseDto = getLocalStorage("userDetails");
   socket.on(`${loggedInUser.id}`, (payload) => {
+    console.log("🚀 ~ socket.on ~ payload:",loggedInUser.id, payload);
     store.dispatch(addNotification(payload));
   });
 }
