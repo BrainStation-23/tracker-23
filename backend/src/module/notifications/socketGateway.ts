@@ -32,7 +32,6 @@ export class MyGateway implements OnModuleInit {
       const token = socket.handshake.headers.cookie_token;
       console.log(
         '🚀 ~ MyGateway ~ this.server.use ~ cookieString:',
-        socket.handshake,
         socket.handshake.headers,
       );
       // const token = cookieString;
@@ -77,13 +76,8 @@ export class MyGateway implements OnModuleInit {
   }
 
   sendNotification(userId: string, data: any) {
-    // console.log(userId, data);
-    console.log(
-      '🚀 ~ MyGateway ~ sendNotification ~ CONNECTIONS:',
-      CONNECTIONS,
-    );
-    const not = CONNECTIONS.get(userId)?.emit('onNotification', data);
-    // const not = this.server.emit(eventName, data);
+    // const not = CONNECTIONS.get(userId)?.emit('onNotification', data);
+    const not = CONNECTIONS.get(userId)?.emit(userId, data);
     console.log(
       '🚀 ~ file: socketGateway.ts:63 ~ MyGateway ~ sendNotification ~ not:',
       not,
