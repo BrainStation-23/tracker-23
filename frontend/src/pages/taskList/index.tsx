@@ -72,11 +72,11 @@ const TasksPage = () => {
     router.query.tab === "pin" ? "Pin" : "All"
   );
   const [searchParams, setSearchParams] = useState<SearchParamsModel>({
-    searchText: "",
     selectedDate: getDateRangeArray("this-week"),
+    searchText: "",
     priority: [],
-    status: [],
     sprints: [],
+    status: [],
     types: [],
   });
   const [searchParamsActiveSprint, setSearchParamsActiveSprint] = useState({
@@ -95,32 +95,14 @@ const TasksPage = () => {
     try {
       const res = await userAPI.createTask(data);
       if (res) {
+        getTasks();
         message.success("Task created successfully");
-        if (data.isRecurrent) {
-          setViewModalOpen(false);
-          getTasks();
-        } else {
-          getTasks();
-
-          // setTasks((tasks) => [res, ...tasks]);
-          // if (tasks) {
-          //   tasks.map((task) => {
-          //     if (
-          //       task.sessions &&
-          //       task.sessions[task.sessions?.length - 1]?.status === "STARTED"
-          //     ) {
-          //       setRunningTask(task);
-          //     }
-          //   });
-          // }
-        }
       }
-      setViewModalOpen(false);
     } catch (error) {
       message.error("Error creating task");
-      setViewModalOpen(false);
     } finally {
       setLoading(false);
+      setViewModalOpen(false);
     }
   };
 
@@ -384,25 +366,6 @@ const TasksPage = () => {
     }
   }, [syncRunning]);
 
-  // useEffect(() => {
-  //   const getSyncStatus = async () => {
-  //     const res = await userAPI.syncStatus();
-  //     res && dispatch(setSyncStatus(res));
-  //     if (res.status === "IN_PROGRESS") {
-  //       dispatch(setSyncRunning(true));
-  //     } else if (res.status === "DONE") {
-  //       syncRunning && message.success("Sync Completed");
-  //       dispatch(setSyncRunning(false));
-  //     }
-  //   };
-  //   let timeout: NodeJS.Timeout;
-  //   timeout =
-  //     !publicRoutes.some((route) => path.includes(route)) &&
-  //     setTimeout(getSyncStatus, 5000);
-
-  //   return () => clearTimeout(timeout);
-  // }, [publicRoutes.some((route) => path.includes(route))]);
-
   useEffect(() => {
     let myTimeout: NodeJS.Timeout;
 
@@ -435,7 +398,7 @@ const TasksPage = () => {
     <TaskContext.Provider
       value={{
         tasklist: tasks,
-        runningTask: runningTask,
+        runningTask,
         handleWarning,
         setRunningTask,
       }}

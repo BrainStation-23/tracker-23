@@ -35,23 +35,23 @@ const ForgotPasswordForm = ({ setIsModalOpen }: Props) => {
   return (
     <Form
       name="basic"
-      initialValues={{ remember: true }}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      requiredMark={false}
       layout="vertical"
       labelAlign="left"
+      onFinish={onFinish}
+      requiredMark={false}
       className="mx-auto w-full"
+      onFinishFailed={onFinishFailed}
+      initialValues={{ remember: true }}
     >
       <MyFormItem
-        label="Email Address"
-        className=" w-full"
         name="email"
+        className="w-full"
+        label="Email Address"
         rules={[
           {
-            type: "email",
             min: 0,
             max: 200,
+            type: "email",
             message: "Please input a valid email.",
           },
           { required: true, message: "Please input your email!" },

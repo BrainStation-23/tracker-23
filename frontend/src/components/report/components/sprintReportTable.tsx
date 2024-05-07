@@ -17,13 +17,13 @@ type Props = {
 const SprintReportTabel = ({ data, reportData }: Props) => {
   const columns: ColumnsType<ModifiesSprintReportUser> = [
     {
+      key: "date",
       title: "Date",
       dataIndex: "date",
-      key: "date",
       render: (text: string, record: ModifiesSprintReportUser) => ({
         children: (
           <Text
-            className="w-[200px] cursor-pointer font-semibold"
+            className="w-48 cursor-pointer font-semibold"
             ellipsis={{ tooltip: getFormattedTime(formatDate(text)) }}
           >
             {getFormattedTime(formatDate(text))}
@@ -41,23 +41,19 @@ const SprintReportTabel = ({ data, reportData }: Props) => {
       title: "Developer Name",
       dataIndex: "name",
       key: "name",
-      render: (text: string, record: ModifiesSprintReportUser) => {
+      render: (_: string, record: ModifiesSprintReportUser) => {
         return {
           children: (
             <div className="mx-auto flex w-fit items-center justify-center gap-2 ">
               {record?.picture ? (
-                <Avatar
-                  src={record.picture}
-                  alt="N"
-                  className="h-[20px] w-[20px]"
-                />
+                <Avatar src={record.picture} alt="N" className="h-5 w-5" />
               ) : (
                 <Avatar
                   src={
                     "https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
                   }
                   alt="N"
-                  className="h-[20px] w-[20px]"
+                  className="h-5 w-5"
                 />
               )}
               {record.name}

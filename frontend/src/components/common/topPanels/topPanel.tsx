@@ -68,7 +68,7 @@ const TopPanel = ({
   const [selectedSource, setSelectedSource] = useState(searchParams.types);
   const options = [
     { label: "Search", value: "Search" },
-    { label: "Priority", value: "Priority" },
+    // { label: "Priority", value: "Priority" },
     { label: "Status", value: "Status" },
     { label: "Project", value: "Project" },
     { label: "Calendar", value: "Calendar" },

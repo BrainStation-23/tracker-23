@@ -32,6 +32,7 @@ export type CreateTaskValues = {
 };
 
 export type TaskDto = {
+  totalSpent?: number;
   id: any;
   title: string;
   description: string;
@@ -59,6 +60,14 @@ export type TaskDto = {
   workspaceId: number;
   parentTaskId: number | null;
 };
+
+export interface IFormattedTask extends TaskDto {
+  startTime: Date;
+  endTime: Date;
+  total: string;
+  percentage: number;
+  totalSpent: number;
+}
 export interface TableParams {
   pagination?: TablePaginationConfig;
   sortField?: string;

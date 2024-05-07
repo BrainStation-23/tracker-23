@@ -84,7 +84,11 @@ const TaskDetailsModal = ({
             <span className="w-[120px] text-sm font-semibold text-secondary ">
               TItle
             </span>
-            <span className="font-medium">{task?.title}</span>
+            <span className="font-medium">
+              {task?.title.length > 80
+                ? task?.title.slice(0, 80) + " ..."
+                : task?.title}
+            </span>
           </div>
           <div className="flex items-center gap-4">
             <span className="w-[120px] text-sm font-semibold text-secondary ">
