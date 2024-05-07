@@ -455,6 +455,7 @@ export class TasksService {
           projectName: project?.projectName,
           projectId: project?.id,
           createdAt: dto.startDate,
+          updatedAt: dto.startDate,
         },
       });
 
