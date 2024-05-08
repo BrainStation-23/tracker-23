@@ -31,9 +31,9 @@ import TimeSheetReport from "./singleReports/timeSheetReport";
 import { useRouter } from "next/router";
 
 export default function ReportPageComponent({ pageId }: { pageId: number }) {
+  const router = useRouter();
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const router = useRouter();
 
   const reportPageData = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages

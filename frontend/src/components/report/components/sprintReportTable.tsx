@@ -7,6 +7,7 @@ import { formatDate, getFormattedTime } from "@/services/timeActions";
 import ProgressComponent from "./progressComponent";
 import { ReportData } from "@/storage/redux/reportsSlice";
 import EditReportConfigComponent from "./editReportConfigComponent";
+import { useState } from "react";
 
 const { Text } = Typography;
 type Props = {
@@ -15,25 +16,50 @@ type Props = {
 };
 
 const SprintReportTabel = ({ data, reportData }: Props) => {
+  const [paginationState, setPaginationState] = useState({
+    page: 1,
+    pageSize: 10,
+  });
+
   const columns: ColumnsType<ModifiesSprintReportUser> = [
     {
       key: "date",
       title: "Date",
       dataIndex: "date",
-      render: (text: string, record: ModifiesSprintReportUser) => ({
-        children: (
-          <Text
-            className="w-48 cursor-pointer font-semibold"
-            ellipsis={{ tooltip: getFormattedTime(formatDate(text)) }}
-          >
-            {getFormattedTime(formatDate(text))}
-          </Text>
-        ),
-        props: {
-          rowSpan: record.dateColSpan,
-          style: record.dateCellStyle,
-        },
-      }),
+      render: (
+        value: string,
+        record: ModifiesSprintReportUser,
+        index: number
+      ) => {
+        const trueIndex =
+          index + paginationState.pageSize * (paginationState.page - 1);
+        let calculatedRowSpan = record.dateColSpan;
+        if (index >= 1 && value === data[trueIndex - 1].date) {
+          calculatedRowSpan = 0;
+        } else {
+          for (
+            let i = 0;
+            trueIndex + i !== data.length && value === data[trueIndex + i].date;
+            i += 1
+          ) {
+            calculatedRowSpan = i + 1;
+          }
+        }
+        return {
+          children: (
+            <Text
+              className="w-48 cursor-pointer font-semibold"
+              ellipsis={{ tooltip: getFormattedTime(formatDate(value)) }}
+            >
+              {getFormattedTime(formatDate(value))}
+            </Text>
+          ),
+          props: {
+            rowSpan: calculatedRowSpan,
+            style: record.dateCellStyle,
+          },
+        };
+      },
       width: 200,
       align: "center",
     },
@@ -41,7 +67,38 @@ const SprintReportTabel = ({ data, reportData }: Props) => {
       title: "Developer Name",
       dataIndex: "name",
       key: "name",
-      render: (_: string, record: ModifiesSprintReportUser) => {
+      render: (
+        value: string,
+        record: ModifiesSprintReportUser,
+        index: number
+      ) => {
+        const trueIndex =
+          index + paginationState.pageSize * (paginationState.page - 1);
+        let calculatedRowSpan = record.userSpan;
+
+        if (!(trueIndex % (paginationState.pageSize - 1))) {
+          for (
+            let i = 0;
+            trueIndex + i !== data.length &&
+            value === data[trueIndex + i].name &&
+            record.date === data[trueIndex + i].date;
+            i += 1
+          ) {
+            calculatedRowSpan = i + 1;
+          }
+        } else if (index >= 1 && value === data[trueIndex - 1].name) {
+          calculatedRowSpan = 0;
+        } else {
+          for (
+            let i = 0;
+            trueIndex + i !== data.length &&
+            value === data[trueIndex + i].name &&
+            record.date === data[trueIndex + i].date;
+            i += 1
+          ) {
+            calculatedRowSpan = i + 1;
+          }
+        }
         return {
           children: (
             <div className="mx-auto flex w-fit items-center justify-center gap-2 ">
@@ -49,18 +106,16 @@ const SprintReportTabel = ({ data, reportData }: Props) => {
                 <Avatar src={record.picture} alt="N" className="h-5 w-5" />
               ) : (
                 <Avatar
-                  src={
-                    "https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
-                  }
                   alt="N"
                   className="h-5 w-5"
+                  src="https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
                 />
               )}
               {record.name}
             </div>
           ),
           props: {
-            rowSpan: record.userSpan,
+            rowSpan: calculatedRowSpan,
             style: record.style,
           },
         };
@@ -109,9 +164,9 @@ const SprintReportTabel = ({ data, reportData }: Props) => {
       align: "center",
     },
     {
+      key: "yesterdayTask",
       title: "Yesterday Task",
       dataIndex: "yesterdayTasks",
-      key: "yesterdayTask",
       render: (task: SprintReportTask, record: ModifiesSprintReportUser) => {
         if (record.yesterdayTask)
           return {
@@ -142,9 +197,9 @@ const SprintReportTabel = ({ data, reportData }: Props) => {
       align: "center",
     },
     {
+      key: "todaysTask",
       title: "Today's Task",
       dataIndex: "todayTasks",
-      key: "todaysTask",
       render: (task: SprintReportTask, record: ModifiesSprintReportUser) => {
         if (record.todayTask)
           return {
@@ -181,14 +236,16 @@ const SprintReportTabel = ({ data, reportData }: Props) => {
       {data?.length ? (
         <div className="flex flex-col gap-4">
           <Table
+            bordered
+            rowKey={"id"}
             columns={columns}
             dataSource={data}
-            rowKey={"id"}
-            bordered
             pagination={{
-              // pageSize: 100,
+              pageSize: paginationState.pageSize,
               // showSizeChanger: false,
               // showLessItems: true,
+              onChange: (page, pageSize) =>
+                setPaginationState({ page, pageSize }),
               position: ["bottomRight", "bottomLeft"],
             }}
             scroll={{ y: 600 }}
