@@ -230,9 +230,11 @@ const SprintViewTimelineReportTabel = ({ data, reportData }: Props) => {
       dataIndex: "name",
       fixed: "left",
       key: "name",
-      onCell: (record) => ({
-        rowSpan: record.userSpan,
-      }),
+      onCell: (record, index) => {
+        return {
+          rowSpan: index === 0 && record.groupRowIndex > 0 ? record.groupRows - record.groupRowIndex: record.userSpan,
+        }
+      },
       render: (
         _: string,
         record: SprintViewTimelineReportTableRow,
@@ -349,12 +351,12 @@ const SprintViewTimelineReportTabel = ({ data, reportData }: Props) => {
       <Table
         columns={columns}
         dataSource={data.rows}
-        rowKey={(rec) => rec.userId}
+        rowKey={(rec) => rec.rowKey }
         bordered
         pagination={{
           // current: 1,
           // pageSize: 500,
-          // showSizeChanger: false,
+          showSizeChanger: true,
           // showLessItems: true,
           position: ["bottomRight", "bottomLeft"],
         }}
