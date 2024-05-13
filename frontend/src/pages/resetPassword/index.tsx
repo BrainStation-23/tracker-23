@@ -1,9 +1,26 @@
 import Link from "next/link";
-import ResetPasswordForm from "./resetPasswordForm";
 import BSLogoWhiteSvg from "@/assets/svg/BSLogoWhiteSvg";
+import ResetPasswordForm from "@/components/resetPassword/resetPasswordForm";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { Spin } from "antd";
 
-const ResetPassword = () => {
-  return (
+const ResetPasswordPage = () => {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const token = router?.query?.resetPassword;
+    if (router.isReady && token) {
+      setIsLoading(false);
+    }
+    if (!token) {
+      router.push("/login");
+    }
+  }, [router, router.isReady]);
+  return isLoading ? (
+    <Spin spinning={isLoading} />
+  ) : (
     <div className="flex min-h-screen">
       <div className="flex w-full flex-row">
         <div className="m-4 hidden flex-col justify-between bg-blue-600 text-white lg:flex lg:max-w-sm lg:p-8 xl:max-w-lg xl:p-12">
@@ -38,7 +55,7 @@ const ResetPassword = () => {
               </Link>
             </div>
           </div>
-          <div className="m-auto flex h-screen w-[400px] items-center">
+          <div className="m-auto flex h-screen w-full items-center md:w-[400px]">
             <ResetPasswordForm />
           </div>
         </div>
@@ -47,4 +64,4 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;
+export default ResetPasswordPage;

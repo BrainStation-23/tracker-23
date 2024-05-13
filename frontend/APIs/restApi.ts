@@ -173,7 +173,7 @@ export async function logoutRest() {
   try {
     await disconnectSocket();
   } catch (error: any) {
-    message.error("Failed to disconnect socket");
+    console.error("Failed to disconnect socket");
   } finally {
     Router.push("/login");
   }
