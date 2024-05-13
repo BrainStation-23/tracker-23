@@ -34,7 +34,7 @@ import {
 } from "@/storage/redux/integrationsSlice";
 import { RootState } from "@/storage/redux/store";
 import { setUserSlice } from "@/storage/redux/userSlice";
-import { deleteFromLocalStorage } from "@/storage/storage";
+import { deleteFromLocalStorage, getLocalStorage } from "@/storage/storage";
 import { setPriorities } from "@/storage/redux/prioritySlice";
 import { setReportPages } from "@/storage/redux/reportsSlice";
 import { setProjectsSlice } from "@/storage/redux/projectsSlice";
@@ -244,7 +244,12 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
     ) && deleteFromLocalStorage("invitationCode");
 
     if (!isPublicRoute && !path.includes("socialLogin")) {
-      if (!(workspacesList?.length > 0)) {
+      const localData = getLocalStorage("userDetails");
+      if (
+        !(workspacesList?.length > 0) &&
+        localData &&
+        localData.access_token
+      ) {
         setLoading(true);
         getWorkspaces();
       } else setLoading(false);
@@ -252,7 +257,13 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
   }, [path]);
 
   useEffect(() => {
-    if (!isPublicRoute && !path.includes("socialLogin")) {
+    const localData = getLocalStorage("userDetails");
+    if (
+      !isPublicRoute &&
+      !path.includes("socialLogin") &&
+      localData &&
+      localData.access_token
+    ) {
       setLoading(true);
       getWorkspaces();
     }

@@ -1,8 +1,8 @@
 import Link from "next/link";
-import ResetPasswordForm from "./resetPasswordForm";
 import BSLogoWhiteSvg from "@/assets/svg/BSLogoWhiteSvg";
+import ResetPasswordForm from "@/components/resetPassword/resetPasswordForm";
 
-const ResetPassword = () => {
+const ResetPasswordPage = () => {
   return (
     <div className="flex min-h-screen">
       <div className="flex w-full flex-row">
@@ -38,7 +38,7 @@ const ResetPassword = () => {
               </Link>
             </div>
           </div>
-          <div className="m-auto flex h-screen w-[400px] items-center">
+          <div className="m-auto flex h-screen w-full items-center md:w-[400px]">
             <ResetPasswordForm />
           </div>
         </div>
@@ -47,4 +47,4 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;
+export default ResetPasswordPage;

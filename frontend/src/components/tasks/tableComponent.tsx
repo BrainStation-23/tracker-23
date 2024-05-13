@@ -264,8 +264,22 @@ const TableComponent = ({
         <>
           {task.sessions?.length > 0
             ? isMobile
-              ? new Date(task.sessions[0].startTime).toLocaleDateString()
-              : getFormattedTime(formatDate(task.sessions[0].startTime))
+              ? new Date(
+                  task.sessions.sort(
+                    (a, b) =>
+                      new Date(a.startTime).getTime() -
+                      new Date(b.startTime).getTime()
+                  )[0].startTime
+                ).toLocaleDateString()
+              : getFormattedTime(
+                  formatDate(
+                    task.sessions.sort(
+                      (a, b) =>
+                        new Date(a.startTime).getTime() -
+                        new Date(b.startTime).getTime()
+                    )[0].startTime
+                  )
+                )
             : "Not Started"}
         </>
       ),
@@ -278,15 +292,25 @@ const TableComponent = ({
       title: "Ended",
       align: "center",
       dataIndex: "ended",
-      render: (ended: any, task: TaskDto) => (
+      render: (_: any, task: TaskDto) => (
         <>
           {task.sessions?.length > 0 && !checkIfRunningTask(task.sessions)
             ? isMobile
               ? new Date(
-                  task.sessions[task.sessions?.length - 1]?.endTime
+                  task.sessions.sort(
+                    (a, b) =>
+                      new Date(a.endTime).getTime() -
+                      new Date(b.endTime).getTime()
+                  )[task.sessions?.length - 1].endTime
                 ).toLocaleDateString()
               : getFormattedTime(
-                  formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
+                  formatDate(
+                    task.sessions.sort(
+                      (a, b) =>
+                        new Date(a.endTime).getTime() -
+                        new Date(b.endTime).getTime()
+                    )[task.sessions?.length - 1].endTime
+                  )
                 )
             : task.sessions[0]
             ? "Running"
@@ -296,7 +320,6 @@ const TableComponent = ({
     },
     {
       width: 130,
-
       key: "estimation",
       title: `Estimation (${totalEstimation} H)`,
       dataIndex: "estimation",

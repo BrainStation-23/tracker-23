@@ -106,8 +106,8 @@ const RecurrentTaskCreationComponent = ({ startDate }: Props) => {
         <Form.Item
           name="repeat"
           initialValue={1}
-          className="m-0 w-[50px] "
-          rules={[{ required: true }]}
+          className="m-0 w-[110px] "
+          rules={[{ required: true, message: "Field is required!" }]}
         >
           <Input type="number" className="pr-0.5" />
         </Form.Item>
@@ -197,20 +197,22 @@ const RecurrentTaskCreationComponent = ({ startDate }: Props) => {
         >
           <Radio value={1}>
             <div className="flex items-center gap-2">
-              <div> On</div>
+              <div>
+                On{" "}
+                {radioButtonValue == 1 && (
+                  <span style={{ color: "red" }}>*</span>
+                )}
+              </div>
               <Form.Item
                 name={radioButtonValue === 1 ? "endDate" : null}
                 initialValue={dateValue}
                 className="m-0"
-                rules={[
-                  { required: true, message: "Please select an end date" },
-                  { validator: validateEndDate },
-                ]}
+                rules={[{ validator: validateEndDate }]}
               >
                 <DatePicker
                   defaultValue={dayjs()}
                   onChange={(e) => handelDateChange(e)}
-                  className="m-0"
+                  className="m-0 ml-0.5"
                   value={dateValue}
                   disabled={radioButtonValue !== 1}
                 />
@@ -219,21 +221,26 @@ const RecurrentTaskCreationComponent = ({ startDate }: Props) => {
           </Radio>
           <Radio value={2}>
             <div className="flex items-center gap-2">
-              <div>After</div>
+              <div>
+                After{" "}
+                {radioButtonValue == 2 && (
+                  <span style={{ color: "red" }}>*</span>
+                )}
+              </div>
               <Form.Item
-                name={radioButtonValue === 2 ? "occurrences" : null}
                 initialValue={1}
-                className="m-0 w-[50px]"
-                rules={[{ required: true }]}
+                className="m-0 w-[150px]"
+                rules={[{ required: true, message: "Field is required!" }]}
+                name={radioButtonValue === 2 ? "occurrences" : null}
               >
                 <Input
                   type="number"
-                  value={occurrenceValue}
                   className="pr-0.5"
+                  value={occurrenceValue}
+                  disabled={radioButtonValue !== 2}
                   onChange={(e) =>
                     handelOccurrenceChange(Number(e.target.value))
                   }
-                  disabled={radioButtonValue !== 2}
                 />
               </Form.Item>
               Occurrences

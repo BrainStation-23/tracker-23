@@ -1,10 +1,14 @@
 import Link from "next/link";
-import { menuOptions } from "utils/constants";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { menuOptions } from "utils/constants";
 
 export default function Home() {
   const router = useRouter();
-  router.replace("/taskList");
+
+  useEffect(() => {
+    router.replace("/taskList");
+  }, []);
 
   return (
     <div className="mx-auto mt-5 w-max">

@@ -170,7 +170,7 @@ const DashboardPage = () => {
   return (
     <>
       {dataFetched ? (
-        <div className="flex flex-col gap-6 px-4 pt-2 pb-12 md:px-8">
+        <div className="flex flex-col gap-6 px-4 pb-12 pt-2 md:px-8">
           <div className="grid grid-cols-1">
             <DashboardSection
               title="Project wise Track hour"

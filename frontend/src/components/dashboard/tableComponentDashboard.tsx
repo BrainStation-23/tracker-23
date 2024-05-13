@@ -15,6 +15,8 @@ import {
   getTotalSpentTime,
 } from "@/services/timeActions";
 import { useMediaQuery } from "react-responsive";
+import Link from "next/link";
+import { urlToKeyword } from "@/services/helpers";
 
 const { Text } = Typography;
 const DashboardTableComponent = ({
@@ -31,26 +33,18 @@ const DashboardTableComponent = ({
       fixed: "left",
       title: "Task Name",
       dataIndex: "title",
-      width: isMobile ? 50 : 200,
+      width: isMobile ? 160 : 350,
       render: (_: any, task: TaskDto) => {
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex w-40 items-center gap-2 overflow-hidden md:w-80">
             {task.source !== "OUTLOOK" ? (
               <>
                 {runningTask?.id != task.id ? (
-                  <div
-                    onClick={() => {
-                      startSession(task);
-                    }}
-                  >
+                  <div onClick={() => startSession(task)}>
                     <PlayIconSvg />
                   </div>
                 ) : (
-                  <div
-                    onClick={() => {
-                      stopSession(task);
-                    }}
-                  >
+                  <div onClick={() => stopSession(task)}>
                     <PauseIconSvg />
                   </div>
                 )}
@@ -59,9 +53,7 @@ const DashboardTableComponent = ({
               <div className="h-1 p-4" />
             )}
             <div className="flex flex-col gap-2">
-              <Text className="w-48" ellipsis={{ tooltip: task?.title }}>
-                {task?.title}
-              </Text>
+              <Text ellipsis={{ tooltip: task?.title }}>{task?.title}</Text>
               <div className="flex cursor-pointer gap-2">
                 {task.projectName && (
                   <div
@@ -82,41 +74,71 @@ const DashboardTableComponent = ({
       },
     },
     {
+      align: "center",
       title: "Source",
       key: "dataSource",
       dataIndex: "dataSource",
-      width: isMobile ? 50 : 200,
       render: (dataSource: any, task: TaskDto) => (
-        <div className="flex max-w-[150px] items-center gap-2 ">
+        <div className="flex w-full items-center justify-center gap-2">
           <div>{integrationIcons[task.source]} </div>
-          <Text
-            className="w-min cursor-pointer"
-            ellipsis={{ tooltip: dataSource }}
-          >
-            {dataSource}
-          </Text>
+          {dataSource &&
+            (task.source === "TRACKER23" ? (
+              <>{urlToKeyword(task.source, dataSource)}</>
+            ) : (
+              <Link
+                target="_blank"
+                href={
+                  task.source === "OUTLOOK"
+                    ? "https://outlook.office.com/mail/"
+                    : dataSource
+                }
+              >
+                {urlToKeyword(task.source, dataSource)}
+              </Link>
+            ))}
         </div>
       ),
     },
 
     {
+      align: "center",
       title: "Created",
       key: "createdAt",
       dataIndex: "createdAt",
-      width: isMobile ? 50 : 200,
       render: (_: any, task: TaskDto) => {
-        return <>{getFormattedTime(formatDate(task.createdAt))}</>;
+        return (
+          <>
+            {isMobile
+              ? new Date(task.createdAt).toLocaleDateString()
+              : getFormattedTime(formatDate(task.createdAt))}
+          </>
+        );
       },
     },
     {
       key: "started",
       title: "Started",
       dataIndex: "started",
-      width: isMobile ? 50 : 200,
       render: (_: any, task: TaskDto) => (
         <>
           {task.sessions?.length > 0
-            ? getFormattedTime(formatDate(task.sessions[0].startTime))
+            ? isMobile
+              ? new Date(
+                  task.sessions.sort(
+                    (a, b) =>
+                      new Date(a.startTime).getTime() -
+                      new Date(b.startTime).getTime()
+                  )[0].startTime
+                ).toLocaleDateString()
+              : getFormattedTime(
+                  formatDate(
+                    task.sessions.sort(
+                      (a, b) =>
+                        new Date(a.startTime).getTime() -
+                        new Date(b.startTime).getTime()
+                    )[0].startTime
+                  )
+                )
             : "Not Started"}
         </>
       ),
@@ -129,13 +151,26 @@ const DashboardTableComponent = ({
       key: "ended",
       title: "Ended",
       dataIndex: "ended",
-      width: isMobile ? 50 : 200,
       render: (_: any, task: TaskDto) => (
         <>
           {task.sessions?.length > 0 && !checkIfRunningTask(task.sessions)
-            ? getFormattedTime(
-                formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
-              )
+            ? isMobile
+              ? new Date(
+                  task.sessions.sort(
+                    (a, b) =>
+                      new Date(a.endTime).getTime() -
+                      new Date(b.endTime).getTime()
+                  )[task.sessions?.length - 1].endTime
+                ).toLocaleDateString()
+              : getFormattedTime(
+                  formatDate(
+                    task.sessions.sort(
+                      (a, b) =>
+                        new Date(a.endTime).getTime() -
+                        new Date(b.endTime).getTime()
+                    )[task.sessions?.length - 1].endTime
+                  )
+                )
             : task.sessions[0]
             ? "Running"
             : "Not Started"}
@@ -145,10 +180,10 @@ const DashboardTableComponent = ({
     },
     {
       key: "total",
+      align: "center",
       dataIndex: "total",
       title: "Total Spent",
       width: isMobile ? 50 : 100,
-      fixed: isMobile ? "" : "right",
       render: (_: any, task: TaskDto) =>
         runningTask?.id !== task.id ? (
           <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
@@ -166,26 +201,6 @@ const DashboardTableComponent = ({
       position: ["bottomRight", "bottomLeft"],
     },
   });
-  // const handlePin = (task: TaskDto) => {
-  //   task.pinned
-  //     ? (tableParams.pagination.total = tableParams.pagination.total - 1)
-  //     : (tableParams.pagination.total = tableParams.pagination.total + 1);
-
-  //   if (task.pinned) {
-  //     let pinnedTasks = getLocalStorage("pinnedTasks");
-  //     if (!pinnedTasks) pinnedTasks = [];
-  //     pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
-  //     setLocalStorage("pinnedTasks", pinnedTasks);
-  //   } else {
-  //     let pinnedTasks = getLocalStorage("pinnedTasks");
-  //     if (!pinnedTasks) pinnedTasks = [];
-  //     pinnedTasks = pinnedTasks?.filter((taskId: any) => taskId != task.id);
-  //     pinnedTasks.push(task.id);
-  //     setLocalStorage("pinnedTasks", pinnedTasks);
-  //   }
-  //   task.pinned = !task.pinned;
-  //   setReload(!reload);
-  // };
 
   const getRowClassName = (task: TaskDto) => {
     if (!task.sessions) task.sessions = [];
@@ -206,12 +221,12 @@ const DashboardTableComponent = ({
     <Table
       columns={columns}
       dataSource={tasks}
-      scroll={{ x: 1500 }}
       rowKey={(task) => task.id}
       onChange={handleTableChange}
       rowClassName={getRowClassName}
       bordered={isMobile ? true : false}
       pagination={tableParams.pagination}
+      scroll={{ x: isMobile ? "max-content" : "100%" }}
     />
   );
 };
