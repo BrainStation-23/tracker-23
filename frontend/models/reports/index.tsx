@@ -156,11 +156,14 @@ export interface SprintViewReportTableRow {
 }
 
 export interface SprintViewTimelineReportTableRow {
+  rowKey: string | number;
   userId: number;
   name: string;
   picture: string | null;
   email: string;
   userSpan: number;
+  groupRows: number;
+  groupRowIndex: number;
   tasksSpan: number;
   task: {
     [columnId: string]: SprintViewReportTask;

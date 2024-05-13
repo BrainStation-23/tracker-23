@@ -17,22 +17,26 @@ const SprintViewTimelineReportComponent = ({ data, reportData }: Props) => {
   const modifiedColumns = data?.columns?.length ? [...data?.columns] : [];
 
   const modifiedRows: SprintViewTimelineReportTableRow[] = [];
-
+  let rowKey: number = 0;
   for (let row of rows) {
     const AssignTasks = row.data.find((item) => item.key === "AssignTasks");
     const maxTasks = AssignTasks ? AssignTasks.value.tasks.length : 0;
     for (let i = 0; i < maxTasks + 1; i++) {
       const tableRow: SprintViewTimelineReportTableRow = {
+        rowKey,
         userId: row.userId,
         name: row.name,
         picture: row.picture,
         email: row.email,
         userSpan: i === 0 ? maxTasks + 1 : 0,
+        groupRows: maxTasks + 1,
+        groupRowIndex: i,
         tasksSpan: 1,
         task: {},
         timeRange: {},
         devProgress: {},
       };
+      rowKey = rowKey + 1;
       try {
         for (let rowData of row.data) {
           if (rowData.key !== "AssignTasks") {
