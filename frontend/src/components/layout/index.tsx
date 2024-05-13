@@ -14,15 +14,12 @@ import "react-toastify/dist/ReactToastify.css";
 const Layout = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [approvedUser, setApprovedUser] = useState(true);
-  const [loggedInUser, setLoggedInUser] = useState(false);
   const user = useAppSelector((state: RootState) => state.userSlice.user);
 
   useEffect(() => {
     const userInfo = getLocalStorage("userDetails");
     if (userInfo && userInfo.email && !userInfo.approved) {
       setApprovedUser(false);
-    } else if (userInfo && userInfo.email && userInfo.access_token) {
-      setLoggedInUser(true);
     } else {
       setApprovedUser(true);
     }
@@ -30,21 +27,17 @@ const Layout = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   return (
-    <>
+    <Spin spinning={isLoading}>
       <Head>
         <link rel="icon" href="/images/bsIcon.png" />
         <title>Tracker 23</title>
       </Head>
-      <Spin spinning={isLoading}>
-        {approvedUser && loggedInUser ? (
-          <ValidUserLayout>{children}</ValidUserLayout>
-        ) : !loggedInUser ? (
-          <>{children}</>
-        ) : (
-          <InvalidUserPage />
-        )}
-      </Spin>
-    </>
+      {approvedUser ? (
+        <ValidUserLayout>{children}</ValidUserLayout>
+      ) : (
+        <InvalidUserPage />
+      )}
+    </Spin>
   );
 };
 

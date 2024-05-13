@@ -7,7 +7,7 @@ import React from "react";
 const ResetPasswordForm = () => {
   const router = useRouter();
 
-  const { token } = router.query;
+  const { resetToken: token } = router.query;
   if (router.isReady && typeof token != "string") router.push("/login");
 
   const signIn = async (values: ResetPasswordDto) => {

@@ -1,4 +1,4 @@
-import { Checkbox, Form } from "antd";
+import { Checkbox, Form, message } from "antd";
 import { userAPI } from "APIs";
 import { useRouter } from "next/router";
 import React from "react";
@@ -16,18 +16,25 @@ type Props = {
 
 const LoginForm = ({ setIsModalOpen, email }: Props) => {
   const router = useRouter();
+
   const signIn = async (values: any) => {
-    const data = await userAPI.login(values);
-    if (!data) setIsModalOpen(false);
-    if (window.gtag) {
-      window.gtag("event", "login", {
-        method: "System",
-      });
-    }
-    if (data?.status === "ONBOARD" && GetCookie("access_token")) {
-      router.push("/onBoarding");
-    } else if (GetCookie("access_token")) {
-      router.push("/taskList");
+    try {
+      const res = await userAPI.login(values);
+      if (!res) throw Error("Login failed!");
+      if (window.gtag) {
+        window.gtag("event", "login", {
+          method: "System",
+        });
+      }
+      if (res?.status === "ONBOARD" && GetCookie("access_token")) {
+        router.push("/onBoarding");
+      } else if (GetCookie("access_token")) {
+        router.push("/taskList");
+      }
+    } catch (err) {
+      message.error("Something went wrong!!. Try again later.");
+    } finally {
+      setIsModalOpen(false);
     }
   };
 
