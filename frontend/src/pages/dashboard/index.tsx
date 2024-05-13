@@ -17,7 +17,7 @@ import { getFormattedTasks } from "@/services/taskActions";
 import { getDayWithMonth, getTotalSpentTime } from "@/services/timeActions";
 
 const DashboardPage = () => {
-  const [reload, setReload] = useState(false);
+  const [reload, setReload] = useState(true);
   const [weekData, setWeekData] = useState(null);
   const [dataDonut, setDataDonut] = useState(null);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
@@ -164,8 +164,12 @@ const DashboardPage = () => {
       await getSpentTimePerDay();
       setDataFetched(true);
     };
-    getData();
-  }, []);
+    
+    if(reload){
+      getData();
+      setReload(false)
+    }
+  }, [reload]);
 
   return (
     <>
