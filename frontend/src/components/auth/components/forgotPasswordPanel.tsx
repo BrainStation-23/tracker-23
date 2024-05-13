@@ -1,11 +1,11 @@
-import { Modal, Spin } from "antd";
 import { useState } from "react";
-
-import BSLogoSvg from "@/assets/svg/BSLogoSvg";
-import ForgotPasswordForm from "@/components/auth/forms/forgotPasswordForm";
+import { Modal, Spin } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 
+import BSLogoSvg from "@/assets/svg/BSLogoSvg";
+
 import AuthHeader from "./authHeader";
+import ForgotPasswordForm from "@/components/auth/forms/forgotPasswordForm";
 
 const ForgotPasswordPanel = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,16 +14,16 @@ const ForgotPasswordPanel = () => {
       <div className="m-auto flex h-fit max-w-[60%] flex-col gap-6 lg:max-w-[70%]">
         <BSLogoSvg height={40} />
         <AuthHeader
-          title={"Forget Password"}
-          subTitle={"Sign up or log in to start tracking your time"}
+          title="Forget Password"
+          subTitle="Sign up or log in to start tracking your time"
         />
         <ForgotPasswordForm setIsModalOpen={setIsModalOpen} />
       </div>
       <Modal
-        open={isModalOpen}
+        centered
         footer={null}
         closable={false}
-        centered
+        open={isModalOpen}
         className="z-50 w-20 bg-transparent"
         style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
       >
@@ -32,7 +32,7 @@ const ForgotPasswordPanel = () => {
             indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
             size="large"
           />
-          <h1>Logging In</h1>
+          <h1>Resetting...</h1>
         </div>
       </Modal>
     </div>

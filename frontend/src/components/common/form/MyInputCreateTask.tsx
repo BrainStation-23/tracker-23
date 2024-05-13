@@ -22,10 +22,10 @@ const MyInputCreateTask = ({
 
   if (rules.some((rule: any) => rule.required)) {
     myLabel = (
-      <div className="">
+      <>
         {myLabel}
         <span style={{ color: "red" }}>*</span>
-      </div>
+      </>
     );
   }
   return (

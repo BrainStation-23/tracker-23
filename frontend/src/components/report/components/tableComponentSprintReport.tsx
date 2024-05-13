@@ -7,6 +7,7 @@ import { GiSprint } from "react-icons/gi";
 import { LuTimer, LuTimerReset } from "react-icons/lu";
 
 import FormatTimeForSettings from "@/components/common/time/formatTimeForSettings";
+import { useMediaQuery } from "react-responsive";
 
 const { Text } = Typography;
 type Props = {
@@ -15,6 +16,8 @@ type Props = {
   dateRangeArray?: any;
 };
 const TableComponentSprintReport = ({ data, column }: Props) => {
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+
   const columns: any = [
     {
       title: (
@@ -23,19 +26,17 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
           Sprint
         </div>
       ),
-      dataIndex: "name",
       key: "name",
       fixed: "left",
-      width: "150px",
+      dataIndex: "name",
+      width: isMobile ? 96 : 112,
       render: (_: any, v: any) => (
-        <div>
-          <Text
-            className="w-[110px] cursor-pointer"
-            ellipsis={{ tooltip: v.name }}
-          >
-            {v.name}
-          </Text>
-        </div>
+        <Text
+          ellipsis={{ tooltip: v.name }}
+          className="w-24 cursor-pointer md:w-28"
+        >
+          {v.name}
+        </Text>
       ),
     },
   ];
@@ -44,14 +45,14 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
       title: (
         <div className="mx-auto flex w-fit items-center justify-center gap-2 ">
           {user?.picture ? (
-            <Avatar src={user.picture} alt="N" className="h-[20px] w-[20px]" />
+            <Avatar src={user.picture} alt="N" className="h-5 w-5" />
           ) : (
             <Avatar
               src={
                 "https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
               }
               alt="N"
-              className="h-[20px] w-[20px]"
+              className="h-5 w-5"
             />
           )}
           {user.name}
@@ -61,7 +62,7 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
       children: [
         {
           title: (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2">
               <LuTimerReset />
               Estimation
             </div>
@@ -82,7 +83,7 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
         },
         {
           title: (
-            <div className="flex w-max items-center gap-2">
+            <div className="flex items-center justify-center gap-2">
               <LuTimer />
               Spent Time
             </div>
@@ -105,16 +106,16 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
       align: "center",
     });
   });
-  if (column.length < 6)
-    columns.push({
-      title: "-",
-      dataIndex: "totalTime",
-      key: "totalTime",
-      align: "center",
-      render: () => (
-        <div className="w-full rounded px-2 text-center text-black">-</div>
-      ),
-    });
+  // if (column.length < 6)
+  //   columns.push({
+  //     title: "-",
+  //     dataIndex: "totalTime",
+  //     key: "totalTime",
+  //     align: "center",
+  //     render: () => (
+  //       <div className="w-full rounded px-2 text-center text-black">-</div>
+  //     ),
+  //   });
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {
       // current: 1,
@@ -139,14 +140,14 @@ const TableComponentSprintReport = ({ data, column }: Props) => {
 
   return (
     <Table
+      bordered
       columns={columns}
       dataSource={data}
-      rowKey={(d) => d.user}
-      pagination={tableParams.pagination}
-      onChange={handleTableChange}
       className="w-full"
-      bordered
-      scroll={{ x: 1500 }}
+      rowKey={(d) => d.sprintId}
+      onChange={handleTableChange}
+      scroll={{ x: "max-content" }}
+      pagination={tableParams.pagination}
     />
   );
 };

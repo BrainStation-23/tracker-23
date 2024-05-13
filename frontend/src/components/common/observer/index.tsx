@@ -37,6 +37,7 @@ const IntersectionComponent = ({
       style={{
         width: "100%",
         height: "100%",
+        paddingLeft: 0,
       }}
     >
       {children}

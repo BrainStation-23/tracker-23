@@ -90,6 +90,11 @@ const CreateTaskComponent = ({ createTask }: any) => {
     setRecurrentTask(e.target.checked);
   };
 
+  const resetAll = () => {
+    form.resetFields();
+    setRecurrentTask(false);
+  };
+
   useEffect(() => {
     setPriorityNames(
       priorities
@@ -211,7 +216,7 @@ const CreateTaskComponent = ({ createTask }: any) => {
         <Form.Item>
           <div className="flex flex-row-reverse gap-3">
             <PrimaryButton htmlType="submit">Submit</PrimaryButton>
-            <SecondaryButton htmlType="button" onClick={form.resetFields}>
+            <SecondaryButton htmlType="button" onClick={resetAll}>
               Reset
             </SecondaryButton>
           </div>

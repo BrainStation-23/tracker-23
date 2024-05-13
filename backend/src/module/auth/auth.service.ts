@@ -405,7 +405,7 @@ export class AuthService {
     //   resetToken,
     // );
 
-    const resetURL = `${coreConfig.host_url}/resetPassword/${resetToken}`;
+    const resetURL = `${coreConfig.host_url}/resetPassword?resetToken=${resetToken}`;
     // console.log(
     //   '🚀 ~ file: auth.service.ts:274 ~ AuthService ~ forgotPassword ~ resetURL:',
     //   resetURL,

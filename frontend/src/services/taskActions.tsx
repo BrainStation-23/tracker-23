@@ -1,5 +1,5 @@
 import { message } from "antd";
-import { Session, StatusDto, TaskDto } from "models/tasks";
+import { IFormattedTask, Session, StatusDto, TaskDto } from "models/tasks";
 
 import { Project } from "@/storage/redux/projectsSlice";
 import {

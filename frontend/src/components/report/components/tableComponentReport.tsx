@@ -37,20 +37,22 @@ const TableComponent = ({
       fixed: "left",
       title: "User",
       dataIndex: "name",
-      width: isMobile ? 50 : 200,
-      render: (_: any, v: any, idx: number) => (
-        <div className="flex items-center gap-2" key={idx}>
-          <div>
-            {v?.picture ? (
-              <Avatar src={v.picture} alt="N" className="h-10 w-10" />
-            ) : (
-              <Avatar
-                alt="N"
-                className="h-10 w-10"
-                src="https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
-              />
-            )}
-          </div>
+      width: isMobile ? 100 : 200,
+      render: (_: any, v: any) => (
+        <div className="flex w-full items-center gap-2" key={v.userId}>
+          {!isMobile && (
+            <div>
+              {v?.picture ? (
+                <Avatar src={v.picture} alt="N" className="h-10 w-10" />
+              ) : (
+                <Avatar
+                  alt="N"
+                  className="h-10 w-10"
+                  src="https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
+                />
+              )}
+            </div>
+          )}
           <Text className="cursor-pointer" ellipsis={{ tooltip: v?.name }}>
             {v?.name}
           </Text>
@@ -63,7 +65,8 @@ const TableComponent = ({
     columns.push({
       title: (
         <div className="mx-auto flex w-max items-center justify-center gap-2 ">
-          {date}
+          {/* {date} */}
+          {isMobile ? new Date(date).toLocaleDateString() : date}
           {dateRangeArray && (
             <Tooltip
               className={dateRangeArray ? "cursor-auto" : ""}
@@ -75,9 +78,9 @@ const TableComponent = ({
         </div>
       ),
       key: date,
-      dataIndex: date,
       align: "center",
-      width: isMobile ? 50 : 150,
+      dataIndex: date,
+      width: isMobile ? 50 : 100,
       render: (_: any, v: any) => (
         <div className="w-full cursor-pointer rounded px-2 text-center text-black">
           <FormatTimeForSettings time={v[date]} />
@@ -92,7 +95,6 @@ const TableComponent = ({
     align: "center",
     key: "totalTime",
     dataIndex: "totalTime",
-    fixed: isMobile ? "" : "right",
     render: (_: any, { totalTime }: any) => (
       <div className="w-full rounded px-2 text-center text-black">
         <FormatTimeForSettings time={totalTime} />
@@ -134,8 +136,8 @@ const TableComponent = ({
         columns={columns}
         dataSource={data}
         className="w-full"
-        scroll={{ x: 1500 }}
-        rowKey={(d) => d.user}
+        scroll={{ x: "max-content" }}
+        rowKey={(d) => d.userId}
         onChange={handleTableChange}
         pagination={tableParams.pagination}
       />

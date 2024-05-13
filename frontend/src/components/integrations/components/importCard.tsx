@@ -57,7 +57,11 @@ const ImportCard = ({
             Connected to{" "}
             <OpenLinkInNewTab
               onClick={() => {
-                window.open(data.site);
+                window.open(
+                  data.type === "OUTLOOK"
+                    ? "https://outlook.office.com/mail/"
+                    : data.site
+                );
               }}
             >
               {data.site}

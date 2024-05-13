@@ -228,33 +228,36 @@ const SprintViewTimelineReportTabel = ({ data, reportData }: Props) => {
     {
       title: "Developer Name",
       dataIndex: "name",
-      key: "name",
       fixed: "left",
-      render: (text: string, record: SprintViewTimelineReportTableRow) => {
+      key: "name",
+      onCell: (record, index) => {
+        return {
+          rowSpan: index === 0 && record.groupRowIndex > 0 ? record.groupRows - record.groupRowIndex: record.userSpan,
+        }
+      },
+      render: (
+        _: string,
+        record: SprintViewTimelineReportTableRow,
+        idx: number
+      ) => {
         return {
           children: (
-            <div className="justify-left mx-auto flex w-[150px] items-center gap-2 ">
+            <div
+              className="justify-left mx-auto flex w-[150px] items-center gap-2"
+              key={idx}
+            >
               {record?.picture ? (
-                <Avatar
-                  src={record.picture}
-                  alt="N"
-                  className="h-[20px] w-[20px]"
-                />
+                <Avatar src={record.picture} alt="N" className="h-5 w-5" />
               ) : (
                 <Avatar
-                  src={
-                    "https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
-                  }
+                  src="https://st3.depositphotos.com/15437752/19006/i/600/depositphotos_190061104-stock-photo-silhouette-male-gradient-background-white.jpg"
+                  className="h-5 w-5"
                   alt="N"
-                  className="h-[20px] w-[20px]"
                 />
               )}
               {record.name}
             </div>
           ),
-          props: {
-            rowSpan: record.userSpan,
-          },
         };
       },
       // align: "center",
@@ -348,12 +351,12 @@ const SprintViewTimelineReportTabel = ({ data, reportData }: Props) => {
       <Table
         columns={columns}
         dataSource={data.rows}
-        rowKey={"id"}
+        rowKey={(rec) => rec.rowKey }
         bordered
         pagination={{
           // current: 1,
           // pageSize: 500,
-          // showSizeChanger: false,
+          showSizeChanger: true,
           // showLessItems: true,
           position: ["bottomRight", "bottomLeft"],
         }}

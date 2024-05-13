@@ -35,8 +35,25 @@ import EstimationComponent from "./estimationComponent";
 import TimeDisplayComponent from "./timeDisplayComponent";
 import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
 import { integrationIcons } from "@/components/integrations/components/importCard";
+import { useMediaQuery } from "react-responsive";
 
 const { Text } = Typography;
+
+type Props = {
+  tasks: TaskDto[];
+  deleteTask: Function;
+  setLoading: Function;
+  stopSession: Function;
+  runningTask: TaskDto;
+  startSession: Function;
+  handlePinTask: Function;
+  setSelectedTask: Function;
+  handleStatusChange: Function;
+  sessionActionLoading: boolean;
+  setTaskViewModalOpen: Function;
+  handleEstimationChange: Function;
+  setManualTimeEntryModalOpen: Function;
+};
 
 const TableComponent = ({
   tasks,
@@ -52,12 +69,23 @@ const TableComponent = ({
   setTaskViewModalOpen,
   handleEstimationChange,
   setManualTimeEntryModalOpen,
-}: any) => {
+}: Props) => {
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+  const totalEstimation = tasks.reduce((acc, curr) => acc + curr.estimation, 0);
+  const totalSpent =
+    tasks.reduce((acc, curr) => acc + curr?.totalSpent, 0) / 1000;
+  let tmp = totalSpent;
+  const hours = Math.floor(tmp / 3600);
+  tmp %= 3600;
+  const minutes = Math.round(tmp / 60);
+
   const columns: any = [
     {
       key: "title",
+      fixed: "left",
       title: "Task Name",
       dataIndex: "title",
+      width: isMobile ? 100 : 240,
       render: (_: any, task: TaskDto) => {
         return (
           <div
@@ -66,7 +94,7 @@ const TableComponent = ({
               setSelectedTask(task);
               setTaskViewModalOpen(true);
             }}
-            className="flex items-center gap-2"
+            className="flex w-full items-center gap-2"
           >
             {task.pinned && (
               <Tooltip title={`Click To ${task.pinned ? "unpin" : "pin"}`}>
@@ -105,11 +133,11 @@ const TableComponent = ({
                 )}
               </div>
             ) : (
-              <div className="h-1 p-4"></div>
+              <div className="h-1 p-4" />
             )}
             <div className="flex flex-col gap-2">
               <Text
-                className="w-[180px] cursor-pointer"
+                className="w-28 cursor-pointer md:w-60"
                 ellipsis={{ tooltip: task?.title }}
               >
                 {task?.title}
@@ -207,7 +235,11 @@ const TableComponent = ({
       key: "createdAt",
       dataIndex: "createdAt",
       render: (createdAt: string) => (
-        <>{getFormattedTime(formatDate(createdAt))}</>
+        <>
+          {isMobile
+            ? new Date(createdAt).toLocaleDateString()
+            : getFormattedTime(formatDate(createdAt))}
+        </>
       ),
       sorter: (a: any, b: any) => {
         const aCreated = new Date(a.created);
@@ -231,7 +263,23 @@ const TableComponent = ({
       render: (_: any, task: TaskDto) => (
         <>
           {task.sessions?.length > 0
-            ? getFormattedTime(formatDate(task.sessions[0].startTime))
+            ? isMobile
+              ? new Date(
+                  task.sessions.sort(
+                    (a, b) =>
+                      new Date(a.startTime).getTime() -
+                      new Date(b.startTime).getTime()
+                  )[0].startTime
+                ).toLocaleDateString()
+              : getFormattedTime(
+                  formatDate(
+                    task.sessions.sort(
+                      (a, b) =>
+                        new Date(a.startTime).getTime() -
+                        new Date(b.startTime).getTime()
+                    )[0].startTime
+                  )
+                )
             : "Not Started"}
         </>
       ),
@@ -244,12 +292,26 @@ const TableComponent = ({
       title: "Ended",
       align: "center",
       dataIndex: "ended",
-      render: (ended: any, task: TaskDto) => (
+      render: (_: any, task: TaskDto) => (
         <>
           {task.sessions?.length > 0 && !checkIfRunningTask(task.sessions)
-            ? getFormattedTime(
-                formatDate(task.sessions[task.sessions?.length - 1]?.endTime)
-              )
+            ? isMobile
+              ? new Date(
+                  task.sessions.sort(
+                    (a, b) =>
+                      new Date(a.endTime).getTime() -
+                      new Date(b.endTime).getTime()
+                  )[task.sessions?.length - 1].endTime
+                ).toLocaleDateString()
+              : getFormattedTime(
+                  formatDate(
+                    task.sessions.sort(
+                      (a, b) =>
+                        new Date(a.endTime).getTime() -
+                        new Date(b.endTime).getTime()
+                    )[task.sessions?.length - 1].endTime
+                  )
+                )
             : task.sessions[0]
             ? "Running"
             : "Not Started"}
@@ -257,8 +319,9 @@ const TableComponent = ({
       ),
     },
     {
+      width: 130,
       key: "estimation",
-      title: "Estimation",
+      title: `Estimation (${totalEstimation} H)`,
       dataIndex: "estimation",
       render: (_: any, task: TaskDto) => (
         <EstimationComponent {...{ task, handleEstimationChange }} />
@@ -266,10 +329,11 @@ const TableComponent = ({
       sorter: (a: any, b: any) => a.estimation - b.estimation,
     },
     {
+      width: 150,
       key: "total",
       align: "center",
       dataIndex: "total",
-      title: "Total Spent",
+      title: `Total Spent (${hours}H ${minutes}M)`,
       render: (_: any, task: TaskDto) =>
         runningTask?.id !== task.id ? (
           <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
@@ -283,9 +347,9 @@ const TableComponent = ({
         getTotalSpentTime(a.sessions) - getTotalSpentTime(b.sessions),
     },
     {
-      key: "",
-      title: "",
       width: 70,
+      key: "action",
+      title: "Action",
       dataIndex: "",
       render: (_: any, task: TaskDto) => (
         <div className="flex cursor-pointer justify-end gap-2">
@@ -336,9 +400,9 @@ const TableComponent = ({
     <Table
       columns={columns}
       dataSource={tasks}
-      scroll={{ x: 1500 }}
       rowKey={(task) => task.id}
       onChange={handleTableChange}
+      scroll={{ x: "max-content" }}
       rowClassName={getRowClassName}
       pagination={tableParams.pagination}
     />

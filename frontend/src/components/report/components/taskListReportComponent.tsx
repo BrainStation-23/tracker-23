@@ -14,24 +14,38 @@ import {
 } from "@/services/timeActions";
 import { ReportData } from "@/storage/redux/reportsSlice";
 import EditReportConfigComponent from "./editReportConfigComponent";
+import { urlToKeyword } from "@/services/helpers";
+import Link from "next/link";
+import { useMediaQuery } from "react-responsive";
 
 const { Text } = Typography;
 const TaskListReportComponent = ({
   tasks,
   reportData,
 }: {
-  tasks: any;
+  tasks: any[];
   reportData: ReportData;
 }) => {
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+  const totalEstimation = tasks.reduce((acc, curr) => acc + curr.estimation, 0);
+  const totalSpent =
+    tasks.reduce((acc, curr) => acc + curr.totalSpent, 0) / 1000;
+  let tmp = totalSpent;
+  const hours = Math.floor(tmp / 3600);
+  tmp %= 3600;
+  const minutes = Math.round(tmp / 60);
+
   const columns: any = [
     {
       key: "title",
+      fixed: "left",
       title: "Title",
       dataIndex: "title",
+      width: isMobile ? 100 : 320,
       render: (_: any, { title }: TaskDto) => (
-        <div className="w-min text-left">
+        <div className="text-left">
           <Text
-            className="mx-auto max-w-[200px] font-semibold"
+            className="w-32 font-semibold md:w-80"
             ellipsis={{
               tooltip: title,
             }}
@@ -49,16 +63,14 @@ const TaskListReportComponent = ({
         }
         return -1;
       },
-      align: "left",
     },
     {
       title: "Project / Calendar",
       dataIndex: "projectName",
       key: "projectName",
+      width: isMobile ? 100 : 200,
       render: (_: any, { projectName }: TaskDto) => (
-        <div className="m-max mx-auto max-w-[200px] ">
-          {projectName ? projectName : "---"}
-        </div>
+        <div className="mx-auto">{projectName ? projectName : "---"}</div>
       ),
       align: "center",
     },
@@ -66,14 +78,23 @@ const TaskListReportComponent = ({
       title: "Source",
       dataIndex: "dataSource",
       key: "dataSource",
+      align: "center",
+      width: isMobile ? 100 : 200,
       render: (dataSource: any, task: TaskDto) => (
-        <div className="flex max-w-[150px] items-center gap-2 ">
+        <div className="flex max-w-[150px] items-center justify-center gap-2 ">
           <div>{integrationIcons[task.source]} </div>
           <Text
             className="w-min cursor-pointer"
             ellipsis={{ tooltip: dataSource }}
           >
-            {dataSource}
+            {dataSource &&
+              (task.source === "TRACKER23" ? (
+                <>{urlToKeyword(task.source, dataSource)}</>
+              ) : (
+                <Link target="_blank" href={dataSource}>
+                  {urlToKeyword(task.source, dataSource)}
+                </Link>
+              ))}
           </Text>
         </div>
       ),
@@ -83,6 +104,7 @@ const TaskListReportComponent = ({
       dataIndex: "status",
       key: "status",
       align: "center",
+      width: isMobile ? 100 : 200,
       render: (_: any, task: TaskDto) => (
         <div className="flex justify-center">
           <div
@@ -107,28 +129,21 @@ const TaskListReportComponent = ({
         </div>
       ),
     },
+
     {
-      title: "Estimation",
-      dataIndex: "estimation",
-      key: "estimation",
-      render: (_: any, { estimation }: TaskDto) => (
-        <FormatTimeForSettings time={estimation} />
-      ),
-      sorter: (a: any, b: any) => a.estimation - b.estimation,
+      key: "priority",
       align: "center",
-    },
-    {
       title: "Priority",
       dataIndex: "priority",
-      key: "priority",
+      width: isMobile ? 120 : 200,
       render: (_: any, task: TaskDto) => <TablePriorityComponent task={task} />,
-      align: "center",
     },
     {
+      key: "started",
       title: "Started",
       dataIndex: "started",
-      key: "started",
-      render: (started: any, task: TaskDto) => (
+      width: isMobile ? 120 : 200,
+      render: (_: any, task: TaskDto) => (
         <>
           {task.sessions?.length > 0
             ? getFormattedTime(formatDate(task.sessions[0].startTime))
@@ -144,7 +159,8 @@ const TaskListReportComponent = ({
       title: "Ended",
       dataIndex: "ended",
       key: "ended",
-      render: (ended: any, task: TaskDto) => (
+      width: isMobile ? 120 : 200,
+      render: (_: any, task: TaskDto) => (
         <>
           {task.sessions?.length > 0 && !checkIfRunningTask(task.sessions)
             ? getFormattedTime(
@@ -157,11 +173,22 @@ const TaskListReportComponent = ({
       ),
       align: "center",
     },
-
     {
-      title: "Total Spent",
+      title: `Estimation (${totalEstimation} H)`,
+      dataIndex: "estimation",
+      key: "estimation",
+      width: isMobile ? 80 : 200,
+      render: (_: any, { estimation }: TaskDto) => (
+        <FormatTimeForSettings time={estimation} />
+      ),
+      sorter: (a: any, b: any) => a.estimation - b.estimation,
+      align: "center",
+    },
+    {
+      title: `Total Spent (${hours}H ${minutes}M)`,
       dataIndex: "total",
       key: "total",
+      width: isMobile ? 140 : 220,
       render: (_: any, task: any) => (
         <TimeDisplayComponent totalTime={getTotalSpentTime(task.sessions)} />
       ),
@@ -176,7 +203,7 @@ const TaskListReportComponent = ({
           rowKey={"id"}
           columns={columns}
           dataSource={tasks}
-          scroll={{ x: 1500 }}
+          scroll={{ x: "max-content" }}
           pagination={{ position: ["bottomCenter"] }}
         />
       ) : (

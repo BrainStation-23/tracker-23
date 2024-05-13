@@ -40,9 +40,7 @@ const StatusDropdownComponent = ({
       label: (
         <div
           className="class-1 flex flex-col gap-2"
-          onClick={() => {
-            updateStatus(status);
-          }}
+          onClick={() => updateStatus(status)}
         >
           <div
             className={`${

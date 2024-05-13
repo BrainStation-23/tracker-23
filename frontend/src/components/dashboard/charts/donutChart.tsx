@@ -3,9 +3,11 @@ import React, { useEffect, useRef } from "react";
 import * as am4charts from "@amcharts/amcharts4/charts";
 import * as am4core from "@amcharts/amcharts4/core";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
+import { useMediaQuery } from "react-responsive";
 
 const DonutChart = ({ data, total }: any) => {
   const chartRef = useRef(null);
+  const isMobile = useMediaQuery({ maxWidth: 767 });
 
   useEffect(() => {
     am4core.useTheme(am4themes_animated);
@@ -28,7 +30,7 @@ const DonutChart = ({ data, total }: any) => {
     label.text = `Total ${total} hours`;
     label.horizontalCenter = "middle";
     label.verticalCenter = "middle";
-    label.fontSize = 20;
+    label.fontSize = isMobile ? 14 : 20;
 
     chart.legend = new am4charts.Legend();
     chart.legend.position = "bottom";
