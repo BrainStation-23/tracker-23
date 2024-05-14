@@ -24,6 +24,7 @@ const InviteToWorkspace = ({ setIsModalOpen }: Props) => {
     }
     setIsModalOpen(false);
     setLoading(false);
+    form.resetFields();
   };
 
   return (

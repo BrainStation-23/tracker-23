@@ -99,7 +99,10 @@ const TableComponent = ({
             {task.pinned && (
               <Tooltip title={`Click To ${task.pinned ? "unpin" : "pin"}`}>
                 <Button
-                  onClick={() => handlePin(task)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePin(task);
+                  }}
                   className="absolute left-0 top-0 flex gap-3 p-1"
                 >
                   {task.pinned ? <PinFilledIconSvg /> : <PinIconSvg />}
@@ -242,8 +245,8 @@ const TableComponent = ({
         </>
       ),
       sorter: (a: any, b: any) => {
-        const aCreated = new Date(a.created);
-        const bCreated = new Date(b.created);
+        const aCreated = new Date(a.createdAt).getTime();
+        const bCreated = new Date(b.createdAt).getTime();
         if (aCreated === bCreated) {
           return 0;
         }
@@ -251,7 +254,6 @@ const TableComponent = ({
         if (aCreated > bCreated) {
           return 1;
         }
-
         return -1;
       },
     },
@@ -283,9 +285,7 @@ const TableComponent = ({
             : "Not Started"}
         </>
       ),
-      sorter: (a: TaskDto, b: TaskDto) => {
-        return startTimeSorter(a, b);
-      },
+      sorter: (a: TaskDto, b: TaskDto) => startTimeSorter(a, b),
     },
     {
       key: "ended",

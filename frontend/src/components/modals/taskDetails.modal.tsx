@@ -77,10 +77,11 @@ const TaskDetailsModal = ({
       onOk={handleOk}
       footer={null}
       width={850}
+      zIndex={1100}
     >
       <Spin spinning={spinning}>
         <div className="flex flex-col gap-4">
-          <div className="flex w-full items-center gap-4">
+          <div className="flex w-full items-center gap-2 md:gap-4">
             <span className="w-[120px] text-sm font-semibold text-secondary ">
               TItle
             </span>
@@ -90,7 +91,7 @@ const TaskDetailsModal = ({
                 : task?.title}
             </span>
           </div>
-          <div className="flex gap-4">
+          <div className="flex w-full items-center gap-2 md:gap-4">
             <span className="w-[120px] text-sm font-semibold text-secondary ">
               Description
             </span>
@@ -99,7 +100,7 @@ const TaskDetailsModal = ({
             </span>
           </div>
           {taskDetails?.url && (
-            <div className="flex items-center gap-4">
+            <div className="flex w-full items-center gap-2 md:gap-4">
               <span className="w-[120px] text-sm font-semibold text-secondary ">
                 Link
               </span>
@@ -114,7 +115,7 @@ const TaskDetailsModal = ({
             </div>
           )}
           <div className="grid grid-cols-2">
-            <div className="flex items-center gap-4">
+            <div className="flex w-full items-center gap-2 md:gap-4">
               <span className="w-[120px] text-sm font-semibold text-secondary ">
                 Estimation
               </span>
@@ -123,7 +124,7 @@ const TaskDetailsModal = ({
                 {taskDetails?.estimation && " Hour"}
               </span>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex w-full items-center gap-2 md:gap-4">
               <span className="w-[120px] text-sm font-semibold text-secondary ">
                 Time Left
               </span>
@@ -138,7 +139,7 @@ const TaskDetailsModal = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex w-full items-center gap-2 md:gap-4">
             <span className="w-[120px] text-sm font-semibold text-secondary ">
               Status
             </span>
@@ -164,7 +165,7 @@ const TaskDetailsModal = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex w-full items-center gap-2 md:gap-4">
             <span className="w-[120px] text-sm font-semibold text-secondary ">
               Total Spent
             </span>
