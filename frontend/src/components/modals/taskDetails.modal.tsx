@@ -17,6 +17,7 @@ import {
 
 import Sessions from "./components/sessions";
 import { urlToKeyword } from "@/services/helpers";
+import TablePriorityComponent from "../common/tableComponents/tablePriorityComponent";
 
 type Props = {
   task: TaskDto;
@@ -163,6 +164,17 @@ const TaskDetailsModal = ({
               <div>{taskDetails?.status}</div>
             </div>
           </div>
+
+          {taskDetails?.priority && <div className="flex items-center gap-4">
+            <span className="w-[120px] text-sm font-semibold text-secondary ">
+              Priority
+            </span>
+            <div
+              className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
+            >
+              <TablePriorityComponent task={taskDetails} />
+            </div>
+          </div>}
 
           <div className="flex items-center gap-4">
             <span className="w-[120px] text-sm font-semibold text-secondary ">
