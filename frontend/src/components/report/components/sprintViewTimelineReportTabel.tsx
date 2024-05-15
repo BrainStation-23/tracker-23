@@ -12,6 +12,7 @@ import { TaskStatusEnum } from "models/tasks";
 import TimeProgressComponent from "./timeProgressComponent";
 import { ReportData } from "@/storage/redux/reportsSlice";
 import EditReportConfigComponent from "./editReportConfigComponent";
+import { useMediaQuery } from "react-responsive";
 
 const { Text } = Typography;
 type Props = {
@@ -23,217 +24,20 @@ type Props = {
 };
 
 const SprintViewTimelineReportTabel = ({ data, reportData }: Props) => {
-  const renderTableTaskCell = (
-    record: SprintViewTimelineReportTableRow,
-    column: SprintViewTimelineReportColumn
-  ) => {
-    if (column.key in record.task || column.key in record.devProgress) {
-      type cellType = "progress" | "assignedTask" | "task" | "noTask";
-      let colSpan = 1;
-      let cell: cellType =
-        record.userSpan > 0
-          ? "progress"
-          : column.key !== "AssignTasks" && column.key in record.task
-          ? "task"
-          : column.key === "AssignTasks" && column.key in record.task
-          ? "assignedTask"
-          : "noTask";
-      if (cell === "task" && column.key in record.timeRange) {
-        if (column.key === record.timeRange[column.key].start) {
-          const diff = dayjs(record.timeRange[column.key].end).diff(
-            record.timeRange[column.key].start,
-            "day"
-          );
-          if (!isNaN(diff)) {
-            colSpan = Math.abs(diff) + 1;
-          } else {
-            //! This should not happen
-            //! It will be happen when colum key in not a valid date string
-            console.error(
-              "Invalid Column key in timeRange: " +
-                record.timeRange[column.key].start +
-                " " +
-                record.timeRange[column.key].end
-            );
-          }
-        } else {
-          colSpan = 0;
-        }
-      }
-
-      return {
-        children: (
-          <div className="flex h-full w-full flex-col justify-start">
-            {cell === "progress" ? (
-              <div className="flex w-full items-center justify-center gap-2">
-                <Text
-                  className="w-[50px]"
-                  ellipsis={{
-                    tooltip: `Estimated: ${column.value.devProgress.estimatedTime.toFixed(
-                      2
-                    )}h, Spent: ${column.value.devProgress.spentTime.toFixed(
-                      2
-                    )}h`,
-                  }}
-                >
-                  {column.value.devProgress.estimatedTime
-                    ? `${Math.round(
-                        (column.value.devProgress.spentTime /
-                          column.value.devProgress.estimatedTime) *
-                          100
-                      )}%`
-                    : ""}
-                </Text>
-                <TimeProgressComponent
-                  spentTime={record.devProgress[column.key]?.spentTime}
-                  estimatedTime={record.devProgress[column.key]?.estimatedTime}
-                />
-              </div>
-            ) : cell === "task" ? (
-              <div
-                className={classNames(
-                  `flex h-full w-full justify-start rounded`,
-                  {
-                    ["bg-gray-100"]:
-                      record.task[column.key].statusCategoryName ===
-                      TaskStatusEnum.TO_DO,
-                    ["bg-statusInProgressBg"]:
-                      record.task[column.key].statusCategoryName ===
-                      TaskStatusEnum.IN_PROGRESS,
-                    ["bg-statusDoneBg"]:
-                      record.task[column.key].statusCategoryName ===
-                      TaskStatusEnum.DONE,
-                  }
-                )}
-              >
-                <Text
-                  key={record.task[column.key].key}
-                  className={`h-[24px] w-[${
-                    colSpan * 200
-                  }px] cursor-pointer text-left`}
-                  ellipsis={{ tooltip: record.task[column.key].title }}
-                >
-                  {record.task[column.key].title}
-                </Text>
-              </div>
-            ) : cell === "assignedTask" ? (
-              <div className="flex  w-full justify-start gap-2">
-                <div className={`flex w-[200px] justify-start`}>
-                  <Text
-                    key={record.task[column.key].key}
-                    className={classNames(`w-[200px] cursor-pointer`, {
-                      ["text-statusToDo"]:
-                        record.task[column.key].statusCategoryName ===
-                        TaskStatusEnum.TO_DO,
-                      ["text-statusInProgress"]:
-                        record.task[column.key].statusCategoryName ===
-                        TaskStatusEnum.IN_PROGRESS,
-                      ["text-statusDone"]:
-                        record.task[column.key].statusCategoryName ===
-                        TaskStatusEnum.DONE,
-                    })}
-                    ellipsis={{ tooltip: record.task[column.key].title }}
-                  >
-                    {record.task[column.key].title}
-                  </Text>
-                </div>
-                <div
-                  className={classNames(
-                    "relative flex w-max items-center gap-1 rounded-[36px] border px-2 py-0.5 text-xs font-medium text-black",
-                    {
-                      ["bg-statusToDoBg"]:
-                        record.task[column.key].statusCategoryName ===
-                        TaskStatusEnum.TO_DO,
-                      ["bg-statusInProgressBg"]:
-                        record.task[column.key].statusCategoryName ===
-                        TaskStatusEnum.IN_PROGRESS,
-                      ["bg-statusDoneBg"]:
-                        record.task[column.key].statusCategoryName ===
-                        TaskStatusEnum.DONE,
-
-                      ["border-statusToDo"]:
-                        record.task[column.key].statusCategoryName ===
-                        TaskStatusEnum.TO_DO,
-                      ["border-statusInProgress"]:
-                        record.task[column.key].statusCategoryName ===
-                        TaskStatusEnum.IN_PROGRESS,
-                      ["border-statusDone"]:
-                        record.task[column.key].statusCategoryName ===
-                        TaskStatusEnum.DONE,
-                    }
-                  )}
-                >
-                  <div
-                    className={classNames("h-2 w-2 rounded-full", {
-                      ["bg-statusToDo"]:
-                        record.task[column.key].statusCategoryName ===
-                        TaskStatusEnum.TO_DO,
-                      ["bg-statusInProgress"]:
-                        record.task[column.key].statusCategoryName ===
-                        TaskStatusEnum.IN_PROGRESS,
-                      ["bg-statusDone"]:
-                        record.task[column.key].statusCategoryName ===
-                        TaskStatusEnum.DONE,
-                    })}
-                  />
-
-                  <div className="w-[80px]">
-                    <Text
-                      ellipsis={{ tooltip: record.task[column.key].status }}
-                    >
-                      {record.task[column.key].status}
-                    </Text>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <Text
-                className="h-[24px] w-[200px] cursor-pointer"
-                ellipsis={{ tooltip: "No assigned tasks" }}
-              >
-                {/* {"--"} */}
-              </Text>
-            )}
-          </div>
-        ),
-        props: {
-          rowSpan: record.tasksSpan,
-          colSpan: colSpan,
-          style: {
-            paddingTop: 16,
-            paddingBottom: 16,
-            borderLeftWidth: cell == "task" || cell == "noTask" ? 0 : 1,
-            borderRightWidth: cell == "task" || cell == "noTask" ? 0 : 1,
-          },
-        },
-      };
-    } else {
-      return {
-        children: (
-          <Text
-            className="w-[200px] cursor-pointer"
-            ellipsis={{ tooltip: "No data" }}
-          >
-            {"--"}
-          </Text>
-        ),
-        props: {
-          rowSpan: record.tasksSpan,
-        },
-      };
-    }
-  };
-
+  const isMobile = useMediaQuery({ maxWidth: 767 });
   const columns: ColumnsType<SprintViewTimelineReportTableRow> = [
     {
       title: "Developer Name",
       dataIndex: "name",
-      fixed: "left",
+      fixed: isMobile ? null : "left",
       key: "name",
       onCell: (record, index) => {
         return {
-          rowSpan: index === 0 && record.groupRowIndex > 0 ? record.groupRows - record.groupRowIndex: record.userSpan,
-        }
+          rowSpan:
+            index === 0 && record.groupRowIndex > 0
+              ? record.groupRows - record.groupRowIndex
+              : record.userSpan,
+        };
       },
       render: (
         _: string,
@@ -291,7 +95,7 @@ const SprintViewTimelineReportTabel = ({ data, reportData }: Props) => {
         ),
         dataIndex: "AssignTasks",
         key: "AssignTasks",
-        fixed: "left",
+        fixed: isMobile ? null : "left",
         render: (
           value: SprintViewTimelineReportColumn,
           record: SprintViewTimelineReportTableRow
@@ -351,16 +155,13 @@ const SprintViewTimelineReportTabel = ({ data, reportData }: Props) => {
       <Table
         columns={columns}
         dataSource={data.rows}
-        rowKey={(rec) => rec.rowKey }
+        rowKey={(rec) => rec.rowKey}
         bordered
         pagination={{
-          // current: 1,
-          // pageSize: 500,
           showSizeChanger: true,
-          // showLessItems: true,
           position: ["bottomRight", "bottomLeft"],
         }}
-        scroll={{ x: true }}
+        scroll={{ x: "max-content" }}
       />
     </div>
   ) : (
@@ -376,3 +177,202 @@ const SprintViewTimelineReportTabel = ({ data, reportData }: Props) => {
 };
 
 export default SprintViewTimelineReportTabel;
+
+const renderTableTaskCell = (
+  record: SprintViewTimelineReportTableRow,
+  column: SprintViewTimelineReportColumn
+) => {
+  if (column.key in record.task || column.key in record.devProgress) {
+    type cellType = "progress" | "assignedTask" | "task" | "noTask";
+    let colSpan = 1;
+    let cell: cellType =
+      record.userSpan > 0
+        ? "progress"
+        : column.key !== "AssignTasks" && column.key in record.task
+        ? "task"
+        : column.key === "AssignTasks" && column.key in record.task
+        ? "assignedTask"
+        : "noTask";
+    if (cell === "task" && column.key in record.timeRange) {
+      if (column.key === record.timeRange[column.key].start) {
+        const diff = dayjs(record.timeRange[column.key].end).diff(
+          record.timeRange[column.key].start,
+          "day"
+        );
+        if (!isNaN(diff)) {
+          colSpan = Math.abs(diff) + 1;
+        } else {
+          //! This should not happen
+          //! It will be happen when colum key in not a valid date string
+          console.error(
+            "Invalid Column key in timeRange: " +
+              record.timeRange[column.key].start +
+              " " +
+              record.timeRange[column.key].end
+          );
+        }
+      } else {
+        colSpan = 0;
+      }
+    }
+
+    return {
+      children: (
+        <div className="flex h-full w-full flex-col justify-start">
+          {cell === "progress" ? (
+            <div className="flex w-full items-center justify-center gap-2">
+              <Text
+                className="w-[50px]"
+                ellipsis={{
+                  tooltip: `Estimated: ${column.value.devProgress.estimatedTime.toFixed(
+                    2
+                  )}h, Spent: ${column.value.devProgress.spentTime.toFixed(
+                    2
+                  )}h`,
+                }}
+              >
+                {column.value.devProgress.estimatedTime
+                  ? `${Math.round(
+                      (column.value.devProgress.spentTime /
+                        column.value.devProgress.estimatedTime) *
+                        100
+                    )}%`
+                  : ""}
+              </Text>
+              <TimeProgressComponent
+                spentTime={record.devProgress[column.key]?.spentTime}
+                estimatedTime={record.devProgress[column.key]?.estimatedTime}
+              />
+            </div>
+          ) : cell === "task" ? (
+            <div
+              className={classNames(
+                `flex h-full w-full justify-start rounded`,
+                {
+                  ["bg-gray-100"]:
+                    record.task[column.key].statusCategoryName ===
+                    TaskStatusEnum.TO_DO,
+                  ["bg-statusInProgressBg"]:
+                    record.task[column.key].statusCategoryName ===
+                    TaskStatusEnum.IN_PROGRESS,
+                  ["bg-statusDoneBg"]:
+                    record.task[column.key].statusCategoryName ===
+                    TaskStatusEnum.DONE,
+                }
+              )}
+            >
+              <Text
+                key={record.task[column.key].key}
+                className={`h-[24px] w-[${
+                  colSpan * 200
+                }px] cursor-pointer text-left`}
+                ellipsis={{ tooltip: record.task[column.key].title }}
+              >
+                {record.task[column.key].title}
+              </Text>
+            </div>
+          ) : cell === "assignedTask" ? (
+            <div className="flex  w-full justify-start gap-2">
+              <div className={`flex w-[200px] justify-start`}>
+                <Text
+                  key={record.task[column.key].key}
+                  className={classNames(`w-[200px] cursor-pointer`, {
+                    ["text-statusToDo"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.TO_DO,
+                    ["text-statusInProgress"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.IN_PROGRESS,
+                    ["text-statusDone"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.DONE,
+                  })}
+                  ellipsis={{ tooltip: record.task[column.key].title }}
+                >
+                  {record.task[column.key].title}
+                </Text>
+              </div>
+              <div
+                className={classNames(
+                  "relative flex w-max items-center gap-1 rounded-[36px] border px-2 py-0.5 text-xs font-medium text-black",
+                  {
+                    ["bg-statusToDoBg"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.TO_DO,
+                    ["bg-statusInProgressBg"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.IN_PROGRESS,
+                    ["bg-statusDoneBg"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.DONE,
+
+                    ["border-statusToDo"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.TO_DO,
+                    ["border-statusInProgress"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.IN_PROGRESS,
+                    ["border-statusDone"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.DONE,
+                  }
+                )}
+              >
+                <div
+                  className={classNames("h-2 w-2 rounded-full", {
+                    ["bg-statusToDo"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.TO_DO,
+                    ["bg-statusInProgress"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.IN_PROGRESS,
+                    ["bg-statusDone"]:
+                      record.task[column.key].statusCategoryName ===
+                      TaskStatusEnum.DONE,
+                  })}
+                />
+
+                <div className="w-[80px]">
+                  <Text ellipsis={{ tooltip: record.task[column.key].status }}>
+                    {record.task[column.key].status}
+                  </Text>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <Text
+              className="h-[24px] w-[200px] cursor-pointer"
+              ellipsis={{ tooltip: "No assigned tasks" }}
+            >
+              {"--"}
+            </Text>
+          )}
+        </div>
+      ),
+      props: {
+        rowSpan: record.tasksSpan,
+        colSpan: colSpan,
+        style: {
+          paddingTop: 16,
+          paddingBottom: 16,
+          borderLeftWidth: cell == "task" || cell == "noTask" ? 0 : 1,
+          borderRightWidth: cell == "task" || cell == "noTask" ? 0 : 1,
+        },
+      },
+    };
+  } else {
+    return {
+      children: (
+        <Text
+          className="w-[200px] cursor-pointer"
+          ellipsis={{ tooltip: "No data" }}
+        >
+          {"--"}
+        </Text>
+      ),
+      props: {
+        rowSpan: record.tasksSpan,
+      },
+    };
+  }
+};
