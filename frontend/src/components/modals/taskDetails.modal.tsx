@@ -161,7 +161,7 @@ const TaskDetailsModal = ({
                     statusBorderColorEnum[taskDetails?.statusCategoryName],
                 }}
               />
-              <div>{taskStatusEnum[taskDetails?.statusCategoryName]}</div>
+              <div>{taskDetails?.status}</div>
             </div>
           </div>
 
