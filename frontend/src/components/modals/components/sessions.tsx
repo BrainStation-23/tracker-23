@@ -12,6 +12,7 @@ import {
 } from "@/services/timeActions";
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { useState } from "react";
+import { useMediaQuery } from "react-responsive";
 
 type Props = {
   taskDetails: TaskDto;
@@ -27,6 +28,8 @@ const Sessions = ({
   SetSpinning,
 }: Props) => {
   const [form] = Form.useForm();
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+
   taskDetails.sessions.sort(
     (a, b) =>
       formatDate(b.startTime).getTime() - formatDate(a.startTime).getTime()
@@ -51,16 +54,17 @@ const Sessions = ({
       time: [dayjs(session.startTime), dayjs(session.endTime)],
     });
   };
+
   return (
     <>
       <h3 className="w-full  text-left text-base font-semibold">Sessions</h3>
-      <div className="flex max-h-64 w-full flex-col gap-3 overflow-y-scroll">
+      <div className="flex max-h-64 w-full flex-col gap-2">
         {endedSessions?.length > 0 && (
-          <div className="grid grid-cols-12 gap-4 font-semibold text-secondary">
+          <div className="grid grid-cols-12 gap-2 font-semibold text-secondary md:gap-4">
             <div className="col-span-1">No</div>
-            <div className="col-span-3">Date</div>
-            <div className="col-span-4">Time Stamp</div>
-            <div className="col-span-2">Hours</div>
+            <div className="col-span-3 text-center">Date</div>
+            <div className="col-span-4 text-center">Time Stamp</div>
+            <div className="col-span-2 text-center">Hours</div>
           </div>
         )}
         {endedSessions?.map((session: any, index: number) => {
@@ -70,15 +74,19 @@ const Sessions = ({
           return (
             <Form key={session.id} form={form} onFinish={onFinish}>
               <div
-                className="grid grid-cols-12 gap-4 text-sm font-medium"
+                className="grid grid-cols-12 gap-0.5 text-sm font-medium md:gap-4"
                 key={session.id}
               >
                 <div className="col-span-1 my-auto font-semibold">
                   #{index + 1}
                 </div>
-                <div className="col-span-3 my-auto">
+                <div className="col-span-3 my-auto text-center">
                   {session.id !== sessionInEdit ? (
-                    ` ${getFormattedTime(startTime)}`
+                    `  ${
+                      isMobile
+                        ? new Date(startTime).toLocaleDateString()
+                        : getFormattedTime(startTime)
+                    }`
                   ) : (
                     <>
                       <Form.Item
@@ -91,7 +99,7 @@ const Sessions = ({
                     </>
                   )}
                 </div>
-                <div className="col-span-4 my-auto">
+                <div className="col-span-4 my-auto text-center">
                   {session.id !== sessionInEdit ? (
                     <>
                       {`${getFormattedShortTime(startTime)} `} -
@@ -105,18 +113,17 @@ const Sessions = ({
                         rules={[{ required: true }]}
                       >
                         <TimePicker.RangePicker
-                          format={"HH:mm"}
+                          format={"hh:mm a"}
                           className="w-full"
                         />
                       </Form.Item>
                     </div>
                   )}
                 </div>
-                <div className="col-span-2 my-auto">
-                  {" "}
+                <div className="col-span-2 my-auto text-center">
                   {getFormattedTotalTime(endTime - startTime)}
                 </div>
-                <div className="col-span-2 mr-3 flex items-center justify-end gap-2">
+                <div className="col-span-2 flex items-center justify-end gap-2">
                   {taskDetails.userWorkspaceId === session.userWorkspaceId ? (
                     session.id !== sessionInEdit ? (
                       <>

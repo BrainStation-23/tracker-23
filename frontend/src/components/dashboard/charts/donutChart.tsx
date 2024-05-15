@@ -42,14 +42,10 @@ const DonutChart = ({ data, total }: any) => {
     legendTemplate.layout = "horizontal";
     chart.innerRadius = am4core.percent(55);
 
-    return () => {
-      chart.dispose();
-    };
+    return () => chart.dispose();
   }, [data, total]);
 
-  return (
-    <div ref={chartRef} className="w-3/4" style={{ height: "500px" }}></div>
-  );
+  return <div ref={chartRef} className="w-3/4" style={{ height: "500px" }} />;
 };
 
 export default DonutChart;
