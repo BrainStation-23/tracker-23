@@ -323,9 +323,12 @@ const TableComponent = ({
       key: "estimation",
       title: `Estimation (${totalEstimation} H)`,
       dataIndex: "estimation",
-      render: (_: any, task: TaskDto) => (
-        <EstimationComponent {...{ task, handleEstimationChange }} />
-      ),
+      render: (_: any, task: TaskDto) =>
+        task.source == "OUTLOOK" ? (
+          <p className="w-full text-center">N/A</p>
+        ) : (
+          <EstimationComponent {...{ task, handleEstimationChange }} />
+        ),
       sorter: (a: any, b: any) => a.estimation - b.estimation,
     },
     {

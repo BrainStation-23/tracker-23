@@ -10,21 +10,30 @@ import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
 import "react-toastify/dist/ReactToastify.css";
+import { useRouter } from "next/router";
 
 const Layout = ({ children }: { children: ReactNode }) => {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [approvedUser, setApprovedUser] = useState(true);
   const user = useAppSelector((state: RootState) => state.userSlice.user);
 
   useEffect(() => {
     const userInfo = getLocalStorage("userDetails");
+    const path = router.asPath;
+    if (!userInfo?.access_token) {
+      router.push("/login");
+    }
+    if (["/login", "/register"].some((route) => path.includes(route))) {
+      router.push("/");
+    }
     if (userInfo && userInfo.email && !userInfo.approved) {
       setApprovedUser(false);
     } else {
       setApprovedUser(true);
     }
     setIsLoading(false);
-  }, [user]);
+  }, [router, user]);
 
   return (
     <Spin spinning={isLoading}>
@@ -32,6 +41,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <link rel="icon" href="/images/bsIcon.png" />
         <title>Tracker 23</title>
       </Head>
+      {/* <ValidUserLayout>{children}</ValidUserLayout> */}
       {approvedUser ? (
         <ValidUserLayout>{children}</ValidUserLayout>
       ) : (
