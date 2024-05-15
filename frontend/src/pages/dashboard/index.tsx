@@ -21,8 +21,8 @@ const DashboardPage = () => {
   const [weekData, setWeekData] = useState(null);
   const [dataDonut, setDataDonut] = useState(null);
   const [tasks, setTasks] = useState<TaskDto[]>([]);
-  const [dataDonutTotal, setDataDonutTotal] = useState(0);
   const [warningData, setWarningData] = useState<any>([]);
+  const [dataDonutTotal, setDataDonutTotal] = useState(0);
   const [dataFetched, setDataFetched] = useState<boolean>(false);
   const [runningTask, setRunningTask] = useState<TaskDto | null>(null);
   const [warningModalOpen, setWarningModalOpen] = useState<boolean>(false);
@@ -164,10 +164,10 @@ const DashboardPage = () => {
       await getSpentTimePerDay();
       setDataFetched(true);
     };
-    
-    if(reload){
+
+    if (reload) {
       getData();
-      setReload(false)
+      setReload(false);
     }
   }, [reload]);
 
