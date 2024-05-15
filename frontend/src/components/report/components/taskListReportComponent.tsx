@@ -91,8 +91,8 @@ const TaskListReportComponent = ({
               (task.source === "TRACKER23" ? (
                 <>{urlToKeyword(task.source, dataSource)}</>
               ) : (
-                <Link target="_blank" href={dataSource}>
-                  {urlToKeyword(task.source, dataSource)}
+                <Link target="_blank" href={task?.url ?? dataSource}>
+                  <Text ellipsis={{ tooltip: task?.url ?? dataSource }}>{urlToKeyword(task.source, dataSource)}</Text>
                 </Link>
               ))}
           </Text>
