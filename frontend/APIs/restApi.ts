@@ -255,6 +255,8 @@ export async function getTaskListReportRest(searchParams: SearchParamsModel) {
       tmp = tmp.concat(projectIds);
     if (types.includes("OUTLOOK") && calendarIds?.length > 0)
       tmp = tmp.concat(calendarIds);
+  }else if(projectIds?.length > 0){
+    tmp = tmp.concat(projectIds);
   }
   try {
     const res = await api.get(

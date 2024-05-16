@@ -1,0 +1,38 @@
+.style-wrapper-datepicker .ant-picker-panel:last-child {
+    width: 0;
+  }
+  
+  .style-wrapper-datepicker .ant-picker-panel:last-child .ant-picker-header {
+    position: absolute;
+    right: 0;
+  }
+  
+  .style-wrapper-datepicker .ant-picker-panel:last-child .ant-picker-header .ant-picker-header-prev-btn,
+  .style-wrapper-datepicker .ant-picker-panel:last-child .ant-picker-header .ant-picker-header-view {
+    visibility: hidden;
+  }
+  
+  .style-wrapper-datepicker .ant-picker-panel:last-child .ant-picker-body {
+    display: none;
+  }
+  
+  @media (min-width: 768px) {
+    .style-wrapper-datepicker .ant-picker-panel:last-child {
+      width: 280px !important;
+    }
+  
+    .style-wrapper-datepicker .ant-picker-panel:last-child .ant-picker-header {
+      position: relative;
+      overflow: scroll;
+    }
+  
+    .style-wrapper-datepicker .ant-picker-panel:last-child .ant-picker-header .ant-picker-header-prev-btn,
+    .style-wrapper-datepicker .ant-picker-panel:last-child .ant-picker-header .ant-picker-header-view {
+      visibility: initial;
+    }
+  
+    .style-wrapper-datepicker .ant-picker-panel:last-child .ant-picker-body {
+      display: block;
+    }
+  }
+  
