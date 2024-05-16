@@ -24,8 +24,11 @@ const Layout = ({ children }: { children: ReactNode }) => {
     if (!userInfo?.access_token) {
       router.push("/login");
     }
-    if (["/login", "/register"].some((route) => path.includes(route))) {
-      router.push("/");
+    if (
+      ["/login", "/register"].some((route) => path.includes(route)) &&
+      userInfo?.access_token
+    ) {
+      router.push("/taskList");
     }
     if (userInfo && userInfo.email && !userInfo.approved) {
       setApprovedUser(false);
@@ -41,7 +44,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <link rel="icon" href="/images/bsIcon.png" />
         <title>Tracker 23</title>
       </Head>
-      {/* <ValidUserLayout>{children}</ValidUserLayout> */}
       {approvedUser ? (
         <ValidUserLayout>{children}</ValidUserLayout>
       ) : (
