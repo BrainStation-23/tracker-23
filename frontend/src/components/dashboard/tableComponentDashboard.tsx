@@ -53,7 +53,12 @@ const DashboardTableComponent = ({
               <div className="h-1 p-4" />
             )}
             <div className="flex flex-col gap-2">
-              <Text ellipsis={{ tooltip: task?.title }}>{task?.title}</Text>
+              <Text
+                className="w-28 cursor-pointer md:w-60"
+                ellipsis={{ tooltip: task?.title }}
+              >
+                {task?.title}
+              </Text>
               <div className="flex cursor-pointer gap-2">
                 {task.projectName && (
                   <div

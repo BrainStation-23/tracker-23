@@ -22,6 +22,9 @@ import { CalendarOutlined, EditOutlined } from "@ant-design/icons";
 // Types
 import { FilterDateType, FilterReverseDateType } from "models/reports";
 import classNames from "classnames";
+
+import StyleWrapperDatePicker from "./styleWrapperDatePicker";
+
 type Props = {
   className?: string;
   loading?: boolean;
@@ -168,7 +171,7 @@ const DateRangePicker = ({
                 format={"DD/MM/YYYY"}
                 allowClear={false}
                 bordered={false}
-                inputReadOnly={true}
+                inputReadOnly={false}
                 autoFocus={true}
                 popupClassName="custom-rangePicker-dropdown"
                 needConfirm
@@ -183,6 +186,11 @@ const DateRangePicker = ({
                     setDropdownOpen(false);
                   }
                 }}
+                panelRender = {(panelNode) => (
+                  <StyleWrapperDatePicker>
+                    {panelNode}
+                  </StyleWrapperDatePicker>
+                )}
               />
             </div>
           )}
