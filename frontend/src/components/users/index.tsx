@@ -30,7 +30,7 @@ const UsersComponent = () => {
   useEffect(() => {
     if (user.email === config.NEXT_PUBLIC_ADMIN_EMAIL) {
       getUserList();
-    } else router.push("/");
+    } else router.push("/taskList");
   }, [router, user]);
 
   return (
