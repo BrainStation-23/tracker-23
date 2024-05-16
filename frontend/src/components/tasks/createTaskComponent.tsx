@@ -76,7 +76,7 @@ const CreateTaskComponent = ({ createTask }: any) => {
     const formattedValues: CreateTaskDto = getFormattedValues(values);
     await createTask(formattedValues);
     setCreatingTask(false);
-    form.resetFields();
+    resetAll();
   };
 
   const handleFrequencyChange = (value: string) => {

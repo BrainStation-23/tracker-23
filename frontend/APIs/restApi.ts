@@ -211,6 +211,9 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
       tmp = tmp.concat(projectIds);
     if (types.includes("OUTLOOK") && calendarIds?.length > 0)
       tmp = tmp.concat(calendarIds);
+  }else if (projectIds?.length > 0){
+    // TRACKER23 projects
+    tmp = tmp.concat(projectIds);
   }
   const userIds = searchParams?.userIds;
   try {
@@ -252,6 +255,8 @@ export async function getTaskListReportRest(searchParams: SearchParamsModel) {
       tmp = tmp.concat(projectIds);
     if (types.includes("OUTLOOK") && calendarIds?.length > 0)
       tmp = tmp.concat(calendarIds);
+  }else if(projectIds?.length > 0){
+    tmp = tmp.concat(projectIds);
   }
   try {
     const res = await api.get(

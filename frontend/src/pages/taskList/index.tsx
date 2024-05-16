@@ -394,6 +394,16 @@ const TasksPage = () => {
     publicRoutes.some((route) => path.includes(route)),
   ]);
 
+  useEffect(() => {
+    // Feature for Calendar checkbox.
+    // TODO: Include list of calendars if added more calendar later or improve the logic
+    if(checkedOptionList.includes("Calendar") && !selectedSource.includes("OUTLOOK")){
+      // setSelectedSource([...selectedSource, "OUTLOOK"]) // It's not updating the UI
+      message.warning("Please select Calendar source (e.g. OUTLOOK)");
+    }
+  }, [checkedOptionList])
+
+
   return (
     <TaskContext.Provider
       value={{

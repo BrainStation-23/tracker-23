@@ -3,8 +3,10 @@ import { useEffect } from "react";
 import * as am4charts from "@amcharts/amcharts4/charts";
 import * as am4core from "@amcharts/amcharts4/core";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
+import { useMediaQuery } from "react-responsive";
 
 export default function XYChart({ data }: any) {
+  const isMobile = useMediaQuery({ maxWidth: 767 });
   useEffect(() => {
     am4core.useTheme(am4themes_animated);
     const chart = am4core.create("chartDiv", am4charts.XYChart);
@@ -33,7 +35,7 @@ export default function XYChart({ data }: any) {
     series.columns.template.tooltipText = "{categoryX}: [bold]{valueY}[/]";
 
     const columnTemplate = series.columns.template;
-    columnTemplate.width = 19;
+    columnTemplate.width = isMobile ? 30 : 100;
     columnTemplate.strokeWidth = 2;
     columnTemplate.strokeOpacity = 1;
     //@ts-ignore

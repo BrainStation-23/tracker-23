@@ -226,8 +226,8 @@ const TableComponent = ({
             (task.source === "TRACKER23" ? (
               <>{urlToKeyword(task.source, dataSource)}</>
             ) : (
-              <Link target="_blank" href={dataSource}>
-                {urlToKeyword(task.source, dataSource)}
+              <Link target="_blank" href={task?.url ?? dataSource}>
+                <Text ellipsis={{ tooltip: task?.url ?? dataSource }}>{urlToKeyword(task.source, dataSource)}</Text>
               </Link>
             ))}
         </div>
@@ -323,9 +323,12 @@ const TableComponent = ({
       key: "estimation",
       title: `Estimation (${totalEstimation} H)`,
       dataIndex: "estimation",
-      render: (_: any, task: TaskDto) => (
-        <EstimationComponent {...{ task, handleEstimationChange }} />
-      ),
+      render: (_: any, task: TaskDto) =>
+        task.source == "OUTLOOK" ? (
+          <p className="w-full text-center">N/A</p>
+        ) : (
+          <EstimationComponent {...{ task, handleEstimationChange }} />
+        ),
       sorter: (a: any, b: any) => a.estimation - b.estimation,
     },
     {

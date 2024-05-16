@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // Components
 import {
@@ -8,7 +8,6 @@ import {
   Divider,
   Dropdown,
   MenuProps,
-  Popover,
   Tooltip,
   theme,
 } from "antd";
@@ -23,6 +22,9 @@ import { CalendarOutlined, EditOutlined } from "@ant-design/icons";
 // Types
 import { FilterDateType, FilterReverseDateType } from "models/reports";
 import classNames from "classnames";
+
+import StyleWrapperDatePicker from "./styleWrapperDatePicker";
+
 type Props = {
   className?: string;
   loading?: boolean;
@@ -38,12 +40,7 @@ const DateRangePicker = ({
   setSelectedDate,
   setFilterDateType,
 }: Props) => {
-  const [customDateValue, setCustomDateValue] = useState<any>([
-    dayjs(),
-    dayjs(),
-  ]);
   const [dateRangeType, setDateRangeType] = useState<string>("this-week");
-  const [customDateOpen, setCustomDateOpen] = useState<boolean>(false);
   const [dropdownText, setDropdownText] = useState<any>(selectedDate);
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const [customDateText, setCustomDateText] = useState<any>(
@@ -113,7 +110,6 @@ const DateRangePicker = ({
       // @ts-ignore
       setFilterDateType && setFilterDateType(FilterReverseDateType[val.key]);
       setDropdownOpen(false);
-      customDateOpen && setCustomDateOpen(false);
     },
   };
 
@@ -127,6 +123,11 @@ const DateRangePicker = ({
   const menuStyle = {
     boxShadow: "none",
   };
+
+  useEffect(() => {
+    setDropdownText(customDateText);
+    setSelectedDate(customDateText);
+  }, [customDateText])
 
   return (
     <div
@@ -154,7 +155,6 @@ const DateRangePicker = ({
           open={dropdownOpen}
           onOpenChange={(open) => {
             setDropdownOpen(open);
-            customDateOpen && !open && setCustomDateOpen(false);
           }}
           dropdownRender={(menu) => (
             <div style={contentStyle}>
@@ -163,74 +163,35 @@ const DateRangePicker = ({
               })}
 
               <Divider style={{ margin: 0 }} />
-              <div style={{ padding: 8 }}>
-                <Popover
-                  placement="left"
-                  title={"Custom Date"}
-                  open={customDateOpen}
-                  content={
-                    <div className="flex w-[570px] flex-col gap-3 ">
-                      <RangePicker
-                        defaultValue={[dayjs(), dayjs()]}
-                        value={customDateValue}
-                        format={"DD/MM/YYYY"}
-                        clearIcon={false}
-                        open={customDateOpen}
-                        bordered={false}
-                        inputReadOnly={true}
-                        autoFocus={true}
-                        className="w-[250px]"
-                        popupClassName="custom-rangePicker-dropdown"
-                        onChange={(values) => {
-                          setCustomDateValue(values);
-                          setCustomDateText([
-                            localFormat(values[0]),
-                            localFormat(values[1]),
-                          ]);
-                        }}
-                      />
-                      <div className="mt-[300px] flex flex-row-reverse gap-3 px-3">
-                        <Button
-                          onClick={() => {
-                            setFilterDateType &&
-                              setFilterDateType(FilterDateType.CUSTOM_DATE);
-                            setDropdownText(customDateText);
-                            setSelectedDate(customDateText);
-                            setCustomDateOpen(!customDateOpen);
-                            setDropdownOpen(!customDateOpen);
-                          }}
-                        >
-                          Confirm{" "}
-                        </Button>
-                        <Button
-                          onClick={() => setCustomDateOpen(!customDateOpen)}
-                        >
-                          Cancel{" "}
-                        </Button>
-                      </div>
-                    </div>
-                  }
-                  trigger="click"
-                >
-                  <Button
-                    className="flex w-full items-center pl-1.5 text-left hover:bg-gray-100"
-                    type="text"
-                    style={{
-                      clear: "both",
-                      margin: 0,
-                      fontWeight: "normal",
-                      fontSize: "14px",
-                      lineHeight: 1.5714285714285714,
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                      borderRadius: "4px",
-                    }}
-                    onClick={() => setCustomDateOpen(!customDateOpen)}
-                  >
-                    <EditOutlined /> <div> Custom Date</div>
-                  </Button>
-                </Popover>
+              <div className="px-3 py-1 flex flex-row gap-2">
+                <EditOutlined /> <div> Custom Date</div>
               </div>
+
+              <RangePicker
+                format={"DD/MM/YYYY"}
+                allowClear={false}
+                bordered={false}
+                inputReadOnly={false}
+                autoFocus={true}
+                popupClassName="custom-rangePicker-dropdown"
+                needConfirm
+                allowEmpty={[false, false]}
+                onOk={(values) => {
+                  if(values[0] && values[1]){
+                    setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+                    setCustomDateText([
+                      localFormat(values[0]),
+                      localFormat(values[1]),
+                    ]);
+                    setDropdownOpen(false);
+                  }
+                }}
+                panelRender = {(panelNode) => (
+                  <StyleWrapperDatePicker>
+                    {panelNode}
+                  </StyleWrapperDatePicker>
+                )}
+              />
             </div>
           )}
         >

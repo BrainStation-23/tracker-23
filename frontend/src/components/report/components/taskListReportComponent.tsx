@@ -38,14 +38,14 @@ const TaskListReportComponent = ({
   const columns: any = [
     {
       key: "title",
-      fixed: "left",
+      fixed: isMobile ? "false" : "left",
       title: "Title",
       dataIndex: "title",
-      width: isMobile ? 100 : 320,
+      width: isMobile ? 100 : 256,
       render: (_: any, { title }: TaskDto) => (
         <div className="text-left">
           <Text
-            className="w-32 font-semibold md:w-80"
+            className="w-32 font-semibold lg:w-64"
             ellipsis={{
               tooltip: title,
             }}
@@ -91,8 +91,8 @@ const TaskListReportComponent = ({
               (task.source === "TRACKER23" ? (
                 <>{urlToKeyword(task.source, dataSource)}</>
               ) : (
-                <Link target="_blank" href={dataSource}>
-                  {urlToKeyword(task.source, dataSource)}
+                <Link target="_blank" href={task?.url ?? dataSource}>
+                  <Text ellipsis={{ tooltip: task?.url ?? dataSource }}>{urlToKeyword(task.source, dataSource)}</Text>
                 </Link>
               ))}
           </Text>
