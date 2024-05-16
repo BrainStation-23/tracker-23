@@ -11,6 +11,7 @@ import { RootState } from "@/storage/redux/store";
 
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/router";
+import { publicRoutes } from "utils/constants";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
@@ -21,15 +22,20 @@ const Layout = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const userInfo = getLocalStorage("userDetails");
     const path = router.asPath;
-    if (!userInfo?.access_token) {
+    if (
+      !userInfo?.access_token &&
+      !publicRoutes.some((route) => path.includes(route))
+    ) {
       router.push("/login");
     }
     if (
-      ["/login", "/register"].some((route) => path.includes(route)) &&
-      userInfo?.access_token
+      userInfo?.approved &&
+      userInfo?.access_token &&
+      publicRoutes.some((route) => path.includes(route))
     ) {
       router.push("/taskList");
     }
+
     if (userInfo && userInfo.email && !userInfo.approved) {
       setApprovedUser(false);
     } else {
