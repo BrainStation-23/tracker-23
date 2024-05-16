@@ -160,7 +160,7 @@ const SideMenu = ({ toggleCollapsed }: { toggleCollapsed: () => void }) => {
           <div
             className="flex w-full gap-2 px-5 pt-8 text-left"
             onClick={() => {
-              router.push("/");
+              router.push("/taskList");
             }}
           >
             <div className="cursor-pointer">
