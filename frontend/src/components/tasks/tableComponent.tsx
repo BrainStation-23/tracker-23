@@ -221,13 +221,15 @@ const TableComponent = ({
       dataIndex: "dataSource",
       render: (dataSource: string, task: TaskDto) => (
         <div className="flex max-w-[150px] items-center gap-2">
-          <div>{integrationIcons[task.source]} </div>
+          {integrationIcons[task.source]}
           {dataSource &&
             (task.source === "TRACKER23" ? (
               <>{urlToKeyword(task.source, dataSource)}</>
             ) : (
               <Link target="_blank" href={task?.url ?? dataSource}>
-                <Text ellipsis={{ tooltip: task?.url ?? dataSource }}>{urlToKeyword(task.source, dataSource)}</Text>
+                <Text ellipsis={{ tooltip: task?.url ?? dataSource }}>
+                  {urlToKeyword(task.source, dataSource)}
+                </Text>
               </Link>
             ))}
         </div>

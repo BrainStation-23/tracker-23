@@ -9,12 +9,7 @@ const AuthPage = () => {
   const router = useRouter();
   const path = router.asPath;
   return (
-    <div
-      className="h-screen w-full md:grid md:grid-cols-2"
-      style={{
-        borderColor: "#E0E0E0",
-      }}
-    >
+    <div className="h-screen w-full md:grid md:grid-cols-2">
       <AuthLeftPanel />
       {path.includes("login") && <LoginPanel />}
       {path.includes("forgotPassword") && <ForgotPasswordPanel />}

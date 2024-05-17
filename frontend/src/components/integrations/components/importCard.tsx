@@ -16,6 +16,8 @@ import OutlookLogoSvg from "@/assets/svg/OutlookLogoSvg";
 import TrelloLogoSvg from "@/assets/svg/TrelloLogoSvg";
 import DeleteButton from "@/components/common/buttons/deleteButton";
 import OpenLinkInNewTab from "@/components/common/link/OpenLinkInNewTab";
+import Image from "next/image";
+import Icon from "@/assets/images/icon.png";
 
 type Props = {
   data: IntegrationDto;
@@ -125,4 +127,5 @@ export const integrationIcons: any = {
   JIRA: <JiraIconSvg />,
   TRELLO: <TrelloLogoSvg />,
   OUTLOOK: <OutlookLogoSvg />,
+  TRACKER23: <Image alt="tracker 23 icon" src={Icon} height={20} width={20} />,
 };
