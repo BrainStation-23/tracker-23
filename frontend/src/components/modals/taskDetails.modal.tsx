@@ -1,23 +1,19 @@
-import { message, Modal, Spin } from "antd";
 import { userAPI } from "APIs";
-import { AddWorkLogParams, TaskDto } from "models/tasks";
 import { useState } from "react";
-import {
-  statusBGColorEnum,
-  statusBorderColorEnum,
-  taskStatusEnum,
-} from "utils/constants";
-
-import { localFormat, timeFormat } from "@/components/common/datePicker";
-import OpenLinkInNewTab from "@/components/common/link/OpenLinkInNewTab";
-import {
-  getFormattedTotalTime,
-  getTotalSpentTime,
-} from "@/services/timeActions";
+import { message, Modal, Spin } from "antd";
+import { AddWorkLogParams, TaskDto } from "models/tasks";
 
 import Sessions from "./components/sessions";
+import { localFormat, timeFormat } from "@/components/common/datePicker";
+import OpenLinkInNewTab from "@/components/common/link/OpenLinkInNewTab";
+import TablePriorityComponent from "@/components/common/tableComponents/tablePriorityComponent";
+
+import {
+  getTotalSpentTime,
+  getFormattedTotalTime,
+} from "@/services/timeActions";
 import { urlToKeyword } from "@/services/helpers";
-import TablePriorityComponent from "../common/tableComponents/tablePriorityComponent";
+import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 
 type Props = {
   task: TaskDto;
@@ -166,17 +162,16 @@ const TaskDetailsModal = ({
             </div>
           </div>
 
-
-          {taskDetails?.priority && <div className="flex items-center gap-4">
-            <span className="w-[120px] text-sm font-semibold text-secondary ">
-              Priority
-            </span>
-            <div
-              className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black"
-            >
-              <TablePriorityComponent task={taskDetails} />
+          {taskDetails?.priority && (
+            <div className="flex items-center gap-4">
+              <span className="w-[120px] text-sm font-semibold text-secondary ">
+                Priority
+              </span>
+              <div className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black">
+                <TablePriorityComponent task={taskDetails} />
+              </div>
             </div>
-          </div>}
+          )}
 
           <div className="flex w-full items-center gap-2 md:gap-4">
             <span className="w-[120px] text-sm font-semibold text-secondary ">

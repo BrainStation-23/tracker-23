@@ -1,12 +1,13 @@
 import { Modal, Spin } from "antd";
 import { useEffect, useState } from "react";
+import Logo from "@/assets/images/logo.png";
 
-import BSLogoSvg from "@/assets/svg/BSLogoSvg";
 import AuthHeader from "@/components/auth/components/authHeader";
 import GoogleLogin from "@/components/auth/components/googleLogin";
 import LoginFormInvitedUser from "@/components/auth/forms/loginFormInvitedUser";
 import MyDivider from "@/components/common/MyDivider";
 import { LoadingOutlined } from "@ant-design/icons";
+import Image from "next/image";
 
 type Props = {
   email?: string;
@@ -18,7 +19,7 @@ const LoginPanelInviteLink = ({ email, onlySocialLogin }: Props) => {
   return (
     <div className="flex">
       <div className="m-auto flex h-fit max-w-[60%] flex-col gap-6 lg:max-w-[70%]">
-        <BSLogoSvg height={40} />
+        <Image alt="tracker 23 logo" src={Logo} width={300} />
         <AuthHeader
           title={"Sign in to account"}
           subTitle={"   Sign up or log in to start tracking your time"}
