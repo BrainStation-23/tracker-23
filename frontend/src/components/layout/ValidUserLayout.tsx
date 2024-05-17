@@ -285,7 +285,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
         ) : (
           <div className="flex h-full w-full">
             <Head>
-              <link rel="icon" href="/images/bsIcon.png" />
+              <link rel="icon" href="/tracker_icon.png" />
               <title>Tracker 23</title>
             </Head>
             {!isPublicRoute && !path.includes("onBoarding") && (

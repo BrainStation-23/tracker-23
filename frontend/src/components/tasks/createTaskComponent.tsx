@@ -11,20 +11,20 @@ import {
   TimePicker,
 } from "antd";
 import dayjs from "dayjs";
+import { useEffect, useRef, useState } from "react";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
-import React, { useEffect, useRef, useState } from "react";
 import { SizeType } from "antd/es/config-provider/SizeContext";
 
 import PrimaryButton from "@/components/common/buttons/primaryButton";
 import SecondaryButton from "@/components/common/buttons/secondaryButton";
 import MyInputCreateTask from "@/components/common/form/MyInputCreateTask";
+import RecurrentTaskCreationComponent from "./recurrentTaskCreationComponent";
+import AddLocalProject from "@/components/integrations/projectImport/addLocalProject";
 
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 
 import { CreateTaskDto, CreateTaskValues } from "models/tasks";
-import RecurrentTaskCreationComponent from "./recurrentTaskCreationComponent";
-import AddLocalProject from "@/components/integrations/projectImport/addLocalProject";
 
 const size: SizeType = "middle";
 const options: SelectProps["options"] = [];

@@ -47,7 +47,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <Spin spinning={isLoading}>
       <Head>
-        <link rel="icon" href="/images/bsIcon.png" />
+        <link rel="icon" href="/tracker_icon.png" />
         <title>Tracker 23</title>
       </Head>
       {approvedUser ? (

@@ -23,29 +23,32 @@ const DonutChart = ({ data, total }: any) => {
       am4core.color("#8D99AE"),
     ];
     pieSeries.dataFields.value = "value";
-    pieSeries.dataFields.category = "projectName";
-    pieSeries.labels.template.disabled = true;
     pieSeries.ticks.template.disabled = true;
+    pieSeries.labels.template.disabled = true;
+    pieSeries.dataFields.category = "projectName";
+
     const label = chart.seriesContainer.createChild(am4core.Label);
-    label.text = `Total ${total} hours`;
-    label.horizontalCenter = "middle";
     label.verticalCenter = "middle";
+    label.horizontalCenter = "middle";
+    label.text = `Total ${total} hours`;
     label.fontSize = isMobile ? 14 : 20;
 
     chart.legend = new am4charts.Legend();
     chart.legend.position = "bottom";
+
     const legendTemplate = chart.legend.itemContainers.template.createChild(
       am4core.Container
     );
     legendTemplate.width = am4core.percent(20);
     legendTemplate.padding(4, 4, 4, 4);
     legendTemplate.layout = "horizontal";
+
     chart.innerRadius = am4core.percent(55);
 
     return () => chart.dispose();
-  }, [data, total]);
+  }, [data, isMobile, total]);
 
-  return <div ref={chartRef} className="w-3/4" style={{ height: "500px" }} />;
+  return <div ref={chartRef} className="w-full" style={{ height: "500px" }} />;
 };
 
 export default DonutChart;

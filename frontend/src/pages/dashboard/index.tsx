@@ -35,8 +35,8 @@ const DashboardPage = () => {
     pagination: {
       current: 1,
       pageSize: 10,
-      showSizeChanger: true,
       showLessItems: true,
+      showSizeChanger: true,
       position: ["bottomRight", "bottomLeft"],
     },
   });

@@ -17,8 +17,8 @@ import {
   LuUserCircle2,
 } from "react-icons/lu";
 import { useDispatch } from "react-redux";
+import Logo from "@/assets/images/logo.png";
 
-import BSLogoSvg from "@/assets/svg/BSLogoSvg";
 import DeleteIconSvg from "@/assets/svg/DeleteIconSvg";
 import MyLink from "@/components/common/link/MyLink";
 import GlobalModal from "@/components/modals/globalModal";
@@ -29,6 +29,7 @@ import { LoadingOutlined } from "@ant-design/icons";
 
 import DeleteReportPageWarning from "./components/deletePageWarning";
 import WorkspaceNav from "./components/workspaceNav";
+import Image from "next/image";
 
 const { Text } = Typography;
 
@@ -158,20 +159,18 @@ const SideMenu = ({ toggleCollapsed }: { toggleCollapsed: () => void }) => {
       <div className="flex h-full w-full flex-col justify-between">
         <div className="flex w-full flex-col gap-6">
           <div
-            className="flex w-full gap-2 px-5 pt-8 text-left"
+            className="w-full"
             onClick={() => {
               router.push("/taskList");
             }}
           >
-            <div className="cursor-pointer">
-              <BSLogoSvg />
-            </div>
+            <Image alt="tracker 23 logo" src={Logo} width={200} />
           </div>
           <div
             style={{
               maxHeight: "calc(100vh - 220px)",
             }}
-            className="flex w-full flex-col gap-6 overflow-y-auto px-5"
+            className="flex w-full flex-col gap-6 overflow-y-auto pl-4 pr-2.5"
           >
             <div className="flex flex-col gap-1">
               <div
@@ -351,9 +350,7 @@ const SideMenu = ({ toggleCollapsed }: { toggleCollapsed: () => void }) => {
             </div>
           </div>
         </div>
-        <div className="p-4">
-          <WorkspaceNav />
-        </div>
+        <WorkspaceNav />
       </div>
       <GlobalModal
         title="Deleting Report Page"

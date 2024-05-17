@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 
-import * as am4charts from "@amcharts/amcharts4/charts";
-import * as am4core from "@amcharts/amcharts4/core";
-import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import { useMediaQuery } from "react-responsive";
+import * as am4core from "@amcharts/amcharts4/core";
+import * as am4charts from "@amcharts/amcharts4/charts";
+import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 
 export default function XYChart({ data }: any) {
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -15,10 +15,7 @@ export default function XYChart({ data }: any) {
     categoryAxis.dataFields.category = "day";
     categoryAxis.renderer.grid.template.location = null;
     categoryAxis.renderer.grid.template.strokeOpacity = 0;
-
-    categoryAxis.renderer.labels.template.adapter.add("dy", (dy: any) => {
-      return dy;
-    });
+    categoryAxis.renderer.labels.template.adapter.add("dy", (dy) => dy);
 
     const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
     valueAxis.min = 0;
@@ -35,15 +32,15 @@ export default function XYChart({ data }: any) {
     series.columns.template.tooltipText = "{categoryX}: [bold]{valueY}[/]";
 
     const columnTemplate = series.columns.template;
-    columnTemplate.width = isMobile ? 30 : 100;
     columnTemplate.strokeWidth = 2;
-    columnTemplate.strokeOpacity = 1;
     //@ts-ignore
     columnTemplate.fill = "#00A3DE";
+    columnTemplate.strokeOpacity = 1;
+    columnTemplate.width = isMobile ? 30 : 60;
 
     // Clean up
     return () => chart.dispose();
-  }, [data]);
+  }, [data, isMobile]);
 
-  return <div id="chartDiv" style={{ width: "100%", height: "500px" }}></div>;
+  return <div id="chartDiv" style={{ width: "100%", height: "500px" }} />;
 }

@@ -237,68 +237,61 @@ const WorkspaceNav = () => {
   return (
     <>
       <Dropdown
-        menu={{ items: menuItems }}
+        arrow
         trigger={["click"]}
         placement="topRight"
-        arrow
-        dropdownRender={dropdownRender}
-        // className="w-[250px]"
         open={isDropdownOpen}
-        onOpenChange={(v) => {
-          setDropdownOpen(v);
-        }}
+        menu={{ items: menuItems }}
+        dropdownRender={dropdownRender}
+        onOpenChange={(v) => setDropdownOpen(v)}
       >
-        <div className="flex h-max cursor-pointer items-center rounded-lg border-2 p-1">
-          <div className="ice grid grid-cols-12 gap-2">
-            <Avatar
-              className="col-span-3 flex h-[48px] w-[48px] flex-col justify-center rounded font-medium text-primary"
-              size={"large"}
-            >
-              {activeWorkspace?.name?.length > 0
-                ? activeWorkspace?.name[0]
-                : "?"}
-            </Avatar>
-            {activeWorkspace ? (
-              <div className="col-span-7">
-                <div className="flex flex-col text-left">
-                  <Text
-                    className="text-left font-medium"
-                    ellipsis={{
-                      tooltip: activeWorkspace?.name,
-                    }}
-                  >
-                    {activeWorkspace?.name}
-                  </Text>
-                  <Text
-                    className="text-left text-[13px]"
-                    ellipsis={{
-                      tooltip: activeUserWorkspace?.designation,
-                    }}
-                  >
-                    {activeUserWorkspace?.designation}
-                  </Text>
-                </div>
+        <div className="m-4 grid h-max cursor-pointer grid-cols-12 gap-2 rounded-lg border-2 p-1">
+          <Avatar
+            className="col-span-3 flex h-[48px] w-[48px] flex-col justify-center rounded font-medium text-primary"
+            size={"large"}
+          >
+            {activeWorkspace?.name?.length > 0 ? activeWorkspace?.name[0] : "?"}
+          </Avatar>
+          {activeWorkspace ? (
+            <div className="col-span-7">
+              <div className="flex flex-col text-left">
+                <Text
+                  className="text-left font-medium"
+                  ellipsis={{
+                    tooltip: activeWorkspace?.name,
+                  }}
+                >
+                  {activeWorkspace?.name}
+                </Text>
+                <Text
+                  className="text-left text-[13px]"
+                  ellipsis={{
+                    tooltip: activeUserWorkspace?.designation,
+                  }}
+                >
+                  {activeUserWorkspace?.designation}
+                </Text>
               </div>
-            ) : (
-              <div className=" col-span-7">Select Or Create Workspace</div>
-            )}
-            <div className="col-span-1 flex flex-col justify-center">
-              {isDropdownOpen ? <UpOutlined /> : <DownOutlined />}
             </div>
+          ) : (
+            <div className=" col-span-7">Select Or Create Workspace</div>
+          )}
+          <div className="col-span-1 flex flex-col justify-center">
+            {isDropdownOpen ? <UpOutlined /> : <DownOutlined />}
           </div>
         </div>
       </Dropdown>
       <GlobalModal
-        {...{ isModalOpen, setIsModalOpen }}
-        title={modalTitles[mode]}
         width={350}
+        title={modalTitles[mode]}
+        {...{ isModalOpen, setIsModalOpen }}
       >
         <Spin spinning={isModalLoading}>
           {mode === 1 && (
             <EditWorkspace
               workspace={selectedWorkspace}
-              setSelectedWorkspace={setSelectedWorkspace}
               setIsModalOpen={setIsModalOpen}
+              setSelectedWorkspace={setSelectedWorkspace}
             />
           )}
           {mode === 2 && (
