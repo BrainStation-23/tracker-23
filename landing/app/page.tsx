@@ -1,6 +1,6 @@
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import Pricing from "./components/Pricing";
+// import Pricing from "./components/Pricing";
 import Features from "./components/Features";
 import Suitables from "./components/Suitables";
 import Solutions from "./components/Solutions";
