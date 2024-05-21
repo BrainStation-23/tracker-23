@@ -84,7 +84,7 @@ const TaskDetailsModal = ({
               TItle
             </span>
             <span className="font-medium">
-                <TruncatedText text={taskDetails.title} truncateAt={80} />
+              {taskDetails?.title && <TruncatedText text={taskDetails?.title} truncateAt={80} />}
             </span>
           </div>
           <div className="flex w-full items-start gap-2 md:gap-4">
