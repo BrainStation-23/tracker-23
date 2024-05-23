@@ -9,8 +9,6 @@ import { ReactNode, useEffect, useState } from "react";
 // Models
 import { GetWorkspaceListWithUserDto } from "models/workspaces";
 import {
-  IntegrationDto,
-  IntegrationType,
   AuthorizationErrorMessage,
 } from "models/integration";
 
@@ -30,7 +28,6 @@ import { initializeSocket } from "@/services/socket.service";
 import {
   setIntegrationsSlice,
   setAuthorizationSlice,
-  setIntegrationTypesSlice,
 } from "@/storage/redux/integrationsSlice";
 import { RootState } from "@/storage/redux/store";
 import { setUserSlice } from "@/storage/redux/userSlice";
@@ -122,12 +119,6 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
     if (!(integrationsSlice?.length > 0) && integrations) {
       dispatch(setIntegrationsSlice(integrations));
       integrations?.length > 0 && getProjectWiseStatues();
-    }
-    if (integrations?.length > 0) {
-      const types: IntegrationType[] = Array.from(
-        new Set(integrations.map((tmp: IntegrationDto) => tmp.type))
-      );
-      dispatch(setIntegrationTypesSlice(types));
     }
   };
 

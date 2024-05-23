@@ -92,6 +92,7 @@ const CreateTaskComponent = ({ createTask }: any) => {
 
   const resetAll = () => {
     form.resetFields();
+    setStartDate(dayjs());
     setRecurrentTask(false);
   };
 
@@ -118,13 +119,16 @@ const CreateTaskComponent = ({ createTask }: any) => {
             name="title"
             label="Task Name"
             placeholder="Enter your task name"
-            rules={[{ required: true, message: "Task Name is Required" }]}
+            rules={[{ required: true, message: "Task Name is Required" }, 
+              { max: 200, message: 'Task Name cannot exceed 200 characters!' },
+            ]}
           />
           <MyInputCreateTask
             type="TextArea"
             name="description"
             label="Description"
             placeholder="Enter text here..."
+            rules={[{ max: 2000, message: 'Task Name cannot exceed 2000 characters!' }]}
           />
 
           <div className="grid w-full grid-cols-2 gap-3">
