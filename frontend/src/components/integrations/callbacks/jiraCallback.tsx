@@ -8,18 +8,32 @@ import { useEffect, useState } from "react";
 import GlobalModal from "@/components/modals/globalModal";
 
 import NewIntegrationProjectImportComponent from "./components/newIntegrationProjectImport";
+import { useAppDispatch } from "@/storage/redux";
+import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
 
 const JiraCallBack = () => {
+  const dispatch = useAppDispatch();
+  
   const router = useRouter();
   const [newIntegrationProjects, setNewIntegrationProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSpinning] = useState(true);
   const [spinning, setSpinning] = useState(false);
 
+  const getIntegrations = async () => {
+    setSpinning(true);
+    const integrations = await userAPI.getIntegrations();
+    if (integrations) {
+      dispatch(setIntegrationsSlice(integrations));
+    }
+    setSpinning(false);
+  };
+
   const codeFound = async (code: string) => {
     const res = await userAPI.sendJiraCode(code);
 
     if (res && res[0]) {
+      await getIntegrations(); // This needed to sync the integrations in the redux store
       setIsModalOpen(true);
       // TODO: We should do this step in Backend API to keep consistent response for all kinds of integrations responses
       const jiraProjects = res

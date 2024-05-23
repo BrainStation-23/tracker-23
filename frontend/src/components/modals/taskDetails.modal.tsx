@@ -14,6 +14,7 @@ import {
 } from "@/services/timeActions";
 import { urlToKeyword } from "@/services/helpers";
 import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
+import TruncatedText from "@/components/common/truncatedText";
 
 type Props = {
   task: TaskDto;
@@ -78,27 +79,25 @@ const TaskDetailsModal = ({
     >
       <Spin spinning={spinning}>
         <div className="flex flex-col gap-4">
-          <div className="flex w-full items-center gap-2 md:gap-4">
-            <span className="w-[120px] text-sm font-semibold text-secondary ">
+          <div className="flex w-full items-start gap-2 md:gap-4">
+            <span className="min-w-[120px] text-sm font-semibold text-secondary ">
               TItle
             </span>
             <span className="font-medium">
-              {task?.title.length > 80
-                ? task?.title.slice(0, 80) + " ..."
-                : task?.title}
+              {taskDetails?.title && <TruncatedText text={taskDetails?.title} truncateAt={80} />}
             </span>
           </div>
-          <div className="flex w-full items-center gap-2 md:gap-4">
-            <span className="w-[120px] text-sm font-semibold text-secondary ">
+          <div className="flex w-full items-start gap-2 md:gap-4">
+            <span className="min-w-[120px] text-sm font-semibold text-secondary ">
               Description
             </span>
             <span className="font-medium">
-              {taskDetails?.description ?? <em>No description provided.</em>}
+              {taskDetails?.description ? <TruncatedText text={taskDetails.description} truncateAt={150} /> : <em>No description provided.</em>}
             </span>
           </div>
           {taskDetails?.url && (
             <div className="flex w-full items-center gap-2 md:gap-4">
-              <span className="w-[120px] text-sm font-semibold text-secondary ">
+              <span className="min-w-[120px] text-sm font-semibold text-secondary ">
                 Link
               </span>
               <OpenLinkInNewTab
@@ -113,7 +112,7 @@ const TaskDetailsModal = ({
           )}
           <div className="grid grid-cols-2">
             <div className="flex w-full items-center gap-2 md:gap-4">
-              <span className="w-[120px] text-sm font-semibold text-secondary ">
+              <span className="min-w-[120px] text-sm font-semibold text-secondary ">
                 Estimation
               </span>
               <span className="font-medium">
@@ -122,7 +121,7 @@ const TaskDetailsModal = ({
               </span>
             </div>
             <div className="flex w-full items-center gap-2 md:gap-4">
-              <span className="w-[120px] text-sm font-semibold text-secondary ">
+              <span className="min-w-[120px] text-sm font-semibold text-secondary ">
                 Time Left
               </span>
               <span className="font-medium">
@@ -137,7 +136,7 @@ const TaskDetailsModal = ({
           </div>
 
           <div className="flex w-full items-center gap-2 md:gap-4">
-            <span className="w-[120px] text-sm font-semibold text-secondary ">
+            <span className="min-w-[120px] text-sm font-semibold text-secondary ">
               Status
             </span>
             <div
@@ -164,7 +163,7 @@ const TaskDetailsModal = ({
 
           {taskDetails?.priority && (
             <div className="flex items-center gap-4">
-              <span className="w-[120px] text-sm font-semibold text-secondary ">
+              <span className="min-w-[120px] text-sm font-semibold text-secondary ">
                 Priority
               </span>
               <div className="flex w-max items-center gap-1 px-2 py-0.5 text-xs font-medium text-black">
@@ -174,7 +173,7 @@ const TaskDetailsModal = ({
           )}
 
           <div className="flex w-full items-center gap-2 md:gap-4">
-            <span className="w-[120px] text-sm font-semibold text-secondary ">
+            <span className="min-w-[120px] text-sm font-semibold text-secondary ">
               Total Spent
             </span>
             <span className="font-medium">

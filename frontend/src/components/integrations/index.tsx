@@ -22,21 +22,19 @@ const IntegrationsPageComponent = () => {
   const [integrations, setIntegrations] = useState<IntegrationDto[] | null>(
     null
   );
-  const [integratedTypes, setIntegratedTypes] = useState<string[] | null>(null);
+  const integratedTypes = useAppSelector(
+    (state: RootState) => state.integrations.integrationTypes
+  );
+
 
   const userInfo = useAppSelector((state: RootState) => state.userSlice.user);
 
   const getIntegrations = async () => {
     setLoading(true);
-    const tmp: string[] = [];
     const integrations = await userAPI.getIntegrations();
     if (integrations) {
       dispatch(setIntegrationsSlice(integrations));
       setIntegrations(integrations);
-      integrations?.forEach((i: any) => {
-        tmp.push(i.type);
-      });
-      setIntegratedTypes(tmp);
     }
     setLoading(false);
   };

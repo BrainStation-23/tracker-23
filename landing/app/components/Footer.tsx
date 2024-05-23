@@ -9,7 +9,7 @@ export default function Footer() {
     <footer className="bg-gradient-to-r from-[#000000] to-main">
       <div className="container mx-auto py-10 px-4 md:px-0 text-white">
         <div className="flex w-full justify-between">
-          <Image src={LogoImage} alt="logo" />
+          <Image src={LogoImage} alt="logo" width={250} />
           <div className="flex justify-end gap-3 items-center">
             <Image src={Facebook} alt="Facebook" />
             <Image src={Linkedin} alt="Linkedin" />

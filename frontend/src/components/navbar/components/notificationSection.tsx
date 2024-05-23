@@ -110,7 +110,7 @@ const NotificationSection = () => {
       overlayClassName="w-[300px]"
     >
       <div
-        className="flex h-9 w-9 cursor-pointer items-center justify-center"
+        className="flex h-9 w-9 cursor-pointer items-center justify-center mr-5"
         style={{
           border: "1px solid #ECECED",
           borderRadius: "8px",

@@ -205,12 +205,12 @@ const RecurrentTaskCreationComponent = ({ startDate }: Props) => {
               </div>
               <Form.Item
                 name={radioButtonValue === 1 ? "endDate" : null}
-                initialValue={dateValue}
+                // initialValue={dateValue}
                 className="m-0"
                 rules={[{ validator: validateEndDate }]}
               >
                 <DatePicker
-                  defaultValue={dayjs()}
+                  defaultValue={dateValue}
                   onChange={(e) => handelDateChange(e)}
                   className="m-0 ml-0.5"
                   value={dateValue}
