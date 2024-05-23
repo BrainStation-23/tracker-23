@@ -203,7 +203,7 @@ const SprintReportTabel = ({ data, reportData }: Props) => {
               // showLessItems: true,
               position: ["bottomRight", "bottomLeft"],
             }}
-            scroll={{ y: 600 }}
+            scroll={{x: "max-content" }}
           />
         </div>
       ) : (
