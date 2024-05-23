@@ -8,6 +8,7 @@ import { integrationIcons } from "@/components/integrations/components/importCar
 import { useRouter } from "next/router";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
+import { useEffect, useState } from "react";
 
 const { Text } = Typography;
 
@@ -33,21 +34,38 @@ export default function SourceSelectorComponent({
     (state: RootState) => state.integrations.integrationTypes
   );
 
-  const allSource = path.includes("report")
-    ? reportsSliceIntegrationTypes
-    : integrationTypes;
+  const [options, setOptions] = useState<{
+        value: IntegrationType;
+        label: JSX.Element;
+      }[]>([])
 
-  const Options = allSource?.map((source) => {
-    return {
-      value: source,
-      label: (
-        <div className="flex items-center gap-2 text-sm">
-          {integrationIcons[source as IntegrationType]}
-          <div>{integrationName[source as IntegrationType]}</div>
-        </div>
-      ),
-    };
-  });
+  useEffect(() => {
+    if(path.includes("report")){
+      setOptions(reportsSliceIntegrationTypes?.map((source) => {
+        return {
+          value: source,
+          label: (
+            <div className="flex items-center gap-2 text-sm">
+              {integrationIcons[source as IntegrationType]}
+              <div>{integrationName[source as IntegrationType]}</div>
+            </div>
+          ),
+        };
+      }));
+    }else {
+      setOptions(integrationTypes?.map((source) => {
+        return {
+          value: source,
+          label: (
+            <div className="flex items-center gap-2 text-sm">
+              {integrationIcons[source as IntegrationType]}
+              <div>{integrationName[source as IntegrationType]}</div>
+            </div>
+          ),
+        };
+      }));
+    }
+  }, [path, reportsSliceIntegrationTypes, integrationTypes])
 
   return (
     <div
@@ -65,7 +83,7 @@ export default function SourceSelectorComponent({
         value={selectedSource}
         className="w-full"
         maxTagCount={1}
-        options={Options}
+        options={options}
         onChange={(value) => {
           setSelectedSource && setSelectedSource(value);
         }}

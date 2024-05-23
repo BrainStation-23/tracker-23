@@ -7,17 +7,31 @@ import { useEffect, useState } from "react";
 import GlobalModal from "@/components/modals/globalModal";
 
 import NewIntegrationProjectImportComponent from "./components/newIntegrationProjectImport";
+import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
+import { useAppDispatch } from "@/storage/redux";
 
 // TODO: Refactor needed later
 const OutlookCallBack = () => {
+  const dispatch = useAppDispatch();
+  
   const router = useRouter();
   const [newIntegrationProjects, setNewIntegrationProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
 
+  const getIntegrations = async () => {
+    setSpinning(true);
+    const integrations = await userAPI.getIntegrations();
+    if (integrations) {
+      dispatch(setIntegrationsSlice(integrations));
+    }
+    setSpinning(false);
+  };
+
   const codeFound = async (code: string) => {
     const res = await userAPI.sendOutlookCode(code);
     if (res && res[0]) {
+      await getIntegrations(); // This needed to sync the integrations in the redux store
       setIsModalOpen(true);
       setNewIntegrationProjects(res);
     } else router.push("/projects");
