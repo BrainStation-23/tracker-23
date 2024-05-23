@@ -213,10 +213,11 @@ interface Style {
 
 interface DateCellStyle {
   background: string;
-  text: string;
+  text?: string;
 }
 
 export interface ModifiesSprintReportUser {
+  rowKey: number | string;
   userId: number;
   name: string;
   picture: string;
@@ -233,6 +234,10 @@ export interface ModifiesSprintReportUser {
   assignedTask: SprintReportTask | null;
   todayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
   yesterdayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
+  groupRows: number;
+  groupRowIndex: number;
+  userGroupRows: number;
+  userGroupRowIndex: number;
 }
 
 export interface ModifiesSprintViewReport {

@@ -7,7 +7,6 @@ import { formatDate, getFormattedTime } from "@/services/timeActions";
 import ProgressComponent from "./progressComponent";
 import { ReportData } from "@/storage/redux/reportsSlice";
 import EditReportConfigComponent from "./editReportConfigComponent";
-import { useState } from "react";
 
 const { Text } = Typography;
 type Props = {
@@ -16,11 +15,6 @@ type Props = {
 };
 
 const SprintReportTabel = ({ data, reportData }: Props) => {
-  const [paginationState, setPaginationState] = useState({
-    page: 1,
-    pageSize: 10,
-  });
-
   const columns: ColumnsType<ModifiesSprintReportUser> = [
     {
       key: "date",
@@ -31,20 +25,6 @@ const SprintReportTabel = ({ data, reportData }: Props) => {
         record: ModifiesSprintReportUser,
         index: number
       ) => {
-        const trueIndex =
-          index + paginationState.pageSize * (paginationState.page - 1);
-        let calculatedRowSpan = record.dateColSpan;
-        if (index >= 1 && value === data[trueIndex - 1].date) {
-          calculatedRowSpan = 0;
-        } else {
-          for (
-            let i = 0;
-            trueIndex + i !== data.length && value === data[trueIndex + i].date;
-            i += 1
-          ) {
-            calculatedRowSpan = i + 1;
-          }
-        }
         return {
           children: (
             <Text
@@ -55,7 +35,9 @@ const SprintReportTabel = ({ data, reportData }: Props) => {
             </Text>
           ),
           props: {
-            rowSpan: calculatedRowSpan,
+            rowSpan: index === 0 && record.groupRowIndex > 0
+              ? record.groupRows - record.groupRowIndex
+              : record.dateColSpan,
             style: record.dateCellStyle,
           },
         };
@@ -72,33 +54,6 @@ const SprintReportTabel = ({ data, reportData }: Props) => {
         record: ModifiesSprintReportUser,
         index: number
       ) => {
-        const trueIndex =
-          index + paginationState.pageSize * (paginationState.page - 1);
-        let calculatedRowSpan = record.userSpan;
-
-        if (!(trueIndex % (paginationState.pageSize - 1))) {
-          for (
-            let i = 0;
-            trueIndex + i !== data.length &&
-            value === data[trueIndex + i].name &&
-            record.date === data[trueIndex + i].date;
-            i += 1
-          ) {
-            calculatedRowSpan = i + 1;
-          }
-        } else if (index >= 1 && value === data[trueIndex - 1].name) {
-          calculatedRowSpan = 0;
-        } else {
-          for (
-            let i = 0;
-            trueIndex + i !== data.length &&
-            value === data[trueIndex + i].name &&
-            record.date === data[trueIndex + i].date;
-            i += 1
-          ) {
-            calculatedRowSpan = i + 1;
-          }
-        }
         return {
           children: (
             <div className="mx-auto flex w-fit items-center justify-center gap-2 ">
@@ -115,7 +70,9 @@ const SprintReportTabel = ({ data, reportData }: Props) => {
             </div>
           ),
           props: {
-            rowSpan: calculatedRowSpan,
+            rowSpan: index === 0 && record.userGroupRowIndex > 0
+              ? record.userGroupRows - record.userGroupRowIndex
+              : record.userSpan,
             style: record.style,
           },
         };
@@ -237,15 +194,13 @@ const SprintReportTabel = ({ data, reportData }: Props) => {
         <div className="flex flex-col gap-4">
           <Table
             bordered
-            rowKey={"id"}
+            rowKey={"rowKey"}
             columns={columns}
             dataSource={data}
             pagination={{
-              pageSize: paginationState.pageSize,
-              // showSizeChanger: false,
+              // pageSize: paginationState.pageSize,
+              showSizeChanger: true,
               // showLessItems: true,
-              onChange: (page, pageSize) =>
-                setPaginationState({ page, pageSize }),
               position: ["bottomRight", "bottomLeft"],
             }}
             scroll={{ y: 600 }}
