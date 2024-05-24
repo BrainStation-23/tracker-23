@@ -128,7 +128,7 @@ const CreateTaskComponent = ({ createTask }: any) => {
             name="description"
             label="Description"
             placeholder="Enter text here..."
-            rules={[{ max: 2000, message: 'Task Name cannot exceed 2000 characters!' }]}
+            rules={[{ max: 2000, message: 'Description cannot exceed 2000 characters!' }]}
           />
 
           <div className="grid w-full grid-cols-2 gap-3">

@@ -126,10 +126,11 @@ const TaskDetailsModal = ({
               </span>
               <span className="font-medium">
                 {taskDetails?.estimation
-                  ? getFormattedTotalTime(
+                  ? taskDetails?.estimation * 3600000 -
+                  getTotalSpentTime(task.sessions) > 0 ? getFormattedTotalTime(
                       taskDetails?.estimation * 3600000 -
                         getTotalSpentTime(task.sessions)
-                    )
+                    ) : 0 
                   : "No estimation"}
               </span>
             </div>
