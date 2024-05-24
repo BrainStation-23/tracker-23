@@ -30,7 +30,7 @@ const DashboardTableComponent = ({
   const columns: any = [
     {
       key: "title",
-      fixed: "left",
+      fixed: isMobile ? "none" : "left",
       title: "Task Name",
       dataIndex: "title",
       width: isMobile ? 160 : 350,
@@ -231,7 +231,7 @@ const DashboardTableComponent = ({
       rowClassName={getRowClassName}
       bordered={isMobile ? true : false}
       pagination={tableParams.pagination}
-      scroll={{ x: isMobile ? "max-content" : "100%" }}
+      scroll={{ x: "max-content" }}
     />
   );
 };
