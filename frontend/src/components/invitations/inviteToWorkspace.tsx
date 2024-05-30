@@ -1,16 +1,17 @@
-import { Form, Input, message, Select, Spin } from "antd";
 import { userAPI } from "APIs";
 import { useState } from "react";
-
+import { Form, Input, message, Select, Spin } from "antd";
 import PrimaryButton from "@/components/common/buttons/primaryButton";
 
 const { Option } = Select;
 type Props = {
   setIsModalOpen: Function;
+  onSuccess: () => void;
 };
-const InviteToWorkspace = ({ setIsModalOpen }: Props) => {
+const InviteToWorkspace = ({ setIsModalOpen, onSuccess }: Props) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+
   const onFinish = async (values: any) => {
     setLoading(true);
     const res = await userAPI.sendWorkspaceInvitation(values);
@@ -20,6 +21,7 @@ const InviteToWorkspace = ({ setIsModalOpen }: Props) => {
           value: "team invitation",
         });
       }
+      onSuccess();
       message.success("Invitation sent successfully");
     }
     setIsModalOpen(false);

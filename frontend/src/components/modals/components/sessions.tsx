@@ -16,19 +16,21 @@ import { useMediaQuery } from "react-responsive";
 
 type Props = {
   taskDetails: TaskDto;
-  deleteSession: Function;
-  updateSession: Function;
   SetSpinning: Function;
+  updateSession: Function;
+  deleteSession: Function;
 };
 
 const Sessions = ({
   taskDetails,
-  deleteSession,
-  updateSession,
   SetSpinning,
+  updateSession,
+  deleteSession,
 }: Props) => {
   const [form] = Form.useForm();
   const isMobile = useMediaQuery({ maxWidth: 767 });
+
+  const [sessionInEdit, setSessionInEdit] = useState(null);
 
   taskDetails.sessions.sort(
     (a, b) =>
@@ -40,7 +42,7 @@ const Sessions = ({
   const currentSessions = taskDetails?.sessions?.filter(
     (session: any) => !session.endTime
   );
-  const [sessionInEdit, setSessionInEdit] = useState(null);
+
   const onFinish = async (values: any) => {
     SetSpinning(true);
     (await updateSession(sessionInEdit, values)) && setSessionInEdit(null);
@@ -113,7 +115,7 @@ const Sessions = ({
                         rules={[{ required: true }]}
                       >
                         <TimePicker.RangePicker
-                          format={"hh:mm a"}
+                          format="hh:mm a"
                           className="w-full"
                         />
                       </Form.Item>
@@ -127,19 +129,21 @@ const Sessions = ({
                   {taskDetails.userWorkspaceId === session.userWorkspaceId ? (
                     session.id !== sessionInEdit ? (
                       <>
-                        <Tooltip title="Edit Session">
-                          <div
-                            onClick={() => handleInitialValues(session)}
-                            className="cursor-pointer"
-                          >
-                            <EditIconSvg />
-                          </div>
-                        </Tooltip>
+                        {taskDetails.source !== "OUTLOOK" && (
+                          <Tooltip title="Edit Session">
+                            <div
+                              onClick={() => handleInitialValues(session)}
+                              className="cursor-pointer"
+                            >
+                              <EditIconSvg />
+                            </div>
+                          </Tooltip>
+                        )}
 
                         <Tooltip title="Delete Session">
                           <div
-                            onClick={() => deleteSession(session.id)}
                             className="cursor-pointer"
+                            onClick={() => deleteSession(session.id)}
                           >
                             <DeleteIconSvg />
                           </div>
@@ -151,8 +155,8 @@ const Sessions = ({
                           <button type="submit" className="m-0 h-min p-0">
                             <CheckCircleOutlined
                               style={{
-                                fontSize: "20px",
                                 color: "#00A3DE",
+                                fontSize: "20px",
                               }}
                             />
                           </button>

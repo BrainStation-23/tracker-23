@@ -20,6 +20,10 @@ export interface Project {
   projectKey?: string;
   source: string;
   integrated: Boolean;
+  integration: {
+    id: number;
+    type: IntegrationType;
+  };
   integrationID: number;
   priorities?: PriorityDto[];
   workspaceId: number;

@@ -12,7 +12,6 @@ import {
   getTotalSpentTime,
   getFormattedTotalTime,
 } from "@/services/timeActions";
-import { urlToKeyword } from "@/services/helpers";
 import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 import TruncatedText from "@/components/common/truncatedText";
 
@@ -69,13 +68,13 @@ const TaskDetailsModal = ({
   };
   return (
     <Modal
-      title={<div className="text-base font-semibold">Task Details</div>}
-      onCancel={handleCancel}
-      open={isModalOpen}
-      onOk={handleOk}
-      footer={null}
       width={850}
+      footer={null}
       zIndex={1100}
+      onOk={handleOk}
+      open={isModalOpen}
+      onCancel={handleCancel}
+      title={<div className="text-base font-semibold">Task Details</div>}
     >
       <Spin spinning={spinning}>
         <div className="flex flex-col gap-4">
@@ -84,7 +83,9 @@ const TaskDetailsModal = ({
               TItle
             </span>
             <span className="font-medium">
-              {taskDetails?.title && <TruncatedText text={taskDetails?.title} truncateAt={80} />}
+              {taskDetails?.title && (
+                <TruncatedText text={taskDetails?.title} truncateAt={80} />
+              )}
             </span>
           </div>
           <div className="flex w-full items-start gap-2 md:gap-4">
@@ -92,7 +93,14 @@ const TaskDetailsModal = ({
               Description
             </span>
             <span className="font-medium">
-              {taskDetails?.description ? <TruncatedText text={taskDetails.description} truncateAt={150} /> : <em>No description provided.</em>}
+              {taskDetails?.description ? (
+                <TruncatedText
+                  text={taskDetails.description}
+                  truncateAt={150}
+                />
+              ) : (
+                <em>No description provided.</em>
+              )}
             </span>
           </div>
           {taskDetails?.url && (
@@ -106,7 +114,7 @@ const TaskDetailsModal = ({
                   setIsModalOpen(true);
                 }}
               >
-                {urlToKeyword(taskDetails.source, taskDetails.url)}
+                {taskDetails.source}
               </OpenLinkInNewTab>
             </div>
           )}
@@ -127,10 +135,13 @@ const TaskDetailsModal = ({
               <span className="font-medium">
                 {taskDetails?.estimation
                   ? taskDetails?.estimation * 3600000 -
-                  getTotalSpentTime(task.sessions) > 0 ? getFormattedTotalTime(
-                      taskDetails?.estimation * 3600000 -
-                        getTotalSpentTime(task.sessions)
-                    ) : 0 
+                      getTotalSpentTime(task.sessions) >
+                    0
+                    ? getFormattedTotalTime(
+                        taskDetails?.estimation * 3600000 -
+                          getTotalSpentTime(task.sessions)
+                      )
+                    : 0
                   : "No estimation"}
               </span>
             </div>

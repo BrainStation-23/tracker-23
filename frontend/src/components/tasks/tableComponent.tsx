@@ -24,7 +24,6 @@ import {
   getFormattedTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
-import { urlToKeyword } from "@/services/helpers";
 import { statusBGColorEnum, statusBorderColorEnum } from "utils/constants";
 import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";
 
@@ -224,11 +223,11 @@ const TableComponent = ({
           {integrationIcons[task.source]}
           {dataSource &&
             (task.source === "TRACKER23" ? (
-              <>{urlToKeyword(task.source, dataSource)}</>
+              <>{task.source}</>
             ) : (
               <Link target="_blank" href={task?.url ?? dataSource}>
                 <Text ellipsis={{ tooltip: task?.url ?? dataSource }}>
-                  {urlToKeyword(task.source, dataSource)}
+                  {task.source}
                 </Text>
               </Link>
             ))}

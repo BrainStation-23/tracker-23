@@ -81,7 +81,10 @@ const InvitationPage = () => {
         width={300}
         {...{ isModalOpen, setIsModalOpen, title: "Invite" }}
       >
-        <InviteToWorkspace setIsModalOpen={setIsModalOpen} />
+        <InviteToWorkspace
+          setIsModalOpen={setIsModalOpen}
+          onSuccess={getInviteList}
+        />
       </GlobalModal>
     </div>
   );
