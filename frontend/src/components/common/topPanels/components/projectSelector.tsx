@@ -24,6 +24,9 @@ export default function ProjectSelectorComponent({
 }: Props) {
   const router = useRouter();
   const path = router.asPath;
+  const reportInEdit = useAppSelector(
+    (state: RootState) => state.reportsSlice.reportInEdit
+  );
 
   const reportProjects = useAppSelector(
     (state: RootState) => state.projectList.reportProjects
@@ -36,8 +39,14 @@ export default function ProjectSelectorComponent({
     path.includes("report") ? reportProjects : projectListProjects
   )?.filter((project) => project.integrationType !== "OUTLOOK");
 
-  const selectOptions = projects
-    ? projects?.map((project) => {
+  const filteredData =
+    reportInEdit.reportType === "SPRINT_TIMELINE"
+      ? projects
+      : // ? projects.filter((el) => el.integration?.type === "JIRA")
+        projects;
+
+  const selectOptions = filteredData
+    ? filteredData?.map((project) => {
         return {
           value: project.id,
           label: project.projectName,
@@ -55,7 +64,11 @@ export default function ProjectSelectorComponent({
       {mode == "single" ? (
         <Select
           maxTagCount={1}
-          options={selectOptions}
+          options={
+            reportInEdit.reportType === "SPRINT_TIMELINE"
+              ? selectOptions.filter((el) => el)
+              : selectOptions
+          }
           className="w-full"
           placeholder="Select Project"
           value={projectIds[0] ? projectIds : null}

@@ -14,7 +14,6 @@ import {
 } from "@/services/timeActions";
 import { ReportData } from "@/storage/redux/reportsSlice";
 import EditReportConfigComponent from "./editReportConfigComponent";
-import { urlToKeyword } from "@/services/helpers";
 import Link from "next/link";
 import { useMediaQuery } from "react-responsive";
 
@@ -89,10 +88,12 @@ const TaskListReportComponent = ({
           >
             {dataSource &&
               (task.source === "TRACKER23" ? (
-                <>{urlToKeyword(task.source, dataSource)}</>
+                <>{task.source}</>
               ) : (
                 <Link target="_blank" href={task?.url ?? dataSource}>
-                  <Text ellipsis={{ tooltip: task?.url ?? dataSource }}>{urlToKeyword(task.source, dataSource)}</Text>
+                  <Text ellipsis={{ tooltip: task?.url ?? dataSource }}>
+                    {task.source}
+                  </Text>
                 </Link>
               ))}
           </Text>

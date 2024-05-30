@@ -8,9 +8,7 @@ import { ReactNode, useEffect, useState } from "react";
 
 // Models
 import { GetWorkspaceListWithUserDto } from "models/workspaces";
-import {
-  AuthorizationErrorMessage,
-} from "models/integration";
+import { AuthorizationErrorMessage } from "models/integration";
 
 // Components
 import Navbar from "@/components/navbar";
@@ -31,7 +29,6 @@ import {
 } from "@/storage/redux/integrationsSlice";
 import { RootState } from "@/storage/redux/store";
 import { setUserSlice } from "@/storage/redux/userSlice";
-import { deleteFromLocalStorage, getLocalStorage } from "@/storage/storage";
 import { setPriorities } from "@/storage/redux/prioritySlice";
 import { setReportPages } from "@/storage/redux/reportsSlice";
 import { setProjectsSlice } from "@/storage/redux/projectsSlice";
@@ -40,6 +37,7 @@ import { setSettingsReducer } from "@/storage/redux/settingsSlice";
 import { setWorkspacesSlice } from "@/storage/redux/workspacesSlice";
 import { setNotifications } from "@/storage/redux/notificationsSlice";
 import { setSyncRunning, setSyncStatus } from "@/storage/redux/syncSlice";
+import { deleteFromLocalStorage, getLocalStorage } from "@/storage/storage";
 
 import "react-toastify/dist/ReactToastify.css";
 
@@ -176,8 +174,7 @@ const ValidUserLayout = ({ children }: { children: ReactNode }) => {
       const getCookie = GetCookie("access_token");
       getCookie && !connectedSocket && (await initializeSocket(getCookie));
     };
-    let timeout: NodeJS.Timeout;
-    timeout =
+    let timeout: NodeJS.Timeout =
       !isPublicRoute && !connectedSocket && setTimeout(connectSocket, 2000);
 
     return () => clearTimeout(timeout);

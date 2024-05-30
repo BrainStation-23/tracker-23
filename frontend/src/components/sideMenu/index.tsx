@@ -158,12 +158,7 @@ const SideMenu = ({ toggleCollapsed }: { toggleCollapsed: () => void }) => {
     <div className="flex h-screen w-full items-center justify-center bg-[#F8F8F8]">
       <div className="flex h-full w-full flex-col justify-between">
         <div className="flex w-full flex-col gap-6">
-          <div
-            className="w-full"
-            onClick={() => {
-              router.push("/taskList");
-            }}
-          >
+          <div className="mt-2 w-full" onClick={() => router.push("/taskList")}>
             <Image alt="tracker 23 logo" src={Logo} width={200} />
           </div>
           <div
