@@ -72,8 +72,8 @@ export class TasksDatabase {
     dto: CreateTaskDto,
     projectName: string,
     startFinalTime: number,
-    SessionStartTime: number,
-    SessionEndTime: number,
+    SessionStartTime: number | null,
+    SessionEndTime: number | null,
   ) {
     try {
       return this.prisma.task
@@ -95,15 +95,17 @@ export class TasksDatabase {
           },
         })
         .then(async (task: any) => {
-          await this.prisma.session.create({
-            data: {
-              startTime: new Date(SessionStartTime),
-              endTime: new Date(SessionEndTime),
-              status: SessionStatus.STOPPED,
-              taskId: task.id,
-              userWorkspaceId,
-            },
-          });
+          SessionStartTime &&
+            SessionEndTime &&
+            (await this.prisma.session.create({
+              data: {
+                startTime: new Date(SessionStartTime),
+                endTime: new Date(SessionEndTime),
+                status: SessionStatus.STOPPED,
+                taskId: task.id,
+                userWorkspaceId,
+              },
+            }));
         });
     } catch (err) {
       return null;

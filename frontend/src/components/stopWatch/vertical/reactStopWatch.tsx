@@ -25,7 +25,6 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
   const [resumeTime, setResumeTime] = useState<boolean>(false);
 
   const startSession = async () => {
-    console.log("start");
     setRunningTask(task);
 
     const res = await userAPI.createSession(task.id);
@@ -33,7 +32,6 @@ function StopWatch({ task, addSession, addEndTime, disable }: Props) {
     res && message.success("Session Started");
   };
   const stopSession = async () => {
-    console.log("stop");
     task.id === runningTask?.id && setRunningTask(null);
     const res = await userAPI.stopSession(task.id);
     res && addEndTime(res);

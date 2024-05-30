@@ -1,10 +1,14 @@
+import Link from "next/link";
 import { useState } from "react";
-import { TableParams, TaskDto } from "models/tasks";
-import { FilterValue, SorterResult } from "antd/es/table/interface";
+import { useMediaQuery } from "react-responsive";
 import { Table, TablePaginationConfig, Typography } from "antd";
+import { FilterValue, SorterResult } from "antd/es/table/interface";
+
+import { TableParams, TaskDto } from "models/tasks";
 
 import PlayIconSvg from "@/assets/svg/playIconSvg";
 import PauseIconSvg from "@/assets/svg/pauseIconSvg";
+
 import Stopwatch from "@/components/stopWatch/tabular/timerComponent";
 import TimeDisplayComponent from "@/components/tasks/timeDisplayComponent";
 import { checkIfRunningTask, startTimeSorter } from "@/services/taskActions";
@@ -14,9 +18,6 @@ import {
   getFormattedTime,
   getTotalSpentTime,
 } from "@/services/timeActions";
-import { useMediaQuery } from "react-responsive";
-import Link from "next/link";
-import { urlToKeyword } from "@/services/helpers";
 
 const { Text } = Typography;
 const DashboardTableComponent = ({
@@ -30,10 +31,10 @@ const DashboardTableComponent = ({
   const columns: any = [
     {
       key: "title",
-      fixed: isMobile ? "none" : "left",
       title: "Task Name",
       dataIndex: "title",
       width: isMobile ? 160 : 350,
+      fixed: isMobile ? "none" : "left",
       render: (_: any, task: TaskDto) => {
         return (
           <div className="flex w-40 items-center gap-2 overflow-hidden md:w-80">
@@ -88,7 +89,7 @@ const DashboardTableComponent = ({
           <div>{integrationIcons[task.source]} </div>
           {dataSource &&
             (task.source === "TRACKER23" ? (
-              <>{urlToKeyword(task.source, dataSource)}</>
+              <>{task.source}</>
             ) : (
               <Link
                 target="_blank"
@@ -98,7 +99,7 @@ const DashboardTableComponent = ({
                     : dataSource
                 }
               >
-                {urlToKeyword(task.source, dataSource)}
+                {task.source}
               </Link>
             ))}
         </div>
@@ -231,7 +232,7 @@ const DashboardTableComponent = ({
       rowClassName={getRowClassName}
       bordered={isMobile ? true : false}
       pagination={tableParams.pagination}
-      scroll={{ x: "max-content" }}
+      scroll={{ x: isMobile ? "max-content" : "100%" }}
     />
   );
 };

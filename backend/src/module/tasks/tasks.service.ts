@@ -573,8 +573,10 @@ export class TasksService {
     startDate: Date,
     repeatTime: number,
   ) {
-    let SessionStartTime = new Date(dto.startTime).getTime();
-    let SessionEndTime = new Date(dto.endTime).getTime();
+    let SessionStartTime: number | null =
+      dto.startTime && new Date(dto.startTime).getTime();
+    let SessionEndTime: number | null =
+      dto.endTime && new Date(dto.endTime).getTime();
     let taskPromises: Promise<any>[] = [];
     for (
       let startTime = new Date(startDate).getTime();
@@ -592,8 +594,8 @@ export class TasksService {
           SessionEndTime,
         ),
       );
-      SessionStartTime += repeatTime;
-      SessionEndTime += repeatTime;
+      SessionStartTime && (SessionStartTime += repeatTime);
+      SessionEndTime && (SessionEndTime += repeatTime);
     }
     if (taskPromises.length > 500) {
       await Promise.allSettled(taskPromises);
@@ -611,8 +613,10 @@ export class TasksService {
     startDate: Date,
     repeatTime: number,
   ) {
-    let SessionStartTime = new Date(dto.startTime).getTime();
-    let SessionEndTime = new Date(dto.endTime).getTime();
+    let SessionStartTime: number | null =
+      dto.startTime && new Date(dto.startTime).getTime();
+    let SessionEndTime: number | null =
+      dto.endTime && new Date(dto.endTime).getTime();
     let taskPromises: Promise<any>[] = [];
     let count = 0;
     for (
@@ -632,8 +636,8 @@ export class TasksService {
         ),
       );
       count++;
-      SessionStartTime += repeatTime;
-      SessionEndTime += repeatTime;
+      SessionStartTime && (SessionStartTime += repeatTime);
+      SessionEndTime && (SessionEndTime += repeatTime);
     }
     if (taskPromises.length > 500) {
       await Promise.allSettled(taskPromises);
@@ -652,8 +656,8 @@ export class TasksService {
     startDate: Date,
     repeatTime: number,
   ) {
-    let SessionStartTime = new Date(dto.startTime).getTime();
-    let SessionEndTime = new Date(dto.endTime).getTime();
+    let SessionStartTime = dto.startTime && new Date(dto.startTime).getTime();
+    let SessionEndTime = dto.endTime && new Date(dto.endTime).getTime();
     let taskPromises: Promise<any>[] = [];
     for (
       let startTime = new Date(startDate).getTime();
@@ -669,9 +673,12 @@ export class TasksService {
         } else {
           target = firstPos && target ? target - firstPos : 0;
         }
-        const SessionStartFinalTime =
-          SessionStartTime + target * 24 * 3600 * 1000;
-        const SessionEndFinalTime = SessionEndTime + target * 24 * 3600 * 1000;
+        const SessionStartFinalTime = SessionStartTime
+          ? SessionStartTime + target * 24 * 3600 * 1000
+          : null;
+        const SessionEndFinalTime = SessionEndTime
+          ? SessionEndTime + target * 24 * 3600 * 1000
+          : null;
         const startFinalTime = startTime + target * 24 * 3600 * 1000;
         if (startFinalTime > new Date(dto.endDate).getTime()) {
           continue;
@@ -708,8 +715,8 @@ export class TasksService {
     startDate: Date,
     repeatTime: number,
   ) {
-    let SessionStartTime = new Date(dto.startTime).getTime();
-    let SessionEndTime = new Date(dto.endTime).getTime();
+    let SessionStartTime = dto.startTime && new Date(dto.startTime).getTime();
+    let SessionEndTime = dto.endTime && new Date(dto.endTime).getTime();
     let taskPromises: Promise<any>[] = [];
     let count = 0;
     for (
@@ -726,9 +733,12 @@ export class TasksService {
         } else {
           target = firstPos && target ? target - firstPos : 0;
         }
-        const SessionStartFinalTime =
-          SessionStartTime + target * 24 * 3600 * 1000;
-        const SessionEndFinalTime = SessionEndTime + target * 24 * 3600 * 1000;
+        const SessionStartFinalTime = SessionStartTime
+          ? SessionStartTime + target * 24 * 3600 * 1000
+          : null;
+        const SessionEndFinalTime = SessionEndTime
+          ? SessionEndTime + target * 24 * 3600 * 1000
+          : null;
         const startFinalTime = startTime + target * 24 * 3600 * 1000;
         if (count >= dto.occurrences) {
           // console.log(
