@@ -553,4 +553,18 @@ export class WorkspaceDatabase {
       return null;
     }
   }
+
+  async getUserOnboarding(query: Record<string, any>) {
+    try {
+      return await this.prisma.onboarding.findFirst({
+        where: query,
+        include: {
+          answers: true,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
 }
