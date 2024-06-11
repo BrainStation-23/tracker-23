@@ -52,7 +52,7 @@ export class TasksDatabase {
     });
   }
 
-  async getProject(query: Record<string, any>) {
+  async getProject(query: Record<string, any>): Promise<any> {
     try {
       return await this.prisma.project.findFirst({
         where: query,

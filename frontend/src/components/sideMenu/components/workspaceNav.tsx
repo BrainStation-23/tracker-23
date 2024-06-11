@@ -10,15 +10,13 @@ import {
   theme,
   Typography,
 } from "antd";
-import { userAPI } from "APIs";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
 import { LuMoreHorizontal, LuPenLine, LuTrash2 } from "react-icons/lu";
 
+import { userAPI } from "APIs";
 import PlusIconSvg from "@/assets/svg/PlusIconSvg";
-
-import { useActiveUserWorkspace } from "@/hooks/useActiveUserWorkspace";
 
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
@@ -43,7 +41,7 @@ const modalTitles = [
 
 const WorkspaceNav = () => {
   const dispatch = useDispatch();
-  const activeUserWorkspace = useActiveUserWorkspace();
+  const { designation } = useAppSelector((state) => state.userSlice.user);
 
   const [mode, setMode] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -266,10 +264,10 @@ const WorkspaceNav = () => {
                 <Text
                   className="text-left text-[13px]"
                   ellipsis={{
-                    tooltip: activeUserWorkspace?.designation,
+                    tooltip: designation,
                   }}
                 >
-                  {activeUserWorkspace?.designation}
+                  {designation}
                 </Text>
               </div>
             </div>

@@ -24,7 +24,6 @@ export interface UserWorkspaceDto {
   inviterId: number | null;
   invitationID: number | null;
   status: string;
-  designation: string;
 }
 
 export interface GetWorkspaceListWithUserDto {

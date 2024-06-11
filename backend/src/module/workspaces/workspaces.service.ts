@@ -137,7 +137,17 @@ export class WorkspacesService {
       id: { in: workSpaceIds },
     });
     const pages = await this.getPagesForWorkspace(user);
-    return { user, workspaces, pages };
+    const getOnboarding = await this.workspaceDatabase.getUserOnboarding({
+      userId: user.id,
+    });
+    return {
+      user: {
+        ...user,
+        designation: getOnboarding?.answers[1]?.answer ?? 'Developer',
+      },
+      workspaces,
+      pages,
+    };
   }
   async getOwnedWorkspaceList(userId: number) {
     return await this.workspaceDatabase.getWorkspaceList({
