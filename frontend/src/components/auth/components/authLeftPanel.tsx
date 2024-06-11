@@ -16,7 +16,7 @@ const AuthLeftPanel = () => {
         <div className="z-10 my-5 flex flex-col items-center gap-8 md:mt-[32%] md:items-start md:gap-20 lg:mt-[72%] 2xl:mt-[60%]">
           <div className="flex flex-col items-center gap-6 md:items-start">
             <div className="w-full text-center text-3xl font-semibold text-white md:w-3/4 md:text-start xl:text-5xl">
-              Have you heard about Tracker23 Tasks?
+              Have you heard about Tracker23?
             </div>
             <div className="text-base text-white">
               Sign up or log in to start tracking your time

@@ -41,7 +41,7 @@ const modalTitles = [
 
 const WorkspaceNav = () => {
   const dispatch = useDispatch();
-  const { designation } = useAppSelector((state) => state.userSlice.user);
+  const user = useAppSelector((state) => state.userSlice.user);
 
   const [mode, setMode] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -264,10 +264,10 @@ const WorkspaceNav = () => {
                 <Text
                   className="text-left text-[13px]"
                   ellipsis={{
-                    tooltip: designation,
+                    tooltip: user?.designation,
                   }}
                 >
-                  {designation}
+                  {user?.designation}
                 </Text>
               </div>
             </div>
