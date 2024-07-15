@@ -1,16 +1,106 @@
-import { Form, message, Spin, Steps, theme } from "antd";
-import { userAPI } from "APIs";
-import { OnBoardingQuestionDto } from "models/onboarding";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
+import { Form, message, Spin, Steps, theme } from "antd";
 
-import PrimaryButton from "@/components/common/buttons/primaryButton";
+import { userAPI } from "APIs";
+
+import { OnBoardingQuestionDto } from "models/onboarding";
+
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { changeWorkspaceReloadStatusSlice } from "@/storage/redux/workspacesSlice";
 
-import AccessSelectionStep from "./components/accessSelectionStep";
 import InviteSection from "./components/inviteSection";
+import AccessSelectionStep from "./components/accessSelectionStep";
+import PrimaryButton from "@/components/common/buttons/primaryButton";
+
+const data: OnBoardingQuestionDto[] = [
+  {
+    question: "I am here for ",
+    type: "purpose",
+    options: [
+      "Work",
+      "Personal",
+      "Project",
+      "Client",
+      "Freelance Work",
+      "Team Collaboration",
+      "Task Management",
+      "Client Meetings",
+      "Event Planning",
+      "Research and Development",
+    ],
+    answer: "",
+    placeholder: "What are you here for?",
+  },
+  {
+    question: "I am working as a",
+    type: "profession",
+    options: [
+      "Software Developer",
+      "Project Manager",
+      "Freelancer",
+      "Graphic Designer",
+      "Marketing Specialist",
+      "Consultant",
+      "Event Planner",
+      "Researcher",
+      "Client Services Representative",
+      "Entrepreneur",
+      "Other",
+    ],
+    answer: "",
+    placeholder: "What do you do?",
+  },
+  {
+    question: "Want to use it for ",
+    type: "usingPurpose",
+    options: [
+      "Team Workload Analysis",
+      "Project & Client Tracking",
+      "Staff Scheduling",
+      "Staff Payroll",
+      "Task Management",
+      "Freelance Projects",
+      "Event Planning",
+      "Research and Development",
+      "Client Meetings",
+      "Personal Productivity",
+    ],
+    answer: "",
+    placeholder: "Select your role",
+  },
+  {
+    question: "Where did you manage your task management?",
+    type: "pastExperiences",
+    options: [
+      // Task Management
+      "Jira",
+      "Trello",
+      "Google Calendar",
+      "Teams Calendar",
+      // Additional Task Management Tools
+      "Asana",
+      "ClickUp",
+      "Monday.com",
+      "Basecamp",
+      "Todoist",
+      "Notion",
+      "Smartsheet",
+      "Airtable",
+      "Any.do",
+      // Additional Calendar Management Tools
+      "Outlook Calendar",
+      "Apple Calendar",
+      "Calendly",
+      "Doodle",
+      "Teamup",
+      "None",
+    ],
+    answer: "",
+    placeholder: "Select from these",
+  },
+];
 
 const OnboardingSteps: React.FC = () => {
   const dispatch = useDispatch();
@@ -29,93 +119,6 @@ const OnboardingSteps: React.FC = () => {
   const [emails, setEmails] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const data: OnBoardingQuestionDto[] = [
-    {
-      question: "I am here for ",
-      type: "purpose",
-      options: [
-        "Work",
-        "Personal",
-        "Project",
-        "Client",
-        "Freelance Work",
-        "Team Collaboration",
-        "Task Management",
-        "Client Meetings",
-        "Event Planning",
-        "Research and Development",
-      ],
-      answer: "",
-      placeholder: "What are you here for?",
-    },
-    {
-      question: "I am working as a",
-      type: "profession",
-      options: [
-        "Software Developer",
-        "Project Manager",
-        "Freelancer",
-        "Graphic Designer",
-        "Marketing Specialist",
-        "Consultant",
-        "Event Planner",
-        "Researcher",
-        "Client Services Representative",
-        "Entrepreneur",
-        "Other",
-      ],
-      answer: "",
-      placeholder: "What do you do?",
-    },
-    {
-      question: "Want to use it for ",
-      type: "usingPurpose",
-      options: [
-        "Team Workload Analysis",
-        "Project & Client Tracking",
-        "Staff Scheduling",
-        "Staff Payroll",
-        "Task Management",
-        "Freelance Projects",
-        "Event Planning",
-        "Research and Development",
-        "Client Meetings",
-        "Personal Productivity",
-      ],
-      answer: "",
-      placeholder: "Select your role",
-    },
-    {
-      question: "Where did you manage your task management?",
-      type: "pastExperiences",
-      options: [
-        // Task Management
-        "Jira",
-        "Trello",
-        "Google Calendar",
-        "Teams Calendar",
-        // Additional Task Management Tools
-        "Asana",
-        "ClickUp",
-        "Monday.com",
-        "Basecamp",
-        "Todoist",
-        "Notion",
-        "Smartsheet",
-        "Airtable",
-        "Any.do",
-        // Additional Calendar Management Tools
-        "Outlook Calendar",
-        "Apple Calendar",
-        "Calendly",
-        "Doodle",
-        "Teamup",
-        "None",
-      ],
-      answer: "",
-      placeholder: "Select from these",
-    },
-  ];
   const steps = [
     {
       title: "Purpose",
@@ -159,6 +162,14 @@ const OnboardingSteps: React.FC = () => {
         completed: true,
         data: formattedData,
       });
+
+      if (res && window.gtag) {
+        formattedData.forEach((el) => {
+          window.gtag("event", el.question, {
+            value: el.answer,
+          });
+        });
+      }
     } else {
       res = await updateOnboarding({
         completed: true,
@@ -182,7 +193,7 @@ const OnboardingSteps: React.FC = () => {
     console.log("🚀 ~ file: namingSection.tsx:7 ~ onFinish ~ value:", value);
   };
   return (
-    <div className="flex flex-col justify-center gap-12 px-4 py-4 md:py-20 md:px-20">
+    <div className="flex flex-col justify-center gap-12 px-4 py-4 md:px-20 md:py-20">
       <div className="flex flex-col gap-2">
         <div className="text-xl font-semibold">Hello {user.firstName}</div>
         <div>Let&apos;s start with some basic questions to get you started</div>
