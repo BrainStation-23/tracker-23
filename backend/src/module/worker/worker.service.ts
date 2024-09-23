@@ -87,10 +87,6 @@ export class WorkerService {
       payloadType === QueuePayloadType.SYNC_ALL ||
       payloadType === QueuePayloadType.RELOAD
     ) {
-      console.log(
-        '🚀 ~ WorkerService ~ processData ~ payloadType:',
-        payloadType,
-      );
       return await this.syncAllAndUpdateTasks(user, payloadType);
     } else if (payloadType === QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK) {
       return await this.syncSingleProjectOrCalendar(user, projectId);

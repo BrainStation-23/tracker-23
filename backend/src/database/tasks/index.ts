@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IntegrationType, SessionStatus, Task, User } from '@prisma/client';
+import { IntegrationType, Project, SessionStatus, User } from '@prisma/client';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 import { CreateTaskDto } from 'src/module/tasks/dto';
 import { GetActiveSprintTasks } from 'src/module/sprints/dto/get.active.sprint.tasks.filter.dto';
@@ -63,6 +63,19 @@ export class TasksDatabase {
       });
     } catch (err) {
       return null;
+    }
+  }
+
+  async getProjectList(integrationId: number): Promise<Project[] | []> {
+    try {
+      return await this.prisma.project.findMany({
+        where: { integrationId },
+        include: {
+          statuses: true,
+        },
+      });
+    } catch (err) {
+      return [];
     }
   }
 
@@ -337,6 +350,53 @@ export class TasksDatabase {
     } catch (err) {
       console.log('🚀 ~ TasksDatabase ~ syncCall ~ err:', err);
       return null;
+    }
+  }
+
+  async createBatchStatus(statusArray: any[]) {
+    try {
+      await this.prisma.statusDetail.createMany({
+        data: statusArray,
+      });
+    } catch (err) {
+      console.log('🚀 ~ TasksDatabase ~ createBatchStatus ~ err:', err);
+    }
+  }
+
+  async getPriorityList(projectId: number) {
+    try {
+      return await this.prisma.priorityScheme.findMany({
+        where: {
+          projectId,
+        },
+      });
+    } catch (err) {
+      console.log('🚀 ~ TasksDatabase ~ createBatchStatus ~ err-361:', err);
+      return [];
+    }
+  }
+
+  async createBatchPriority(priorityListByProjectId: any[]) {
+    try {
+      return await this.prisma.priorityScheme.createMany({
+        data: priorityListByProjectId,
+      });
+    } catch (err) {
+      console.log('🚀 ~ TasksDatabase ~ createBatchPriority ~ err-372:', err);
+      return [];
+    }
+  }
+
+  async deletePriorities(projectId: number) {
+    try {
+      return await this.prisma.priorityScheme.deleteMany({
+        where: {
+          projectId,
+        },
+      });
+    } catch (err) {
+      console.log('🚀 ~ TasksDatabase ~ createBatchPriority ~ err-372:', err);
+      return [];
     }
   }
 }

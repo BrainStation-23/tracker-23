@@ -285,15 +285,20 @@ export class JiraApiCalls {
   }
 
   async jiraApiGetCall(userIntegration: UserIntegration, url: string) {
-    const taskConfig = {
-      method: 'get',
-      url,
-      headers: {
-        Authorization: `Bearer ${userIntegration?.accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    };
-    const res = await (await axios(taskConfig)).data;
-    return res;
+    try {
+      const config = {
+        method: 'get',
+        url,
+        headers: {
+          Authorization: `Bearer ${userIntegration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      };
+      const res = await (await axios(config)).data;
+      return res;
+    } catch (err) {
+      console.log('🚀 ~ JiraApiCalls ~ jiraApiGetCall ~ err:', err);
+      return [];
+    }
   }
 }
