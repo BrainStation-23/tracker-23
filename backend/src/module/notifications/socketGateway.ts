@@ -30,10 +30,6 @@ export class MyGateway implements OnModuleInit {
     let user;
     this.server.use(async (socket, next) => {
       const token = socket.handshake.headers.cookie_token;
-      console.log(
-        '🚀 ~ MyGateway ~ this.server.use ~ cookieString:',
-        socket.handshake.headers,
-      );
       // const token = cookieString;
       if (!token) return next(new Error('Invalid token'));
       else {
@@ -42,10 +38,6 @@ export class MyGateway implements OnModuleInit {
           return next(new Error('Invalid token'));
         }
         CONNECTIONS.set(user.id.toString(), socket);
-        console.log(
-          '🚀 ~ MyGateway ~ this.server.use ~ CONNECTIONS 46:',
-          CONNECTIONS.keys(),
-        );
         return next();
       }
     });

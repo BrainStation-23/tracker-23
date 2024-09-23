@@ -11,6 +11,7 @@ import { WorkspacesService } from 'src/module/workspaces/workspaces.service';
 import { APIException } from 'src/module/exception/api.exception';
 import { IntegrationDatabase } from 'src/database/integrations';
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
+import { getIntegrationDetails, getResourceDetails } from './jira.axios';
 
 @Injectable()
 export class JiraService {
@@ -35,99 +36,142 @@ export class JiraService {
   }
 
   async findIntegration(dto: AuthorizeJiraDto, user: User) {
-    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace || !user?.activeWorkspaceId)
-      throw new APIException(
-        'User Workspace not found',
-        HttpStatus.BAD_REQUEST,
-      );
-    // get access token and refresh tokens and store those on integrations table.
-    const url = 'https://auth.atlassian.com/oauth/token';
-    const urlResources = `https://api.atlassian.com/oauth/token/accessible-resources`;
-    const headers: any = { 'Content-Type': 'application/json' };
-    const body = {
-      grant_type: 'authorization_code',
-      client_id: this.config.get('JIRA_CLIENT_ID'),
-      client_secret: this.config.get('JIRA_SECRET_KEY'),
-      code: dto.code,
-      redirect_uri: this.config.get('JIRA_CALLBACK_URL'),
-    };
+    try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace || !user?.activeWorkspaceId)
+        throw new APIException(
+          'User Workspace not found',
+          HttpStatus.BAD_REQUEST,
+        );
 
-    const resp = (
-      await lastValueFrom(this.httpService.post(url, body, { headers }))
-    ).data;
+      // get access token and refresh tokens and store those on integrations table.
+      const resp = await getIntegrationDetails({ code: dto?.code });
+      const accountId = this.getAccountId(resp.access_token);
 
-    // get resources from jira
-    headers['Authorization'] = `Bearer ${resp['access_token']}`;
-    const accountId = JSON.parse(
-      Buffer.from(resp['access_token'].split('.')[1], 'base64').toString(),
-    ).sub as string;
+      //fetch all resources from jira
+      const respResources = await getResourceDetails({
+        access_token: resp.access_token,
+      });
 
-    const respResources = (
-      await lastValueFrom(this.httpService.get(urlResources, { headers }))
-    ).data;
-
-    if (!user?.activeWorkspaceId || !user?.activeWorkspaceId)
-      throw new APIException('No active Workspace', HttpStatus.BAD_REQUEST);
-
-    const updatedIntegration = await Promise.allSettled(
-      respResources.map(async (element: any) => {
-        const expires_in = 3500000;
-        const issued_time = Date.now();
-        const token_expire = issued_time + expires_in;
-        user?.activeWorkspaceId &&
-          (await this.integrationDatabase.updateTempIntegration(
-            {
-              TempIntegrationIdentifier: {
+      // new code
+      const integrationWithProjects: any[] = [];
+      await Promise.all(
+        respResources.map(async (element: any) => {
+          const expires_in = 3500000;
+          const issued_time = Date.now();
+          const token_expire = new Date(issued_time + expires_in);
+          const doesExistIntegration =
+            await this.integrationDatabase.findUniqueIntegration({
+              IntegrationIdentifier: {
                 siteId: element.id,
-                userWorkspaceId: userWorkspace.id,
+                workspaceId: user.activeWorkspaceId,
               },
-            },
-            {
+            });
+
+          if (doesExistIntegration) {
+            const projects = await this.integrationDatabase.findProjects({
+              integrationId: doesExistIntegration.id,
+            });
+
+            await this.userIntegrationDatabase.createAndUpdateUserIntegration(
+              {
+                UserIntegrationIdentifier: {
+                  integrationId: doesExistIntegration.id,
+                  userWorkspaceId: userWorkspace.id,
+                },
+              },
+              {
+                accessToken: resp.access_token,
+                refreshToken: resp.refresh_token,
+                expiration_time: token_expire,
+              },
+              {
+                accessToken: resp.access_token,
+                refreshToken: resp.refresh_token,
+                jiraAccountId: accountId,
+                userWorkspaceId: userWorkspace.id,
+                workspaceId: user.activeWorkspaceId,
+                integrationId: doesExistIntegration.id,
+                siteId: element.id,
+                expiration_time: token_expire,
+              },
+            );
+
+            const importedProject = await this.integrationDatabase.findProjects(
+              {
+                workspaceId: user.activeWorkspaceId,
+                integrationId: doesExistIntegration.id,
+                integrated: true,
+              },
+            );
+
+            importedProject &&
+              importedProject.length &&
+              (await this.integrationDatabase.updateTasks(
+                accountId,
+                importedProject,
+                userWorkspace.id,
+              ));
+
+            importedProject &&
+              (await this.integrationDatabase.updateSessions(
+                accountId,
+                importedProject,
+                userWorkspace.id,
+              ));
+            console.log('hello');
+            integrationWithProjects.push({
+              message: `Integration successful in ${doesExistIntegration.site}`,
+              integration: doesExistIntegration,
+              projects,
+            });
+          }
+
+          const integration = await this.integrationDatabase.createIntegration({
+            siteId: element.id,
+            type: IntegrationType.JIRA,
+            site: element.url,
+            workspaceId: user.activeWorkspaceId,
+          });
+          if (!integration) {
+            throw new Error('Could not create integration');
+          }
+
+          const userIntegration =
+            await this.userIntegrationDatabase.createUserIntegration({
               accessToken: resp.access_token,
               refreshToken: resp.refresh_token,
-              site: element.url,
-              expiration_time: new Date(token_expire),
-            },
-            {
-              siteId: element.id,
-              userWorkspaceId: userWorkspace.id,
-              type: IntegrationType.JIRA,
-              accessToken: resp.access_token,
-              refreshToken: resp.refresh_token,
-              site: element.url,
               jiraAccountId: accountId,
+              userWorkspaceId: userWorkspace.id,
               workspaceId: user.activeWorkspaceId,
-              expiration_time: new Date(token_expire),
-            },
-          ));
-      }),
-    );
-    if (!updatedIntegration)
+              integrationId: integration.id,
+              siteId: element.id,
+              expiration_time: token_expire,
+            });
+
+          if (!userIntegration) {
+            throw new Error('Could not create user integration');
+          }
+
+          const projects = await this.tasksService.fetchAllProjects(
+            user,
+            integration,
+          );
+
+          integrationWithProjects.push({
+            message: `Integration successful in ${integration.site}`,
+            integration,
+            projects,
+          });
+        }),
+      );
+      return this.getProjectList(integrationWithProjects);
+    } catch (err) {
       throw new APIException(
-        'Could not update integration',
+        err.message || 'Could not create integration',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-
-    const tempIntegrations =
-      await this.integrationDatabase.findTempIntegrations(userWorkspace.id);
-
-    const integrationProjects = [];
-    for (const tempIntegration of tempIntegrations) {
-      const tmpIntegrationProjects = await this.createIntegrationAndGetProjects(
-        user,
-        tempIntegration?.siteId,
-      );
-      tmpIntegrationProjects &&
-        integrationProjects.push(tmpIntegrationProjects);
     }
-
-    return integrationProjects.map((project) => {
-      return {
-        ...project,
-        integrationType: IntegrationType.JIRA,
-      };
-    });
   }
 
   async createIntegrationAndGetProjects(user: User, siteId: string) {
@@ -320,5 +364,20 @@ export class JiraService {
     } catch (error) {
       throw new APIException('Can not get Projects', HttpStatus.BAD_REQUEST);
     }
+  }
+
+  private getAccountId(token: string) {
+    return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString())
+      .sub as string;
+  }
+
+  private getProjectList(projectList: any[]) {
+    if (!projectList.length) return [];
+    return projectList.map((project) => {
+      return {
+        ...project,
+        integrationType: IntegrationType.JIRA,
+      };
+    });
   }
 }

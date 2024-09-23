@@ -23,7 +23,7 @@ export class JiraClientService {
     apiCaller: (userIntegration: UserIntegration, ...rest: any) => Promise<any>,
     ...rest: any
   ) {
-    if (userIntegration.expiration_time.getTime() > Date.now()) {
+    if (userIntegration?.expiration_time.getTime() > Date.now()) {
       // console.log(
       //   '🚀 ~ file: client.ts:22 ~ JiraClientService ~ userIntegration.expiration_time.getTime():',
       //   userIntegration.expiration_time.getTime(),

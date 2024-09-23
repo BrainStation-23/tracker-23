@@ -28,6 +28,7 @@ import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
 import { JiraClientService } from '../helper/client';
 import * as dayjs from 'dayjs';
 import { ReportsService } from '../reports/reports.service';
+import { WebhookDatabase } from 'src/database/webhook';
 
 @Injectable()
 export class ProjectsService {
@@ -36,6 +37,7 @@ export class ProjectsService {
     private workspacesService: WorkspacesService,
     private tasksService: TasksService,
     private sprintService: SprintsService,
+    private webhookDatabase: WebhookDatabase,
     private projectDatabase: ProjectDatabase,
     private userIntegrationDatabase: UserIntegrationDatabase,
     private prisma: PrismaService,
@@ -118,19 +120,16 @@ export class ProjectsService {
         await this.tasksService.syncCall(StatusEnum.FAILED, user),
       ]);
       throw new APIException(
-        'UserIntegration not found. Could not import project tasks',
+        'User Integration not found. Could not import project tasks',
         HttpStatus.BAD_REQUEST,
       );
     }
-    if (userIntegration && project.projectKey && userIntegration?.siteId) {
-      const doesExistWebhook = await this.prisma.webhook.findMany({
-        where: {
-          siteId: userIntegration?.siteId,
-          projectKey: {
-            hasSome: [project.projectKey],
-          },
-        },
+    if (userIntegration && project?.projectKey && userIntegration?.siteId) {
+      const doesExistWebhook = await this.webhookDatabase.getWebhooks({
+        siteId: userIntegration?.siteId,
+        projectKey: project.projectKey,
       });
+
       const host = this.config.get('WEBHOOK_HOST');
       if (!doesExistWebhook.length && host) {
         const payload: RegisterWebhookDto = {
@@ -145,7 +144,7 @@ export class ProjectsService {
           projectName: [project.projectKey],
           userIntegrationId: userIntegration?.id || 0,
         };
-        await this.webhooksService.registerWebhook(user, payload);
+        this.webhooksService.registerWebhook(user, payload);
       }
     }
 
@@ -189,12 +188,8 @@ export class ProjectsService {
         user,
         'Importing Tasks Failed',
       );
-      console.log(
-        '🚀 ~ file: tasks.service.ts:752 ~ TasksService ~ importProjectTasks ~ error:',
-        error,
-      );
       throw new APIException(
-        'Could not import project tasks',
+        error.message || 'Could not import project tasks',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -285,7 +280,7 @@ export class ProjectsService {
       res?.json({ message: 'Calender Imported Successfully!' });
     } catch (error) {
       console.log(
-        '🚀 ~ file: tasks.service.ts:752 ~ TasksService ~ importProjectTasks ~ error:',
+        '🚀 ~ file: tasks.service.ts:752 ~ TasksService ~ importCalenderProjectTasks ~ error:',
         error,
       );
       await this.tasksService.sendImportedNotification(
@@ -337,54 +332,49 @@ export class ProjectsService {
   }
 
   async getProjectList(user: User) {
-    if (!user || !user?.activeWorkspaceId)
-      throw new APIException(
-        'User workspaces not detected',
-        HttpStatus.BAD_REQUEST,
+    try {
+      if (!user || !user?.activeWorkspaceId) {
+        throw new Error('User workspaces not detected');
+      }
+
+      const getUserIntegrationList =
+        await this.integrationsService.getUserIntegrationsByRole(user);
+
+      const jiraIntegrationIds = getUserIntegrationList?.map(
+        (userIntegration: any) => userIntegration?.integration?.id,
       );
 
-    const getUserIntegrationList =
-      await this.integrationsService.getUserIntegrationsByRole(user);
+      const projects = await this.projectDatabase.getProjects({
+        integrationId: {
+          in: jiraIntegrationIds?.map((id: any) => Number(id)),
+        },
+        workspaceId: user.activeWorkspaceId,
+      });
 
-    const jiraIntegrationIds = getUserIntegrationList?.map(
-      (userIntegration: any) => userIntegration?.integration?.id,
-    );
-
-    const projects = await this.projectDatabase.getProjects({
-      integrationId: {
-        in: jiraIntegrationIds?.map((id: any) => Number(id)),
-      },
-      workspaceId: user.activeWorkspaceId,
-    });
-    if (!projects)
-      throw new APIException(
-        'Could not find projects',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-
-    let localProjects =
-      user?.activeWorkspaceId &&
-      (await this.projectDatabase.getLocalProjects({
+      const localProjects = await this.projectDatabase.getLocalProjects({
         source: 'T23',
         workspaceId: user.activeWorkspaceId,
         integrated: true,
-      }));
+      });
 
-    if (!localProjects) localProjects = [];
-    return [
-      ...projects.map((project) => {
-        return {
-          ...project,
-          integrationType: project.integration?.type,
-        };
-      }),
-      ...localProjects.map((project) => {
-        return {
-          ...project,
-          integrationType: IntegrationType.TRACKER23,
-        };
-      }),
-    ];
+      return [
+        ...projects.map((project) => {
+          return {
+            ...project,
+            integrationType: project.integration?.type,
+          };
+        }),
+        ...localProjects.map((project) => {
+          return {
+            ...project,
+            integrationType: IntegrationType.TRACKER23,
+          };
+        }),
+      ];
+    } catch (err) {
+      console.log('🚀 ~ ProjectsService ~ getProjectList ~ err:', err);
+      return [];
+    }
   }
 
   async createProject(user: User, projectName: string) {

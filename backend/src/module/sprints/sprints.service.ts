@@ -61,9 +61,9 @@ export class SprintsService {
       this.jiraApiCalls.getBoardList,
       boardUrl,
     );
-    for (let index = 0; index < boardList.total; index++) {
-      const board = boardList.values[index];
-      if (board.location.projectId === project?.projectId) {
+    for (let index = 0; index < boardList?.total; index++) {
+      const board = boardList?.values[index];
+      if (board && board?.location?.projectId === project?.projectId) {
         projectBoardIds.push(board.id);
       }
     }
