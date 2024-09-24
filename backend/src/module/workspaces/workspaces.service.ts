@@ -192,7 +192,7 @@ export class WorkspacesService {
       ));
     if (!userWorkspace) {
       throw new APIException(
-        'UserWorkspace not found!',
+        'User Workspace not found!',
         HttpStatus.BAD_REQUEST,
       );
     }

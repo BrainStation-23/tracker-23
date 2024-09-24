@@ -297,7 +297,7 @@ export class JiraApiCalls {
       const res = await (await axios(config)).data;
       return res;
     } catch (err) {
-      console.log('🚀 ~ JiraApiCalls ~ jiraApiGetCall ~ err:', err);
+      console.log('🚀 ~ JiraApiCalls ~ jiraApiGetCall ~ err---302:', err);
       return [];
     }
   }

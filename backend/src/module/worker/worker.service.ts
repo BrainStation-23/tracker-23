@@ -52,7 +52,6 @@ export class WorkerService {
         );
 
         worker.on('message', async (result) => {
-          console.log('🚀 ~ WorkerService ~ worker.on ~ result:', result);
           await this.processData(result);
           resolve(result);
         });
@@ -419,7 +418,6 @@ export class WorkerService {
     } else {
       url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND ${urlParam} &maxResults=1000`;
     }
-    console.log('🚀 ~ WorkerService ~ type:', type, url);
     const fields =
       'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority, parent';
     let respTasks;

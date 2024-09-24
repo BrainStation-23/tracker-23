@@ -54,98 +54,19 @@ export class ProjectsService {
     const project = await this.projectDatabase.getProjectByIdWithIntegration(
       projId,
     );
-    if (!project) {
-      await this.tasksService.sendImportedNotification(
-        user,
-        'Failed to import the project!',
-      );
+    if (!project)
       throw new APIException('Invalid Project Id', HttpStatus.BAD_REQUEST);
-    }
-    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace) {
-      await this.tasksService.sendImportedNotification(
-        user,
-        'Failed to import the project!',
-      );
-      throw new APIException(
-        'User workspace not found',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
 
-    const userIntegration =
-      project?.integrationId &&
-      (await this.tasksService.getUserIntegration(
-        userWorkspace.id,
-        project.integrationId,
-      ));
-
-    let updatedUserIntegration: any;
-    if (
-      userWorkspace.role === Role.ADMIN &&
-      !userIntegration &&
-      userWorkspace?.workspaceId
-    ) {
-      const userIntegrations = await this.tasksDatabase.getUserIntegrations({
-        workspaceId: userWorkspace.workspaceId,
-      });
-      for (let index = 0; index < userIntegrations.length; index++) {
-        const userIntegration = userIntegrations[index];
-        updatedUserIntegration =
-          userIntegration &&
-          (await this.integrationsService.getUpdatedUserIntegrationForOthers(
-            user,
-            userIntegration,
-          ));
-
-        if (updatedUserIntegration) {
-          break;
-        }
-      }
-    } else {
-      updatedUserIntegration =
-        userIntegration &&
-        (await this.integrationsService.getUpdatedUserIntegration(
-          user,
-          userIntegration.id,
-        ));
-    }
-
+    const updatedUserIntegration = await this.getUserIntegration(project, user);
     if (!updatedUserIntegration) {
-      Promise.allSettled([
-        await this.tasksService.sendImportedNotification(
-          user,
-          'Syncing Failed!',
-        ),
-        await this.tasksService.syncCall(StatusEnum.FAILED, user),
-      ]);
       throw new APIException(
         'User Integration not found. Could not import project tasks',
         HttpStatus.BAD_REQUEST,
       );
     }
-    if (userIntegration && project?.projectKey && userIntegration?.siteId) {
-      const doesExistWebhook = await this.webhookDatabase.getWebhooks({
-        siteId: userIntegration?.siteId,
-        projectKey: project.projectKey,
-      });
 
-      const host = this.config.get('WEBHOOK_HOST');
-      if (!doesExistWebhook.length && host) {
-        const payload: RegisterWebhookDto = {
-          url: `${host}/webhook/receiver`,
-          webhookEvents: [
-            'jira:issue_created',
-            'jira:issue_updated',
-            'jira:issue_deleted',
-            // 'sprint_started',
-            // 'sprint_closed',
-          ],
-          projectName: [project.projectKey],
-          userIntegrationId: userIntegration?.id || 0,
-        };
-        this.webhooksService.registerWebhook(user, payload);
-      }
+    if (project?.projectKey && updatedUserIntegration?.siteId) {
+      this.createWebhook(updatedUserIntegration, project, user);
     }
 
     try {
@@ -184,14 +105,88 @@ export class ProjectsService {
       ]),
         res?.json({ message: 'Project Imported Successfully' });
     } catch (error) {
-      await this.tasksService.sendImportedNotification(
-        user,
-        'Importing Tasks Failed',
-      );
+      Promise.allSettled([
+        await this.tasksService.sendImportedNotification(
+          user,
+          'Importing Tasks Failed',
+        ),
+        await this.tasksService.syncCall(StatusEnum.FAILED, user),
+      ]);
       throw new APIException(
         error.message || 'Could not import project tasks',
         HttpStatus.BAD_REQUEST,
       );
+    }
+  }
+
+  private async getUserIntegration(project: Project, user: User) {
+    try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      const userIntegration =
+        project?.integrationId &&
+        (await this.tasksService.getUserIntegration(
+          userWorkspace.id,
+          project.integrationId,
+        ));
+
+      //if user had admin role then use other's integration
+      let updatedUserIntegration: any;
+      if (
+        userWorkspace.role === Role.ADMIN &&
+        !userIntegration &&
+        userWorkspace?.workspaceId
+      ) {
+        const userIntegrations = await this.tasksDatabase.getUserIntegrations({
+          workspaceId: userWorkspace.workspaceId,
+        });
+        for (let index = 0; index < userIntegrations.length; index++) {
+          const userInt = userIntegrations[index];
+          updatedUserIntegration =
+            userInt &&
+            (await this.integrationsService.getUpdatedUserIntegrationForOthers(
+              user,
+              userInt,
+            ));
+
+          if (updatedUserIntegration) {
+            break;
+          }
+        }
+      } else {
+        updatedUserIntegration =
+          userIntegration &&
+          (await this.integrationsService.getUpdatedUserIntegration(
+            user,
+            userIntegration.id,
+          ));
+      }
+      return updatedUserIntegration;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  private async createWebhook(userIntegration: any, project: any, user: User) {
+    const doesExistWebhook = await this.webhookDatabase.getWebhooks({
+      siteId: userIntegration?.siteId,
+      projectKey: project.projectKey,
+    });
+
+    const host = this.config.get('WEBHOOK_HOST');
+    if (!doesExistWebhook.length && host) {
+      const payload: RegisterWebhookDto = {
+        url: `${host}/webhook/receiver`,
+        webhookEvents: [
+          'jira:issue_created',
+          'jira:issue_updated',
+          'jira:issue_deleted',
+          // 'sprint_started',
+          // 'sprint_closed',
+        ],
+        projectName: [project.projectKey],
+        userIntegrationId: userIntegration?.id || 0,
+      };
+      this.webhooksService.registerWebhook(user, payload);
     }
   }
 
