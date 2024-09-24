@@ -76,4 +76,21 @@ export class WebhookDatabase {
       return null;
     }
   }
+
+  async getWebhooks(params: { siteId: string; projectKey: string }) {
+    try {
+      const { siteId, projectKey } = params;
+      return await this.prisma.webhook.findMany({
+        where: {
+          siteId: siteId,
+          projectKey: {
+            hasSome: [projectKey],
+          },
+        },
+      });
+    } catch (err) {
+      console.log('🚀 ~ WebhookDatabase ~ getWebhooks ~ err:', err);
+      return [];
+    }
+  }
 }

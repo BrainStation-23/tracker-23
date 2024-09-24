@@ -22,6 +22,7 @@ import { EmailService } from '../email/email.service';
 import { AuthService } from '../auth/auth.service';
 import { RabbitMQService } from '../queue/queue.service';
 import { WorkerService } from '../worker/worker.service';
+import { WebhookDatabase } from 'src/database/webhook';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { WorkerService } from '../worker/worker.service';
     UsersDatabase,
     RabbitMQService,
     WorkerService,
+    WebhookDatabase,
   ],
   controllers: [ProjectsController],
   exports: [ProjectsService, ProjectDatabase],

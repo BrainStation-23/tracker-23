@@ -52,7 +52,6 @@ export class WorkerService {
         );
 
         worker.on('message', async (result) => {
-          console.log('🚀 ~ WorkerService ~ worker.on ~ result:', result);
           await this.processData(result);
           resolve(result);
         });
@@ -87,10 +86,6 @@ export class WorkerService {
       payloadType === QueuePayloadType.SYNC_ALL ||
       payloadType === QueuePayloadType.RELOAD
     ) {
-      console.log(
-        '🚀 ~ WorkerService ~ processData ~ payloadType:',
-        payloadType,
-      );
       return await this.syncAllAndUpdateTasks(user, payloadType);
     } else if (payloadType === QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK) {
       return await this.syncSingleProjectOrCalendar(user, projectId);
@@ -423,7 +418,6 @@ export class WorkerService {
     } else {
       url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND ${urlParam} &maxResults=1000`;
     }
-    console.log('🚀 ~ WorkerService ~ type:', type, url);
     const fields =
       'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority, parent';
     let respTasks;

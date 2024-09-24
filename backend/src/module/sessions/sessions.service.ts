@@ -660,11 +660,12 @@ export class SessionsService {
 
   async weeklySpentTime(user: User, query: GetTaskQuery) {
     const sessions = await this.getSessionsByUserWorkspace(user);
-    if (!sessions)
+    if (!sessions?.length) {
       return {
         TotalSpentTime: 0,
-        //value: null,
+        value: [],
       };
+    }
 
     //let { startDate, endDate } = query;
     const startDate = query?.startDate ? new Date(query.startDate) : new Date();
@@ -673,7 +674,7 @@ export class SessionsService {
     //const taskList: any[] = await this.getTasks(user, query);
 
     let totalTimeSpent = 0;
-    const map = new Map<string, number>();
+    const mapProjectNameAndSessions = new Map<string, number>();
     for (const session of sessions) {
       let taskTimeSpent = 0;
       const start = session && session.startTime && new Date(session.startTime);
@@ -700,17 +701,22 @@ export class SessionsService {
 
       if (!session?.task?.projectName) session.task.projectName = 'T23';
 
-      if (!map.has(session?.task?.projectName)) {
-        map.set(session?.task.projectName, taskTimeSpent);
+      if (!mapProjectNameAndSessions.has(session?.task?.projectName)) {
+        mapProjectNameAndSessions.set(session?.task.projectName, taskTimeSpent);
       } else {
-        let getValue = map.get(session?.task?.projectName);
+        let getValue = mapProjectNameAndSessions.get(
+          session?.task?.projectName,
+        );
         if (!getValue) getValue = 0;
-        map.set(session?.task?.projectName, getValue + taskTimeSpent);
+        mapProjectNameAndSessions.set(
+          session?.task?.projectName,
+          getValue + taskTimeSpent,
+        );
       }
     }
 
     const ar = [];
-    const iterator = map[Symbol.iterator]();
+    const iterator = mapProjectNameAndSessions[Symbol.iterator]();
     for (const item of iterator) {
       ar.push({
         projectName: item[0],
@@ -923,12 +929,9 @@ export class SessionsService {
     loggedInUser: Partial<User>,
     user?: Partial<User>,
   ) {
-    if (!loggedInUser || !loggedInUser?.activeWorkspaceId)
-      throw new APIException(
-        'No workspace id detected',
-        HttpStatus.BAD_REQUEST,
-      );
-
+    if (!loggedInUser || !loggedInUser?.activeWorkspaceId) {
+      return [];
+    }
     const userId = user ? user.id : loggedInUser.id;
     const userWorkspace =
       await this.userWorkspaceDatabase.getSingleUserWorkspace({
@@ -936,15 +939,13 @@ export class SessionsService {
         workspaceId: loggedInUser.activeWorkspaceId,
       });
 
-    // if (!userWorkspace)
-    //   throw new APIException(
-    //     'Could not get userworkspace',
-    //     HttpStatus.INTERNAL_SERVER_ERROR,
-    //   );
+    const sessions = userWorkspace?.id
+      ? await this.sessionDatabase.getSessions({
+          userWorkspaceId: userWorkspace?.id,
+        })
+      : [];
 
-    return await this.sessionDatabase.getSessions({
-      userWorkspaceId: userWorkspace?.id,
-    });
+    return sessions;
   }
 
   private getSpentTimePerDay(sessions: any, startDate: Date, endDate: Date) {
