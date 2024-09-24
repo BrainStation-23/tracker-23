@@ -786,14 +786,18 @@ export class TasksService {
   }
 
   async getUserIntegration(userWorkspaceId: number, integrationId: number) {
-    return await this.prisma.userIntegration.findUnique({
-      where: {
-        UserIntegrationIdentifier: {
-          integrationId,
-          userWorkspaceId,
+    try {
+      return await this.prisma.userIntegration.findUnique({
+        where: {
+          UserIntegrationIdentifier: {
+            integrationId,
+            userWorkspaceId,
+          },
         },
-      },
-    });
+      });
+    } catch (err) {
+      return null;
+    }
   }
 
   private async createNotification(
@@ -1680,6 +1684,9 @@ export class TasksService {
               integrationId: integration.id,
               userWorkspaceId: userWorkspace.id,
             },
+          },
+          include: {
+            integration: true,
           },
         }));
       if (!userIntegration) {

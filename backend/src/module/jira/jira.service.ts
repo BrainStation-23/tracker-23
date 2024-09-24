@@ -1,6 +1,4 @@
 import { ProjectDatabase } from './../../database/projects/index';
-import { lastValueFrom } from 'rxjs';
-import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IntegrationType, User } from '@prisma/client';
@@ -16,7 +14,6 @@ import { getIntegrationDetails, getResourceDetails } from './jira.axios';
 @Injectable()
 export class JiraService {
   constructor(
-    private httpService: HttpService,
     private config: ConfigService,
     private tasksService: TasksService,
     private workspacesService: WorkspacesService,
@@ -53,7 +50,6 @@ export class JiraService {
         access_token: resp.access_token,
       });
 
-      // new code
       const integrationWithProjects: any[] = [];
       await Promise.all(
         respResources.map(async (element: any) => {
@@ -119,50 +115,51 @@ export class JiraService {
                 importedProject,
                 userWorkspace.id,
               ));
-            console.log('hello');
+
             integrationWithProjects.push({
               message: `Integration successful in ${doesExistIntegration.site}`,
               integration: doesExistIntegration,
               projects,
             });
-          }
+          } else {
+            const integration =
+              await this.integrationDatabase.createIntegration({
+                siteId: element.id,
+                type: IntegrationType.JIRA,
+                site: element.url,
+                workspaceId: user.activeWorkspaceId,
+              });
+            if (!integration) {
+              throw new Error('Could not create integration');
+            }
 
-          const integration = await this.integrationDatabase.createIntegration({
-            siteId: element.id,
-            type: IntegrationType.JIRA,
-            site: element.url,
-            workspaceId: user.activeWorkspaceId,
-          });
-          if (!integration) {
-            throw new Error('Could not create integration');
-          }
+            const userIntegration =
+              await this.userIntegrationDatabase.createUserIntegration({
+                accessToken: resp.access_token,
+                refreshToken: resp.refresh_token,
+                jiraAccountId: accountId,
+                userWorkspaceId: userWorkspace.id,
+                workspaceId: user.activeWorkspaceId,
+                integrationId: integration.id,
+                siteId: element.id,
+                expiration_time: token_expire,
+              });
 
-          const userIntegration =
-            await this.userIntegrationDatabase.createUserIntegration({
-              accessToken: resp.access_token,
-              refreshToken: resp.refresh_token,
-              jiraAccountId: accountId,
-              userWorkspaceId: userWorkspace.id,
-              workspaceId: user.activeWorkspaceId,
-              integrationId: integration.id,
-              siteId: element.id,
-              expiration_time: token_expire,
+            if (!userIntegration) {
+              throw new Error('Could not create user integration');
+            }
+
+            const projects = await this.tasksService.fetchAllProjects(
+              user,
+              integration,
+            );
+
+            integrationWithProjects.push({
+              message: `Integration successful in ${integration.site}`,
+              integration,
+              projects,
             });
-
-          if (!userIntegration) {
-            throw new Error('Could not create user integration');
           }
-
-          const projects = await this.tasksService.fetchAllProjects(
-            user,
-            integration,
-          );
-
-          integrationWithProjects.push({
-            message: `Integration successful in ${integration.site}`,
-            integration,
-            projects,
-          });
         }),
       );
       return this.getProjectList(integrationWithProjects);

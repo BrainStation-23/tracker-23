@@ -36,9 +36,6 @@ export const getResourceDetails = async (params: { access_token: string }) => {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${access_token}`,
     };
-    // (
-    //   await lastValueFrom(this.httpService.get(urlResources, { headers }))
-    // ).data;
 
     const response = await axios.get(url, {
       headers,
