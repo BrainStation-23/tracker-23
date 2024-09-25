@@ -12,6 +12,7 @@ import AddNewProject from "@/components/integrations/projectImport/addNewProject
 import ImportedProjectsSection from "@/components/integrations/projectImport/importedProjectsSections";
 
 const ProjectPage = () => {
+  const [isSyncing, setIsSyncing] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rootSpinning, setRootSpinning] = useState(false);
@@ -22,7 +23,61 @@ const ProjectPage = () => {
     OUTLOOK: [],
     TRACKER23: [],
   });
+  const [searchGroupProjects, setSearchGroupProjects] = useState<GroupProjects>(
+    {
+      JIRA: [],
+      TRELLO: [],
+      OUTLOOK: [],
+      TRACKER23: [],
+    }
+  );
 
+  const searchProject = (
+    query: string,
+    integrationName: "JIRA" | "TRELLO" | "OUTLOOK" | "TRACKER23"
+  ) => {
+    const specificValue: ProjectDto[] = groupProjects[integrationName] || [];
+    const filteredProjects: ProjectDto[] = specificValue.filter((project) =>
+      project.projectName.toLowerCase().includes(query.toLowerCase())
+    );
+    const updatedGroupProjects = {
+      ...groupProjects,
+      [integrationName]: filteredProjects,
+    };
+    setSearchGroupProjects(updatedGroupProjects);
+  };
+
+  const syncAllProjects = async () => {
+    setIsSyncing(true);
+    try {
+      const res = await userAPI.syncAllProjects();
+      const groupProjects: GroupProjects = {
+        JIRA: [],
+        TRELLO: [],
+        OUTLOOK: [],
+        TRACKER23: [],
+      };
+      if (Array.isArray(res)) {
+        res.forEach((project: ProjectDto) => {
+          const integrationType = project.integrationType;
+          if (groupProjects[integrationType]) {
+            groupProjects[integrationType].push(project);
+          } else {
+            console.warn(`Unknown integration type: ${integrationType}`);
+          }
+        });
+        setSearchGroupProjects(groupProjects);
+        setAllProjects(groupProjects);
+      } else {
+        console.error("Unexpected response format:", res);
+      }
+      setInitialLoadDone(true);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
   const getAllProjects = async () => {
     const res = await userAPI.getAllProjects();
     if (res) {
@@ -35,7 +90,7 @@ const ProjectPage = () => {
       res.forEach((project: ProjectDto) => {
         groupProjects[project.integrationType].push(project);
       });
-
+      setSearchGroupProjects(groupProjects);
       setAllProjects(groupProjects);
       setInitialLoadDone(true);
     }
@@ -57,6 +112,7 @@ const ProjectPage = () => {
                 p.id != project.id ? p : { ...p, integrated: false }
               ),
       };
+      setSearchGroupProjects(tmp);
       setAllProjects(tmp);
     }
     setRootSpinning(false);
@@ -101,9 +157,12 @@ const ProjectPage = () => {
         >
           <Spin spinning={spinning} tip="Processing">
             <AddNewProject
-              groupProjects={groupProjects}
+              groupProjects={searchGroupProjects}
               setSpinning={setSpinning}
               setIsModalOpen={setIsModalOpen}
+              syncAllProjects={syncAllProjects}
+              isSyncing={isSyncing}
+              searchProject={searchProject}
             />
           </Spin>
         </GlobalModal>
