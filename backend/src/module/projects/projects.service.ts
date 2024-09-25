@@ -50,6 +50,107 @@ export class ProjectsService {
     private reportService: ReportsService,
   ) {}
 
+  async fetchAllProjects(user: User) {
+    try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+
+      if (!userWorkspace) {
+        throw new Error('User workspace not found');
+      }
+
+      const integrationList = await this.integrationsService.getIntegrations(
+        user,
+      );
+
+      for (const integration of integrationList) {
+        const userIntegration: any =
+          user?.activeWorkspaceId &&
+          (await this.prisma.userIntegration.findUnique({
+            where: {
+              UserIntegrationIdentifier: {
+                integrationId: integration.id,
+                userWorkspaceId: userWorkspace.id,
+              },
+            },
+          }));
+
+        if (userIntegration) {
+          const getProjectListUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/project`;
+          const jiraProjects: any = await this.jiraClient.CallJira(
+            userIntegration,
+            this.jiraApiCalls.jiraApiGetCall,
+            getProjectListUrl,
+          );
+
+          const projectIdSet = new Set();
+          const projectListArray: any[] = [];
+
+          // Process Jira projects
+          for (const project of jiraProjects) {
+            const {
+              id: projectId,
+              key: projectKey,
+              name: projectName,
+            } = project;
+
+            if (projectId && !projectIdSet.has(projectId)) {
+              projectIdSet.add(projectId);
+              projectListArray.push({
+                projectId: Number(projectId),
+                projectName,
+                projectKey,
+                source: userIntegration
+                  ? `${userIntegration?.integration?.site}/browse/${projectKey}`
+                  : '',
+                integrationId: integration.id,
+                workspaceId: userWorkspace.workspaceId,
+                integrated: false,
+              });
+            }
+          }
+
+          const existingProjects = await this.prisma.project.findMany({
+            where: {
+              workspaceId: userWorkspace.workspaceId,
+              integrationId: integration.id,
+            },
+          });
+
+          const jiraProjectIds = new Set(
+            jiraProjects.map((project: any) => Number(project.id)),
+          );
+          const projectsToRemove = existingProjects.filter(
+            (project) => !jiraProjectIds.has(project.projectId),
+          );
+
+          await this.prisma.project.createMany({
+            data: projectListArray,
+            skipDuplicates: true,
+          });
+
+          if (projectsToRemove.length > 0) {
+            const projectIdsToRemove = projectsToRemove
+              .map((project) => project.projectId)
+              .filter((id): id is number => id !== null);
+
+            await this.prisma.project.deleteMany({
+              where: {
+                projectId: { in: projectIdsToRemove },
+                workspaceId: userWorkspace.workspaceId,
+                integrationId: integration.id,
+              },
+            });
+          }
+        }
+      }
+
+      return await this.getProjectList(user);
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }
+
   async importProject(user: User, projId: number, res?: Response) {
     const project = await this.projectDatabase.getProjectByIdWithIntegration(
       projId,

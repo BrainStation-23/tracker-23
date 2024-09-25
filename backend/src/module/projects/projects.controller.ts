@@ -12,7 +12,7 @@ import {
   Response,
   UseGuards,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Integration, User } from '@prisma/client';
 
 import {
   CreateProjectRequest,
@@ -43,6 +43,15 @@ export class ProjectsController {
     @Response() res: any,
   ) {
     return this.projectsService.importCalendarProject(user, query, res);
+  }
+
+  @Get('/sync')
+  async fetchAllProjects(@GetUser() user: User) {
+    try {
+      return this.projectsService.fetchAllProjects(user);
+    } catch (error) {
+      throw new Error(`error.message`);
+    }
   }
 
   @Get('/:id')
