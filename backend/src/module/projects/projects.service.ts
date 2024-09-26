@@ -62,88 +62,70 @@ export class ProjectsService {
         user,
       );
 
-      for (const integration of integrationList) {
-        const userIntegration: any =
-          user?.activeWorkspaceId &&
-          (await this.prisma.userIntegration.findUnique({
-            where: {
-              UserIntegrationIdentifier: {
-                integrationId: integration.id,
-                userWorkspaceId: userWorkspace.id,
-              },
-            },
-          }));
+      const integrationIds = integrationList.map(
+        (integration) => integration.id,
+      );
 
-        if (userIntegration) {
-          const getProjectListUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/project`;
-          const jiraProjects: any = await this.jiraClient.CallJira(
-            userIntegration,
-            this.jiraApiCalls.jiraApiGetCall,
-            getProjectListUrl,
-          );
+      const userIntegrations = await this.prisma.userIntegration.findMany({
+        where: {
+          integrationId: { in: integrationIds },
+          userWorkspaceId: userWorkspace.id,
+        },
+        include: {
+          integration: true,
+        },
+      });
 
-          const projectIdSet = new Set();
-          const projectListArray: any[] = [];
+      const existingProjects = await this.prisma.project.findMany({
+        where: {
+          workspaceId: userWorkspace.workspaceId,
+        },
+      });
 
-          // Process Jira projects
-          for (const project of jiraProjects) {
-            const {
-              id: projectId,
-              key: projectKey,
-              name: projectName,
-            } = project;
+      const existingProjectMap = new Map(
+        existingProjects.map((project) => [project.projectId, project]),
+      );
 
-            if (projectId && !projectIdSet.has(projectId)) {
-              projectIdSet.add(projectId);
-              projectListArray.push({
-                projectId: Number(projectId),
-                projectName,
-                projectKey,
-                source: userIntegration
-                  ? `${userIntegration?.integration?.site}/browse/${projectKey}`
-                  : '',
-                integrationId: integration.id,
-                workspaceId: userWorkspace.workspaceId,
-                integrated: false,
-              });
-            }
-          }
+      const allNewProjects: any[] = [];
 
-          const existingProjects = await this.prisma.project.findMany({
-            where: {
+      for (const userIntegration of userIntegrations) {
+        const getProjectListUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/project`;
+        const jiraProjects: any = await this.jiraClient.CallJira(
+          userIntegration,
+          this.jiraApiCalls.jiraApiGetCall,
+          getProjectListUrl,
+        );
+
+        const newProjects: any[] = [];
+
+        for (const project of jiraProjects) {
+          const { id: projectId, key: projectKey, name: projectName } = project;
+          const numericProjectId = Number(projectId);
+
+          if (!existingProjectMap.has(numericProjectId)) {
+            newProjects.push({
+              projectId: numericProjectId,
+              projectName,
+              projectKey,
+              source: userIntegration
+                ? `${userIntegration?.integration?.site}/browse/${projectKey}`
+                : '',
+              integrationId: userIntegration.integrationId,
               workspaceId: userWorkspace.workspaceId,
-              integrationId: integration.id,
-            },
-          });
-
-          const jiraProjectIds = new Set(
-            jiraProjects.map((project: any) => Number(project.id)),
-          );
-          const projectsToRemove = existingProjects.filter(
-            (project) => !jiraProjectIds.has(project.projectId),
-          );
-
-          await this.prisma.project.createMany({
-            data: projectListArray,
-            skipDuplicates: true,
-          });
-
-          if (projectsToRemove.length > 0) {
-            const projectIdsToRemove = projectsToRemove
-              .map((project) => project.projectId)
-              .filter((id): id is number => id !== null);
-
-            await this.prisma.project.deleteMany({
-              where: {
-                projectId: { in: projectIdsToRemove },
-                workspaceId: userWorkspace.workspaceId,
-                integrationId: integration.id,
-              },
+              integrated: false,
             });
           }
         }
+
+        allNewProjects.push(...newProjects);
       }
 
+      if (allNewProjects.length > 0) {
+        await this.prisma.project.createMany({
+          data: allNewProjects,
+          skipDuplicates: true,
+        });
+      }
       return await this.getProjectList(user);
     } catch (err) {
       console.error(err);

@@ -12,7 +12,7 @@ import {
   Response,
   UseGuards,
 } from '@nestjs/common';
-import { Integration, User } from '@prisma/client';
+import { User } from '@prisma/client';
 
 import {
   CreateProjectRequest,
@@ -47,11 +47,7 @@ export class ProjectsController {
 
   @Get('/sync')
   async fetchAllProjects(@GetUser() user: User) {
-    try {
-      return this.projectsService.fetchAllProjects(user);
-    } catch (error) {
-      throw new Error(`error.message`);
-    }
+    return this.projectsService.fetchAllProjects(user);
   }
 
   @Get('/:id')
