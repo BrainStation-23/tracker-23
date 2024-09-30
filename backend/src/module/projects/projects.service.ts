@@ -50,14 +50,8 @@ export class ProjectsService {
     private reportService: ReportsService,
   ) {}
 
-  async fetchAllProjects(user: User) {
+  private async getUserIntegrations(user: User, userWorkspace: UserWorkspace) {
     try {
-      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-
-      if (!userWorkspace) {
-        throw new Error('User workspace not found');
-      }
-
       const integrationList = await this.integrationsService.getIntegrations(
         user,
       );
@@ -66,28 +60,35 @@ export class ProjectsService {
         (integration) => integration.id,
       );
 
-      const userIntegrations = await this.prisma.userIntegration.findMany({
-        where: {
+      return await this.userIntegrationDatabase.getUserIntegrationListWithIntegrations(
+        {
           integrationId: { in: integrationIds },
           userWorkspaceId: userWorkspace.id,
         },
-        include: {
-          integration: true,
-        },
-      });
+      );
+    } catch (err) {
+      return [];
+    }
+  }
+  async fetchAllProjects(user: User) {
+    try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new Error('User workspace not found');
+      }
 
-      const existingProjects = await this.prisma.project.findMany({
-        where: {
-          workspaceId: userWorkspace.workspaceId,
-        },
+      const userIntegrations = await this.getUserIntegrations(
+        user,
+        userWorkspace,
+      );
+      const existingProjects = await this.projectDatabase.getProjects({
+        workspaceId: userWorkspace.workspaceId,
       });
-
       const existingProjectMap = new Map(
         existingProjects.map((project) => [project.projectId, project]),
       );
 
       const allNewProjects: any[] = [];
-
       for (const userIntegration of userIntegrations) {
         const getProjectListUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/project`;
         const jiraProjects: any = await this.jiraClient.CallJira(
@@ -96,14 +97,12 @@ export class ProjectsService {
           getProjectListUrl,
         );
 
-        const newProjects: any[] = [];
-
         for (const project of jiraProjects) {
           const { id: projectId, key: projectKey, name: projectName } = project;
           const numericProjectId = Number(projectId);
 
           if (!existingProjectMap.has(numericProjectId)) {
-            newProjects.push({
+            allNewProjects.push({
               projectId: numericProjectId,
               projectName,
               projectKey,
@@ -116,15 +115,10 @@ export class ProjectsService {
             });
           }
         }
-
-        allNewProjects.push(...newProjects);
       }
 
       if (allNewProjects.length > 0) {
-        await this.prisma.project.createMany({
-          data: allNewProjects,
-          skipDuplicates: true,
-        });
+        await this.projectDatabase.createProjects(allNewProjects);
       }
       return await this.getProjectList(user);
     } catch (err) {
