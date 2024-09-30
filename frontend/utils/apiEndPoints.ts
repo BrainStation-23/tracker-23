@@ -10,6 +10,7 @@ export const apiEndPoints = {
   taskListReport: `/export/user-task-list`,
   exportSprintReport: `/export/sprint-report`,
   projects: `/projects`,
+  syncprojects: `/projects/sync`,
   calendar: `/projects/outlook`,
   reportProjects: `/projects/report-page`,
   synAllTasks: `/tasks/syncAll`,

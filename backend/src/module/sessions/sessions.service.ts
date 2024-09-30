@@ -11,6 +11,7 @@ import {
   Session,
   SessionStatus,
   User,
+  UserIntegration,
   UserWorkspaceStatus,
 } from '@prisma/client';
 
@@ -253,9 +254,9 @@ export class SessionsService {
         url,
         data,
       );
-      console.log('🚀 ~ SessionsService ~ workLog:', workLog);
       return workLog;
     } catch (err) {
+      console.log('🚀 ~ SessionsService ~ err:', err);
       return null;
     }
   }
@@ -383,30 +384,23 @@ export class SessionsService {
     try {
       const userWorkspace = await this.workspacesService.getUserWorkspace(user);
       if (!userWorkspace) {
-        throw new APIException(
-          'User workspace not found',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new Error('User workspace not found');
       }
 
       const doesExistWorklog = await this.sessionDatabase.getSessionById(
         +sessionId,
       );
       if (!doesExistWorklog) {
-        throw new APIException('No session found', HttpStatus.BAD_REQUEST);
+        throw new Error('No session found');
       }
 
       //let session: Session | false | null = null;
-
       const task = await this.tasksDatabase.getTask({
         id: doesExistWorklog.taskId,
         userWorkspaceId: userWorkspace.id,
       });
       if (!task) {
-        throw new APIException(
-          'Task Not Found',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        throw new Error('Task Not Found');
       }
 
       if (task && task.source === IntegrationType.TRACKER23) {
@@ -423,41 +417,28 @@ export class SessionsService {
           { id: task.projectId },
           { integration: true },
         ));
-      if (!project)
-        throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+      if (!project) throw new Error('Could not fetch Project');
 
-      const userIntegration: number[] = [];
-      getUserIntegrationList.map((userInt: any) => {
+      const userIntegration: UserIntegration[] = [];
+      for await (const userInt of getUserIntegrationList) {
         if (userInt.integrationId === project.integrationId) {
-          userIntegration.push(userInt.id);
+          userIntegration.push(userInt);
+          if (userIntegration.length > 0) break;
         }
-      });
-
-      const updated_integration =
-        userIntegration.length &&
-        (await this.integrationsService.getUpdatedUserIntegration(
-          user,
-          userIntegration[0],
-        ));
-
-      if (!updated_integration) {
-        throw new APIException(
-          'Integration Not Found',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
       }
 
-      if (doesExistWorklog.authorId === updated_integration.jiraAccountId) {
+      if (!userIntegration.length) {
+        throw new Error('Integration Not Found');
+      }
+
+      if (doesExistWorklog.authorId === userIntegration[0]?.jiraAccountId) {
         const startTime = new Date(`${reqBody.startTime}`);
         const endTime = new Date(`${reqBody.endTime}`);
         const timeSpentReqBody = Math.floor(
           (endTime.getTime() - startTime.getTime()) / 1000,
         );
         if (timeSpentReqBody < 60) {
-          throw new APIException(
-            'Insufficient TimeSpent',
-            HttpStatus.BAD_REQUEST,
-          );
+          throw new Error('Insufficient TimeSpent');
         }
 
         const timeSpent = this.timeConverter(Number(timeSpentReqBody));
@@ -465,28 +446,21 @@ export class SessionsService {
           started: this.getUtcTime(startTime),
           timeSpent: timeSpent,
         });
-        const url = `https://api.atlassian.com/ex/jira/${updated_integration?.siteId}/rest/api/3/issue/${doesExistWorklog?.integratedTaskId}/worklog/${doesExistWorklog.worklogId}`;
-        const config = {
-          method: 'put',
+        const url = `https://api.atlassian.com/ex/jira/${userIntegration[0]?.siteId}/rest/api/3/issue/${doesExistWorklog?.integratedTaskId}/worklog/${doesExistWorklog.worklogId}`;
+        const response: any = await this.jiraClient.CallJira(
+          userIntegration[0],
+          this.jiraApiCalls.UpdateWorkLog,
           url,
-          headers: {
-            Authorization: `Bearer ${updated_integration?.accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          data: data,
-        };
+          data,
+        );
 
-        const response = (await axios(config)).data;
         const session =
           response &&
           (await this.updateSessionFromLocal(Number(sessionId), reqBody));
         task && (await this.updateTaskUpdatedAt(task.id));
 
         if (!session) {
-          throw new APIException(
-            'You are not allowed to update this session!',
-            HttpStatus.BAD_REQUEST,
-          );
+          throw new Error('You are not allowed to update this session!');
         }
         return session;
       }
