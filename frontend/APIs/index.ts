@@ -87,6 +87,7 @@ import {
   exportSprintViewSheetRest,
   exportTimeLineSheetRest,
   allTaskReload,
+  syncProjects
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -134,6 +135,7 @@ const restApi: apiFunction = {
   getReportSprints: getReportSprintsRest,
   getJiraActiveSprintTasks: getJiraActiveSprintTasksRest,
   getAllProjects: getAllProjectsRest,
+  syncAllProjects: syncProjects,
   getAllReportProjects: getAllReportProjectsRest,
   importProject: importProjectRest,
   importCalendar: importCalendarRest,

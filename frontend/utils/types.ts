@@ -39,6 +39,7 @@ import {
 import { ReportData } from "@/storage/redux/reportsSlice";
 
 export interface apiFunction {
+  syncAllProjects: () => Promise<any>;
   login: (data: LoginDto) => Promise<LoginResponseDto | undefined>;
   loginFromInvite: (data: LoginDto) => Promise<LoginResponseDto | undefined>;
   googleLogin: (

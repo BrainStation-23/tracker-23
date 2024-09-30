@@ -96,6 +96,29 @@ export class JiraApiCalls {
     }
   }
 
+  async UpdateWorkLog(
+    userIntegration: UserIntegration,
+    url: string,
+    requestBody: any,
+  ) {
+    try {
+      const config = {
+        method: 'put',
+        url,
+        headers: {
+          Authorization: `Bearer ${userIntegration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        data: requestBody,
+      };
+      const response = await axios(config);
+      return response.data;
+    } catch (err) {
+      console.log('🚀 ~ file: api.ts:69 ~ JiraApiCalls ~ err:', err);
+      return null;
+    }
+  }
+
   async getJiraSprint(
     userIntegration: UserIntegration,
     url: string,
@@ -294,7 +317,7 @@ export class JiraApiCalls {
           'Content-Type': 'application/json',
         },
       };
-      const res = await (await axios(config)).data;
+      const res = await (await axios(config))?.data;
       return res;
     } catch (err) {
       console.log('🚀 ~ JiraApiCalls ~ jiraApiGetCall ~ err---302:', err);

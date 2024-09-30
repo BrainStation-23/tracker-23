@@ -45,6 +45,11 @@ export class ProjectsController {
     return this.projectsService.importCalendarProject(user, query, res);
   }
 
+  @Get('/sync')
+  async fetchAllProjects(@GetUser() user: User) {
+    return this.projectsService.fetchAllProjects(user);
+  }
+
   @Get('/:id')
   async importProject(
     @GetUser() user: User,

@@ -50,6 +50,83 @@ export class ProjectsService {
     private reportService: ReportsService,
   ) {}
 
+  private async getUserIntegrations(user: User, userWorkspace: UserWorkspace) {
+    try {
+      const integrationList = await this.integrationsService.getIntegrations(
+        user,
+      );
+
+      const integrationIds = integrationList.map(
+        (integration) => integration.id,
+      );
+
+      return await this.userIntegrationDatabase.getUserIntegrationListWithIntegrations(
+        {
+          integrationId: { in: integrationIds },
+          userWorkspaceId: userWorkspace.id,
+        },
+      );
+    } catch (err) {
+      return [];
+    }
+  }
+  async fetchAllProjects(user: User) {
+    try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new Error('User workspace not found');
+      }
+
+      const userIntegrations = await this.getUserIntegrations(
+        user,
+        userWorkspace,
+      );
+      const existingProjects = await this.projectDatabase.getProjects({
+        workspaceId: userWorkspace.workspaceId,
+      });
+      const existingProjectMap = new Map(
+        existingProjects.map((project) => [project.projectId, project]),
+      );
+
+      const allNewProjects: any[] = [];
+      for (const userIntegration of userIntegrations) {
+        const getProjectListUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/project`;
+        const jiraProjects: any = await this.jiraClient.CallJira(
+          userIntegration,
+          this.jiraApiCalls.jiraApiGetCall,
+          getProjectListUrl,
+        );
+
+        for (const project of jiraProjects) {
+          const { id: projectId, key: projectKey, name: projectName } = project;
+          const numericProjectId = Number(projectId);
+
+          if (!existingProjectMap.has(numericProjectId)) {
+            allNewProjects.push({
+              projectId: numericProjectId,
+              projectName,
+              projectKey,
+              source: userIntegration
+                ? `${userIntegration?.integration?.site}/browse/${projectKey}`
+                : '',
+              integrationId: userIntegration.integrationId,
+              workspaceId: userWorkspace.workspaceId,
+              integrated: false,
+            });
+          }
+        }
+      }
+
+      if (allNewProjects.length > 0) {
+        await this.projectDatabase.createProjects(allNewProjects);
+      }
+      return await this.getProjectList(user);
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }
+
   async importProject(user: User, projId: number, res?: Response) {
     const project = await this.projectDatabase.getProjectByIdWithIntegration(
       projId,

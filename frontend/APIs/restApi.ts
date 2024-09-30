@@ -35,6 +35,7 @@ import {
   UpdateTaskEstimationParams,
 } from "models/tasks";
 import {
+  UserDto,
   WorkspaceMemberDto,
   WorkspaceMemberStatus,
   updateApprovalUserDto,
@@ -53,6 +54,7 @@ import { getLabels, getStringFromArray } from "@/services/taskActions";
 // Storage
 import { ReportData } from "@/storage/redux/reportsSlice";
 import { setLocalStorage } from "@/storage/storage";
+import { IntegrationDto } from "models/integration";
 
 export async function loginRest(
   data: LoginDto
@@ -682,6 +684,16 @@ export async function getAllProjectsRest() {
     const res = await api.get(`${apiEndPoints.projects}`);
     return res.data;
   } catch (error: any) {
+    return false;
+  }
+}
+
+export async function syncProjects(){
+  try {
+    const res = await api.get(`${apiEndPoints.syncprojects}`);
+    return res.data
+  } catch (error: any) {
+    console.log(error.message);
     return false;
   }
 }
