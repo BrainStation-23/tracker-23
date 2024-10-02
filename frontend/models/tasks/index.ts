@@ -32,6 +32,7 @@ export type CreateTaskValues = {
 };
 
 export type TaskDto = {
+  key: any;
   totalSpent?: number;
   id: any;
   title: string;
