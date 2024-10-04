@@ -35,7 +35,6 @@ import {
   UpdateTaskEstimationParams,
 } from "models/tasks";
 import {
-  UserDto,
   WorkspaceMemberDto,
   WorkspaceMemberStatus,
   updateApprovalUserDto,

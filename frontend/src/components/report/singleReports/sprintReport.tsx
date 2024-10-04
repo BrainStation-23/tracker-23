@@ -44,7 +44,48 @@ const SprintReport = ({ reportData, inView }: Props) => {
       if (res) {
         // TODO: We will do some front-end filtering here to show or hide unworked tasks for now. Later, this will be done from backend.
         if (reportData?.config?.excludeUnworkedTasks) {
+          // eslint-disable-next-line no-unused-vars
           res.data.forEach((dateData, _) => {
+            // eslint-disable-next-line no-unused-vars
+            dateData.users.forEach((reportUser, _) => {
+              const assignedTasks: SprintReportTask[] = [];
+              reportUser.assignedTasks.forEach((assignedTask) => {
+                if (
+                  reportUser.yesterdayTasks.find(
+                    (item) => item.key === assignedTask.key
+                  ) ||
+                  reportUser.todayTasks.find(
+                    (item) => item.key === assignedTask.key
+                  )
+                ) {
+                  assignedTasks.push(assignedTask);
+                }
+              });
+              reportUser.assignedTasks = assignedTasks;
+            });
+          });
+        }
+        setSprintReportData(res);
+        if (window.gtag) {
+          window.gtag("event", "download_report", {
+            value: "Sprint Report",
+          });
+        }
+      }
+    }else {
+      const res = await userAPI.getSprintReport({
+        startDate: dateRange[0],
+        endDate: dateRange[1],
+        ...(reportData?.config?.excludeUnworkedTasks && {
+          excludeUnworkedTasks: reportData?.config?.excludeUnworkedTasks,
+        }),
+      });
+      if (res) {
+        // TODO: We will do some front-end filtering here to show or hide unworked tasks for now. Later, this will be done from backend.
+        if (reportData?.config?.excludeUnworkedTasks) {
+          // eslint-disable-next-line no-unused-vars
+          res.data.forEach((dateData, _) => {
+            // eslint-disable-next-line no-unused-vars
             dateData.users.forEach((reportUser, _) => {
               const assignedTasks: SprintReportTask[] = [];
               reportUser.assignedTasks.forEach((assignedTask) => {
@@ -94,7 +135,7 @@ const SprintReport = ({ reportData, inView }: Props) => {
 
   useEffect(() => {
     getSprintReport();
-  }, [reportData?.config, inView]);
+  }, [reportData.config, inView]);
 
   return (
     <>
