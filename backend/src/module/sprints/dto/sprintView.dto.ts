@@ -1,10 +1,29 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class SprintViewReqBodyDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
   sprintId?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  startDate: Date;
+
+  @IsString()
+  @IsNotEmpty()
+  endDate: Date;
+
+  // @IsBoolean()
+  @IsOptional()
+  excludeUnworkedTasks?: boolean = false;
+}
+
+export class ScrumViewReqBodyDto {
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  projectIds: string[];
 
   @IsString()
   @IsNotEmpty()

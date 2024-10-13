@@ -12,6 +12,7 @@ import {
 import { SprintReportFilterDto } from '../sessions/dto/sprint-report.dto';
 import {
   NewSprintViewQueryDto,
+  ScrumViewReqBodyDto,
   SprintViewReqBodyDto,
 } from '../sprints/dto/sprintView.dto';
 
@@ -86,5 +87,15 @@ export class ExportController {
     @Query() query: SprintViewReqBodyDto,
   ): Promise<void> {
     await this.exportService.exportSprintViewSheetToExcel(user, query, res);
+  }
+
+  @Get('scrum-view-sheet')
+  @UseGuards(JwtAuthGuard)
+  async exportScrumViewSheetToExcel(
+    @Res() res: Response,
+    @GetUser() user: User,
+    @Query() query: ScrumViewReqBodyDto,
+  ): Promise<void> {
+    await this.exportService.exportScrumViewSheetToExcel(user, query, res);
   }
 }

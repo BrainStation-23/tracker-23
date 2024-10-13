@@ -20,6 +20,7 @@ import { Task, User } from '@prisma/client';
 import {
   CreateTaskDto,
   EstimationReqBodyDto,
+  GetScrumTaskQuery,
   GetTaskQuery,
   StatusReqBodyDto,
   TimeSpentReqBodyDto,
@@ -63,6 +64,15 @@ export class TasksController {
     @Query() query: GetTaskQuery,
   ): Promise<Task[]> {
     return this.tasksService.getWorkspaceTasks(user, query);
+  }
+
+  @Get('task-by-week')
+  @UseGuards(JwtAuthGuard)
+  async getTasksForWeek(
+    @GetUser() user: User,
+    @Query() query: GetScrumTaskQuery,
+  ) {
+    return this.tasksService.getTasksByWeek(query.projectIds, query.date);
   }
 
   @Post('create')

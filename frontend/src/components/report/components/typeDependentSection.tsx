@@ -13,10 +13,12 @@ type Props = {
   projects?: any;
   setProjects?: any;
   calendarIds?: any;
-  sprints: number[];
-  setSprints: Function;
+  sprints?: number[];
+  setSprints?: Function;
   setCalendarIds?: any;
   activeTab?: ReportPageTabs;
+
+
   setSelectedSource?: Function;
   selectedSource?: IntegrationType[];
 };
@@ -105,10 +107,12 @@ const TypeDependentSection = ({
         "Sprint Estimate",
         "Sprint Report",
         "Sprint View Timeline Report",
+        "Scrum Report"
       ].includes(activeTab) &&
         showCalendarSelector && (
           <CalendarSelectorComponent
             key={Math.random()}
+            mode="single"
             {...{ calendarIds, setCalendarIds }}
             className="w-full min-w-[210px]"
           />
