@@ -1,5 +1,6 @@
 import { Empty, Table, Typography } from "antd";
 import { Key, ReactNode } from "react";
+import EditReportConfigComponent from "./editReportConfigComponent";
 
 const { Text } = Typography;
 
@@ -29,7 +30,7 @@ type Props = {
   reportData: any;
 };
 
-const ScrumReportTable = ({ data }: Props) => {
+const ScrumReportTable = ({ data, reportData }: Props) => {
   const date = new Date(data?.date);
   const options: Intl.DateTimeFormatOptions = {
     year: "numeric",
@@ -173,7 +174,7 @@ const ScrumReportTable = ({ data }: Props) => {
 
   return (
     <>
-      {data?.resData?.length ? (
+      {data?.resData?.length > 0 ? (
         <Table
           bordered
           rowKey={(record) => record.user?.id}
@@ -198,7 +199,12 @@ const ScrumReportTable = ({ data }: Props) => {
           scroll={{ x: "max-content" }}
         />
       ) : (
-        <Empty className="mt-12" description="No Data to View" />
+        <Empty
+          className="mt-12"
+          description="Select Project to View Data"
+        >
+          <EditReportConfigComponent reportData={reportData} />
+        </Empty>
       )}
     </>
   );
