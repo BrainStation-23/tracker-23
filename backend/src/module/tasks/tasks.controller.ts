@@ -72,7 +72,7 @@ export class TasksController {
     @GetUser() user: User,
     @Query() query: GetScrumTaskQuery,
   ) {
-    return this.tasksService.getTasksByWeek(query.projectIds, query.date);
+    return this.tasksService.getTasksByWeek(user, query.projectIds, query.date);
   }
 
   @Post('create')

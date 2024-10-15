@@ -819,89 +819,16 @@ export class ExportService {
     res.download(file);
   }
 
-  // async exportScrumViewSheetToExcel(
-  //   user: User,
-  //   query: SprintViewReqBodyDto,
-  //   res: Response,
-  // ) {
-  //   const { date, resData } = await this.taskService.getTasksByWeek(
-  //     user,
-  //     query.startDate,
-  //   );
-
-  //   console.log('queury:', query);
-
-  //   // if (!resData.length) {
-  //   //   throw new NotFoundException('No data to download');
-  //   // }
-
-  //   const formattedDate = new Date(date).toLocaleString('en-US', {
-  //     year: 'numeric',
-  //     month: 'short',
-  //     day: 'numeric',
-  //   });
-
-  //   const headers = [
-  //     `${formattedDate}`,
-  //     'Plan for this week',
-  //     'What will do today',
-  //     'Est. Hours',
-  //     'What did yesterday',
-  //     'Spent Hours',
-  //     'Blocker',
-  //   ];
-
-  //   const workbook = new Workbook();
-  //   const worksheet = workbook.addWorksheet('Scrum View Sheet');
-
-  //   const headerRow = worksheet.addRow(headers);
-
-  //   headerRow.eachCell((cell) => {
-  //     cell.font = { bold: true };
-  //     cell.alignment = { vertical: 'middle', horizontal: 'center' };
-  //   });
-
-  //   worksheet.columns.forEach((column) => {
-  //     column.width = 25;
-  //   });
-
-  //   resData.forEach((data: any) => {
-  //     const { user, tasks, todayTasks, yesterdayTasks } = data;
-  //     type Task = {
-  //       id: Key;
-  //       title: string;
-  //       estimation: number;
-  //       spentHours: number;
-  //       description: string;
-  //       projectName: string;
-  //     };
-  //     const rowData = [
-  //       `${user?.firstName} ${user?.lastName}`,
-  //       tasks.map((task: Task) => task.title).join(', '),
-  //       todayTasks.map((task: Task) => task.title).join(', '),
-  //       tasks.map((task: Task) => task.estimation).join(', '),
-  //       yesterdayTasks.map((task: Task) => task.title).join(', '),
-  //       tasks.map((task: Task) => task.spentHours).join(', '),
-  //       tasks.map((task: Task) => task.description).join(', '),
-  //     ];
-
-  //     worksheet.addRow(rowData);
-  //   });
-
-  //   await workbook.xlsx.write(res);
-  //   res.end();
-  // }
-
   async exportScrumViewSheetToExcel(
     user: User,
     query: ScrumViewReqBodyDto,
     res: Response,
   ) {
-    console.log(query, 'query from exportScrumViewSheetToExcel');
     const paramDate = query.startDate;
     const paramProjectIds = query.projectIds ? query.projectIds : [];
 
     const { date, resData } = await this.taskService.getTasksByWeek(
+      user,
       paramProjectIds,
       paramDate,
     );

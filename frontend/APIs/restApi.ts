@@ -1710,9 +1710,11 @@ export async function exportSprintViewSheetRest(reportData: ReportData) {
 
 export async function exportScrumViewSheetRest(reportData: ReportData) {
 
+  const tmp = Array.isArray(reportData?.config?.projectIds) ? reportData.config.projectIds.join(',') : '';
   const searchParams = new URLSearchParams({
     startDate: convertToISO(formatDate(reportData?.config?.startDate)),
-    endDate: convertToISO(formatDate(reportData?.config?.endDate))
+    endDate: convertToISO(formatDate(reportData?.config?.endDate)),
+    projectIds: tmp
   });
   const url = `${apiEndPoints.exportScrumViewSheet
     }?${searchParams.toString()}`;

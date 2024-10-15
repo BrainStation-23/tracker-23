@@ -90,7 +90,152 @@ export class TasksService {
     return false;
   }
 
-  async getTasksByWeek(projectIds?: string[] | string, date?: Date | string) {
+  // async getTasksByWeek(projectIds?: string[] | string, date?: Date | string) {
+  //   try {
+  //     let currentDate: Date;
+
+  //     if (typeof date === 'string' && /^\d{2}-\d{2}-\d{4}$/.test(date)) {
+  //       const [month, day, year] = date.split('-');
+  //       currentDate = new Date(`${year}-${month}-${day}T00:00:00Z`);
+  //     } else if (typeof date === 'string') {
+  //       currentDate = new Date(date);
+  //     } else if (date instanceof Date && !isNaN(date.getTime())) {
+  //       currentDate = date;
+  //     } else {
+  //       currentDate = new Date();
+  //     }
+
+  //     const startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
+  //     const endDate = endOfWeek(currentDate, { weekStartsOn: 1 });
+  //     const currDateNum = new Date(currentDate).getTime();
+  //     const oneDayMilliseconds = 3600 * 1000 * 24;
+
+  //     // Fetch tasks within the date range, grouped by user
+  //     // Ensure projectIds is treated as an array, even if passed as a string
+  //     let numericProjectIds: number[] = [];
+  //     if (projectIds && typeof projectIds === 'string') {
+  //       numericProjectIds = projectIds.split(',').map((id) => Number(id));
+  //     } else if (Array.isArray(projectIds)) {
+  //       numericProjectIds = projectIds.map((id) => Number(id));
+  //     }
+  //     let tasks;
+  //     if (projectIds && projectIds.length > 0) {
+  //       tasks = await this.prisma.task.findMany({
+  //         where: {
+  //           createdAt: {
+  //             gte: startDate,
+  //             lte: endDate,
+  //           },
+  //           updatedAt: {
+  //             gte: startDate,
+  //             lte: endDate,
+  //           },
+  //           projectId: {
+  //             in: numericProjectIds,
+  //           },
+  //         },
+  //         include: {
+  //           userWorkspace: {
+  //             include: {
+  //               user: true,
+  //             },
+  //           },
+  //           sessions: true,
+  //         },
+  //       });
+  //     } else {
+  //       tasks = await this.prisma.task.findMany({
+  //         where: {
+  //           createdAt: {
+  //             gte: startDate,
+  //             lte: endDate,
+  //           },
+  //           updatedAt: {
+  //             gte: startDate,
+  //             lte: endDate,
+  //           },
+  //         },
+  //         include: {
+  //           userWorkspace: {
+  //             include: {
+  //               user: true,
+  //             },
+  //           },
+  //           sessions: true,
+  //         },
+  //       });
+  //     }
+
+  //     // Group tasks by user
+  //     const groupedTasks = tasks.reduce<
+  //       Record<
+  //         number,
+  //         {
+  //           user: User;
+  //           tasks: Task[];
+  //           todayTasks: Task[];
+  //           yesterdayTasks: Task[];
+  //         }
+  //       >
+  //     >((acc, task) => {
+  //       const userId = task.userWorkspace?.user?.id || -1;
+
+  //       if (!acc[userId]) {
+  //         acc[userId] = {
+  //           user: task.userWorkspace?.user as User,
+  //           tasks: [],
+  //           todayTasks: [],
+  //           yesterdayTasks: [],
+  //         };
+  //       }
+
+  //       // find today's and yesterday's task
+  //       const doesTodayTask = this.doesTodayTask(currDateNum, task.sessions);
+  //       const doesYesterDayTask = this.doesTodayTask(
+  //         currDateNum - oneDayMilliseconds,
+  //         task.sessions,
+  //       );
+
+  //       if (doesTodayTask) acc[userId].todayTasks.push(task);
+  //       if (doesYesterDayTask) acc[userId].yesterdayTasks.push(task);
+
+  //       //  Calculate total session time for the current task
+  //       const sessions = task.sessions || [];
+  //       const taskTotalSessionTime = sessions.reduce((total, session) => {
+  //         if (session.startTime && session.endTime) {
+  //           const sessionDuration =
+  //             (new Date(session.endTime).getTime() -
+  //               new Date(session.startTime).getTime()) /
+  //             (1000 * 60 * 60);
+  //           return total + sessionDuration;
+  //         }
+  //         return total;
+  //       }, 0);
+
+  //       // Format spentHour
+  //       const formattedSpentHour = formatSpentHour(taskTotalSessionTime);
+
+  //       const tmpTask = {
+  //         ...task,
+  //         spentHours: formattedSpentHour,
+  //       };
+
+  //       acc[userId].tasks.push(tmpTask);
+  //       return acc;
+  //     }, {});
+  //     const resData = Object.values(groupedTasks);
+  //     return { date: currentDate, resData };
+  //   } catch (error) {
+  //     console.log(error);
+  //     throw new Error(error);
+  //   }
+  // }
+
+  async getTasksByWeek(
+    user: User,
+    projectIds?: string[] | string,
+    date?: Date | string,
+  ) {
     try {
       let currentDate: Date;
 
@@ -118,6 +263,19 @@ export class TasksService {
       } else if (Array.isArray(projectIds)) {
         numericProjectIds = projectIds.map((id) => Number(id));
       }
+
+      const activeUsers = await this.prisma.userWorkspace.findMany({
+        where: {
+          status: 'ACTIVE',
+          workspaceId: user?.activeWorkspaceId || undefined,
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      const activeUserIds = activeUsers.map((u) => u.userId);
+
       let tasks;
       if (projectIds && projectIds.length > 0) {
         tasks = await this.prisma.task.findMany({
@@ -133,6 +291,11 @@ export class TasksService {
             projectId: {
               in: numericProjectIds,
             },
+            userWorkspace: {
+              userId: {
+                in: activeUserIds,
+              },
+            },
           },
           include: {
             userWorkspace: {
@@ -144,26 +307,7 @@ export class TasksService {
           },
         });
       } else {
-        tasks = await this.prisma.task.findMany({
-          where: {
-            createdAt: {
-              gte: startDate,
-              lte: endDate,
-            },
-            updatedAt: {
-              gte: startDate,
-              lte: endDate,
-            },
-          },
-          include: {
-            userWorkspace: {
-              include: {
-                user: true,
-              },
-            },
-            sessions: true,
-          },
-        });
+        return { date: currentDate, resData: [] };
       }
 
       // Group tasks by user

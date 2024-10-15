@@ -21,8 +21,6 @@ export class SprintViewReqBodyDto {
 
 export class ScrumViewReqBodyDto {
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
   projectIds: string[];
 
   @IsString()
