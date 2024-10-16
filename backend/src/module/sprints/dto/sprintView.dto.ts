@@ -1,8 +1,11 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class SprintViewReqBodyDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
+  projectId?: string;
+
+  @IsString()
   @IsOptional()
   sprintId?: string;
 
