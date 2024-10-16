@@ -3,7 +3,7 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class SprintViewReqBodyDto {
   @IsString()
   @IsOptional()
-  projectId?: string;
+  projectIds: string[];
 
   @IsString()
   @IsOptional()
