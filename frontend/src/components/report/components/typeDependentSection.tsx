@@ -71,6 +71,7 @@ const TypeDependentSection = ({
           <ProjectSelectorComponent
             projectIds={projects}
             setProjectIds={setProjects}
+            setSprints= {setSprints}
             className="w-full min-w-[210px]"
             mode="single"
           />
@@ -78,6 +79,7 @@ const TypeDependentSection = ({
           <ProjectSelectorComponent
             projectIds={projects}
             setProjectIds={setProjects}
+            setSprints= {setSprints}
             className="w-full min-w-[210px]"
           />
         ))}
