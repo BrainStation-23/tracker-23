@@ -20,6 +20,8 @@ export interface SprintReportParamsModel {
   startDate: string;
   endDate: string;
   sprintId: number;
+  projectIds?: number[];
+
   excludeUnworkedTasks?: boolean;
 }
 
