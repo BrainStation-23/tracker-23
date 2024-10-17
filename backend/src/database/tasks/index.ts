@@ -76,6 +76,9 @@ export class TasksDatabase {
           },
         ],
       },
+      include: {
+        sessions: true,
+      },
     });
 
     return tasks;
