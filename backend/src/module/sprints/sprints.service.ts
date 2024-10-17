@@ -25,6 +25,7 @@ import {
 import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import * as _ from 'lodash';
 import * as dayjs from 'dayjs';
+import { parse } from 'date-fns';
 @Injectable()
 export class SprintsService {
   constructor(
@@ -354,22 +355,61 @@ export class SprintsService {
   }
 
   async sprintView(user: User, query: SprintViewReqBodyDto) {
+    if (
+      (!query.projectIds || query.projectIds.length === 0) &&
+      !query.sprintId
+    ) {
+      return { data: [], sprintInfo: null };
+    }
+
     const mappedUserWithWorkspaceId = new Map<number, any>();
+    let tasks: any;
+    let sprint;
+    let numericProjectIds: number[] = [];
+    const startDate = parse(
+      query.startDate as unknown as string,
+      'dd MMM yyyy',
+      new Date(),
+    );
+    const endDate = parse(
+      query.endDate as unknown as string,
+      'dd MMM yyyy',
+      new Date(),
+    );
 
-    const sprint = await this.sprintDatabase.getSprintById({
-      id: Number(query.sprintId),
-    });
-    if (!sprint) {
-      throw new APIException('Sprint not found!', HttpStatus.BAD_REQUEST);
-    }
+    if (query.sprintId) {
+      sprint = await this.sprintDatabase.getSprintById({
+        id: Number(query.sprintId),
+      });
+      if (!sprint) {
+        throw new APIException('Sprint not found!', HttpStatus.BAD_REQUEST);
+      }
 
-    const taskIds: number[] = [];
-    for (let index = 0, len = sprint?.sprintTask.length; index < len; index++) {
-      taskIds.push(sprint?.sprintTask[index].taskId);
+      const taskIds: number[] = [];
+      for (
+        let index = 0, len = sprint?.sprintTask.length;
+        index < len;
+        index++
+      ) {
+        taskIds.push(sprint?.sprintTask[index].taskId);
+      }
+      tasks = await this.tasksDatabase.getTasks({
+        id: { in: taskIds },
+      });
+    } else {
+      if (Array.isArray(query.projectIds)) {
+        numericProjectIds = query.projectIds.map((id) => Number(id));
+      } else if (typeof query.projectIds === 'string') {
+        numericProjectIds = query.projectIds
+          .split(',')
+          .map((id: any) => Number(id));
+      }
+      tasks = await this.tasksDatabase.fetchTasksByDateRange(
+        numericProjectIds,
+        startDate,
+        endDate,
+      );
     }
-    const tasks = await this.tasksDatabase.getTasks({
-      id: { in: taskIds },
-    });
 
     const getUserWorkspaceList =
       await this.sprintTaskDatabase.getUserWorkspaces({
@@ -381,14 +421,30 @@ export class SprintsService {
       index < len;
       index++
     ) {
-      const userIntegration =
-        sprint.project.integrationId &&
-        (await this.userIntegrationDatabase.getUserIntegration({
-          UserIntegrationIdentifier: {
-            integrationId: sprint.project.integrationId,
-            userWorkspaceId: getUserWorkspaceList[index].id,
+      let userIntegration;
+      if (sprint?.project.integrationId) {
+        userIntegration = await this.userIntegrationDatabase.getUserIntegration(
+          {
+            UserIntegrationIdentifier: {
+              integrationId: sprint.project.integrationId,
+              userWorkspaceId: getUserWorkspaceList[index].id,
+            },
           },
-        }));
+        );
+      } else {
+        const project = await this.projectDatabase.getProjectById(
+          numericProjectIds[0],
+        );
+        userIntegration = await this.userIntegrationDatabase.getUserIntegration(
+          {
+            UserIntegrationIdentifier: {
+              integrationId: project?.integrationId,
+              userWorkspaceId: getUserWorkspaceList[index].id,
+            },
+          },
+        );
+      }
+
       const user = getUserWorkspaceList[index].user;
       if (userIntegration) {
         mappedUserWithWorkspaceId.set(getUserWorkspaceList[index].id, {
@@ -473,13 +529,18 @@ export class SprintsService {
       data.push(formattedData);
     }
 
-    const sprintInfo = {
-      name: sprint.name,
-      projectName: sprint.project.projectName,
-      total: sprint.sprintTask.length,
-      done,
-    };
-    return { data, sprintInfo };
+    if (sprint) {
+      const sprintInfo = {
+        name: sprint.name,
+        projectName: sprint.project.projectName,
+        total: sprint.sprintTask.length,
+        done,
+      };
+      return { data, sprintInfo };
+    } else {
+      const sprintInfo = null;
+      return { data, sprintInfo };
+    }
   }
 
   async newSprintView(user: User, query: NewSprintViewQueryDto) {
