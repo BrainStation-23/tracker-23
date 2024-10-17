@@ -1005,6 +1005,7 @@ export async function getScrumReportRest(projectIds: string[], date: Date | stri
 }
 
 export async function getSprintReportRest({
+  projectIds,
   sprintId,
   startDate,
   endDate,
@@ -1013,7 +1014,8 @@ export async function getSprintReportRest({
   try {
     const res = await api.get(
       `${apiEndPoints.sprintReport}?` +
-      (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
+      (projectIds?.length > 0 ? `projectIds=${projectIds}` : "") +
+      (startDate ? `&startDate=${startDate}&endDate=${endDate}` : "") +
       (sprintId ? `&sprintId=${sprintId}` : "") +
       (excludeUnworkedTasks
         ? `&excludeUnworkedTasks=${excludeUnworkedTasks}`
