@@ -1691,6 +1691,10 @@ export async function getIntegrationTypesReportPageRest() {
 
 export async function exportSprintViewSheetRest(reportData: ReportData) {
   const searchParams = new URLSearchParams({
+    projectIds: `${reportData?.config?.projectIds?.length > 0
+      ? reportData?.config?.projectIds
+      : []
+      }`,
     sprintId: `${reportData?.config?.sprintIds?.length > 0
       ? reportData?.config?.sprintIds
       : []
