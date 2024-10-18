@@ -12,7 +12,7 @@ const { Text } = Typography;
 type Props = {
   projectIds: number[];
   setProjectIds: Function;
-  setSprints: Function;
+  setSprints?: Function;
   className?: string;
   mode?: "multi" | "single";
 };
