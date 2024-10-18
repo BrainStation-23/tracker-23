@@ -28,9 +28,12 @@ import StyleWrapperDatePicker from "./styleWrapperDatePicker";
 type Props = {
   className?: string;
   loading?: boolean;
-  selectedDate: string[];
+  selectedDate: string[] | string;
+  // eslint-disable-next-line no-unused-vars
   setSelectedDate: (data: string[]) => void;
+  // eslint-disable-next-line no-unused-vars
   setFilterDateType?: (text: FilterDateType) => void;
+  scrum?: boolean;
 };
 
 const DateRangePicker = ({
@@ -39,55 +42,94 @@ const DateRangePicker = ({
   selectedDate,
   setSelectedDate,
   setFilterDateType,
+  scrum,
 }: Props) => {
   const [dateRangeType, setDateRangeType] = useState<string>("this-week");
   const [dropdownText, setDropdownText] = useState<any>(selectedDate);
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const [customDateText, setCustomDateText] = useState<any>(
-    getDateRangeArray(FilterDateType.THIS_WEEK)
+    getDateRangeArray(FilterDateType.THIS_WEEK, scrum)
   );
 
   const handleNext = () => {
     if (selectedDate && !loading) {
       if (dateRangeType.includes("month")) {
-        const date3 = dayjs(selectedDate[1]).add(1, "day").startOf("month");
+        const date3 = Array.isArray(selectedDate)
+          ? dayjs(selectedDate[1]).add(1, "day").startOf("month")
+          : dayjs(selectedDate).add(1, "day").startOf("month");
         const date4 = dayjs(date3).endOf("month");
-        setDropdownText([localFormat(date3), localFormat(date4)]);
-        setSelectedDate([localFormat(date3), localFormat(date4)]);
-        setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+        if (scrum) {
+          setDropdownText([localFormat(date3), localFormat(date3)]);
+          setSelectedDate([localFormat(date3), localFormat(date3)]);
+          setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+        } else {
+          setDropdownText([localFormat(date3), localFormat(date4)]);
+          setSelectedDate([localFormat(date3), localFormat(date4)]);
+          setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+        }
       } else {
-        const timeDifference =
-          dayjs(selectedDate[1]).diff(dayjs(selectedDate[0])) +
-          24 * 60 * 60 * 1000;
-        const date3 = dayjs(selectedDate[0]).add(timeDifference, "millisecond");
-        const date4 = dayjs(selectedDate[1]).add(timeDifference, "millisecond");
+        const timeDifference = Array.isArray(selectedDate)
+          ? dayjs(selectedDate[1]).diff(dayjs(selectedDate[0])) +
+            24 * 60 * 60 * 1000
+          : dayjs(selectedDate).diff(dayjs(selectedDate)) + 24 * 60 * 60 * 1000;
+        const date3 = Array.isArray(selectedDate)
+          ? dayjs(selectedDate[0]).add(timeDifference, "millisecond")
+          : dayjs(selectedDate).add(timeDifference, "millisecond");
+        const date4 = Array.isArray(selectedDate)
+          ? dayjs(selectedDate[1]).add(timeDifference, "millisecond")
+          : dayjs(selectedDate).add(timeDifference, "millisecond");
 
-        setDropdownText([localFormat(date3), localFormat(date4)]);
-        setSelectedDate([localFormat(date3), localFormat(date4)]);
-        setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+        if (scrum) {
+          setDropdownText([localFormat(date3), localFormat(date3)]);
+          setSelectedDate([localFormat(date3), localFormat(date3)]);
+          setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+        } else {
+          setDropdownText([localFormat(date3), localFormat(date4)]);
+          setSelectedDate([localFormat(date3), localFormat(date4)]);
+          setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+        }
       }
     }
   };
   const handlePreviousClick = () => {
     if (selectedDate && !loading) {
       if (dateRangeType.includes("month")) {
-        const date3 = dayjs(selectedDate[0])
-          .subtract(1, "day")
-          .startOf("month");
-        const date4 = dayjs(date3).endOf("month");
-        setDropdownText([localFormat(date3), localFormat(date4)]);
-        setSelectedDate([localFormat(date3), localFormat(date4)]);
-        setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+        const date3 = Array.isArray(selectedDate)
+          ? dayjs(selectedDate[0]).subtract(1, "day").startOf("month")
+          : dayjs(selectedDate).subtract(1, "day").startOf("month");
+        const date4 = Array.isArray(selectedDate)
+          ? dayjs(date3).endOf("month")
+          : date3;
+        if (scrum) {
+          setDropdownText([localFormat(date3), localFormat(date3)]);
+          setSelectedDate([localFormat(date3), localFormat(date3)]);
+          setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+        } else {
+          setDropdownText([localFormat(date3), localFormat(date4)]);
+          setSelectedDate([localFormat(date3), localFormat(date4)]);
+          setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+        }
       } else {
-        const timeDifference =
-          dayjs(selectedDate[0]).diff(dayjs(selectedDate[1])) -
-          24 * 60 * 60 * 1000;
-        const date3 = dayjs(selectedDate[0]).add(timeDifference, "millisecond");
-        const date4 = dayjs(selectedDate[1]).add(timeDifference, "millisecond");
+        const timeDifference = Array.isArray(selectedDate)
+          ? dayjs(selectedDate[0]).diff(dayjs(selectedDate[1])) -
+            24 * 60 * 60 * 1000
+          : dayjs(selectedDate).diff(dayjs(selectedDate)) - 24 * 60 * 60 * 1000;
+        const date3 = Array.isArray(selectedDate)
+          ? dayjs(selectedDate[0]).add(timeDifference, "millisecond")
+          : dayjs(selectedDate).add(timeDifference, "millisecond");
+        const date4 = Array.isArray(selectedDate)
+          ? dayjs(selectedDate[1]).add(timeDifference, "millisecond")
+          : dayjs(selectedDate).add(timeDifference, "millisecond");
 
-        setDropdownText([localFormat(date3), localFormat(date4)]);
-        setSelectedDate([localFormat(date3), localFormat(date4)]);
-        setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+        if (scrum) {
+          setDropdownText([localFormat(date3), localFormat(date3)]);
+          setSelectedDate([localFormat(date3), localFormat(date3)]);
+          setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+        } else {
+          setDropdownText([localFormat(date3), localFormat(date4)]);
+          setSelectedDate([localFormat(date3), localFormat(date4)]);
+          setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+        }
       }
     }
   };
@@ -105,8 +147,8 @@ const DateRangePicker = ({
     items,
     onClick: (val: any) => {
       setDateRangeType(val.key);
-      setDropdownText(getDateRangeArray(val.key));
-      setSelectedDate(getDateRangeArray(val.key));
+      setDropdownText(getDateRangeArray(val.key, scrum));
+      setSelectedDate(getDateRangeArray(val.key, scrum));
       // @ts-ignore
       setFilterDateType && setFilterDateType(FilterReverseDateType[val.key]);
       setDropdownOpen(false);
@@ -124,10 +166,11 @@ const DateRangePicker = ({
     boxShadow: "none",
   };
 
+
   useEffect(() => {
     setDropdownText(customDateText);
     setSelectedDate(customDateText);
-  }, [customDateText])
+  }, [customDateText, setSelectedDate]);
 
   return (
     <div
@@ -163,7 +206,7 @@ const DateRangePicker = ({
               })}
 
               <Divider style={{ margin: 0 }} />
-              <div className="px-3 py-1 flex flex-row gap-2">
+              <div className="flex flex-row gap-2 px-3 py-1">
                 <EditOutlined /> <div> Custom Date</div>
               </div>
 
@@ -177,8 +220,9 @@ const DateRangePicker = ({
                 needConfirm
                 allowEmpty={[false, false]}
                 onOk={(values) => {
-                  if(values[0] && values[1]){
-                    setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+                  if (values[0] && values[1]) {
+                    setFilterDateType &&
+                      setFilterDateType(FilterDateType.CUSTOM_DATE);
                     setCustomDateText([
                       localFormat(values[0]),
                       localFormat(values[1]),
@@ -186,10 +230,8 @@ const DateRangePicker = ({
                     setDropdownOpen(false);
                   }
                 }}
-                panelRender = {(panelNode) => (
-                  <StyleWrapperDatePicker>
-                    {panelNode}
-                  </StyleWrapperDatePicker>
+                panelRender={(panelNode) => (
+                  <StyleWrapperDatePicker>{panelNode}</StyleWrapperDatePicker>
                 )}
               />
             </div>
@@ -221,7 +263,7 @@ const DateRangePicker = ({
 
 export default DateRangePicker;
 
-export const getDateRangeArray = (key: string) => {
+export const getDateRangeArray = (key: string, scrum?: boolean) => {
   let startDate, endDate;
   switch (key) {
     case "today":
@@ -265,6 +307,9 @@ export const getDateRangeArray = (key: string) => {
       endDate = localFormat(dayjs().endOf("week"));
   }
 
+  if (scrum){
+    return [startDate, startDate]
+  }
   return [startDate, endDate];
 };
 export const localFormat = (value: any) => {

@@ -6,6 +6,8 @@ import { ExportDatabase } from 'src/database/exports';
 import { SessionsModule } from '../sessions/sessions.module';
 import { SprintsModule } from '../sprints/sprints.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
+import { TasksService } from '../tasks/tasks.service';
+import { TasksModule } from '../tasks/tasks.module';
 
 @Module({
   imports: [
@@ -13,6 +15,7 @@ import { WorkspacesModule } from '../workspaces/workspaces.module';
     SessionsModule,
     SprintsModule,
     WorkspacesModule,
+    TasksModule,
   ],
   controllers: [ExportController],
   providers: [ExportService, ExportDatabase],

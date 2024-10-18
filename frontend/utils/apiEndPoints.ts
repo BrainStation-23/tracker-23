@@ -46,6 +46,7 @@ export const apiEndPoints = {
   exportTimeSheetReport: "/export/time-sheet",
   sprintUserReport: "sessions/spent-time/sprint-user-report",
   sprintReport: "/sprints/sprint-view",
+  scrumReport: "/tasks/task-by-week",
   sprintTimelineReport: "/sprints/new-sprint-view",
   invitedUserInfo: "workspaces/verify/invited-user/",
   invitedUserLogin: `/auth/invitedUser/login`,
@@ -58,6 +59,7 @@ export const apiEndPoints = {
   reports: "/reports",
   getIntegrationTypesReportPage: "/integrations/report-page",
   exportSprintViewSheet: "export/sprint-view-sheet",
+  exportScrumViewSheet: "export/scrum-view-sheet",
   exportTimeLineSheet: "export/time-line-sheet",
   allTaskReload: "tasks/reload",
 };

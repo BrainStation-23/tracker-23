@@ -7,8 +7,6 @@ import { RootState } from "@/storage/redux/store";
 
 const { Text } = Typography;
 
-//Temporary Design. This will change based on requirements7
-
 const ReportPage = () => {
   const reportPages = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages

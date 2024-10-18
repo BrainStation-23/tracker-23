@@ -29,6 +29,8 @@ import SprintTimelineReport from "./singleReports/sprintTimelineReport";
 import TaskListReport from "./singleReports/taskListReport";
 import TimeSheetReport from "./singleReports/timeSheetReport";
 import { useRouter } from "next/router";
+import ScrumReport from "./singleReports/scrumReport";
+import { GiTeamIdea } from "react-icons/gi";
 
 export default function ReportPageComponent({ pageId }: { pageId: number }) {
   const router = useRouter();
@@ -71,6 +73,8 @@ export default function ReportPageComponent({ pageId }: { pageId: number }) {
         return <SprintReport reportData={report} inView={inView} />;
       case "SPRINT_TIMELINE":
         return <SprintTimelineReport reportData={report} inView={inView} />;
+      case "SCRUM_REPORT":
+        return <ScrumReport reportData={report} inView={inView} />;
       default:
         return <div>No report found</div>;
     }
@@ -115,4 +119,5 @@ export const ReportIcons = {
   TASK_LIST: <MdChecklist />,
   SPRINT_REPORT: <FaChartGantt />,
   SPRINT_TIMELINE: <FaChartGantt />,
+  SCRUM_REPORT: <GiTeamIdea />
 };

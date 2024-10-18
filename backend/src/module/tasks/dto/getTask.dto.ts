@@ -1,5 +1,11 @@
 import { UserWorkspaceStatus } from '@prisma/client';
-import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export enum PriorityEnum {
   HIGHEST = 'HIGHEST',
@@ -16,6 +22,17 @@ export enum StatusEnum {
   INVALID_JIRA_REFRESH_TOKEN = 'INVALID_JIRA_REFRESH_TOKEN',
   INVALID_OUTLOOK_REFRESH_TOKEN = 'INVALID_OUTLOOK_REFRESH_TOKEN',
 }
+
+export class GetScrumTaskQuery {
+  @IsOptional()
+  @IsString()
+  date: Date | string;
+
+  @IsString()
+  @IsOptional()
+  projectIds: string[];
+}
+
 export class GetTaskQuery {
   @IsString()
   @IsOptional()

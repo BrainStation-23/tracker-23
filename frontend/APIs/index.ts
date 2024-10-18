@@ -87,7 +87,9 @@ import {
   exportSprintViewSheetRest,
   exportTimeLineSheetRest,
   allTaskReload,
-  syncProjects
+  syncProjects,
+  getScrumReportRest,
+  exportScrumViewSheetRest
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -161,6 +163,7 @@ const restApi: apiFunction = {
   exportTimeSheetReport: exportTimeSheetReportRest,
   getSprintUserReport: getSprintUserReportRest,
   getSprintReport: getSprintReportRest,
+  getScrumReport: getScrumReportRest,
   getSprintViewReport: getSprintViewReportRest,
   getSprintViewTimelineReport: getSprintViewTimelineReportRest,
   getInvitedUserInfo: getInvitedUserInfoRest,
@@ -176,6 +179,7 @@ const restApi: apiFunction = {
   updateReportPage: updateReportPageRest,
   deleteReportPage: deleteReportPageRest,
   exportSprintViewSheet: exportSprintViewSheetRest,
+  exportScrumViewSheet: exportScrumViewSheetRest,
   exportTimeLineSheet: exportTimeLineSheetRest,
   taskReload: allTaskReload,
 };

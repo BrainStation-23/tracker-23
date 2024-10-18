@@ -12,6 +12,7 @@ import { GiSprint } from "react-icons/gi";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
+import { useEffect, useState } from "react";
 
 const { Text } = Typography;
 
@@ -21,6 +22,30 @@ const ReportConfigDescription = ({
   reportData: ReportData;
 }) => {
   const dispatch = useDispatch();
+  const [sprintName, setSprintName] = useState("");
+  const [fullSprintName, setFullSprintName] = useState("");
+
+  const sprintData = useAppSelector(
+    (state: RootState) => state.projectList.reportSprintList
+  );
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  function getSprintName() {
+    if (reportData?.config?.sprintIds?.length === 1) {
+      const sprint = sprintData.find(
+        (s) => s.id === reportData?.config?.sprintIds[0]
+      );
+      return sprint ? sprint.name : "";
+    }
+    return "";
+  }
+
+  function truncateName(name: string) {
+    if (name.length > 10) {
+      return name.slice(0, 8) + "...";
+    }
+    return name;
+  }
 
   const reportInEdit = useAppSelector(
     (state: RootState) => state.reportsSlice.reportInEdit
@@ -34,6 +59,11 @@ const ReportConfigDescription = ({
       dispatch(setReportInEditSlice(reportData));
     }
   }
+
+  useEffect(() => {
+    setFullSprintName(getSprintName());
+    setSprintName(truncateName(getSprintName()));
+  }, [sprintData, reportData, getSprintName]);
 
   return (
     <div className="flex flex-wrap items-center justify-start gap-4">
@@ -103,15 +133,10 @@ const ReportConfigDescription = ({
             className="flex items-center justify-center gap-1 hover:cursor-pointer hover:text-[#3498db]"
             onClick={handleEdit}
           >
-            <Tooltip title="Sprint(s)">
+            <Tooltip title={fullSprintName} className="flex">
               <GiSprint size={16} />
+              <div className="pl-2">{sprintName}</div>
             </Tooltip>
-            <div>
-              {reportData?.config?.sprintIds?.length}{" "}
-              {reportData?.config?.sprintIds?.length === 1
-                ? "Sprint"
-                : "Sprints"}
-            </div>
           </div>
         )}
 

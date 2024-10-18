@@ -114,7 +114,7 @@ const TaskDetailsModal = ({
                   setIsModalOpen(true);
                 }}
               >
-                {taskDetails.source}
+                {taskDetails.key}
               </OpenLinkInNewTab>
             </div>
           )}

@@ -32,8 +32,9 @@ const SprintReport = ({ reportData, inView }: Props) => {
   const getSprintReport = async () => {
     if (!inView) return;
     setIsLoading(true);
-    if (reportData?.config?.sprintIds?.length > 0) {
+    if (reportData?.config?.sprintIds?.length > 0 || reportData?.config?.projectIds?.length > 0) {
       const res = await userAPI.getSprintReport({
+        projectIds: reportData?.config?.projectIds,
         sprintId: reportData?.config?.sprintIds[0],
         startDate: dateRange[0],
         endDate: dateRange[1],
@@ -94,7 +95,8 @@ const SprintReport = ({ reportData, inView }: Props) => {
 
   useEffect(() => {
     getSprintReport();
-  }, [reportData?.config, inView]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reportData?.config?.projectIds, reportData?.config?.sprintIds, inView]);
 
   return (
     <>
