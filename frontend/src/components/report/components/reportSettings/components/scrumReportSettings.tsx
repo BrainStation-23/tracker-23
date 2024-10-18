@@ -19,7 +19,7 @@ import { FilterDateType, UpdateReportDto } from "models/reports";
 type Props = {
   reportData: ReportData;
 };
-const SprintReportSettings = ({ reportData }: Props) => {
+const ScrumReportSettings = ({ reportData }: Props) => {
   const dispatch = useDispatch();
   const [filterDateType, setFilterDateType] = useState(
     FilterDateType.THIS_WEEK
@@ -36,7 +36,7 @@ const SprintReportSettings = ({ reportData }: Props) => {
   const [dateRange, setDateRange] = useState(
     reportData?.config?.startDate && reportData?.config?.endDate
       ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray(reportData?.config?.filterDateType)
+      : getDateRangeArray(reportData?.config?.filterDateType, true)
   );
 
   const getFilterDateType = (type: FilterDateType) => {
@@ -80,16 +80,19 @@ const SprintReportSettings = ({ reportData }: Props) => {
         selectedDate={dateRange}
         setSelectedDate={setDateRange}
         setFilterDateType={getFilterDateType}
+        scrum={true}
       />
+
       <Checkbox
         checked={excludeUnworkedTasks}
         onChange={onChangeExcludeUnworkedTasksCheckbox}
+        className="hidden"
       >
         Exclude unworked tasks
       </Checkbox>
       <TypeDependentSection
         {...{
-          activeTab: "Sprint Report",
+          activeTab: "Scrum Report",
           projects,
           setProjects,
           sprints: [sprint],
@@ -100,4 +103,4 @@ const SprintReportSettings = ({ reportData }: Props) => {
   );
 };
 
-export default SprintReportSettings;
+export default ScrumReportSettings;

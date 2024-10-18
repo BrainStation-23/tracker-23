@@ -133,10 +133,10 @@ const ReportConfigDescription = ({
             className="flex items-center justify-center gap-1 hover:cursor-pointer hover:text-[#3498db]"
             onClick={handleEdit}
           >
-            <Tooltip title={fullSprintName}>
+            <Tooltip title={fullSprintName} className="flex">
               <GiSprint size={16} />
+              <div className="pl-2">{sprintName}</div>
             </Tooltip>
-            <div>{sprintName}</div>
           </div>
         )}
 

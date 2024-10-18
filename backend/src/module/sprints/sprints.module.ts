@@ -27,6 +27,6 @@ import { HelperModule } from '../helper/helper.module';
     JiraApiCalls,
   ],
   controllers: [SprintsController],
-  exports: [SprintsService],
+  exports: [SprintsService, SprintTaskDatabase],
 })
 export class SprintsModule {}

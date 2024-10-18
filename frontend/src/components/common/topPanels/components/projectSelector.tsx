@@ -12,6 +12,7 @@ const { Text } = Typography;
 type Props = {
   projectIds: number[];
   setProjectIds: Function;
+  setSprints: Function;
   className?: string;
   mode?: "multi" | "single";
 };
@@ -20,6 +21,7 @@ export default function ProjectSelectorComponent({
   className,
   projectIds,
   setProjectIds,
+  setSprints,
   mode = "multi",
 }: Props) {
   const router = useRouter();
@@ -54,6 +56,13 @@ export default function ProjectSelectorComponent({
       })
     : [];
 
+  const handleProjectSelection = (projectIds: number[]) => {
+    if(projectIds.length == 0){
+      setSprints(null)
+    }
+    setProjectIds(projectIds)
+  }
+
   return (
     <div
       className={`flex w-full min-w-[210px] items-center gap-2 text-sm font-normal text-black ${
@@ -72,7 +81,7 @@ export default function ProjectSelectorComponent({
           className="w-full"
           placeholder="Select Project"
           value={projectIds[0] ? projectIds : null}
-          onChange={(value) => setProjectIds(value)}
+          onChange={(value) => handleProjectSelection(value)}
           tagRender={(props) => tagRender(props, projectIds)}
         />
       ) : (
@@ -83,7 +92,7 @@ export default function ProjectSelectorComponent({
           value={projectIds}
           className="w-full"
           placeholder="Select Project"
-          onChange={(value) => setProjectIds(value)}
+          onChange={(value) => handleProjectSelection(value)}
           tagRender={(props) => tagRender(props, projectIds)}
         />
       )}

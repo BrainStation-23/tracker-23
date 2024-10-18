@@ -73,21 +73,6 @@ export default function SourceSelectorComponent({
         className ? className : ""
       }`}
     >
-      <Tooltip title="Source">
-        <LuBringToFront size={20} />
-      </Tooltip>
-      <Select
-        mode="multiple"
-        placeholder="Select Source"
-        tagRender={(props) => tagRender(props, selectedSource)}
-        value={selectedSource}
-        className="w-full"
-        maxTagCount={1}
-        options={options}
-        onChange={(value) => {
-          setSelectedSource && setSelectedSource(value);
-        }}
-      />
     </div>
   );
 }

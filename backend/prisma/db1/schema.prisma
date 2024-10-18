@@ -475,6 +475,7 @@ enum ReportType {
   TASK_LIST
   SPRINT_REPORT
   SPRINT_TIMELINE
+  SCRUM_REPORT
 }
 
 enum StaticContenttype {

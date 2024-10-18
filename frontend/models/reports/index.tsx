@@ -35,7 +35,8 @@ export type ReportPageTabs =
   | "Sprint Report"
   | "Task List"
   | "Sprint View Report"
-  | "Sprint View Timeline Report";
+  | "Sprint View Timeline Report"
+  | "Scrum Report";
 
 export enum ReportTypesEnum {
   "TIME_SHEET" = "Time Sheet",
@@ -43,6 +44,7 @@ export enum ReportTypesEnum {
   "TASK_LIST" = "Task List",
   "SPRINT_REPORT" = "Sprint Report",
   SPRINT_TIMELINE = "Sprint Timeline",
+  "SCRUM_REPORT" = "Scrum Report"
 }
 
 export type ReportTypesDto = keyof typeof ReportTypesEnum;
@@ -82,6 +84,7 @@ export interface SprintReporSprintInfo {
   total: number;
   done: number;
 }
+
 
 export interface SprintReportDto {
   data: SprintReporDateData[];
@@ -240,6 +243,30 @@ export interface ModifiesSprintReportUser {
   userGroupRowIndex: number;
 }
 
+export interface ModifiesScrumReportUser {
+  rowKey: number | string;
+  userId: number;
+  name: string;
+  picture: string;
+  devProgress: DevProgress;
+  assignedTasks: SprintReportTask[];
+  yesterdayTasks: SprintReportTask[]; // You may want to define a proper interface for tasks
+  todayTasks: SprintReportTask[]; // You may want to define a proper interface for tasks
+  date: string;
+  sprintAssignedTasks: SprintReportTask[];
+  dateColSpan: number;
+  style: Style;
+  dateCellStyle: DateCellStyle;
+  userSpan: number;
+  assignedTask: SprintReportTask | null;
+  todayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
+  yesterdayTask: SprintReportTask | null; // You may want to define a proper interface for tasks
+  groupRows: number;
+  groupRowIndex: number;
+  userGroupRows: number;
+  userGroupRowIndex: number;
+}
+
 export interface ModifiesSprintViewReport {
   userId: number;
   name: string;
@@ -268,6 +295,7 @@ export interface CreateReportDto {
 }
 export interface UpdateReportDto {
   name?: string;
+  date?: string | Date;
   endDate?: string;
   startDate?: string;
   filterDateType?: FilterDateType;

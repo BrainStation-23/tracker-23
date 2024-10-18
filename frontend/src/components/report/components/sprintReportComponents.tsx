@@ -30,6 +30,7 @@ const SprintReportComponent = ({ data, reportData }: Props) => {
     let groupRows: number = 0;
     // Ahead of time calculation
     // groupRows
+    // eslint-disable-next-line no-unused-vars
     record.users.forEach((user, _) => {
       const maxTasks = Math.max(
         Math.max(user.assignedTasks?.length, user.yesterdayTasks?.length),

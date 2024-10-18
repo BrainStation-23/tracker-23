@@ -6,6 +6,7 @@ import SprintReportSettings from "./components/sprintReportSettings";
 import SprintTimelineReportSettings from "./components/sprintTimelineReportSettings";
 import TaskListReportSettings from "./components/taskListReportSettings";
 import TimeSheetReportSettings from "./components/timeSheetReportSettings";
+import ScrumReportSettings from "./components/scrumReportSettings";
 
 const ReportSettings = () => {
   const reportInEdit = useAppSelector(
@@ -23,6 +24,8 @@ const ReportSettings = () => {
         return <SprintReportSettings reportData={reportInEdit} />;
       case "SPRINT_TIMELINE":
         return <SprintTimelineReportSettings reportData={reportInEdit} />;
+        case "SCRUM_REPORT":
+          return <ScrumReportSettings reportData={reportInEdit} />;
       default:
         return <div>No report found</div>;
     }

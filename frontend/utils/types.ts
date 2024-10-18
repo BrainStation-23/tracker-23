@@ -124,6 +124,7 @@ export interface apiFunction {
     data?: SprintUserReportParamsModel
   ) => Promise<SprintUserReportDto>;
   getSprintReport: (data?: any) => Promise<SprintReportDto>;
+  getScrumReport: (projectIds: any, date: any) => Promise<any>;
   getSprintViewReport: (data?: any) => Promise<SprintViewReportDto | false>;
   getSprintViewTimelineReport: (
     data?: any
@@ -150,6 +151,7 @@ export interface apiFunction {
   deleteReport: (reportId: number) => Promise<any>;
   getIntegrationTypesReportPage: () => Promise<any>;
   exportSprintViewSheet: (reportData: ReportData) => Promise<any>;
+  exportScrumViewSheet: (reportData: ReportData) => Promise<any>;
   exportTimeLineSheet: (reportData: ReportData) => Promise<any>;
   taskReload: () => Promise<any>;
 }

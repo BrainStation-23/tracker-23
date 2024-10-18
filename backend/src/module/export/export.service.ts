@@ -17,11 +17,14 @@ import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { ExportDatabase } from 'src/database/exports';
 import { SprintReportFilterDto } from '../sessions/dto/sprint-report.dto';
 import { SessionsService } from '../sessions/sessions.service';
+import { TasksService } from '../tasks/tasks.service';
 import {
   NewSprintViewQueryDto,
+  ScrumViewReqBodyDto,
   SprintViewReqBodyDto,
 } from '../sprints/dto/sprintView.dto';
 import * as dayjs from 'dayjs';
+import { Key } from 'readline';
 
 @Injectable()
 export class ExportService {
@@ -30,6 +33,7 @@ export class ExportService {
     private userWorkspaceDatabase: UserWorkspaceDatabase,
     private exportDatabase: ExportDatabase,
     private sessionsService: SessionsService,
+    private taskService: TasksService,
   ) {}
 
   async exportToExcel(
@@ -678,9 +682,11 @@ export class ExportService {
     ];
     const workbook = new Workbook();
     const worksheet = workbook.addWorksheet('Sprint View Sheet');
-    const sprintProgress = Number(
-      (sprintInfo.total * 100) / sprintInfo.done,
-    ).toFixed(2);
+    const { total = 0, done = 0 } = sprintInfo || {};
+    const sprintProgress = Number((total * 100) / done).toFixed(2);
+    // const sprintProgress = Number(
+    //   (sprintInfo.total * 100) / sprintInfo.done,
+    // ).toFixed(2);
     const topRow = worksheet.addRow([
       '',
       '',
@@ -811,5 +817,95 @@ export class ExportService {
       file,
     );
     res.download(file);
+  }
+
+  async exportScrumViewSheetToExcel(
+    user: User,
+    query: ScrumViewReqBodyDto,
+    res: Response,
+  ) {
+    const paramDate = query.startDate;
+    const paramProjectIds = query.projectIds ? query.projectIds : [];
+
+    const { date, resData } = await this.taskService.getTasksByWeek(
+      user,
+      paramProjectIds,
+      paramDate,
+    );
+
+    const formattedDate = new Date(date).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+
+    const headers = [
+      `${formattedDate}`,
+      ' ',
+      'Plan for this week',
+      'What will do today',
+      'Est. Hours',
+      'What did yesterday',
+      'Spent Hours',
+      'Blocker',
+    ];
+
+    const workbook = new Workbook();
+    const worksheet = workbook.addWorksheet('Scrum View Sheet');
+
+    const headerRow = worksheet.addRow(headers);
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+
+    worksheet.columns.forEach((column) => {
+      column.width = 25;
+    });
+
+    resData.forEach((data: any) => {
+      const { user, tasks, todayTasks, yesterdayTasks } = data;
+      const userName = user ? `${user.firstName} ${user.lastName}` : ' ';
+
+      const numTasks = tasks.length;
+
+      const lastRowIndex = worksheet.lastRow?.number || 1;
+      const startRowIndex = lastRowIndex + 1;
+
+      worksheet.addRow([
+        userName,
+        tasks[0]?.key,
+        tasks[0]?.title || '',
+        todayTasks[0]?.title || '',
+        tasks[0]?.estimation || '',
+        yesterdayTasks[0]?.title || '',
+        tasks[0]?.spentHours || '',
+        tasks[0]?.description || '',
+      ]);
+
+      for (let i = 1; i < numTasks; i++) {
+        worksheet.addRow([
+          '', // Empty User cell
+          tasks[i]?.key || '', // Task Key
+          tasks[i]?.title || '', // Plan for this week
+          todayTasks[i]?.title || '', // What will do today
+          tasks[i]?.estimation || '', // Estimation
+          yesterdayTasks[i]?.title || '', // What did yesterday
+          tasks[i]?.spentHours || '', // Spent Hours
+          tasks[i]?.description || '', // Blocker
+        ]);
+      }
+
+      const endRowIndex = startRowIndex + numTasks - 1;
+
+      worksheet.mergeCells(`A${startRowIndex}:A${endRowIndex}`);
+
+      const mergedUserCell = worksheet.getCell(`A${startRowIndex}`);
+
+      mergedUserCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+
+    await workbook.xlsx.write(res);
+    res.end();
   }
 }

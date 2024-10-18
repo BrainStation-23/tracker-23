@@ -51,7 +51,38 @@ export class TasksDatabase {
       },
     });
   }
+  async fetchTasksByDateRange(
+    projectIds: number[],
+    startDate: Date,
+    endDate: Date,
+  ) {
+    const tasks = await this.prisma.task.findMany({
+      where: {
+        projectId: {
+          in: projectIds,
+        },
+        OR: [
+          {
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+          {
+            updatedAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        ],
+      },
+      include: {
+        sessions: true,
+      },
+    });
 
+    return tasks;
+  }
   async getProject(query: Record<string, any>): Promise<any> {
     try {
       return await this.prisma.project.findFirst({
