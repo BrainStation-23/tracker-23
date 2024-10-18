@@ -51,7 +51,7 @@ const ScrumReportTable = ({ data, reportData }: Props) => {
         </Text>
       ),
       width: 200,
-      align: "center",
+      align: "center" as "center",
     },
     {
       key: "ticket",
@@ -67,7 +67,7 @@ const ScrumReportTable = ({ data, reportData }: Props) => {
         </ul>
       ),
       width: 100,
-      align: "left",
+      align: "left" as "left",
     },
     {
       key: "weekPlan",
@@ -83,7 +83,7 @@ const ScrumReportTable = ({ data, reportData }: Props) => {
         </ul>
       ),
       width: 400,
-      align: "left",
+      align: "left" as "left",
     },
     {
       key: "today_task",
@@ -99,7 +99,7 @@ const ScrumReportTable = ({ data, reportData }: Props) => {
         </ul>
       ),
       width: 400,
-      align: "left",
+      align: "left" as "left",
     },
     {
       key: "est_hours",
@@ -115,7 +115,7 @@ const ScrumReportTable = ({ data, reportData }: Props) => {
         </ul>
       ),
       width: 50,
-      align: "left",
+      align: "left" as "left",
     },
     {
       key: "yesterday_task",
@@ -131,7 +131,7 @@ const ScrumReportTable = ({ data, reportData }: Props) => {
         </ul>
       ),
       width: 400,
-      align: "left",
+      align: "left" as "left",
     },
     {
       key: "spent_hours",
@@ -152,7 +152,7 @@ const ScrumReportTable = ({ data, reportData }: Props) => {
         </ul>
       ),
       width: 150,
-      align: "left",
+      align: "left" as "left",
     },
     {
       key: "blocker",
@@ -168,7 +168,7 @@ const ScrumReportTable = ({ data, reportData }: Props) => {
         </ul>
       ),
       width: 400,
-      align: "left",
+      align: 'left' as "left",
     },
   ];
 
