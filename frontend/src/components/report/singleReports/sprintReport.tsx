@@ -96,7 +96,7 @@ const SprintReport = ({ reportData, inView }: Props) => {
   useEffect(() => {
     getSprintReport();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reportData.config.projectIds, reportData.config.sprintIds, inView]);
+  }, [reportData?.config?.projectIds, reportData?.config?.sprintIds, inView]);
 
   return (
     <>
