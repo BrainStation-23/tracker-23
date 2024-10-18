@@ -48,9 +48,12 @@ const DateRangePicker = ({
   const [dropdownText, setDropdownText] = useState<any>(selectedDate);
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const [customDateText, setCustomDateText] = useState<any>(
-    getDateRangeArray(FilterDateType.THIS_WEEK, scrum)
+   selectedDate
   );
 
+  if(!selectedDate){
+    setCustomDateText(getDateRangeArray(FilterDateType.THIS_WEEK, scrum))
+  }
   const handleNext = () => {
     if (selectedDate && !loading) {
       if (dateRangeType.includes("month")) {
