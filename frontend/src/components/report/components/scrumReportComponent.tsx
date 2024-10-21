@@ -41,12 +41,14 @@ const ScrumReportComponent = ({ data, reportData }: Props) => {
     let estimationHours = 0;
 
     for (let i = 0; i < maxTasks; i++) {
-      estimationHours +=
-        i < record.todayTasks?.length ? parseFloat(record.todayTasks[i].estimation) : 0;
-      spentHours +=
-        i < record.yesterdayTasks?.length
-          ? record.yesterdayTasks[i].spentHours
-          : 0;
+      if (i==0){
+        for(let j = 0; j < record.todayTasks?.length ; j++){
+          estimationHours += record.todayTasks[j].estimation;
+        }
+        for(let j = 0; j < record.yesterdayTasks?.length ; j++){
+          spentHours += record.yesterdayTasks[j].spentHours;
+        }
+      }
 
       const tableRow: any = {
         rowKey: rowKey,

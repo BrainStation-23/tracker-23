@@ -22,7 +22,7 @@ type Props = {
 const ScrumReportSettings = ({ reportData }: Props) => {
   const dispatch = useDispatch();
   const [filterDateType, setFilterDateType] = useState(
-    FilterDateType.THIS_WEEK
+    FilterDateType.TODAY
   );
   const [sprint, setSprint] = useState<number>(
     reportData?.config?.sprintIds?.length > 0
