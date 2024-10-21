@@ -137,14 +137,6 @@ export class TasksService {
       if (projectIds && projectIds.length > 0) {
         tasks = await this.prisma.task.findMany({
           where: {
-            createdAt: {
-              gte: startDate,
-              lte: endDate,
-            },
-            updatedAt: {
-              gte: startDate,
-              lte: endDate,
-            },
             projectId: {
               in: numericProjectIds,
             },
@@ -153,7 +145,22 @@ export class TasksService {
                 in: activeUserIds,
               },
             },
+            OR: [
+              {
+                createdAt: {
+                  gte: startDate,
+                  lte: endDate,
+                },
+              },
+              {
+                updatedAt: {
+                  gte: startDate,
+                  lte: endDate,
+                },
+              },
+            ],
           },
+
           include: {
             userWorkspace: {
               include: {
