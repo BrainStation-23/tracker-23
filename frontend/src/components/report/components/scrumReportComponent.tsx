@@ -62,9 +62,9 @@ const ScrumReportComponent = ({ data, reportData }: Props) => {
         dateCellStyle: dateCellStyle,
         userSpan: i === 0 ? (maxTasks > 0 ? maxTasks + 1 : 1) : 0,
         assignedTask: i < record.tasks?.length ? record.tasks[i] : null,
-        todayTask: i < record.todayTasks?.length ? record.todayTasks[i] : null,
+        todayTask: i < record.tasks?.length ? record.tasks[i].isTodayTask ? record.tasks[i]: null :null,
         yesterdayTask:
-          i < record.yesterdayTasks?.length ? record.yesterdayTasks[i] : null,
+        i < record.tasks?.length ? record.tasks[i].isYesterdayTask ? record.tasks[i]: null :null,
         groupRows: groupRows,
         groupRowIndex: groupRowIndex,
         userGroupRows: maxTasks > 0 ? maxTasks + 1 : 1,
