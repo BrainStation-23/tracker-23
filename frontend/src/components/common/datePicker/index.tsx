@@ -48,9 +48,12 @@ const DateRangePicker = ({
   const [dropdownText, setDropdownText] = useState<any>(selectedDate);
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const [customDateText, setCustomDateText] = useState<any>(
-    getDateRangeArray(FilterDateType.THIS_WEEK, scrum)
+   selectedDate
   );
 
+  if(!selectedDate){
+    setCustomDateText(getDateRangeArray(FilterDateType.THIS_WEEK, scrum))
+  }
   const handleNext = () => {
     if (selectedDate && !loading) {
       if (dateRangeType.includes("month")) {
@@ -135,7 +138,12 @@ const DateRangePicker = ({
   };
 
   const items: MenuProps["items"] = [];
-  const tmp = Object.entries(dateRangeOptions);
+  let tmp;
+  if(scrum){
+    tmp = Object.entries(scrumDateRangeOptions);
+  }else{
+    tmp = Object.entries(dateRangeOptions);
+  }
   tmp.forEach((val) => {
     items.push({
       label: val[1],
@@ -328,6 +336,12 @@ export const dateRangeOptions = {
   "this-month": "This month",
   "last-month": "Past month",
   "next-month": "Next month",
+};
+
+export const scrumDateRangeOptions = {
+  today: "Today",
+  yesterday: "Yesterday",
+  tomorrow: "Tomorrow",
 };
 
 export function getArrayOfDatesInRange(startDate: any, endDate: any) {

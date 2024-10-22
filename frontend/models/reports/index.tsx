@@ -44,7 +44,7 @@ export enum ReportTypesEnum {
   "TASK_LIST" = "Task List",
   "SPRINT_REPORT" = "Sprint Report",
   SPRINT_TIMELINE = "Sprint Timeline",
-  "SCRUM_REPORT" = "Scrum Report"
+  "SCRUM_REPORT" = "Scrum Report",
 }
 
 export type ReportTypesDto = keyof typeof ReportTypesEnum;
@@ -84,7 +84,6 @@ export interface SprintReporSprintInfo {
   total: number;
   done: number;
 }
-
 
 export interface SprintReportDto {
   data: SprintReporDateData[];
@@ -217,6 +216,41 @@ interface Style {
 interface DateCellStyle {
   background: string;
   text?: string;
+}
+
+export interface ScrumReportTask {
+  title: string;
+  key: string;
+  description: string;
+  status: string;
+  statusCategoryName: string;
+  estimation: string;
+  spentHours: string;
+  
+}
+
+export interface ModifiesScrumReport {
+  spentHours: number;
+  rowKey: number | string;
+  userId: number;
+  name: string;
+  estimationHours: number;
+  weeklyPlannedTasks: ScrumReportTask[];
+  yesterdayTasks: ScrumReportTask[];
+  todayTasks: ScrumReportTask[];
+  date: string;
+  sprintAssignedTasks: ScrumReportTask[];
+  dateColSpan: number;
+  style: Style;
+  dateCellStyle: DateCellStyle;
+  userSpan: number;
+  assignedTask: ScrumReportTask | null;
+  todayTask: ScrumReportTask | null;
+  yesterdayTask: ScrumReportTask | null;
+  groupRows: number;
+  groupRowIndex: number;
+  userGroupRows: number;
+  userGroupRowIndex: number;
 }
 
 export interface ModifiesSprintReportUser {
