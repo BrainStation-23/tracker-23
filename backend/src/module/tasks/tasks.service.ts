@@ -224,6 +224,8 @@ export class TasksService {
         const tmpTask = {
           ...task,
           spentHours: roundedNum,
+          isTodayTask: doesTodayTask ? true : false,
+          isYesterdayTask: doesYesterDayTask ? true : false,
         };
 
         if (doesTodayTask) acc[userId].todayTasks.push(tmpTask);

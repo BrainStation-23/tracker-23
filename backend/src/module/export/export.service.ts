@@ -893,10 +893,10 @@ export class ExportService {
         userCellValue,
         tasks[0]?.key || '',
         tasks[0]?.title || '',
-        todayTasks[0]?.title || '',
-        todayTasks[0]?.estimation || '',
-        yesterdayTasks[0]?.title || '',
-        yesterdayTasks[0]?.spentHours || '',
+        tasks[0]?.isTodayTask ? tasks[0].title : '',
+        tasks[0]?.isTodayTask ? tasks[0].estimation : '',
+        tasks[0]?.isYesterdayTask ? tasks[0].title : '',
+        tasks[0]?.isYesterdayTask ? tasks[0].spentHours : '',
         tasks[0]?.description || '',
       ]);
 
@@ -911,10 +911,10 @@ export class ExportService {
           '', // Empty User cell
           tasks[i]?.key || '',
           tasks[i]?.title || '',
-          todayTasks[i]?.title || '',
-          todayTasks[i]?.estimation || '',
-          yesterdayTasks[i]?.title || '',
-          yesterdayTasks[i]?.spentHours || '',
+          tasks[i]?.isTodayTask ? tasks[i].title : '',
+          tasks[i]?.isTodayTask ? tasks[i].estimation : '',
+          tasks[i]?.isYesterdayTask ? tasks[i].title : '',
+          tasks[i]?.isYesterdayTask ? tasks[i].spentHours : '',
           tasks[i]?.description || '',
         ]);
       }
