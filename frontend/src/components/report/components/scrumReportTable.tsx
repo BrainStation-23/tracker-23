@@ -1,208 +1,308 @@
 import { Empty, Table, Typography } from "antd";
-import { Key, ReactNode } from "react";
 import EditReportConfigComponent from "./editReportConfigComponent";
-
+import { ModifiesScrumReport, ScrumReportTask } from "models/reports";
+import { ColumnsType } from "antd/es/table";
 const { Text } = Typography;
 
-type Task = {
-  key: ReactNode;
-  id: Key;
-  title: string;
-  estimation: number;
-  spentHours: number;
-  description: string;
-  projectName: string;
-};
-
-type User = {
-  id: Key;
-  firstName: string;
-  lastName: string;
-};
-
-type DataItem = {
-  user: User;
-  tasks: Task[];
-};
-
 type Props = {
-  data: { date: string; resData: DataItem[] };
+  date: string | Date;
+  data: any;
   reportData: any;
 };
 
-const ScrumReportTable = ({ data, reportData }: Props) => {
-  const date = new Date(data?.date);
-  const options: Intl.DateTimeFormatOptions = {
+const ScrumReportTable = ({ date, data, reportData }: Props) => {
+  const formattedDate = new Date(date).toLocaleString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
-  };
-
-  const formattedDate = date.toLocaleString("en-US", options);
-
-  const columns = [
+  });
+  const columns: ColumnsType<ModifiesScrumReport> = [
     {
-      key: "name",
       title: `${formattedDate}`,
-      dataIndex: "user",
-      render: (user: User) => (
-        <Text>
-          {user?.firstName} {user?.lastName}
-        </Text>
-      ),
-      width: 200,
-      align: "center" as "center",
+      dataIndex: "name",
+      key: "name",
+      render: (
+        value: string,
+        record: ModifiesScrumReport,
+        index: number
+      ) => {
+        return {
+          children: (
+            <div className="mx-auto flex w-fit items-center justify-center gap-2 ">
+              {record.name} <br/>
+              Est. Today:{" " + record.estimationHours} <br/>
+              Spent Last:{" " + record.spentHours}
+            </div>
+          ),
+          props: {
+            rowSpan: index === 0 && record.userGroupRowIndex > 0
+              ? record.userGroupRows - record.userGroupRowIndex
+              : record.userSpan,
+            style: record.style,
+          },
+        };
+      },
+      align: "left",
     },
     {
-      key: "ticket",
       title: " ",
-      dataIndex: "tasks",
-      render: (tasks: Task[]) => (
-        <ul>
-          {tasks?.map((task) => (
-            <li key={task.id}>
-              <Text>{task?.key}</Text>
-            </li>
-          ))}
-        </ul>
-      ),
-      width: 100,
-      align: "left" as "left",
+      dataIndex: "assignedTask",
+      key: "assignedTask",
+      render: (
+        assignedTask: ScrumReportTask,
+        record: ModifiesScrumReport
+      ) => {
+        if (assignedTask)
+          return {
+            children: (
+              <div>
+                <Text
+                  className="w-[100px] cursor-pointer"
+                  ellipsis={{ tooltip: assignedTask?.key }}
+                >
+                  {assignedTask?.key}
+                </Text>
+              </div>
+            ),
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+        else
+          return {
+            children: <></>,
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+      },
+      align: "center",
     },
     {
-      key: "weekPlan",
       title: "Plan for this week",
-      dataIndex: "tasks",
-      render: (tasks: Task[]) => (
-        <ul>
-          {tasks?.map((task) => (
-            <li key={task.id}>
-              <Text>{task?.title}</Text>
-            </li>
-          ))}
-        </ul>
-      ),
-      width: 400,
-      align: "left" as "left",
+      dataIndex: "assignedTask",
+      key: "assignedTask",
+      render: (
+        assignedTask: ScrumReportTask,
+        record: ModifiesScrumReport
+      ) => {
+        if (assignedTask)
+          return {
+            children: (
+              <div>
+                <Text
+                  className="w-[250px] cursor-pointer"
+                  ellipsis={{ tooltip: assignedTask?.title }}
+                >
+                  {assignedTask?.title}
+                </Text>
+              </div>
+            ),
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+        else
+          return {
+            children: <></>,
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+      },
+      align: "center",
     },
     {
-      key: "today_task",
-      title: "What will do today",
+      key: "What I'll do today",
+      title: "What I'll do today",
       dataIndex: "todayTasks",
-      render: (tasks: Task[]) => (
-        <ul>
-          {tasks?.map((task) => (
-            <li key={task.id}>
-              <Text>{task?.title}</Text>
-            </li>
-          ))}
-        </ul>
-      ),
-      width: 400,
-      align: "left" as "left",
+      render: (task: ScrumReportTask, record: ModifiesScrumReport) => {
+        if (record.todayTask)
+          return {
+            children: (
+              <div>
+                <Text
+                  className=" w-[250] cursor-pointer"
+                  ellipsis={{ tooltip: record?.todayTask?.title }}
+                >
+                  {record?.todayTask?.title}
+                </Text>
+              </div>
+            ),
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+        else
+          return {
+            children: <></>,
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+      },
+      align: "center",
     },
     {
-      key: "est_hours",
+      key: "todayTaskEstimation",
       title: "Est. Hours",
-      dataIndex: "tasks",
-      render: (tasks: Task[]) => (
-        <ul>
-          {tasks?.map((task) => (
-            <li key={task.id}>
-              <Text>{task?.estimation}</Text>
-            </li>
-          ))}
-        </ul>
-      ),
-      width: 50,
-      align: "left" as "left",
+      dataIndex: "todayTasks",
+      render: (task: ScrumReportTask, record: ModifiesScrumReport) => {
+        if (record.todayTask)
+          return {
+            children: (
+              <div>
+                <Text
+                  className="w-[100px] cursor-pointer"
+                  ellipsis={{ tooltip: record?.todayTask?.estimation }}
+                >
+                  {record?.todayTask?.estimation}
+                </Text>
+              </div>
+            ),
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+        else
+          return {
+            children: <></>,
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+      },
+      align: "center",
     },
     {
-      key: "yesterday_task",
-      title: "What did yesterday",
+      key: "yesterdayTask",
+      title: "What I did yesterday",
       dataIndex: "yesterdayTasks",
-      render: (tasks: Task[]) => (
-        <ul>
-          {tasks?.map((task) => (
-            <li key={task.id}>
-              <Text>{task?.title}</Text>
-            </li>
-          ))}
-        </ul>
-      ),
-      width: 400,
-      align: "left" as "left",
+      render: (task: ScrumReportTask, record: ModifiesScrumReport) => {
+        if (record.yesterdayTask)
+          return {
+            children: (
+              <div>
+                <Text
+                  className="w-[250px] cursor-pointer"
+                  ellipsis={{ tooltip: record?.yesterdayTask?.title }}
+                >
+                  {record?.yesterdayTask?.title}
+                </Text>
+              </div>
+            ),
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+        else
+          return {
+            children: <></>,
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+      },
+      align: "center",
     },
     {
-      key: "spent_hours",
+      key: "spentHours",
       title: "Spent Hours",
-      dataIndex: "tasks",
-      render: (tasks: Task[]) => (
-        <ul>
-         {tasks?.map((task, index) => (
-        <li
-          key={task.id}
-          style={{
-            padding: "0"
-          }}
-        >
-          <Text>{task?.spentHours}</Text>
-        </li>
-      ))}
-        </ul>
-      ),
-      width: 150,
-      align: "left" as "left",
+      dataIndex: "yesterdayTasks",
+      render: (task: ScrumReportTask, record: ModifiesScrumReport) => {
+        if (record.yesterdayTask)
+          return {
+            children: (
+              <div>
+                <Text
+                  className="w-[100px] cursor-pointer"
+                  ellipsis={{ tooltip: record?.yesterdayTask?.spentHours }}
+                >
+                  {record?.yesterdayTask?.spentHours}
+                </Text>
+              </div>
+            ),
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+        else
+          return {
+            children: <></>,
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+      },
+      align: "center",
     },
     {
-      key: "blocker",
-      title: "Blocker",
-      dataIndex: "tasks",
-      render: (tasks: Task[]) => (
-        <ul>
-          {tasks?.map((task) => (
-            <li key={task.id}>
-              <Text>{task?.description}</Text>
-            </li>
-          ))}
-        </ul>
-      ),
-      width: 400,
-      align: 'left' as "left",
+      key: "blockers",
+      title: "Blocker (if any)",
+      dataIndex: "assignedTask",
+      render: (task: ScrumReportTask, record: ModifiesScrumReport) => {
+        if (record.assignedTask)
+          return {
+            children: (
+              <div>
+                <Text
+                  className="w-[200px] cursor-pointer"
+                  ellipsis={{ tooltip: record?.assignedTask?.title }}
+                >
+                  {record?.assignedTask?.description}
+                </Text>
+              </div>
+            ),
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+        else
+          return {
+            children: <></>,
+            props: {
+              rowSpan: 1,
+              style: record.style,
+            },
+          };
+      },
+      align: "center",
     },
   ];
 
+
   return (
     <>
-      {data?.resData?.length > 0 ? (
-        <Table
-          bordered
-          rowKey={(record) => record.user?.id}
-          columns={columns}
-          dataSource={data.resData}
-          rowClassName={(record, index) =>
-            index % 2 === 0 ? "bg-[#6BA9FF]" : "bg-[#3498DB]"
-          }
-          onRow={(record, rowIndex) => ({
-            onMouseEnter: (event) => {
-              event.currentTarget.style.backgroundColor = "#ADD8E6"; // Change the background color on hover
-            },
-            onMouseLeave: (event) => {
-              event.currentTarget.style.backgroundColor =
-                rowIndex % 2 === 0 ? "#6BA9FF" : "#3498DB"; // Restore the original background color
-            },
-          })}
-          pagination={{
-            showSizeChanger: true,
-            position: ["bottomRight", "bottomLeft"],
-          }}
-          scroll={{ x: "max-content" }}
-        />
-      ) : (
-        <Empty
-          className="mt-12"
-          description="Select Project to View Data"
-        >
+      {data?.length ? (
+        <div className="flex flex-col gap-4">
+          <Table
+            bordered
+            rowKey={"rowKey"}
+            columns={columns}
+            dataSource={data}
+            pagination={{
+              showSizeChanger: true,
+              position: ["bottomRight", "bottomLeft"],
+            }}
+            scroll={{x: "max-content" }}
+          />
+        </div>
+      )
+      : (
+        <Empty className="mt-12" description="Select Project to View Data">
           <EditReportConfigComponent reportData={reportData} />
         </Empty>
       )}

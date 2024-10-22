@@ -847,7 +847,7 @@ export class ExportService {
       'Est. Hours',
       'What did yesterday',
       'Spent Hours',
-      'Blocker',
+      'Blocker (if any)',
     ];
 
     const workbook = new Workbook();
@@ -860,49 +860,72 @@ export class ExportService {
     });
 
     worksheet.columns.forEach((column) => {
-      column.width = 25;
+      column.width = 50;
     });
 
     resData.forEach((data: any) => {
       const { user, tasks, todayTasks, yesterdayTasks } = data;
+
+      const estimationToday = todayTasks.reduce(
+        (total: any, task: { estimation: any }) =>
+          total + (task.estimation || 0),
+        0,
+      );
+      const spentLast = yesterdayTasks.reduce(
+        (total: any, task: { spentHours: any }) =>
+          total + (task.spentHours || 0),
+        0,
+      );
       const userName = user ? `${user.firstName} ${user.lastName}` : ' ';
 
-      const numTasks = tasks.length;
+      const numTasks = Math.max(
+        tasks.length,
+        todayTasks.length,
+        yesterdayTasks.length,
+      );
 
       const lastRowIndex = worksheet.lastRow?.number || 1;
       const startRowIndex = lastRowIndex + 1;
 
-      worksheet.addRow([
-        userName,
-        tasks[0]?.key,
+      const userCellValue = `${userName}\nEst. Today: ${estimationToday}\nSpent Last: ${spentLast}`;
+      // Add first task row (with user name)
+      const row = worksheet.addRow([
+        userCellValue,
+        tasks[0]?.key || '',
         tasks[0]?.title || '',
-        todayTasks[0]?.title || '',
-        tasks[0]?.estimation || '',
-        yesterdayTasks[0]?.title || '',
-        tasks[0]?.spentHours || '',
+        tasks[0]?.isTodayTask ? tasks[0].title : '',
+        tasks[0]?.isTodayTask ? tasks[0].estimation : '',
+        tasks[0]?.isYesterdayTask ? tasks[0].title : '',
+        tasks[0]?.isYesterdayTask ? tasks[0].spentHours : '',
         tasks[0]?.description || '',
       ]);
 
+      row.eachCell((cell) => {
+        cell.alignment = { wrapText: true };
+      });
+      row.height = 25 * (Math.ceil((tasks[0]?.title?.length || 0) / 50) || 1);
+
+      // Add remaining tasks for this user (without repeating the name)
       for (let i = 1; i < numTasks; i++) {
         worksheet.addRow([
           '', // Empty User cell
-          tasks[i]?.key || '', // Task Key
-          tasks[i]?.title || '', // Plan for this week
-          todayTasks[i]?.title || '', // What will do today
-          tasks[i]?.estimation || '', // Estimation
-          yesterdayTasks[i]?.title || '', // What did yesterday
-          tasks[i]?.spentHours || '', // Spent Hours
-          tasks[i]?.description || '', // Blocker
+          tasks[i]?.key || '',
+          tasks[i]?.title || '',
+          tasks[i]?.isTodayTask ? tasks[i].title : '',
+          tasks[i]?.isTodayTask ? tasks[i].estimation : '',
+          tasks[i]?.isYesterdayTask ? tasks[i].title : '',
+          tasks[i]?.isYesterdayTask ? tasks[i].spentHours : '',
+          tasks[i]?.description || '',
         ]);
       }
 
+      // Merge the user's name cell across rows if necessary
       const endRowIndex = startRowIndex + numTasks - 1;
-
-      worksheet.mergeCells(`A${startRowIndex}:A${endRowIndex}`);
-
-      const mergedUserCell = worksheet.getCell(`A${startRowIndex}`);
-
-      mergedUserCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      if (numTasks > 1) {
+        worksheet.mergeCells(`A${startRowIndex}:A${endRowIndex}`);
+        const mergedUserCell = worksheet.getCell(`A${startRowIndex}`);
+        mergedUserCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      }
     });
 
     await workbook.xlsx.write(res);
