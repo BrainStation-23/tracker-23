@@ -15,6 +15,7 @@ import { EmailService } from '../email/email.service';
 import { UsersDatabase } from 'src/database/users';
 import { RabbitMQService } from '../queue/queue.service';
 import { WorkerService } from '../worker/worker.service';
+import { SprintsService } from '../sprints/sprints.service';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { WorkerService } from '../worker/worker.service';
     UsersDatabase,
     RabbitMQService,
     WorkerService,
+    SprintsService,
   ],
   controllers: [TasksController],
   exports: [TasksService, TasksDatabase],

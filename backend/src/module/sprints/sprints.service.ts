@@ -857,7 +857,7 @@ export class SprintsService {
     };
   }
 
-  private doesTodayTask(time: number, sessions: Session[]) {
+  doesTodayTask(time: number, sessions: Session[]) {
     const parsedTime = dayjs(new Date(time));
     const startTime = parsedTime.startOf('day').valueOf();
     const endTime = parsedTime.endOf('day').valueOf();

@@ -203,10 +203,13 @@ export class TasksService {
         }
 
         // find today's and yesterday's task
-        const doesTodayTask = this.doesTodayTask(currDateNum, task.sessions);
-        const doesYesterDayTask = this.doesTodayTask(
+        const doesTodayTask = this.sprintService.doesTodayTask(
+          currDateNum,
+          task,
+        );
+        const doesYesterDayTask = this.sprintService.doesTodayTask(
           currDateNum - oneDayMilliseconds,
-          task.sessions,
+          task,
         );
         let roundedNum;
         if (doesYesterDayTask) {
