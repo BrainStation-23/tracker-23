@@ -406,8 +406,8 @@ export class SprintsService {
       }
       tasks = await this.tasksDatabase.fetchTasksByDateRange(
         numericProjectIds,
-        startDate,
-        endDate,
+        this.adjustDate(startDate, -1),
+        this.adjustDate(endDate, +1, true),
       );
     }
 
@@ -421,45 +421,49 @@ export class SprintsService {
       index < len;
       index++
     ) {
-      let userIntegration;
-      if (sprint?.project.integrationId) {
-        userIntegration = await this.userIntegrationDatabase.getUserIntegration(
-          {
-            UserIntegrationIdentifier: {
-              integrationId: sprint.project.integrationId,
-              userWorkspaceId: getUserWorkspaceList[index].id,
-            },
-          },
-        );
-      } else {
-        const project = await this.projectDatabase.getProjectById(
-          numericProjectIds[0],
-        );
-        userIntegration = await this.userIntegrationDatabase.getUserIntegration(
-          {
-            UserIntegrationIdentifier: {
-              integrationId: project?.integrationId,
-              userWorkspaceId: getUserWorkspaceList[index].id,
-            },
-          },
-        );
-      }
+      // let userIntegration;
+      // if (sprint?.project.integrationId) {
+      //   userIntegration = await this.userIntegrationDatabase.getUserIntegration(
+      //     {
+      //       UserIntegrationIdentifier: {
+      //         integrationId: sprint.project.integrationId,
+      //         userWorkspaceId: getUserWorkspaceList[index].id,
+      //       },
+      //     },
+      //   );
+      // } else {
+      //   const project = await this.projectDatabase.getProjectById(
+      //     numericProjectIds[0],
+      //   );
+      //   userIntegration =
+      //     project?.integrationId &&
+      //     (await this.userIntegrationDatabase.getUserIntegration({
+      //       UserIntegrationIdentifier: {
+      //         integrationId: project?.integrationId,
+      //         userWorkspaceId: getUserWorkspaceList[index].id,
+      //       },
+      //     }));
+      // }
 
       const user = getUserWorkspaceList[index].user;
-      if (userIntegration) {
-        mappedUserWithWorkspaceId.set(getUserWorkspaceList[index].id, {
-          userId: user.id,
-          name: user.lastName
-            ? user.firstName + ' ' + user.lastName
-            : user.firstName,
-          picture: user.picture,
-          devProgress: { total: 0, done: 0 },
-          assignedTasks: [],
-          yesterdayTasks: [],
-          todayTasks: [],
-        });
-      }
+      // if (userIntegration) {
+      mappedUserWithWorkspaceId.set(getUserWorkspaceList[index].id, {
+        userId: user.id,
+        name: user.lastName
+          ? user.firstName + ' ' + user.lastName
+          : user.firstName,
+        picture: user.picture,
+        devProgress: { total: 0, done: 0 },
+        assignedTasks: [],
+        yesterdayTasks: [],
+        todayTasks: [],
+      });
+      // }
     }
+    console.log(
+      '🚀 ~ SprintsService ~ sprintView ~ mappedUserWithWorkspaceId:',
+      mappedUserWithWorkspaceId,
+    );
 
     const data: any[] = [];
     let done = 0;
@@ -490,10 +494,10 @@ export class SprintsService {
               statusCategoryName: task.statusCategoryName,
             };
 
-            const doesTodayTask = this.doesTodayTask(idx, task.sessions);
+            const doesTodayTask = this.doesTodayTask(idx, task);
             const doesYesterDayTask = this.doesTodayTask(
               idx - oneDayMilliseconds,
-              task.sessions,
+              task,
             );
             if (doesTodayTask) existingUser.todayTasks.push(assignTask);
             if (doesYesterDayTask) existingUser.yesterdayTasks.push(assignTask);
@@ -857,10 +861,17 @@ export class SprintsService {
     };
   }
 
-  doesTodayTask(time: number, sessions: Session[]) {
+  private doesTodayTask(time: number, task: any) {
+    const sessions = task?.sessions;
     const parsedTime = dayjs(new Date(time));
     const startTime = parsedTime.startOf('day').valueOf();
     const endTime = parsedTime.endOf('day').valueOf();
+    if (
+      new Date(task.jiraUpdatedAt ?? task.updatedAt).getTime() >= startTime &&
+      new Date(task.jiraUpdatedAt ?? task.updatedAt).getTime() <= endTime
+    ) {
+      return true;
+    }
     for (let index = 0, len = sessions.length; index < len; index++) {
       const session = sessions[index];
       if (
@@ -1143,4 +1154,19 @@ export class SprintsService {
 
     return projectIds;
   }
+
+  private adjustDate = (date: Date, days: number, endOfDay = false): Date => {
+    const adjustedDate = new Date(date);
+    adjustedDate.setDate(adjustedDate.getDate() + days);
+
+    if (endOfDay) {
+      // Set to 23:59:59 for end of the day
+      adjustedDate.setHours(23, 59, 59, 999);
+    } else {
+      // Set to 00:00:00 for start of the day
+      adjustedDate.setHours(0, 0, 0, 0);
+    }
+
+    return adjustedDate;
+  };
 }
