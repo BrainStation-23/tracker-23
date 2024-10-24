@@ -78,7 +78,6 @@ export class TasksService {
       } else {
         currentDate = new Date();
       }
-
       const startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
       const endDate = endOfWeek(currentDate, { weekStartsOn: 1 });
       const currDateNum = new Date(currentDate).getTime();
@@ -88,7 +87,6 @@ export class TasksService {
       startOfYesterday.setDate(startOfcurrentDate.getDate() - 1);
       const endOfYesterday = new Date(startOfcurrentDate);
 
-      console.log(currentDate, 'currentDate');
       // Fetch tasks within the date range, grouped by user
       let numericProjectIds: number[] = [];
       if (projectIds && typeof projectIds === 'string') {
@@ -97,17 +95,24 @@ export class TasksService {
         numericProjectIds = projectIds.map((id) => Number(id));
       }
 
-      const activeUsers = await this.prisma.userWorkspace.findMany({
+      const activeUsers = await this.prisma.userIntegration.findMany({
         where: {
-          status: 'ACTIVE',
-          workspaceId: user?.activeWorkspaceId || undefined,
+          userWorkspace: {
+            workspaceId: user?.activeWorkspaceId ?? undefined,
+            user: {
+              status: 'ACTIVE',
+            },
+          },
         },
-        include: {
-          user: true,
+        select: {
+          jiraAccountId: true,
         },
+        distinct: ['jiraAccountId'],
       });
 
-      const activeUserIds = activeUsers.map((u) => u.userId);
+      const activeUsersId = activeUsers
+        .map((user) => user.jiraAccountId)
+        .filter((id): id is string => id !== null);
 
       let tasks;
       if (projectIds && projectIds.length > 0) {
@@ -116,10 +121,8 @@ export class TasksService {
             projectId: {
               in: numericProjectIds,
             },
-            userWorkspace: {
-              userId: {
-                in: activeUserIds,
-              },
+            assigneeId: {
+              in: activeUsersId,
             },
             OR: [
               {
@@ -153,7 +156,7 @@ export class TasksService {
       // Group tasks by user
       const groupedTasks = tasks.reduce<
         Record<
-          number,
+          string,
           {
             user: User;
             tasks: Task[];
@@ -162,30 +165,54 @@ export class TasksService {
           }
         >
       >((acc, task) => {
-        const userId = task.userWorkspace?.user?.id || -1;
-        if (!acc[userId]) {
-          acc[userId] = {
-            user: task.userWorkspace?.user as User,
-            tasks: [],
-            todayTasks: [],
-            yesterdayTasks: [],
-          };
+        function findMatchingAuthors(
+          sessions: any[],
+          activeUserIds: string | any[],
+          givenId: string | null,
+        ) {
+          if (!Array.isArray(sessions) || sessions.length === 0) {
+            return [];
+          }
+          return sessions
+            .filter(
+              (session) =>
+                activeUserIds.includes(session.authorId) &&
+                session.authorId !== givenId,
+            )
+            .map((session) => session.authorId);
         }
-
-        // find today's and yesterday's task
-        const isTodayTask = doesTodayTask(currDateNum, task);
-        const isYesterDayTask = doesTodayTask(
-          currDateNum - oneDayMilliseconds,
-          task,
+        const findOtherUser = findMatchingAuthors(
+          task.sessions,
+          activeUsersId,
+          task.assigneeId,
         );
-        let roundedNum;
-        if (isYesterDayTask) {
+        findOtherUser.push(task.assigneeId);
+        findOtherUser.forEach((assigneeId) => {
+          if (!acc[assigneeId]) {
+            acc[assigneeId] = {
+              user: task.userWorkspace?.user as User,
+              tasks: [],
+              todayTasks: [],
+              yesterdayTasks: [],
+            };
+          }
+
+          // find today's and yesterday's task
+          const isTodayTask = doesTodayTask(currDateNum, task);
+          const isYesterDayTask = doesTodayTask(
+            currDateNum - oneDayMilliseconds,
+            task,
+          );
           const sessions = task.sessions || [];
           const taskTotalSessionTime = sessions.reduce((total, session) => {
             if (session.startTime && session.endTime) {
               const startTime = new Date(session.startTime);
               const endTime = new Date(session.endTime);
-              if (startTime >= startOfYesterday && endTime <= endOfYesterday) {
+              if (
+                startTime >= startOfYesterday &&
+                endTime <= endOfYesterday &&
+                assigneeId === session.authorId
+              ) {
                 const sessionDuration =
                   (new Date(session.endTime).getTime() -
                     new Date(session.startTime).getTime()) /
@@ -196,27 +223,23 @@ export class TasksService {
             return total;
           }, 0);
 
-          roundedNum = parseFloat(taskTotalSessionTime.toFixed(2));
+          const roundedNum = parseFloat(taskTotalSessionTime.toFixed(2));
           roundedNum % 1 === 0 ? Math.floor(roundedNum) : roundedNum;
-        }
+          const tmpTask = {
+            ...task,
+            spentHours: roundedNum,
+            isTodayTask: isTodayTask ? true : false,
+            isYesterdayTask: isYesterDayTask ? true : false,
+          };
+          acc[assigneeId].tasks.push(tmpTask);
 
-        const tmpTask = {
-          ...task,
-          spentHours: roundedNum,
-          isTodayTask: isTodayTask ? true : false,
-          isYesterdayTask: isYesterDayTask ? true : false,
-        };
-
-        if (isTodayTask) acc[userId].todayTasks.push(tmpTask);
-        if (isYesterDayTask) acc[userId].yesterdayTasks.push(tmpTask);
-
-        acc[userId].tasks.push(tmpTask);
-
+          if (isTodayTask) acc[assigneeId].todayTasks.push(tmpTask);
+          if (isYesterDayTask) acc[assigneeId].yesterdayTasks.push(tmpTask);
+        });
         return acc;
       }, {});
 
       const resData = Object.values(groupedTasks);
-
       return { date: currentDate, resData };
     } catch (error) {
       console.log(error);
