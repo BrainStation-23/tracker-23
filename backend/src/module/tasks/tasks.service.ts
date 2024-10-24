@@ -112,7 +112,12 @@ export class TasksService {
       const endDate = endOfWeek(currentDate, { weekStartsOn: 1 });
       const currDateNum = new Date(currentDate).getTime();
       const oneDayMilliseconds = 3600 * 1000 * 24;
+      const startOfcurrentDate = new Date(currentDate.setUTCHours(0, 0, 0, 0));
+      const startOfYesterday = new Date(startOfcurrentDate);
+      startOfYesterday.setDate(startOfcurrentDate.getDate() - 1);
+      const endOfYesterday = new Date(startOfcurrentDate);
 
+      console.log(currentDate, 'currentDate');
       // Fetch tasks within the date range, grouped by user
       let numericProjectIds: number[] = [];
       if (projectIds && typeof projectIds === 'string') {
@@ -197,29 +202,33 @@ export class TasksService {
           };
         }
 
-        //  Calculate total session time for the current task
-        const sessions = task.sessions || [];
-        const taskTotalSessionTime = sessions.reduce((total, session) => {
-          if (session.startTime && session.endTime) {
-            const sessionDuration =
-              (new Date(session.endTime).getTime() -
-                new Date(session.startTime).getTime()) /
-              (1000 * 60 * 60);
-            return total + sessionDuration;
-          }
-          return total;
-        }, 0);
-
-        // format taskTotalSessionTime
-        const roundedNum = parseFloat(taskTotalSessionTime.toFixed(2));
-        roundedNum % 1 === 0 ? Math.floor(roundedNum) : roundedNum;
-
         // find today's and yesterday's task
         const doesTodayTask = this.doesTodayTask(currDateNum, task.sessions);
         const doesYesterDayTask = this.doesTodayTask(
           currDateNum - oneDayMilliseconds,
           task.sessions,
         );
+        let roundedNum;
+        if (doesYesterDayTask) {
+          const sessions = task.sessions || [];
+          const taskTotalSessionTime = sessions.reduce((total, session) => {
+            if (session.startTime && session.endTime) {
+              const startTime = new Date(session.startTime);
+              const endTime = new Date(session.endTime);
+              if (startTime >= startOfYesterday && endTime <= endOfYesterday) {
+                const sessionDuration =
+                  (new Date(session.endTime).getTime() -
+                    new Date(session.startTime).getTime()) /
+                  (1000 * 60 * 60);
+                return total + sessionDuration;
+              }
+            }
+            return total;
+          }, 0);
+
+          roundedNum = parseFloat(taskTotalSessionTime.toFixed(2));
+          roundedNum % 1 === 0 ? Math.floor(roundedNum) : roundedNum;
+        }
 
         const tmpTask = {
           ...task,
