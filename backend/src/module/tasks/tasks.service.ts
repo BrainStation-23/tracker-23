@@ -42,6 +42,7 @@ import { RabbitMQService } from '../queue/queue.service';
 import { fetchProjectStatusList, fetchTasksByProject } from './tasks.axios';
 import { startOfWeek, endOfWeek } from 'date-fns';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
+import { doesTodayTask } from 'src/utils/helper/helper';
 
 @Injectable()
 export class TasksService {
@@ -58,36 +59,6 @@ export class TasksService {
     private sprintTaskDatabase: SprintTaskDatabase,
     private readonly rabbitMQService: RabbitMQService,
   ) {}
-
-  private doesTodayTask(time: number, sessions: Session[]): boolean {
-    if (!sessions || sessions.length === 0) return false;
-
-    const parsedTime = dayjs(time);
-    const startTime = parsedTime.startOf('day').valueOf();
-    const endTime = parsedTime.endOf('day').valueOf();
-
-    for (let index = 0, len = sessions.length; index < len; index++) {
-      const session = sessions[index];
-
-      if (!session.startTime) continue;
-
-      const sessionStartTime = new Date(session.startTime).getTime();
-      const sessionEndTime = session.endTime
-        ? new Date(session.endTime).getTime()
-        : null;
-
-      const isWithinDay =
-        (sessionStartTime >= startTime && sessionStartTime <= endTime) ||
-        (sessionEndTime &&
-          sessionEndTime >= startTime &&
-          sessionEndTime <= endTime);
-
-      if (isWithinDay) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   async getTasksByWeek(
     user: User,
@@ -192,7 +163,6 @@ export class TasksService {
         >
       >((acc, task) => {
         const userId = task.userWorkspace?.user?.id || -1;
-
         if (!acc[userId]) {
           acc[userId] = {
             user: task.userWorkspace?.user as User,
@@ -203,16 +173,13 @@ export class TasksService {
         }
 
         // find today's and yesterday's task
-        const doesTodayTask = this.sprintService.doesTodayTask(
-          currDateNum,
-          task,
-        );
-        const doesYesterDayTask = this.sprintService.doesTodayTask(
+        const isTodayTask = doesTodayTask(currDateNum, task);
+        const isYesterDayTask = doesTodayTask(
           currDateNum - oneDayMilliseconds,
           task,
         );
         let roundedNum;
-        if (doesYesterDayTask) {
+        if (isYesterDayTask) {
           const sessions = task.sessions || [];
           const taskTotalSessionTime = sessions.reduce((total, session) => {
             if (session.startTime && session.endTime) {
@@ -236,12 +203,12 @@ export class TasksService {
         const tmpTask = {
           ...task,
           spentHours: roundedNum,
-          isTodayTask: doesTodayTask ? true : false,
-          isYesterdayTask: doesYesterDayTask ? true : false,
+          isTodayTask: isTodayTask ? true : false,
+          isYesterdayTask: isYesterDayTask ? true : false,
         };
 
-        if (doesTodayTask) acc[userId].todayTasks.push(tmpTask);
-        if (doesYesterDayTask) acc[userId].yesterdayTasks.push(tmpTask);
+        if (isTodayTask) acc[userId].todayTasks.push(tmpTask);
+        if (isYesterDayTask) acc[userId].yesterdayTasks.push(tmpTask);
 
         acc[userId].tasks.push(tmpTask);
 
