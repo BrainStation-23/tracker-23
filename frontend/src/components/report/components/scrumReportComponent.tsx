@@ -60,7 +60,7 @@ const ScrumReportComponent = ({ data, reportData }: Props) => {
         todayTasks: record.todayTasks,
         style: colors[record.user?.id],
         dateCellStyle: dateCellStyle,
-        userSpan: i === 0 ? (maxTasks > 0 ? maxTasks + 1 : 1) : 0,
+        userSpan: i === 0 ? (maxTasks > 0 ? maxTasks : 1) : 0,
         assignedTask: i < record.tasks?.length ? record.tasks[i] : null,
         todayTask: i < record.tasks?.length ? record.tasks[i].isTodayTask ? record.tasks[i]: null :null,
         yesterdayTask:
