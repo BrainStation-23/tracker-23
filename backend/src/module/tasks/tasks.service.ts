@@ -42,6 +42,7 @@ import { RabbitMQService } from '../queue/queue.service';
 import { fetchProjectStatusList, fetchTasksByProject } from './tasks.axios';
 import { startOfWeek, endOfWeek } from 'date-fns';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
+import { doesTodayTask } from 'src/utils/helper/helper';
 
 @Injectable()
 export class TasksService {
@@ -58,36 +59,6 @@ export class TasksService {
     private sprintTaskDatabase: SprintTaskDatabase,
     private readonly rabbitMQService: RabbitMQService,
   ) {}
-
-  private doesTodayTask(time: number, sessions: Session[]): boolean {
-    if (!sessions || sessions.length === 0) return false;
-
-    const parsedTime = dayjs(time);
-    const startTime = parsedTime.startOf('day').valueOf();
-    const endTime = parsedTime.endOf('day').valueOf();
-
-    for (let index = 0, len = sessions.length; index < len; index++) {
-      const session = sessions[index];
-
-      if (!session.startTime) continue;
-
-      const sessionStartTime = new Date(session.startTime).getTime();
-      const sessionEndTime = session.endTime
-        ? new Date(session.endTime).getTime()
-        : null;
-
-      const isWithinDay =
-        (sessionStartTime >= startTime && sessionStartTime <= endTime) ||
-        (sessionEndTime &&
-          sessionEndTime >= startTime &&
-          sessionEndTime <= endTime);
-
-      if (isWithinDay) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   async getTasksByWeek(
     user: User,
@@ -107,11 +78,14 @@ export class TasksService {
       } else {
         currentDate = new Date();
       }
-
       const startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
       const endDate = endOfWeek(currentDate, { weekStartsOn: 1 });
       const currDateNum = new Date(currentDate).getTime();
       const oneDayMilliseconds = 3600 * 1000 * 24;
+      const startOfcurrentDate = new Date(currentDate.setUTCHours(0, 0, 0, 0));
+      const startOfYesterday = new Date(startOfcurrentDate);
+      startOfYesterday.setDate(startOfcurrentDate.getDate() - 1);
+      const endOfYesterday = new Date(startOfcurrentDate);
 
       // Fetch tasks within the date range, grouped by user
       let numericProjectIds: number[] = [];
@@ -121,17 +95,24 @@ export class TasksService {
         numericProjectIds = projectIds.map((id) => Number(id));
       }
 
-      const activeUsers = await this.prisma.userWorkspace.findMany({
+      const activeUsers = await this.prisma.userIntegration.findMany({
         where: {
-          status: 'ACTIVE',
-          workspaceId: user?.activeWorkspaceId || undefined,
+          userWorkspace: {
+            workspaceId: user?.activeWorkspaceId ?? undefined,
+            user: {
+              status: 'ACTIVE',
+            },
+          },
         },
-        include: {
-          user: true,
+        select: {
+          jiraAccountId: true,
         },
+        distinct: ['jiraAccountId'],
       });
 
-      const activeUserIds = activeUsers.map((u) => u.userId);
+      const activeUsersId = activeUsers
+        .map((user) => user.jiraAccountId)
+        .filter((id): id is string => id !== null);
 
       let tasks;
       if (projectIds && projectIds.length > 0) {
@@ -140,10 +121,8 @@ export class TasksService {
             projectId: {
               in: numericProjectIds,
             },
-            userWorkspace: {
-              userId: {
-                in: activeUserIds,
-              },
+            assigneeId: {
+              in: activeUsersId,
             },
             OR: [
               {
@@ -177,7 +156,7 @@ export class TasksService {
       // Group tasks by user
       const groupedTasks = tasks.reduce<
         Record<
-          number,
+          string,
           {
             user: User;
             tasks: Task[];
@@ -186,58 +165,81 @@ export class TasksService {
           }
         >
       >((acc, task) => {
-        const userId = task.userWorkspace?.user?.id || -1;
-
-        if (!acc[userId]) {
-          acc[userId] = {
-            user: task.userWorkspace?.user as User,
-            tasks: [],
-            todayTasks: [],
-            yesterdayTasks: [],
-          };
-        }
-
-        //  Calculate total session time for the current task
-        const sessions = task.sessions || [];
-        const taskTotalSessionTime = sessions.reduce((total, session) => {
-          if (session.startTime && session.endTime) {
-            const sessionDuration =
-              (new Date(session.endTime).getTime() -
-                new Date(session.startTime).getTime()) /
-              (1000 * 60 * 60);
-            return total + sessionDuration;
+        function findMatchingAuthors(
+          sessions: any[],
+          activeUserIds: string | any[],
+          givenId: string | null,
+        ) {
+          if (!Array.isArray(sessions) || sessions.length === 0) {
+            return [];
           }
-          return total;
-        }, 0);
-
-        // format taskTotalSessionTime
-        const roundedNum = parseFloat(taskTotalSessionTime.toFixed(2));
-        roundedNum % 1 === 0 ? Math.floor(roundedNum) : roundedNum;
-
-        // find today's and yesterday's task
-        const doesTodayTask = this.doesTodayTask(currDateNum, task.sessions);
-        const doesYesterDayTask = this.doesTodayTask(
-          currDateNum - oneDayMilliseconds,
+          return sessions
+            .filter(
+              (session) =>
+                activeUserIds.includes(session.authorId) &&
+                session.authorId !== givenId,
+            )
+            .map((session) => session.authorId);
+        }
+        const findOtherUser = findMatchingAuthors(
           task.sessions,
+          activeUsersId,
+          task.assigneeId,
         );
+        findOtherUser.push(task.assigneeId);
+        findOtherUser.forEach((assigneeId) => {
+          if (!acc[assigneeId]) {
+            acc[assigneeId] = {
+              user: task.userWorkspace?.user as User,
+              tasks: [],
+              todayTasks: [],
+              yesterdayTasks: [],
+            };
+          }
 
-        const tmpTask = {
-          ...task,
-          spentHours: roundedNum,
-          isTodayTask: doesTodayTask ? true : false,
-          isYesterdayTask: doesYesterDayTask ? true : false,
-        };
+          // find today's and yesterday's task
+          const isTodayTask = doesTodayTask(currDateNum, task);
+          const isYesterDayTask = doesTodayTask(
+            currDateNum - oneDayMilliseconds,
+            task,
+          );
+          const sessions = task.sessions || [];
+          const taskTotalSessionTime = sessions.reduce((total, session) => {
+            if (session.startTime && session.endTime) {
+              const startTime = new Date(session.startTime);
+              const endTime = new Date(session.endTime);
+              if (
+                startTime >= startOfYesterday &&
+                endTime <= endOfYesterday &&
+                assigneeId === session.authorId
+              ) {
+                const sessionDuration =
+                  (new Date(session.endTime).getTime() -
+                    new Date(session.startTime).getTime()) /
+                  (1000 * 60 * 60);
+                return total + sessionDuration;
+              }
+            }
+            return total;
+          }, 0);
 
-        if (doesTodayTask) acc[userId].todayTasks.push(tmpTask);
-        if (doesYesterDayTask) acc[userId].yesterdayTasks.push(tmpTask);
+          const roundedNum = parseFloat(taskTotalSessionTime.toFixed(2));
+          roundedNum % 1 === 0 ? Math.floor(roundedNum) : roundedNum;
+          const tmpTask = {
+            ...task,
+            spentHours: roundedNum,
+            isTodayTask: isTodayTask ? true : false,
+            isYesterdayTask: isYesterDayTask ? true : false,
+          };
+          acc[assigneeId].tasks.push(tmpTask);
 
-        acc[userId].tasks.push(tmpTask);
-
+          if (isTodayTask) acc[assigneeId].todayTasks.push(tmpTask);
+          if (isYesterDayTask) acc[assigneeId].yesterdayTasks.push(tmpTask);
+        });
         return acc;
       }, {});
 
       const resData = Object.values(groupedTasks);
-
       return { date: currentDate, resData };
     } catch (error) {
       console.log(error);
