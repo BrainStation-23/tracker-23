@@ -326,6 +326,12 @@ export interface CreateReportDto {
   name: string;
   reportType: ReportTypesDto;
   pageId: number;
+  config?: {
+    filterDateType?: FilterDateType;
+    endDate?: string ;
+    startDate?: string; 
+  }
+  
 }
 export interface UpdateReportDto {
   name?: string;
