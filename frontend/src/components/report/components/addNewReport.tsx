@@ -28,7 +28,6 @@ const AddNewReport = ({ setIsModalOpen }: { setIsModalOpen: Function }) => {
 
   const createReport = async (data: CreateReportDto) => {
     setIsLoading(true);
-    console.log(data, "data from addNewReport.tsx");
     if (data.reportType === "SCRUM_REPORT") {
       const dateRange = getDateRangeArray(FilterDateType.TODAY, true);
       data.config = { "endDate": dateRange[0],

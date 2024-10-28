@@ -22,7 +22,6 @@ const ScrumReport = ({ reportData, inView }: Props) => {
   // eslint-disable-next-line no-unused-vars
   const [scrumReportData, setScrumReportData] = useState<any>();
   const [downloading, setDownloading] = useState<boolean>(false);
-  console.log(reportData, "reportdata from scrumReport");
 
   const dateRange = reportData?.config?.filterDateType ? reportData.config.filterDateType === "CUSTOM_DATE"?
   [reportData.config.startDate, reportData.config.endDate] : getDateRangeArray(reportData?.config?.filterDateType, true) :
@@ -37,7 +36,6 @@ const ScrumReport = ({ reportData, inView }: Props) => {
       reportData?.config?.projectIds,
       dateRange[1],
     );
-    console.log(res, "data from scrumReport.tsx");
     if (res) {
       setScrumReportData(res);
       if (window.gtag) {

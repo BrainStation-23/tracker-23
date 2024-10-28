@@ -25,8 +25,6 @@ const ReportConfigDescription = ({
   const [sprintName, setSprintName] = useState("");
   const [fullSprintName, setFullSprintName] = useState("");
 
-  console.log(reportData, "reportData from reportConfigDescription.tsx");
-
   const sprintData = useAppSelector(
     (state: RootState) => state.projectList.reportSprintList
   );
