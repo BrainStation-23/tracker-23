@@ -5,6 +5,7 @@ import { Providers } from "@/storage/redux/provider";
 
 import "@/styles/globals.css";
 import '@/styles/DatePicker.css';
+import '@/assets/css/ag-grid-theme-builder.css';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
