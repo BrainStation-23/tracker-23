@@ -47,12 +47,10 @@ const DateRangePicker = ({
   const [dateRangeType, setDateRangeType] = useState<string>("this-week");
   const [dropdownText, setDropdownText] = useState<any>(selectedDate);
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
-  const [customDateText, setCustomDateText] = useState<any>(
-   selectedDate
-  );
+  const [customDateText, setCustomDateText] = useState<any>(selectedDate);
 
-  if(!selectedDate){
-    setCustomDateText(getDateRangeArray(FilterDateType.THIS_WEEK, scrum))
+  if (!selectedDate) {
+    setCustomDateText(getDateRangeArray(FilterDateType.THIS_WEEK, scrum));
   }
   const handleNext = () => {
     if (selectedDate && !loading) {
@@ -139,9 +137,9 @@ const DateRangePicker = ({
 
   const items: MenuProps["items"] = [];
   let tmp;
-  if(scrum){
+  if (scrum) {
     tmp = Object.entries(scrumDateRangeOptions);
-  }else{
+  } else {
     tmp = Object.entries(dateRangeOptions);
   }
   tmp.forEach((val) => {
@@ -173,7 +171,6 @@ const DateRangePicker = ({
   const menuStyle = {
     boxShadow: "none",
   };
-
 
   useEffect(() => {
     setDropdownText(customDateText);
@@ -315,8 +312,8 @@ export const getDateRangeArray = (key: string, scrum?: boolean) => {
       endDate = localFormat(dayjs().endOf("week"));
   }
 
-  if (scrum){
-    return [startDate, startDate]
+  if (scrum) {
+    return [startDate, startDate];
   }
   return [startDate, endDate];
 };
@@ -383,4 +380,194 @@ export function formatUserData(dataArray: any[]) {
 
     return result;
   });
+}
+export const getDate = (key: string) => {
+  let date;
+  switch (key) {
+    case "today":
+      date = localFormat(dayjs());
+      break;
+    case "yesterday":
+      date = localFormat(dayjs().subtract(1, "day"));
+      break;
+    case "tomorrow":
+      date = localFormat(dayjs().add(1, "day"));
+      break;
+    default:
+      date = localFormat(dayjs());
+  }
+
+  return date;
+};
+
+export const singleDateOptions = {
+  today: "Today",
+  yesterday: "Yesterday",
+  tomorrow: "Tomorrow",
+};
+
+export function SingleDatePicker({
+  loading,
+  className,
+  selectedDate,
+  setSelectedDate,
+  setFilterDateType,
+}: {
+  className?: string;
+  loading?: boolean;
+  selectedDate: string;
+  setSelectedDate: (data: string) => void;
+  setFilterDateType?: (text: FilterDateType) => void;
+}) {
+  const [dateType, setDateType] = useState<string>("today");
+  const [dropdownText, setDropdownText] = useState<any>(selectedDate);
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
+  const [customDateText, setCustomDateText] = useState<any>(selectedDate);
+  const oneDayInMilliSecond = 24 * 60 * 60 * 1000;
+
+  if (!selectedDate) {
+    setCustomDateText(getDate(FilterDateType.TODAY));
+  }
+  const handleNext = () => {
+    if (selectedDate && !loading) {
+      const newDate = dayjs(selectedDate).add(
+        oneDayInMilliSecond,
+        "millisecond"
+      );
+
+      setDropdownText(localFormat(newDate));
+      setSelectedDate(localFormat(newDate));
+      setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+    }
+  };
+  const handlePreviousClick = () => {
+    if (selectedDate && !loading) {
+      const newDate = dayjs(selectedDate).add(
+        -1 * oneDayInMilliSecond,
+        "millisecond"
+      );
+
+      setDropdownText(localFormat(newDate));
+      setSelectedDate(localFormat(newDate));
+      setFilterDateType && setFilterDateType(FilterDateType.CUSTOM_DATE);
+    }
+  };
+
+  const items: MenuProps["items"] = [];
+  let tmp;
+  tmp = Object.entries(singleDateOptions);
+
+  tmp.forEach((val) => {
+    items.push({
+      label: val[1],
+      key: val[0],
+      icon: <CalendarOutlined />,
+    });
+  });
+  const menuProps = {
+    items,
+    onClick: (val: any) => {
+      setDateType(val.key);
+      setDropdownText(getDate(val.key));
+      setSelectedDate(getDate(val.key));
+      // @ts-ignore
+      setFilterDateType && setFilterDateType(FilterReverseDateType[val.key]);
+      setDropdownOpen(false);
+    },
+  };
+
+  // css
+  const { token } = useToken();
+  const contentStyle = {
+    backgroundColor: token.colorBgElevated,
+    borderRadius: token.borderRadiusLG,
+    boxShadow: token.boxShadowSecondary,
+  };
+  const menuStyle = {
+    boxShadow: "none",
+  };
+
+  const handleDateChange = (newDate: dayjs.Dayjs) => {
+    const formattedDate = localFormat(newDate);
+    setFilterDateType?.(FilterDateType.CUSTOM_DATE);
+    setCustomDateText(formattedDate);
+    setDropdownOpen(false);
+  };
+
+  useEffect(() => {
+    setDropdownText(customDateText);
+    setSelectedDate(customDateText);
+  }, [customDateText, setSelectedDate]);
+
+  return (
+    <div
+      className={classNames(
+        "flex w-full items-center justify-center gap-2",
+        className
+      )}
+    >
+      <Tooltip title="Date Range">
+        <CalendarOutlined size={20} />
+      </Tooltip>
+      <div className="flex w-full items-center">
+        <Button
+          type="text"
+          className="cursor-pointer rounded-l bg-inherit bg-thirdLight py-1.5 pl-1.5 text-xl hover:bg-[#F3F4F6]"
+          onClick={handlePreviousClick}
+          disabled={loading}
+        >
+          <LuChevronLeft />
+        </Button>
+        <Dropdown
+          className="flex cursor-pointer items-center bg-gray-50 p-1.5 hover:bg-gray-100"
+          menu={menuProps}
+          trigger={["click"]}
+          open={dropdownOpen}
+          onOpenChange={(open) => {
+            setDropdownOpen(open);
+          }}
+          dropdownRender={(menu) => (
+            <div style={contentStyle}>
+              {React.cloneElement(menu as React.ReactElement, {
+                style: menuStyle,
+              })}
+
+              <Divider style={{ margin: 0 }} />
+              <div className="flex flex-row gap-2 px-3 py-1">
+                <EditOutlined /> <div> Custom Date</div>
+              </div>
+              <DatePicker
+                format={"DD/MM/YYYY"}
+                allowClear={false}
+                inputReadOnly={false}
+                autoFocus={true}
+                popupClassName="custom-rangePicker-dropdown"
+                onChange={(value) => {
+                  if (value) {
+                    handleDateChange(value);
+                    setDropdownOpen(false);
+                  }
+                }}
+              />
+            </div>
+          )}
+        >
+          <div className="flex items-center justify-between gap-2 text-sm">
+            <div className="flex items-center gap-2">
+              {dropdownText && <span>{dropdownText}</span>}
+            </div>
+            <DownArrowIconSvg />
+          </div>
+        </Dropdown>
+        <Button
+          type="text"
+          disabled={loading}
+          onClick={handleNext}
+          className="cursor-pointer rounded-r bg-thirdLight py-1.5 pr-1.5 text-xl hover:bg-[#F3F4F6]"
+        >
+          <LuChevronRight />
+        </Button>
+      </div>
+    </div>
+  );
 }

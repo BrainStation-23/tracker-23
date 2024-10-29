@@ -2,6 +2,7 @@ import { Form, Input, Radio, Spin } from "antd";
 import { userAPI } from "APIs";
 import {
   CreateReportDto,
+  FilterDateType,
   ReportTypes,
   ReportTypesDto,
   ReportTypesEnum,
@@ -12,6 +13,7 @@ import { useDispatch } from "react-redux";
 
 import PrimaryButton from "@/components/common/buttons/primaryButton";
 import { addReport } from "@/storage/redux/reportsSlice";
+import { getDateRangeArray } from "@/components/common/datePicker";
 
 const AddNewReport = ({ setIsModalOpen }: { setIsModalOpen: Function }) => {
   const router = useRouter();
@@ -26,6 +28,12 @@ const AddNewReport = ({ setIsModalOpen }: { setIsModalOpen: Function }) => {
 
   const createReport = async (data: CreateReportDto) => {
     setIsLoading(true);
+    if (data.reportType === "SCRUM_REPORT") {
+      const dateRange = getDateRangeArray(FilterDateType.TODAY, true);
+      data.config = { "endDate": dateRange[0],
+        "startDate": dateRange[1],
+        "filterDateType": FilterDateType.TODAY};
+    }
     const res = await userAPI.createReport(data);
     if (res) {
       dispatch(addReport(res));
