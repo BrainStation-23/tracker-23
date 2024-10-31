@@ -67,6 +67,7 @@ export class TasksService {
   ) {
     try {
       let currentDate: Date;
+      let numericProjectIds: number[] = [];
 
       if (typeof date === 'string' && /^\d{2}-\d{2}-\d{4}$/.test(date)) {
         const [month, day, year] = date.split('-');
@@ -87,12 +88,20 @@ export class TasksService {
       startOfYesterday.setDate(startOfcurrentDate.getDate() - 1);
       const endOfYesterday = new Date(startOfcurrentDate);
 
-      // Fetch tasks within the date range, grouped by user
-      let numericProjectIds: number[] = [];
+      
       if (projectIds && typeof projectIds === 'string') {
         numericProjectIds = projectIds.split(',').map((id) => Number(id));
       } else if (Array.isArray(projectIds)) {
         numericProjectIds = projectIds.map((id) => Number(id));
+      } else {
+        const activeWorkspaceProjects = await this.prisma.project.findMany({
+          where: {
+            workspaceId: user?.activeWorkspaceId ?? undefined,
+          },
+        });
+        numericProjectIds = activeWorkspaceProjects.map((project) =>
+          Number(project.id),
+        );
       }
 
       const activeUsers = await this.prisma.userIntegration.findMany({
@@ -115,43 +124,40 @@ export class TasksService {
         .filter((id): id is string => id !== null);
 
       let tasks;
-      if (projectIds && projectIds.length > 0) {
-        tasks = await this.prisma.task.findMany({
-          where: {
-            projectId: {
-              in: numericProjectIds,
-            },
-            assigneeId: {
-              in: activeUsersId,
-            },
-            OR: [
-              {
-                createdAt: {
-                  gte: startDate,
-                  lte: endDate,
-                },
-              },
-              {
-                updatedAt: {
-                  gte: startDate,
-                  lte: endDate,
-                },
-              },
-            ],
-          },
 
-          include: {
-            userWorkspace: {
-              include: {
-                user: true,
+      tasks = await this.prisma.task.findMany({
+        where: {
+          projectId: {
+            in: numericProjectIds,
+          },
+          assigneeId: {
+            in: activeUsersId,
+          },
+          OR: [
+            {
+              createdAt: {
+                gte: startDate,
+                lte: endDate,
               },
             },
-            sessions: true,
+            {
+              updatedAt: {
+                gte: startDate,
+                lte: endDate,
+              },
+            },
+          ],
+        },
+
+        include: {
+          userWorkspace: {
+            include: {
+              user: true,
+            },
           },
-        });
-      } else {
-        return { date: currentDate, resData: [] };
-      }
+          sessions: true,
+        },
+      });
 
       // Group tasks by user
       const groupedTasks = tasks.reduce<

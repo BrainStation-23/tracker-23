@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
 
 import { getDateRangeArray } from "@/components/common/datePicker";
-import { ReportData } from "@/storage/redux/reportsSlice";
+import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
 import { ExcelExport } from "@/services/exportHelpers";
 import { useMediaQuery } from "react-responsive";
 import ScrumReportComponent from "../components/scrumReportComponent";
+import { FilterDateType } from "models/reports";
 
 type Props = {
   reportData: ReportData;
@@ -21,12 +22,10 @@ const ScrumReport = ({ reportData, inView }: Props) => {
   // eslint-disable-next-line no-unused-vars
   const [scrumReportData, setScrumReportData] = useState<any>();
   const [downloading, setDownloading] = useState<boolean>(false);
-  console.log(reportData, "reportdata from scrumReport");
 
-  const dateRange =
-    reportData?.config?.startDate && reportData?.config?.endDate
-      ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray(reportData?.config?.filterDateType, true);
+  const dateRange = reportData?.config?.filterDateType ? reportData.config.filterDateType === "CUSTOM_DATE"?
+  [reportData.config.startDate, reportData.config.endDate] : getDateRangeArray(reportData?.config?.filterDateType, true) :
+  getDateRangeArray(FilterDateType.TODAY, true) 
   const isMobile = useMediaQuery({ maxWidth: 767 });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -37,7 +36,6 @@ const ScrumReport = ({ reportData, inView }: Props) => {
       reportData?.config?.projectIds,
       dateRange[1],
     );
-    console.log(res, "data from scrumReport.tsx");
     if (res) {
       setScrumReportData(res);
       if (window.gtag) {
