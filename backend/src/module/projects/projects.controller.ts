@@ -56,6 +56,7 @@ export class ProjectsController {
     @Param('id') id: string,
     @Response() res: any,
   ) {
+    //import project tasks and related properties
     return this.projectsService.importProject(user, +id, res);
   }
 

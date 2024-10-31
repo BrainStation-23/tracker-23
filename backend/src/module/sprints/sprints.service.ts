@@ -263,7 +263,7 @@ export class SprintsService {
     const sprintIds: number[] = Array.from(mappedSprintId.values());
     const [createdSprintTask, sprintTasks] = await Promise.all([
       await this.sprintTaskDatabase.createSprintTask(issue_list),
-      await this.sprintTaskDatabase.findSprintTaskBySprintIds(sprintIds),
+      await this.sprintTaskDatabase.findSprintTaskBySprintIds(sprintIds, {}),
     ]);
 
     return { total: sprintTasks.length, sprintTasks };
@@ -310,12 +310,12 @@ export class SprintsService {
 
   async getSprintTasksIds(sprintIds: number[]) {
     const getSprintTasks =
-      await this.sprintTaskDatabase.findSprintTaskBySprintIds(sprintIds);
+      await this.sprintTaskDatabase.findSprintTaskBySprintIds(sprintIds, {});
 
     const taskIds: number[] = [];
     for (let index = 0; index < getSprintTasks.length; index++) {
-      const val = getSprintTasks[index];
-      val && taskIds.push(val.taskId);
+      const task = getSprintTasks[index];
+      task && taskIds.push(task.id);
     }
 
     return taskIds;
