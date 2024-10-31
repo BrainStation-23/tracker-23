@@ -120,6 +120,7 @@ export class SprintDatabase {
             },
           },
           sprintTask: true,
+          Task: true,
         },
       });
     } catch (err) {
