@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import DateRangePicker, {
+  getDate,
   getDateRangeArray,
+  SingleDatePicker,
 } from "@/components/common/datePicker";
 import {
   ReportData,
@@ -33,10 +35,10 @@ const ScrumReportSettings = ({ reportData }: Props) => {
     reportData?.config?.projectIds ? reportData?.config?.projectIds : []
   );
 
-  const [dateRange, setDateRange] = useState(
-    reportData?.config?.startDate && reportData?.config?.endDate
-      ? [reportData?.config?.startDate, reportData?.config?.endDate]
-      : getDateRangeArray(reportData?.config?.filterDateType, true)
+  const [selectedDate, setSelectedDate] = useState(
+    reportData?.config?.startDate
+      ? reportData?.config?.startDate
+      : getDate(reportData?.config?.filterDateType)
   );
 
   const getFilterDateType = (type: FilterDateType) => {
@@ -50,8 +52,8 @@ const ScrumReportSettings = ({ reportData }: Props) => {
     const res = await userAPI.updateReport(reportData.id, {
       projectIds: projects,
       sprintIds: sprint ? [sprint] : [],
-      startDate: dateRange[0],
-      endDate: dateRange[1],
+      startDate:selectedDate,
+      endDate: selectedDate,
       filterDateType,
       excludeUnworkedTasks,
       ...(extraData ?? {}),
@@ -76,12 +78,16 @@ const ScrumReportSettings = ({ reportData }: Props) => {
         saveConfig,
       }}
     >
-      <DateRangePicker
+      {/* <DateRangePicker
         selectedDate={dateRange}
         setSelectedDate={setDateRange}
         setFilterDateType={getFilterDateType}
         scrum={true}
-      />
+      /> */}
+      <SingleDatePicker selectedDate= {selectedDate} 
+      setSelectedDate={setSelectedDate }
+      setFilterDateType={getFilterDateType}
+       />
 
       <Checkbox
         checked={excludeUnworkedTasks}

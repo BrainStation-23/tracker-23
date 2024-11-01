@@ -76,7 +76,9 @@ const ReportConfigDescription = ({
             <CalendarOutlined size={20} />
           </Tooltip>
           <div className="text-sm">
-            {reportData?.config?.startDate} - {reportData?.config?.endDate}
+            {reportData?.reportType === "SCRUM_REPORT"
+              ? reportData?.config?.startDate
+              : `${reportData?.config?.startDate} - ${reportData?.config?.endDate}`}
           </div>
         </div>
       )}
