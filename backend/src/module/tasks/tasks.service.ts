@@ -249,7 +249,7 @@ export class TasksService {
       }, {});
 
       const resData = Object.values(groupedTasks);
-      return { date: currentDate, resData };
+      return { date: date?date:currentDate, resData };
     } catch (error) {
       console.log(error);
       throw new Error(error);
