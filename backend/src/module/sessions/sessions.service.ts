@@ -1343,192 +1343,105 @@ export class SessionsService {
       value: arr,
     };
   }
-
-  async usersSpentAndEstimationReportOnSprint(
-    user: User,
-    query?: SprintReportFilterDto,
-  ) {
+  
+  async usersSpentAndEstimationReportOnSprint(user: User, query?: SprintReportFilterDto) {
     const mappedTaskWithId = new Map<number, any>();
     const mappedUserWithWorkspaceId = new Map<number, any>();
     const existUserIntegration = new Map<number, any>();
     const rows: any[] = [];
-
-    const sprintIds = query?.sprintId as unknown as string;
-    const projectIds = query?.projectIds as unknown as string;
-    const userIds = query?.userId as unknown as string;
-    const arrayOfSprintIds = sprintIds?.split(',');
-    const arrayOfProjectIds = projectIds?.split(',');
-    const arrayOfUserIds = userIds?.split(',');
-    // Convert each string element to a number
-    const sprintIdsArray = arrayOfSprintIds?.map(Number);
-    const projectIdsArray = arrayOfProjectIds?.map(Number);
-    const userIdsArray = arrayOfUserIds?.map(Number);
-
+  
+    const sprintIdsArray = query?.sprintId?.split(',').map(Number);
+    const projectIdsArray = query?.projectIds?.split(',').map(Number);
+    const userIdsArray = query?.userId?.split(',').map(Number);
+  
     const projects = await this.projectDatabase.getProjectListForSprintReport(
       {
-        ...(query?.projectIds && {
-          id: {
-            in: projectIdsArray.map((id: any) => {
-              return id;
-            }),
-          },
-        }),
+        ...(query?.projectIds && { id: { in: projectIdsArray } }),
         workspaceId: user.activeWorkspaceId,
         integrated: true,
       },
       {
-        ...(query?.sprintId && {
-          id: {
-            in: sprintIdsArray.map((id: any) => {
-              return id;
-            }),
-          },
-        }),
-      },
-    );
-
-    const getUserWorkspaceList =
-      await this.sessionDatabase.getUserWorkspaceList({
-        workspaceId: user.activeWorkspaceId,
-        status: UserWorkspaceStatus.ACTIVE,
-        ...(query?.userId && { userId: { in: userIdsArray } }),
-      });
-
-    for (
-      let index = 0, len = getUserWorkspaceList.length;
-      index < len;
-      index++
-    ) {
-      mappedUserWithWorkspaceId.set(
-        getUserWorkspaceList[index].id,
-        getUserWorkspaceList[index].user,
-      );
-    }
-
-    for (const project of projects) {
-      for (let index = 0, len = project.tasks.length; index < len; index++) {
-        mappedTaskWithId.set(project.tasks[index].id, project.tasks[index]);
+        ...(query?.sprintId && { id: { in: sprintIdsArray } }),
       }
-      for (let index = 0, len = project.sprints.length; index < len; index++) {
-        const sprint = project.sprints[index];
-        const userMap = new Map<
-          number,
-          {
-            userId: number;
-            name: string;
-            picture: string;
-            estimation: any;
-            timeSpent: any;
-          }
-        >();
-
+    );
+  
+    const getUserWorkspaceList = await this.sessionDatabase.getUserWorkspaceList({
+      workspaceId: user.activeWorkspaceId,
+      status: UserWorkspaceStatus.ACTIVE,
+      ...(query?.userId && { userId: { in: userIdsArray } }),
+    });
+  
+    getUserWorkspaceList.forEach((ws) => {
+      mappedUserWithWorkspaceId.set(ws.id, ws.user);
+    });
+  
+    for (const project of projects) {
+      project.tasks.forEach((task) => mappedTaskWithId.set(task.id, task));
+  
+      for (const sprint of project.sprints) {
+        const userMap = new Map<number, any>();
+  
         if (!sprint.sprintTask.length) {
-          for (const [
-            userWorkspaceId,
-            user,
-          ] of mappedUserWithWorkspaceId.entries()) {
+          mappedUserWithWorkspaceId.forEach((user, userWorkspaceId) => {
             userMap.set(userWorkspaceId, {
               userId: user.id,
-              name: user.firstName + ' ' + user.lastName,
+              name: `${user.firstName} ${user.lastName}`,
               picture: user.picture,
               estimation: 0,
               timeSpent: 0,
             });
-          }
+          });
         }
-        for (
-          let idx = 0, sprintTasklen = sprint.sprintTask.length;
-          idx < sprintTasklen;
-          idx++
-        ) {
-          const sprintTaskId = sprint.sprintTask[idx].taskId;
-          const task = mappedTaskWithId.get(sprintTaskId);
+  
+        for (const sprintTask of sprint.sprintTask) {
+          const task = mappedTaskWithId.get(sprintTask.taskId);
           if (task) {
-            const MappedSessionTime = this.getTimeFromSessions(
-              task.sessions,
-              mappedUserWithWorkspaceId,
-            );
-            for (const [
-              userWorkspaceId,
-              user,
-            ] of mappedUserWithWorkspaceId.entries()) {
+            const MappedSessionTime = this.getTimeFromSessions(task.sessions, mappedUserWithWorkspaceId);
+  
+            mappedUserWithWorkspaceId.forEach((user, userWorkspaceId) => {
               if (!MappedSessionTime.has(userWorkspaceId)) {
-                MappedSessionTime.set(userWorkspaceId, {
-                  sessionTimeSpent: 0,
-                });
+                MappedSessionTime.set(userWorkspaceId, { sessionTimeSpent: 0 });
               }
-            }
-
-            for (const [
-              userWorkspaceId,
-              sessionTime,
-            ] of MappedSessionTime.entries()) {
-              if (!userMap.has(userWorkspaceId)) {
-                const user = mappedUserWithWorkspaceId.get(userWorkspaceId);
-                userMap.set(userWorkspaceId, {
-                  userId: user.id,
-                  name: user.firstName + ' ' + user.lastName,
-                  picture: user.picture,
-                  estimation:
-                    task?.userWorkspaceId === userWorkspaceId
-                      ? task.estimation ?? 0
-                      : 0,
-                  timeSpent: sessionTime?.sessionTimeSpent ?? 0,
-                });
-              } else {
-                const user = userMap.get(userWorkspaceId);
-                if (user) {
-                  (user.estimation +=
-                    task?.userWorkspaceId === userWorkspaceId
-                      ? task.estimation ?? 0
-                      : 0),
-                    (user.timeSpent += sessionTime?.sessionTimeSpent ?? 0);
-                }
-              }
-            }
+  
+              const sessionTime = MappedSessionTime.get(userWorkspaceId);
+              const existingUser = userMap.get(userWorkspaceId) || {
+                userId: user.id,
+                name: `${user.firstName} ${user.lastName}`,
+                picture: user.picture,
+                estimation: 0,
+                timeSpent: 0,
+              };
+  
+              existingUser.estimation += task.userWorkspaceId === userWorkspaceId ? task.estimation ?? 0 : 0;
+              existingUser.timeSpent += sessionTime?.sessionTimeSpent ?? 0;
+              userMap.set(userWorkspaceId, existingUser);
+            });
           }
         }
-
-        for (const [userWorkspaceId, user] of userMap.entries()) {
-          if (user.timeSpent) {
-            userMap.set(userWorkspaceId, {
-              ...user,
-              estimation: Number(user.estimation.toFixed(2)),
-              timeSpent: Number(user.timeSpent.toFixed(2)),
-            });
-
-            if (
-              query?.projectIds &&
-              !existUserIntegration.has(userWorkspaceId)
-            ) {
+  
+        userMap.forEach(async (user, userWorkspaceId) => {
+          if (user.timeSpent || user.estimation) {
+            user.estimation = Number(user.estimation.toFixed(2));
+            user.timeSpent = Number(user.timeSpent.toFixed(2));
+            if (query?.projectIds && !existUserIntegration.has(userWorkspaceId)) {
               existUserIntegration.set(userWorkspaceId, user);
             }
-          } else if (user.timeSpent === 0 && user.estimation === 0) {
-            const userIntegration =
-              project.integrationId &&
-              (await this.userIntegrationDatabase.getUserIntegration({
-                UserIntegrationIdentifier: {
-                  integrationId: project.integrationId,
-                  userWorkspaceId,
-                },
-              }));
+          } else {
+            const userIntegration = project.integrationId
+              ? await this.userIntegrationDatabase.getUserIntegration({
+                  UserIntegrationIdentifier: { integrationId: project.integrationId, userWorkspaceId },
+                })
+              : null;
             if (!userIntegration) {
-              userMap.set(userWorkspaceId, {
-                ...user,
-                estimation: null,
-                timeSpent: null,
-              });
+              user.estimation = null;
+              user.timeSpent = null;
               query?.projectIds && userMap.delete(userWorkspaceId);
-            } else {
-              if (
-                query?.projectIds &&
-                !existUserIntegration.has(userWorkspaceId)
-              ) {
-                existUserIntegration.set(userWorkspaceId, user);
-              }
+            } else if (query?.projectIds && !existUserIntegration.has(userWorkspaceId)) {
+              existUserIntegration.set(userWorkspaceId, user);
             }
           }
-        }
+        });
+  
         rows.push({
           sprintId: sprint.id,
           name: sprint.name,
@@ -1538,33 +1451,21 @@ export class SessionsService {
         });
       }
     }
-
-    const columns = query?.projectIds
-      ? [...existUserIntegration.values()].map((user: any) => {
-          return {
-            userId: user.userId,
-            name: user.name,
-            picture: user.picture,
-          };
-        })
-      : [...mappedUserWithWorkspaceId.values()].map((user: any) => {
-          return {
-            userId: user.id,
-            name: user.lastName
-              ? user.firstName + ' ' + user.lastName
-              : user.firstName,
-            picture: user.picture,
-          };
-        });
-
-    const sortedColumns = columns.sort((a, b) => a.userId - b.userId);
-    const sortedRows = rows.sort((a, b) => b.startDate - a.startDate);
+  
+    const columns = (query?.projectIds ? [...existUserIntegration.values()] : [...mappedUserWithWorkspaceId.values()]).map(
+      (user: any) => ({
+        userId: user.userId || user.id,
+        name: user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName,
+        picture: user.picture,
+      })
+    );
+  
     return {
-      columns: sortedColumns,
-      rows: sortedRows,
+      columns: columns.sort((a, b) => a.userId - b.userId),
+      rows: rows.sort((a, b) => b.startDate - a.startDate),
     };
   }
-
+  
   getTimeFromSessions(
     sessions: any[],
     mappedUserWithWorkspaceId: Map<number, any>,
