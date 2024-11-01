@@ -1375,6 +1375,13 @@ export class SessionsService {
       mappedUserWithWorkspaceId.set(ws.id, ws.user);
     });
   
+    const allUserWorkspaceIds = getUserWorkspaceList.map((ws) => ws.id);
+    const userIntegrations = await this.userIntegrationDatabase.getUserIntegrationsForWorkspaceIds(allUserWorkspaceIds);
+  
+    const userIntegrationMap = new Map(
+      userIntegrations.map((integration) => [integration.userWorkspaceId, integration])
+    );
+  
     for (const project of projects) {
       project.tasks.forEach((task) => mappedTaskWithId.set(task.id, task));
   
@@ -1419,19 +1426,16 @@ export class SessionsService {
           }
         }
   
-        userMap.forEach(async (user, userWorkspaceId) => {
-          if (user.timeSpent || user.estimation) {
+        userMap.forEach((user, userWorkspaceId) => {
+          const hasTimeOrEstimation = user.timeSpent || user.estimation;
+          if (hasTimeOrEstimation) {
             user.estimation = Number(user.estimation.toFixed(2));
             user.timeSpent = Number(user.timeSpent.toFixed(2));
             if (query?.projectIds && !existUserIntegration.has(userWorkspaceId)) {
               existUserIntegration.set(userWorkspaceId, user);
             }
           } else {
-            const userIntegration = project.integrationId
-              ? await this.userIntegrationDatabase.getUserIntegration({
-                  UserIntegrationIdentifier: { integrationId: project.integrationId, userWorkspaceId },
-                })
-              : null;
+            const userIntegration = userIntegrationMap.get(userWorkspaceId);
             if (!userIntegration) {
               user.estimation = null;
               user.timeSpent = null;
@@ -1465,6 +1469,7 @@ export class SessionsService {
       rows: rows.sort((a, b) => b.startDate - a.startDate),
     };
   }
+  
   
   getTimeFromSessions(
     sessions: any[],
