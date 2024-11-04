@@ -5,7 +5,6 @@ import * as dayjs from 'dayjs';
 import { Response } from 'express';
 import { TasksDatabase } from 'src/database/tasks';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
-import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import {
   Integration,
@@ -25,7 +24,6 @@ import { JiraClientService } from '../helper/client';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { MyGateway } from '../notifications/socketGateway';
 import { PrismaService } from '../prisma/prisma.service';
-import { SprintsService } from '../sprints/sprints.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import {
   CreateTaskDto,
@@ -45,17 +43,19 @@ import {
 } from './tasks.axios';
 import { startOfWeek, endOfWeek } from 'date-fns';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
-import { doesTodayTask } from 'src/utils/helper/helper';
+import {
+  convertToISO,
+  doesTodayTask,
+  getYesterday,
+} from 'src/utils/helper/helper';
 
 @Injectable()
 export class TasksService {
   constructor(
     private prisma: PrismaService,
-    private httpService: HttpService,
     private integrationsService: IntegrationsService,
     private myGateway: MyGateway,
     private workspacesService: WorkspacesService,
-    private sprintService: SprintsService,
     private tasksDatabase: TasksDatabase,
     private jiraApiCalls: JiraApiCalls,
     private jiraClient: JiraClientService,
@@ -66,36 +66,72 @@ export class TasksService {
   async getTasksByWeek(
     user: User,
     projectIds?: string[] | string,
-    date?: Date | string,
+    date?: string,
   ) {
     try {
-      let currentDate: Date;
-
-      if (typeof date === 'string' && /^\d{2}-\d{2}-\d{4}$/.test(date)) {
-        const [month, day, year] = date.split('-');
-        currentDate = new Date(`${year}-${month}-${day}T00:00:00Z`);
-      } else if (typeof date === 'string') {
-        currentDate = new Date(date);
-      } else if (date instanceof Date && !isNaN(date.getTime())) {
-        currentDate = date;
-      } else {
-        currentDate = new Date();
-      }
-      const startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
-      const endDate = endOfWeek(currentDate, { weekStartsOn: 1 });
-      const currDateNum = new Date(currentDate).getTime();
-      const oneDayMilliseconds = 3600 * 1000 * 24;
-      const startOfcurrentDate = new Date(currentDate.setUTCHours(0, 0, 0, 0));
-      const startOfYesterday = new Date(startOfcurrentDate);
-      startOfYesterday.setDate(startOfcurrentDate.getDate() - 1);
-      const endOfYesterday = new Date(startOfcurrentDate);
-
-      // Fetch tasks within the date range, grouped by user
       let numericProjectIds: number[] = [];
+      const currentDate: Date = date ? convertToISO(date) : convertToISO();
+      const yesterdayDate: Date = getYesterday(currentDate);
+      const firstDayOfWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
+      const lastDayOfWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
+      const startOfcurrentDate = new Date(
+        Date.UTC(
+          currentDate.getUTCFullYear(),
+          currentDate.getUTCMonth(),
+          currentDate.getUTCDate(),
+          0,
+          0,
+          0,
+          0,
+        ),
+      );
+      const endOfcurrentDate = new Date(
+        Date.UTC(
+          currentDate.getUTCFullYear(),
+          currentDate.getUTCMonth(),
+          currentDate.getUTCDate(),
+          23,
+          59,
+          59,
+          999,
+        ),
+      );
+      const startOfYesterdayDate = new Date(
+        Date.UTC(
+          yesterdayDate.getUTCFullYear(),
+          yesterdayDate.getUTCMonth(),
+          yesterdayDate.getUTCDate(),
+          0,
+          0,
+          0,
+          0,
+        ),
+      );
+      const endOfYesterdayDate = new Date(
+        Date.UTC(
+          yesterdayDate.getUTCFullYear(),
+          yesterdayDate.getUTCMonth(),
+          yesterdayDate.getUTCDate(),
+          23,
+          59,
+          59,
+          999,
+        ),
+      );
+
       if (projectIds && typeof projectIds === 'string') {
         numericProjectIds = projectIds.split(',').map((id) => Number(id));
-      } else if (Array.isArray(projectIds)) {
+      } else if (Array.isArray(projectIds) && projectIds.length != 0) {
         numericProjectIds = projectIds.map((id) => Number(id));
+      } else {
+        const activeWorkspaceProjects = await this.prisma.project.findMany({
+          where: {
+            workspaceId: user?.activeWorkspaceId ?? undefined,
+          },
+        });
+        numericProjectIds = activeWorkspaceProjects.map((project) =>
+          Number(project.id),
+        );
       }
 
       const activeUsers = await this.prisma.userIntegration.findMany({
@@ -117,44 +153,39 @@ export class TasksService {
         .map((user) => user.jiraAccountId)
         .filter((id): id is string => id !== null);
 
-      let tasks;
-      if (projectIds && projectIds.length > 0) {
-        tasks = await this.prisma.task.findMany({
-          where: {
-            projectId: {
-              in: numericProjectIds,
-            },
-            assigneeId: {
-              in: activeUsersId,
-            },
-            OR: [
-              {
-                createdAt: {
-                  gte: startDate,
-                  lte: endDate,
-                },
-              },
-              {
-                updatedAt: {
-                  gte: startDate,
-                  lte: endDate,
-                },
-              },
-            ],
+      const tasks = await this.prisma.task.findMany({
+        where: {
+          projectId: {
+            in: numericProjectIds,
           },
+          assigneeId: {
+            in: activeUsersId,
+          },
+          OR: [
+            {
+              createdAt: {
+                gte: firstDayOfWeek,
+                lte: lastDayOfWeek,
+              },
+            },
+            {
+              updatedAt: {
+                gte: firstDayOfWeek,
+                lte: lastDayOfWeek,
+              },
+            },
+          ],
+        },
 
-          include: {
-            userWorkspace: {
-              include: {
-                user: true,
-              },
+        include: {
+          userWorkspace: {
+            include: {
+              user: true,
             },
-            sessions: true,
           },
-        });
-      } else {
-        return { date: currentDate, resData: [] };
-      }
+          sessions: true,
+        },
+      });
 
       // Group tasks by user
       const groupedTasks = tasks.reduce<
@@ -201,19 +232,25 @@ export class TasksService {
           }
 
           // find today's and yesterday's task
-          const isTodayTask = doesTodayTask(currDateNum, task);
-          const isYesterDayTask = doesTodayTask(
-            currDateNum - oneDayMilliseconds,
+          const isTodayTask = doesTodayTask(
+            startOfcurrentDate,
+            endOfcurrentDate,
             task,
           );
+          const isYesterDayTask = doesTodayTask(
+            startOfYesterdayDate,
+            endOfYesterdayDate,
+            task,
+          );
+
           const sessions = task.sessions || [];
           const taskTotalSessionTime = sessions.reduce((total, session) => {
             if (session.startTime && session.endTime) {
-              const startTime = new Date(session.startTime);
-              const endTime = new Date(session.endTime);
+              const sessionStartTime = new Date(session.startTime);
+              const sessionEndTime = new Date(session.endTime);
               if (
-                startTime >= startOfYesterday &&
-                endTime <= endOfYesterday &&
+                sessionStartTime >= startOfYesterdayDate &&
+                sessionEndTime <= endOfYesterdayDate &&
                 assigneeId === session.authorId
               ) {
                 const sessionDuration =
@@ -225,9 +262,10 @@ export class TasksService {
             }
             return total;
           }, 0);
-
           const roundedNum = parseFloat(taskTotalSessionTime.toFixed(2));
           roundedNum % 1 === 0 ? Math.floor(roundedNum) : roundedNum;
+          console.log(roundedNum);
+
           const tmpTask = {
             ...task,
             spentHours: roundedNum,
@@ -243,7 +281,7 @@ export class TasksService {
       }, {});
 
       const resData = Object.values(groupedTasks);
-      return { date: currentDate, resData };
+      return { date: date ? date : currentDate, resData };
     } catch (error) {
       console.log(error);
       throw new Error(error);

@@ -5,6 +5,23 @@ import { PrismaService } from 'src/module/prisma/prisma.service';
 export class UserIntegrationDatabase {
   constructor(private prisma: PrismaService) {}
 
+  async getUserIntegrationsForWorkspaceIds(userWorkspaceIds: number[]) {
+    try {
+      return await this.prisma.userIntegration.findMany({
+        where: {
+          userWorkspaceId: {
+            in: userWorkspaceIds,
+          },
+        },
+        include: { integration: true },
+      });
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  }
+  
+
   async getUserIntegrationListWithIntegrations(filter: Record<string, any>) {
     try {
       return await this.prisma.userIntegration.findMany({

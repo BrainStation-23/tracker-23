@@ -26,6 +26,7 @@ import { UserIntegrationDatabase } from 'src/database/userIntegrations';
 import * as _ from 'lodash';
 import * as dayjs from 'dayjs';
 import { parse } from 'date-fns';
+
 @Injectable()
 export class SprintsService {
   constructor(
@@ -363,51 +364,41 @@ export class SprintsService {
     }
 
     const mappedUserWithWorkspaceId = new Map<number, any>();
-    let tasks: any;
-    let sprint;
-    let numericProjectIds: number[] = [];
-    const startDate = parse(
+    let sprintTasks;
+    let sprintData;
+    let numericSprintProjectIds: number[] = [];
+    const parsedStartDate = parse(
       query.startDate as unknown as string,
       'dd MMM yyyy',
       new Date(),
     );
-    const endDate = parse(
+    const parsedEndDate = parse(
       query.endDate as unknown as string,
       'dd MMM yyyy',
       new Date(),
     );
 
     if (query.sprintId) {
-      sprint = await this.sprintDatabase.getSprintById({
-        id: Number(query.sprintId),
+      sprintData = await this.sprintDatabase.getSprintById({
+        id: +(query.sprintId),
       });
-      if (!sprint) {
+      if (!sprintData) {
         throw new APIException('Sprint not found!', HttpStatus.BAD_REQUEST);
       }
 
-      const taskIds: number[] = [];
-      for (
-        let index = 0, len = sprint?.sprintTask.length;
-        index < len;
-        index++
-      ) {
-        taskIds.push(sprint?.sprintTask[index].taskId);
-      }
-      tasks = await this.tasksDatabase.getTasks({
-        id: { in: taskIds },
-      });
+      sprintTasks = sprintData.Task;
     } else {
       if (Array.isArray(query.projectIds)) {
-        numericProjectIds = query.projectIds.map((id) => Number(id));
+        numericSprintProjectIds = query.projectIds.map((id) => Number(id));
       } else if (typeof query.projectIds === 'string') {
-        numericProjectIds = query.projectIds
+        numericSprintProjectIds = query.projectIds
           .split(',')
           .map((id: any) => Number(id));
       }
-      tasks = await this.tasksDatabase.fetchTasksByDateRange(
-        numericProjectIds,
-        this.adjustDate(startDate, -1),
-        this.adjustDate(endDate, +1, true),
+      sprintTasks = await this.tasksDatabase.fetchTasksByDateRange(
+        numericSprintProjectIds,
+        this.adjustDate(parsedStartDate, -1),
+        this.adjustDate(parsedEndDate, +1, true),
       );
     }
 
@@ -421,32 +412,7 @@ export class SprintsService {
       index < len;
       index++
     ) {
-      // let userIntegration;
-      // if (sprint?.project.integrationId) {
-      //   userIntegration = await this.userIntegrationDatabase.getUserIntegration(
-      //     {
-      //       UserIntegrationIdentifier: {
-      //         integrationId: sprint.project.integrationId,
-      //         userWorkspaceId: getUserWorkspaceList[index].id,
-      //       },
-      //     },
-      //   );
-      // } else {
-      //   const project = await this.projectDatabase.getProjectById(
-      //     numericProjectIds[0],
-      //   );
-      //   userIntegration =
-      //     project?.integrationId &&
-      //     (await this.userIntegrationDatabase.getUserIntegration({
-      //       UserIntegrationIdentifier: {
-      //         integrationId: project?.integrationId,
-      //         userWorkspaceId: getUserWorkspaceList[index].id,
-      //       },
-      //     }));
-      // }
-
       const user = getUserWorkspaceList[index].user;
-      // if (userIntegration) {
       mappedUserWithWorkspaceId.set(getUserWorkspaceList[index].id, {
         userId: user.id,
         name: user.lastName
@@ -458,15 +424,10 @@ export class SprintsService {
         yesterdayTasks: [],
         todayTasks: [],
       });
-      // }
     }
-    console.log(
-      '🚀 ~ SprintsService ~ sprintView ~ mappedUserWithWorkspaceId:',
-      mappedUserWithWorkspaceId,
-    );
 
-    const data: any[] = [];
-    let done = 0;
+    const responseData: any[] = [];
+    let doneTasksNum = 0;
     let flag = true;
     const oneDayMilliseconds = 3600 * 1000 * 24;
 
@@ -475,7 +436,7 @@ export class SprintsService {
       idx <= new Date(query.endDate).getTime();
       idx += oneDayMilliseconds
     ) {
-      for (const task of tasks) {
+      for (const task of sprintTasks) {
         if (
           task.userWorkspaceId &&
           mappedUserWithWorkspaceId.has(task.userWorkspaceId)
@@ -515,7 +476,7 @@ export class SprintsService {
           }
         }
         if (task.status === 'Done' && flag) {
-          done += 1;
+          doneTasksNum += 1;
         }
       }
       flag = false;
@@ -530,20 +491,20 @@ export class SprintsService {
         user.yesterdayTasks = [];
         user.devProgress = { total: 0, done: 0 };
       });
-      data.push(formattedData);
+      responseData.push(formattedData);
     }
 
-    if (sprint) {
+    if (sprintData) {
       const sprintInfo = {
-        name: sprint.name,
-        projectName: sprint.project.projectName,
-        total: sprint.sprintTask.length,
-        done,
+        name: sprintData.name,
+        projectName: sprintData.project.projectName,
+        total: sprintData.sprintTask.length,
+        done: doneTasksNum,
       };
-      return { data, sprintInfo };
+      return { data:responseData, sprintInfo };
     } else {
       const sprintInfo = null;
-      return { data, sprintInfo };
+      return { data:responseData, sprintInfo };
     }
   }
 
