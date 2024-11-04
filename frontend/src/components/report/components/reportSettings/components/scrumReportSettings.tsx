@@ -78,12 +78,6 @@ const ScrumReportSettings = ({ reportData }: Props) => {
         saveConfig,
       }}
     >
-      {/* <DateRangePicker
-        selectedDate={dateRange}
-        setSelectedDate={setDateRange}
-        setFilterDateType={getFilterDateType}
-        scrum={true}
-      /> */}
       <SingleDatePicker selectedDate= {selectedDate} 
       setSelectedDate={setSelectedDate }
       setFilterDateType={getFilterDateType}
