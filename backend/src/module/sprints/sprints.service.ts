@@ -552,7 +552,9 @@ export class SprintsService {
       const columns: any[] = [];
       const fixedVal = 0;
       const mappedUserWDate = new Map<number, any[]>();
-      const tasks = await this.getSprintTasks(Number(query.sprintId));
+      const tasks = await this.sprintTaskDatabase.findSprintTaskBySprintIds([
+        Number(query.sprintId),
+      ]);
       const mappedUserWithWorkspaceId = await this.mapUserWorkspaces(
         query,
         user,

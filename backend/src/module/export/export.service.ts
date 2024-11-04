@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Role, Task, User } from '@prisma/client';
+import { IntegrationType, Role, Task, User } from '@prisma/client';
 import * as tmp from 'tmp';
 import { Workbook } from 'exceljs';
 import { Response } from 'express';
@@ -24,7 +24,7 @@ import {
   SprintViewReqBodyDto,
 } from '../sprints/dto/sprintView.dto';
 import * as dayjs from 'dayjs';
-import { Key } from 'readline';
+import { SprintTaskDatabase } from 'src/database/sprintTasks';
 
 @Injectable()
 export class ExportService {
@@ -34,6 +34,7 @@ export class ExportService {
     private exportDatabase: ExportDatabase,
     private sessionsService: SessionsService,
     private taskService: TasksService,
+    private sprintTaskDatabase: SprintTaskDatabase,
   ) {}
 
   async exportToExcel(
@@ -449,7 +450,7 @@ export class ExportService {
       projectIds && projectIds.split(',').map((item) => Number(item.trim()));
     const types = query.types as unknown as string;
 
-    const currentUserWorkspace =
+    const currentUserWorkspace: any =
       user?.activeWorkspaceId &&
       (await this.userWorkspaceDatabase.getSingleUserWorkspace({
         userId: user.id,
@@ -487,18 +488,42 @@ export class ExportService {
       endDate = new Date(endDate.getTime() + oneDay);
     }
 
-    if (sprintIdArray && sprintIdArray.length) {
-      const taskIds = await this.sprintService.getSprintTasksIds(sprintIdArray);
+    const queryFilter: any = {};
 
-      return await this.exportDatabase.getTasksWithDetails({
-        userWorkspaceIds,
-        currentUserWorkspace,
-        taskIds,
-        projectIdArray,
-        priority1,
-        status1,
-        text,
-      });
+    if (text) {
+      queryFilter.OR = [
+        {
+          title: {
+            contains: text.replace(/[+\-]/g, (match) => `\\${match}`),
+            mode: 'insensitive',
+          },
+        },
+        {
+          key: {
+            contains: text.replace(/[+\-]/g, (match) => `\\${match}`),
+          },
+        },
+      ];
+    }
+
+    if (sprintIdArray && sprintIdArray.length) {
+      const query = {
+        userWorkspaceId:
+          userWorkspaceIds.length > 0
+            ? { in: userWorkspaceIds }
+            : currentUserWorkspace?.id,
+        source: IntegrationType.JIRA,
+        ...(projectIdArray && {
+          projectId: { in: projectIdArray.map((id) => Number(id)) },
+        }),
+        ...(priority1 && { priority: { in: priority1 } }),
+        ...(status1 && { status: { in: status1 } }),
+        ...queryFilter,
+      };
+      return await this.sprintTaskDatabase.findSprintTaskBySprintIds(
+        sprintIdArray,
+        query,
+      );
     }
 
     return await this.exportDatabase.getTasksWithinTimeRangeWithDetails({
