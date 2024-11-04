@@ -684,9 +684,6 @@ export class ExportService {
     const worksheet = workbook.addWorksheet('Sprint View Sheet');
     const { total = 0, done = 0 } = sprintInfo || {};
     const sprintProgress = Number((total * 100) / done).toFixed(2);
-    // const sprintProgress = Number(
-    //   (sprintInfo.total * 100) / sprintInfo.done,
-    // ).toFixed(2);
     const topRow = worksheet.addRow([
       '',
       '',
