@@ -35,6 +35,7 @@ import * as dayjs from 'dayjs';
 import { SprintReportFilterDto } from './dto/sprint-report.dto';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
 import { JiraClientService } from '../helper/client';
+import { SprintDatabase } from 'src/database/sprints';
 
 @Injectable()
 export class SessionsService {
@@ -47,6 +48,7 @@ export class SessionsService {
     private projectDatabase: ProjectDatabase,
     private userIntegrationDatabase: UserIntegrationDatabase,
     private tasksDatabase: TasksDatabase,
+    private sprintDatabase: SprintDatabase,
     private jiraApiCalls: JiraApiCalls,
     private jiraClient: JiraClientService,
   ) {}
@@ -1348,7 +1350,7 @@ export class SessionsService {
     user: User,
     query?: SprintReportFilterDto,
   ) {
-    const mappedTaskWithId = new Map<number, any>();
+    // const mappedTaskWithId = new Map<number, any>();
     const mappedUserWithWorkspaceId = new Map<number, any>();
     const existUserIntegration = new Map<number, any>();
     const rows: any[] = [];
@@ -1367,7 +1369,6 @@ export class SessionsService {
         ...(query?.sprintId && { id: { in: sprintIdsArray } }),
       },
     );
-
     const getUserWorkspaceList =
       await this.sessionDatabase.getUserWorkspaceList({
         workspaceId: user.activeWorkspaceId,
@@ -1375,11 +1376,12 @@ export class SessionsService {
         ...(query?.userId && { userId: { in: userIdsArray } }),
       });
 
+    const allUserWorkspaceIds: number[] = [];
     getUserWorkspaceList.forEach((ws) => {
       mappedUserWithWorkspaceId.set(ws.id, ws.user);
+      allUserWorkspaceIds.push(ws.id);
     });
 
-    const allUserWorkspaceIds = getUserWorkspaceList.map((ws) => ws.id);
     const userIntegrations =
       await this.userIntegrationDatabase.getUserIntegrationsForWorkspaceIds(
         allUserWorkspaceIds,
@@ -1393,12 +1395,10 @@ export class SessionsService {
     );
 
     for (const project of projects) {
-      project.tasks.forEach((task) => mappedTaskWithId.set(task.id, task));
-
       for (const sprint of project.sprints) {
         const userMap = new Map<number, any>();
 
-        if (!sprint.sprintTask.length) {
+        if (!sprint.Task.length) {
           mappedUserWithWorkspaceId.forEach((user, userWorkspaceId) => {
             userMap.set(userWorkspaceId, {
               userId: user.id,
@@ -1410,11 +1410,11 @@ export class SessionsService {
           });
         }
 
-        for (const sprintTask of sprint.sprintTask) {
-          const task = mappedTaskWithId.get(sprintTask.taskId);
+        for (const task of sprint.Task) {
+          // const task = mappedTaskWithId.get(sprintTask.id);
           if (task) {
             const MappedSessionTime = this.getTimeFromSessions(
-              task.sessions,
+              task?.sessions,
               mappedUserWithWorkspaceId,
             );
 
@@ -1506,8 +1506,8 @@ export class SessionsService {
     >();
     for (const session of sessions) {
       let sessionTimeSpent = 0;
-      if (session.userWorkspace) {
-        const user = mappedUserWithWorkspaceId.get(session.userWorkspace.id);
+      if (session.userWorkspaceId) {
+        const user = mappedUserWithWorkspaceId.get(session.userWorkspaceId);
         if (user) {
           const start = new Date(session.startTime);
           let end = new Date(session.endTime);
@@ -1516,13 +1516,13 @@ export class SessionsService {
           }
           sessionTimeSpent =
             (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-          if (!mappedUserWorkspaceWithTimeSpent.has(session.userWorkspace.id)) {
-            mappedUserWorkspaceWithTimeSpent.set(session.userWorkspace.id, {
+          if (!mappedUserWorkspaceWithTimeSpent.has(session.userWorkspaceId)) {
+            mappedUserWorkspaceWithTimeSpent.set(session.userWorkspaceId, {
               sessionTimeSpent,
             });
           } else {
             const getUserWorkspace = mappedUserWorkspaceWithTimeSpent.get(
-              session.userWorkspace.id,
+              session.userWorkspaceId,
             );
             if (getUserWorkspace) {
               getUserWorkspace.sessionTimeSpent += sessionTimeSpent ?? 0;

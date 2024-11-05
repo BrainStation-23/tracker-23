@@ -397,8 +397,8 @@ export class SprintsService {
       }
       sprintTasks = await this.tasksDatabase.fetchTasksByDateRange(
         numericSprintProjectIds,
-        this.adjustDate(parsedStartDate, -1),
-        this.adjustDate(parsedEndDate, +1, true),
+        this.adjustDate(parsedStartDate, -1), //send one day before starting
+        this.adjustDate(parsedEndDate, +1, true), // send one day after ending
       );
     }
 
@@ -498,7 +498,7 @@ export class SprintsService {
       const sprintInfo = {
         name: sprintData.name,
         projectName: sprintData.project.projectName,
-        total: sprintData.sprintTask.length,
+        total: sprintData.Task.length,
         done: doneTasksNum,
       };
       return { data: responseData, sprintInfo };
@@ -666,19 +666,7 @@ export class SprintsService {
   }
 
   async getSprintTasks(id: number) {
-    const sprint = await this.sprintDatabase.getSprintById({
-      id,
-    });
-    if (!sprint) {
-      throw new APIException('Sprint not found!', HttpStatus.BAD_REQUEST);
-    }
-
-    const taskIds: number[] = sprint.sprintTask.map(
-      (sprintTask) => sprintTask.taskId,
-    );
-    return await this.tasksDatabase.getTasks({
-      id: { in: taskIds },
-    });
+    return await this.sprintTaskDatabase.findSprintTaskBySprintIds([id]);
   }
 
   private updateUserData(
