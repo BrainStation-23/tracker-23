@@ -19,6 +19,16 @@ export const fetchProjectStatusList = async (params: {
   }
 };
 
+export const getCustomSprintField = async (siteId: string, headers: any) => {
+  const fieldsUrl = `https://api.atlassian.com/ex/jira/${siteId}/rest/api/3/field`;
+  const response = await axios.get(fieldsUrl, {
+    headers,
+  });
+  for (const field of response?.data) {
+    if (field.name == 'Sprint') return field.key;
+  }
+};
+
 export const fetchTasksByProject = async (params: {
   siteId: string;
   projectId: number;
@@ -30,8 +40,8 @@ export const fetchTasksByProject = async (params: {
   try {
     const url = `https://api.atlassian.com/ex/jira/${siteId}/rest/api/3/search`;
     const jql = `project=${projectId} AND created >= startOfMonth(-${syncTime}M) AND created <= endOfDay()`;
-    const fields =
-      'summary, assignee,timeoriginalestimate,project, comment,parent, created, updated,status,priority';
+    const sprintCustomField = await getCustomSprintField(siteId, headers);
+    const fields = `summary, assignee,timeoriginalestimate,project, comment,parent, created, updated, status, priority, ${sprintCustomField}`;
     const response = await axios.get(url, {
       headers,
       params: {

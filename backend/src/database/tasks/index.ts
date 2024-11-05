@@ -1,12 +1,85 @@
 import { Injectable } from '@nestjs/common';
 import { IntegrationType, Project, SessionStatus, User } from '@prisma/client';
 import { PrismaService } from 'src/module/prisma/prisma.service';
-import { CreateTaskDto } from 'src/module/tasks/dto';
+import { CreateTaskDto, StatusEnum } from 'src/module/tasks/dto';
 import { GetActiveSprintTasks } from 'src/module/sprints/dto/get.active.sprint.tasks.filter.dto';
 
 @Injectable()
 export class TasksDatabase {
   constructor(private prisma: PrismaService) {}
+
+  async getTasksForScrumReport(
+    numericProjectIds: number[],
+    activeUserWorkspaceIds: number[],
+    firstDayOfWeek: Date,
+    lastDayOfWeek: Date,
+  ) {
+    try {
+      return await this.prisma.task.findMany({
+        where: {
+          projectId: {
+            in: numericProjectIds,
+          },
+          userWorkspaceId: {
+            in: activeUserWorkspaceIds,
+          },
+          OR: [
+            {
+              sessions: {
+                some: {
+                  OR: [
+                    {
+                      startTime: {
+                        gte: firstDayOfWeek,
+                        lte: lastDayOfWeek,
+                      },
+                    },
+                    {
+                      endTime: {
+                        gte: firstDayOfWeek,
+                        lte: lastDayOfWeek,
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              OR: [
+                {
+                  createdAt: {
+                    gte: firstDayOfWeek,
+                    lte: lastDayOfWeek,
+                  },
+                },
+                {
+                  updatedAt: {
+                    gte: firstDayOfWeek,
+                    lte: lastDayOfWeek,
+                  },
+                },
+              ],
+            },
+            // {
+            //   statusCategoryName: StatusEnum.IN_PROGRESS,
+            // },
+          ],
+        },
+
+        include: {
+          userWorkspace: {
+            include: {
+              user: true,
+            },
+          },
+          sessions: true,
+        },
+      });
+    } catch (e) {
+      console.log('🚀 ~ TasksDatabase ~ e:', e);
+      return [];
+    }
+  }
 
   async getSprintTasks(
     userWorkspaceId: number,

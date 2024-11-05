@@ -167,11 +167,11 @@ export class ProjectsService {
           project,
           updatedUserIntegration,
         ),
-        await this.sprintService.createSprintAndTask(
-          user,
-          project,
-          updatedUserIntegration,
-        ),
+        // await this.sprintService.createSprintAndTask(
+        //   user,
+        //   project,
+        //   updatedUserIntegration,
+        // ),
         await this.tasksService.updateProjectIntegrationStatus(projId),
         res && (await this.tasksService.syncCall(StatusEnum.DONE, user)),
         await this.tasksService.sendImportedNotification(

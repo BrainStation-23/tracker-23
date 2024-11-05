@@ -1,4 +1,4 @@
-import * as dayjs from 'dayjs';
+import { StatusEnum } from 'src/module/tasks/dto';
 
 export function formatSpentHour(totalHours: number): string {
   const hours = Math.floor(totalHours);
@@ -13,25 +13,64 @@ export function formatSpentHour(totalHours: number): string {
   return [hourPart, minutePart].filter(Boolean).join(' ').trim();
 }
 
-export function doesTodayTask(time: number, task: any) {
-  const sessions = task?.sessions;
-  const parsedTime = dayjs(new Date(time));
-  const startTime = parsedTime.startOf('day').valueOf();
-  const endTime = parsedTime.endOf('day').valueOf();
+export function convertToISO(dateString?: string): Date {
+  let date: Date;
+
+  if (dateString) {
+    const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
+
+    if (isoRegex.test(dateString)) {
+      date = new Date(dateString);
+    } else {
+      const [month, day, year] = dateString.split('-').map(Number);
+      date = new Date(Date.UTC(year, month - 1, day, 6, 1));
+    }
+  } else {
+    date = new Date();
+  }
+
+  return date;
+}
+
+export function getYesterday(date: Date): Date {
+  const yesterday = new Date(date);
+  yesterday.setDate(yesterday.getDate() - 1);
+  return yesterday;
+}
+
+export function doesTodayTask(
+  startTime: Date,
+  endTime: Date,
+  task: any,
+  today = false,
+): boolean {
+  if (today && task.statusCategoryName === StatusEnum.IN_PROGRESS) return true;
+
+  const taskSessions = task.sessions || [];
+  const taskUpdatedAt = new Date(
+    task.jiraUpdatedAt ?? task.updatedAt,
+  ).getTime();
+
   if (
-    new Date(task.jiraUpdatedAt ?? task.updatedAt).getTime() >= startTime &&
-    new Date(task.jiraUpdatedAt ?? task.updatedAt).getTime() <= endTime
+    taskUpdatedAt >= startTime.getTime() &&
+    taskUpdatedAt <= endTime.getTime()
   ) {
     return true;
   }
-  for (let index = 0, len = sessions.length; index < len; index++) {
-    const session = sessions[index];
+
+  for (const session of taskSessions) {
+    const sessionStartTime = new Date(session.startTime).getTime();
+    const sessionEndTime = new Date(session.endTime).getTime();
+
     if (
-      new Date(session.startTime).getTime() >= startTime &&
-      new Date(session.startTime).getTime() <= endTime
+      (sessionStartTime >= startTime.getTime() &&
+        sessionStartTime <= endTime.getTime()) ||
+      (sessionEndTime >= startTime.getTime() &&
+        sessionEndTime <= endTime.getTime())
     ) {
       return true;
     }
   }
+
   return false;
 }

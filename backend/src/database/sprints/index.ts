@@ -119,7 +119,25 @@ export class SprintDatabase {
               integrationId: true,
             },
           },
-          sprintTask: true,
+          // sprintTask: true,
+          Task: {
+            include: {
+              sessions: {
+                include: {
+                  userWorkspace: {
+                    select: {
+                      user: {
+                        select: {
+                          id: true,
+                          email: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       });
     } catch (err) {
