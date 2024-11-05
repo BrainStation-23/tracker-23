@@ -380,7 +380,7 @@ export class SprintsService {
 
     if (query.sprintId) {
       sprintData = await this.sprintDatabase.getSprintById({
-        id: +(query.sprintId),
+        id: +query.sprintId,
       });
       if (!sprintData) {
         throw new APIException('Sprint not found!', HttpStatus.BAD_REQUEST);
@@ -501,10 +501,10 @@ export class SprintsService {
         total: sprintData.sprintTask.length,
         done: doneTasksNum,
       };
-      return { data:responseData, sprintInfo };
+      return { data: responseData, sprintInfo };
     } else {
       const sprintInfo = null;
-      return { data:responseData, sprintInfo };
+      return { data: responseData, sprintInfo };
     }
   }
 

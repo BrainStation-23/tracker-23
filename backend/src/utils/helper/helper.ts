@@ -1,3 +1,5 @@
+import { StatusEnum } from 'src/module/tasks/dto';
+
 export function formatSpentHour(totalHours: number): string {
   const hours = Math.floor(totalHours);
   const minutes = Math.round((totalHours - hours) * 60);
@@ -36,11 +38,23 @@ export function getYesterday(date: Date): Date {
   return yesterday;
 }
 
-export function doesTodayTask(startTime: Date, endTime: Date, task: any): boolean {
-  const taskSessions = task.sessions || [];
-  const taskUpdatedAt = new Date(task.jiraUpdatedAt ?? task.updatedAt).getTime();
+export function doesTodayTask(
+  startTime: Date,
+  endTime: Date,
+  task: any,
+  today = false,
+): boolean {
+  if (today && task.statusCategoryName === StatusEnum.IN_PROGRESS) return true;
 
-  if (taskUpdatedAt >= startTime.getTime() && taskUpdatedAt <= endTime.getTime()) {
+  const taskSessions = task.sessions || [];
+  const taskUpdatedAt = new Date(
+    task.jiraUpdatedAt ?? task.updatedAt,
+  ).getTime();
+
+  if (
+    taskUpdatedAt >= startTime.getTime() &&
+    taskUpdatedAt <= endTime.getTime()
+  ) {
     return true;
   }
 
@@ -49,8 +63,10 @@ export function doesTodayTask(startTime: Date, endTime: Date, task: any): boolea
     const sessionEndTime = new Date(session.endTime).getTime();
 
     if (
-      (sessionStartTime >= startTime.getTime() && sessionStartTime <= endTime.getTime()) ||
-      (sessionEndTime >= startTime.getTime() && sessionEndTime <= endTime.getTime())
+      (sessionStartTime >= startTime.getTime() &&
+        sessionStartTime <= endTime.getTime()) ||
+      (sessionEndTime >= startTime.getTime() &&
+        sessionEndTime <= endTime.getTime())
     ) {
       return true;
     }
