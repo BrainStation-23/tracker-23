@@ -44,10 +44,13 @@ const ScrumReportComponent = ({ data, reportData }: Props) => {
       if (i==0){
         for(let j = 0; j < record.todayTasks?.length ; j++){
           estimationHours += record.todayTasks[j].estimation;
+
         }
+        estimationHours = Math.round(estimationHours * 100) / 100;
         for(let j = 0; j < record.yesterdayTasks?.length ; j++){
           spentHours += record.yesterdayTasks[j].spentHours;
         }
+        spentHours = Math.round(spentHours * 100) / 100;
       }
 
       const tableRow: any = {

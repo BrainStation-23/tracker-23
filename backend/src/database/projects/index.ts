@@ -304,7 +304,11 @@ export class ProjectDatabase {
           sprints: {
             where: query,
             include: {
-              sprintTask: true,
+              Task: {
+                include: {
+                  sessions: true,
+                },
+              },
             },
           },
           priorities: true,

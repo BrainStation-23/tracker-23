@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SprintTask } from '@prisma/client';
+import { Task } from '@prisma/client';
 import { PrismaService } from 'src/module/prisma/prisma.service';
 
 @Injectable()
@@ -31,14 +31,55 @@ export class SprintTaskDatabase {
   }
 
   async findSprintTaskBySprintIds(
-    sprintIds: any[],
-  ): Promise<SprintTask[] | []> {
+    sprintIds: number[],
+    query?: Record<string, any>,
+  ): Promise<Task[] | []> {
     try {
-      return await this.prisma.sprintTask.findMany({
+      const sprints = await this.prisma.sprint.findMany({
         where: {
-          sprintId: { in: sprintIds },
+          id: { in: sprintIds },
+        },
+        include: {
+          Task: {
+            where: query ?? {},
+            include: {
+              sessions: {
+                include: {
+                  userWorkspace: {
+                    select: {
+                      user: {
+                        select: {
+                          firstName: true,
+                          lastName: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              parentTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
+                },
+              },
+              childTask: {
+                select: {
+                  title: true,
+                  url: true,
+                  key: true,
+                },
+              },
+            },
+          },
         },
       });
+      const list = [];
+      for (const sprint of sprints) {
+        list.push(...sprint.Task);
+      }
+      return list;
     } catch (error) {
       console.log(error);
       return [];

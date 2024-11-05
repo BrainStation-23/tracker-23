@@ -27,11 +27,11 @@ export class ScrumViewReqBodyDto {
 
   @IsString()
   @IsNotEmpty()
-  startDate: Date;
+  startDate: string;
 
   @IsString()
   @IsNotEmpty()
-  endDate: Date;
+  endDate: string;
 
   // @IsBoolean()
   @IsOptional()

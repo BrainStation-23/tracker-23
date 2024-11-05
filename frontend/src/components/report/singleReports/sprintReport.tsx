@@ -45,7 +45,7 @@ const SprintReport = ({ reportData, inView }: Props) => {
       if (res) {
         // TODO: We will do some front-end filtering here to show or hide unworked tasks for now. Later, this will be done from backend.
         if (reportData?.config?.excludeUnworkedTasks) {
-          res.data.forEach((dateData, _) => {
+          res.data?.forEach((dateData, _) => {
             dateData.users.forEach((reportUser, _) => {
               const assignedTasks: SprintReportTask[] = [];
               reportUser.assignedTasks.forEach((assignedTask) => {

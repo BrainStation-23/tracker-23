@@ -26,6 +26,7 @@ import { SprintsService } from '../sprints/sprints.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { StatusEnum } from '../tasks/dto';
 import { QueuePayloadType } from '../queue/types';
+import { getCustomSprintField } from '../tasks/tasks.axios';
 
 @Injectable()
 export class WorkerService {
@@ -418,9 +419,14 @@ export class WorkerService {
     } else {
       url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search?jql=project=${project.projectId} AND ${urlParam} &maxResults=1000`;
     }
-    const fields =
-      'summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority, parent';
+    const sprintCustomField = await getCustomSprintField(
+      userIntegration.siteId!,
+      headers,
+    );
+    const fields = `summary, assignee,timeoriginalestimate,project, comment, created, updated,status,priority, parent, ${sprintCustomField}`;
     let respTasks;
+    const mappedSprint = new Map<number, any>();
+    const mappedSprintTask = new Map();
     for (let startAt = 0; startAt < 5000; startAt += 100) {
       let worklogPromises: Promise<any>[] = [];
       // let taskPromises: Promise<any>[] = [];
@@ -555,6 +561,16 @@ export class WorkerService {
         key && mappedIssues.delete(key);
       }
       for (const [integratedTaskId, integratedTask] of mappedIssues) {
+        const sprints = integratedTask[`${sprintCustomField}`];
+        if (sprints) {
+          sprints.forEach((sprint: any) => {
+            if (!mappedSprint.has(Number(sprint.id))) {
+              mappedSprintTask.set(Number(sprint.id), []);
+              mappedSprint.set(Number(Number(sprint.id)), sprint);
+            }
+            mappedSprintTask.get(Number(sprint.id)).push(integratedTaskId);
+          }); // Add each sprint, duplicates will be ignored
+        }
         const taskStatus = integratedTask.status.name;
         taskList.push({
           userWorkspaceId:
@@ -682,8 +698,80 @@ export class WorkerService {
         );
       }
     }
+    // key = jira sprint id, value = tracker23 sprint id
+    const JiraSprintIdMappedWithSprintId = await this.createSprint(
+      [...mappedSprint.values()],
+      project.id,
+    );
+
+    //bind the sprint with the task
+    for (const [jiraSprintId, sprintId] of JiraSprintIdMappedWithSprintId) {
+      const jiraTaskIds: number[] = mappedSprintTask.get(jiraSprintId);
+      await this.prisma.task.updateMany({
+        where: {
+          workspaceId: user.activeWorkspaceId!,
+          projectId: project.id,
+          integratedTaskId: { in: jiraTaskIds },
+        },
+        data: {
+          sprintId,
+        },
+      });
+    }
   }
 
+  async createSprint(sprints: any[], projectId: number) {
+    for (const sprint of sprints) {
+      await this.prisma.sprint.upsert({
+        where: {
+          sprintIdentifier: {
+            jiraSprintId: Number(sprint.id),
+            projectId: projectId,
+          },
+        },
+        create: {
+          jiraSprintId: Number(sprint.id),
+          projectId: projectId,
+          state: sprint.state,
+          name: sprint.name,
+          startDate: sprint?.startDate
+            ? new Date(sprint?.startDate)
+            : sprint?.createdDate
+            ? new Date(sprint?.createdDate)
+            : new Date(),
+          endDate: sprint?.endDate ? new Date(sprint?.endDate) : null,
+          completeDate: sprint?.completeDate
+            ? new Date(sprint?.completeDate)
+            : sprint?.endDate
+            ? new Date(sprint?.endDate)
+            : null,
+        },
+        update: {
+          state: sprint.state,
+          name: sprint.name,
+          startDate: sprint?.startDate
+            ? new Date(sprint?.startDate)
+            : sprint?.createdDate
+            ? new Date(sprint?.createdDate)
+            : new Date(),
+          endDate: sprint?.endDate ? new Date(sprint?.endDate) : null,
+          completeDate: sprint?.completeDate
+            ? new Date(sprint?.completeDate)
+            : sprint?.endDate
+            ? new Date(sprint?.endDate)
+            : null,
+        },
+      });
+    }
+    const sprintIdMappedWithJiraSprintId = new Map<number, number>();
+    const sprintList = await this.prisma.sprint.findMany({
+      where: { projectId },
+    });
+    for (const sprint of sprintList) {
+      sprintIdMappedWithJiraSprintId.set(sprint.jiraSprintId, sprint.id);
+    }
+    return sprintIdMappedWithJiraSprintId;
+  }
   private async mappingUserWorkspaceAndJiraAccountId(user: User) {
     const mappedUserWorkspaceAndJiraId = new Map<string, number>();
     const workspace =
@@ -1052,11 +1140,11 @@ export class WorkerService {
           updatedUserIntegration,
           type,
         ),
-        await this.sprintService.createSprintAndTask(
-          user,
-          project,
-          updatedUserIntegration,
-        ),
+        // await this.sprintService.createSprintAndTask(
+        //   user,
+        //   project,
+        //   updatedUserIntegration,
+        // ),
         await this.updateProjectIntegrationStatus(projId),
         await this.syncCall(StatusEnum.DONE, user),
         await this.sendImportedNotification(

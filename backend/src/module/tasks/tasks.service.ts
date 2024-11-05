@@ -5,20 +5,19 @@ import * as dayjs from 'dayjs';
 import { Response } from 'express';
 import { TasksDatabase } from 'src/database/tasks';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
-import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import {
   Integration,
   IntegrationType,
   Project,
   Role,
-  Session,
   SessionStatus,
   StatusDetail,
   Task,
   User,
   UserIntegration,
   UserWorkspace,
+  UserWorkspaceStatus,
 } from '@prisma/client';
 
 import { APIException } from '../exception/api.exception';
@@ -26,7 +25,6 @@ import { JiraClientService } from '../helper/client';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { MyGateway } from '../notifications/socketGateway';
 import { PrismaService } from '../prisma/prisma.service';
-import { SprintsService } from '../sprints/sprints.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import {
   CreateTaskDto,
@@ -39,20 +37,26 @@ import {
 import { UpdateIssuePriorityReqBodyDto } from './dto/update.issue.req.dto';
 import { QueuePayloadType } from 'src/module/queue/types';
 import { RabbitMQService } from '../queue/queue.service';
-import { fetchProjectStatusList, fetchTasksByProject } from './tasks.axios';
+import {
+  fetchProjectStatusList,
+  fetchTasksByProject,
+  getCustomSprintField,
+} from './tasks.axios';
 import { startOfWeek, endOfWeek } from 'date-fns';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
-import { doesTodayTask } from 'src/utils/helper/helper';
+import {
+  convertToISO,
+  doesTodayTask,
+  getYesterday,
+} from 'src/utils/helper/helper';
 
 @Injectable()
 export class TasksService {
   constructor(
     private prisma: PrismaService,
-    private httpService: HttpService,
     private integrationsService: IntegrationsService,
     private myGateway: MyGateway,
     private workspacesService: WorkspacesService,
-    private sprintService: SprintsService,
     private tasksDatabase: TasksDatabase,
     private jiraApiCalls: JiraApiCalls,
     private jiraClient: JiraClientService,
@@ -63,35 +67,62 @@ export class TasksService {
   async getTasksByWeek(
     user: User,
     projectIds?: string[] | string,
-    date?: Date | string,
+    date?: string,
   ) {
     try {
-      let currentDate: Date;
       let numericProjectIds: number[] = [];
+      const currentDate: Date = date ? convertToISO(date) : convertToISO();
+      const yesterdayDate: Date = getYesterday(currentDate);
+      const firstDayOfWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
+      const lastDayOfWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
+      const startOfCurrentDate = new Date(
+        Date.UTC(
+          currentDate.getUTCFullYear(),
+          currentDate.getUTCMonth(),
+          currentDate.getUTCDate(),
+          0,
+          0,
+          0,
+          0,
+        ),
+      );
+      const endOfCurrentDate = new Date(
+        Date.UTC(
+          currentDate.getUTCFullYear(),
+          currentDate.getUTCMonth(),
+          currentDate.getUTCDate(),
+          23,
+          59,
+          59,
+          999,
+        ),
+      );
+      const startOfYesterdayDate = new Date(
+        Date.UTC(
+          yesterdayDate.getUTCFullYear(),
+          yesterdayDate.getUTCMonth(),
+          yesterdayDate.getUTCDate(),
+          0,
+          0,
+          0,
+          0,
+        ),
+      );
+      const endOfYesterdayDate = new Date(
+        Date.UTC(
+          yesterdayDate.getUTCFullYear(),
+          yesterdayDate.getUTCMonth(),
+          yesterdayDate.getUTCDate(),
+          23,
+          59,
+          59,
+          999,
+        ),
+      );
 
-      if (typeof date === 'string' && /^\d{2}-\d{2}-\d{4}$/.test(date)) {
-        const [month, day, year] = date.split('-');
-        currentDate = new Date(`${year}-${month}-${day}T00:00:00Z`);
-      } else if (typeof date === 'string') {
-        currentDate = new Date(date);
-      } else if (date instanceof Date && !isNaN(date.getTime())) {
-        currentDate = date;
-      } else {
-        currentDate = new Date();
-      }
-      const startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
-      const endDate = endOfWeek(currentDate, { weekStartsOn: 1 });
-      const currDateNum = new Date(currentDate).getTime();
-      const oneDayMilliseconds = 3600 * 1000 * 24;
-      const startOfcurrentDate = new Date(currentDate.setUTCHours(0, 0, 0, 0));
-      const startOfYesterday = new Date(startOfcurrentDate);
-      startOfYesterday.setDate(startOfcurrentDate.getDate() - 1);
-      const endOfYesterday = new Date(startOfcurrentDate);
-
-      
       if (projectIds && typeof projectIds === 'string') {
         numericProjectIds = projectIds.split(',').map((id) => Number(id));
-      } else if (Array.isArray(projectIds)) {
+      } else if (Array.isArray(projectIds) && projectIds.length != 0) {
         numericProjectIds = projectIds.map((id) => Number(id));
       } else {
         const activeWorkspaceProjects = await this.prisma.project.findMany({
@@ -104,60 +135,24 @@ export class TasksService {
         );
       }
 
-      const activeUsers = await this.prisma.userIntegration.findMany({
-        where: {
-          userWorkspace: {
-            workspaceId: user?.activeWorkspaceId ?? undefined,
-            user: {
-              status: 'ACTIVE',
-            },
-          },
+      const userWorkspaceList = await this.sprintTaskDatabase.getUserWorkspaces(
+        {
+          workspaceId: user.activeWorkspaceId,
+          status: UserWorkspaceStatus.ACTIVE,
         },
-        select: {
-          jiraAccountId: true,
-        },
-        distinct: ['jiraAccountId'],
-      });
+      );
 
-      const activeUsersId = activeUsers
-        .map((user) => user.jiraAccountId)
-        .filter((id): id is string => id !== null);
+      const activeUserWorkspaceIds: number[] = [];
+      userWorkspaceList.map((userWorkspace) =>
+        activeUserWorkspaceIds.push(userWorkspace.id),
+      );
 
-      let tasks;
-
-      tasks = await this.prisma.task.findMany({
-        where: {
-          projectId: {
-            in: numericProjectIds,
-          },
-          assigneeId: {
-            in: activeUsersId,
-          },
-          OR: [
-            {
-              createdAt: {
-                gte: startDate,
-                lte: endDate,
-              },
-            },
-            {
-              updatedAt: {
-                gte: startDate,
-                lte: endDate,
-              },
-            },
-          ],
-        },
-
-        include: {
-          userWorkspace: {
-            include: {
-              user: true,
-            },
-          },
-          sessions: true,
-        },
-      });
+      const tasks = await this.tasksDatabase.getTasksForScrumReport(
+        numericProjectIds,
+        activeUserWorkspaceIds,
+        firstDayOfWeek,
+        lastDayOfWeek,
+      );
 
       // Group tasks by user
       const groupedTasks = tasks.reduce<
@@ -170,32 +165,17 @@ export class TasksService {
             yesterdayTasks: Task[];
           }
         >
-      >((acc, task) => {
-        function findMatchingAuthors(
-          sessions: any[],
-          activeUserIds: string | any[],
-          givenId: string | null,
-        ) {
-          if (!Array.isArray(sessions) || sessions.length === 0) {
-            return [];
-          }
-          return sessions
-            .filter(
-              (session) =>
-                activeUserIds.includes(session.authorId) &&
-                session.authorId !== givenId,
-            )
-            .map((session) => session.authorId);
-        }
-        const findOtherUser = findMatchingAuthors(
+      >((record, task) => {
+        const findOtherUser: number[] = this.findMatchingAuthors(
           task.sessions,
-          activeUsersId,
-          task.assigneeId,
+          activeUserWorkspaceIds,
+          task.userWorkspaceId!,
         );
-        findOtherUser.push(task.assigneeId);
-        findOtherUser.forEach((assigneeId) => {
-          if (!acc[assigneeId]) {
-            acc[assigneeId] = {
+        findOtherUser.push(task.userWorkspaceId!);
+
+        findOtherUser.forEach((userWorkspaceId) => {
+          if (!record[userWorkspaceId]) {
+            record[userWorkspaceId] = {
               user: task.userWorkspace?.user as User,
               tasks: [],
               todayTasks: [],
@@ -204,20 +184,27 @@ export class TasksService {
           }
 
           // find today's and yesterday's task
-          const isTodayTask = doesTodayTask(currDateNum, task);
+          const isTodayTask = doesTodayTask(
+            startOfCurrentDate,
+            endOfCurrentDate,
+            task,
+            true,
+          );
           const isYesterDayTask = doesTodayTask(
-            currDateNum - oneDayMilliseconds,
+            startOfYesterdayDate,
+            endOfYesterdayDate,
             task,
           );
+
           const sessions = task.sessions || [];
           const taskTotalSessionTime = sessions.reduce((total, session) => {
             if (session.startTime && session.endTime) {
-              const startTime = new Date(session.startTime);
-              const endTime = new Date(session.endTime);
+              const sessionStartTime = new Date(session.startTime);
+              const sessionEndTime = new Date(session.endTime);
               if (
-                startTime >= startOfYesterday &&
-                endTime <= endOfYesterday &&
-                assigneeId === session.authorId
+                sessionStartTime >= startOfYesterdayDate &&
+                sessionEndTime <= endOfYesterdayDate &&
+                userWorkspaceId === session.userWorkspaceId
               ) {
                 const sessionDuration =
                   (new Date(session.endTime).getTime() -
@@ -228,28 +215,29 @@ export class TasksService {
             }
             return total;
           }, 0);
-
           const roundedNum = parseFloat(taskTotalSessionTime.toFixed(2));
           roundedNum % 1 === 0 ? Math.floor(roundedNum) : roundedNum;
+
           const tmpTask = {
             ...task,
             spentHours: roundedNum,
             isTodayTask: isTodayTask ? true : false,
             isYesterdayTask: isYesterDayTask ? true : false,
           };
-          acc[assigneeId].tasks.push(tmpTask);
+          record[userWorkspaceId].tasks.push(tmpTask);
 
-          if (isTodayTask) acc[assigneeId].todayTasks.push(tmpTask);
-          if (isYesterDayTask) acc[assigneeId].yesterdayTasks.push(tmpTask);
+          if (isTodayTask) record[userWorkspaceId].todayTasks.push(tmpTask);
+          if (isYesterDayTask)
+            record[userWorkspaceId].yesterdayTasks.push(tmpTask);
         });
-        return acc;
+        return record;
       }, {});
 
       const resData = Object.values(groupedTasks);
-      return { date: currentDate, resData };
+      return { date: date ? date : currentDate, resData };
     } catch (error) {
       console.log(error);
-      throw new Error(error);
+      return { date: new Date(), resData: [] };
     }
   }
 
@@ -306,52 +294,68 @@ export class TasksService {
 
       if (sprintIdArray && sprintIdArray.length) {
         // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
-        const taskIds = await this.sprintService.getSprintTasksIds(
+        // const taskIds = await this.sprintService.getSprintTasksIds(
+        //   sprintIdArray,
+        // );
+        const query = {
+          userWorkspaceId: userWorkspace.id,
+          source: IntegrationType.JIRA,
+          ...(projectIdArray && {
+            projectId: { in: projectIdArray.map((id) => Number(id)) },
+          }),
+          ...(priority1 && { priority: { in: priority1 } }),
+          ...(status1 && { status: { in: status1 } }),
+          ...queryFilter,
+        };
+        const tt = await this.sprintTaskDatabase.findSprintTaskBySprintIds(
           sprintIdArray,
+          query,
         );
-        return await this.prisma.task.findMany({
-          where: {
-            userWorkspaceId: userWorkspace.id,
-            source: IntegrationType.JIRA,
-            id: { in: taskIds },
-            ...(projectIdArray && {
-              projectId: { in: projectIdArray.map((id) => Number(id)) },
-            }),
-            ...(priority1 && { priority: { in: priority1 } }),
-            ...(status1 && { status: { in: status1 } }),
-            ...queryFilter,
-          },
-          include: {
-            sessions: {
-              include: {
-                userWorkspace: {
-                  select: {
-                    user: {
-                      select: {
-                        firstName: true,
-                        lastName: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            parentTask: {
-              select: {
-                title: true,
-                url: true,
-                key: true,
-              },
-            },
-            childTask: {
-              select: {
-                title: true,
-                url: true,
-                key: true,
-              },
-            },
-          },
-        });
+        console.log('🚀 ~ TasksService ~ getTasks ~ tt:', tt);
+        return tt;
+        // return await this.prisma.task.findMany({
+        //   where: {
+        //     userWorkspaceId: userWorkspace.id,
+        //     source: IntegrationType.JIRA,
+        //     id: { in: taskIds },
+        //     ...(projectIdArray && {
+        //       projectId: { in: projectIdArray.map((id) => Number(id)) },
+        //     }),
+        //     ...(priority1 && { priority: { in: priority1 } }),
+        //     ...(status1 && { status: { in: status1 } }),
+        //     ...queryFilter,
+        //   },
+        //   include: {
+        //     sessions: {
+        //       include: {
+        //         userWorkspace: {
+        //           select: {
+        //             user: {
+        //               select: {
+        //                 firstName: true,
+        //                 lastName: true,
+        //               },
+        //             },
+        //           },
+        //         },
+        //       },
+        //     },
+        //     parentTask: {
+        //       select: {
+        //         title: true,
+        //         url: true,
+        //         key: true,
+        //       },
+        //     },
+        //     childTask: {
+        //       select: {
+        //         title: true,
+        //         url: true,
+        //         key: true,
+        //       },
+        //     },
+        //   },
+        // });
       } else {
         const databaseQuery = {
           userWorkspaceId: userWorkspace.id,
@@ -466,57 +470,67 @@ export class TasksService {
         let tasks: Task[] = [];
 
         if (sprintIdArray && sprintIdArray.length) {
-          // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
-          const taskIds = await this.sprintService.getSprintTasksIds(
+          const query = {
+            userWorkspaceId: userWorkspace.id,
+            source: IntegrationType.JIRA,
+            ...(priority1 && { priority: { in: priority1 } }),
+            ...(status1 && { status: { in: status1 } }),
+          };
+          return await this.sprintTaskDatabase.findSprintTaskBySprintIds(
             sprintIdArray,
+            query,
           );
-          //console.log(taskIds);
+          // const integrationId = jiraIntegration?.jiraAccountId ?? '-1';
+          // const taskIds = await this.sprintService.getSprintTasksIds(
+          //   sprintIdArray,
+          // );
+          // //console.log(taskIds);
 
-          return await this.prisma.task.findMany({
-            where: {
-              workspaceId: user.activeWorkspaceId,
-              source: IntegrationType.JIRA,
-              id: { in: taskIds },
-              ...(priority1 && { priority: { in: priority1 } }),
-              ...(status1 && { status: { in: status1 } }),
-              ...(text && {
-                title: {
-                  contains: text.replace(/[+\-]/g, (match) => `\\${match}`),
-                  mode: 'insensitive',
-                },
-              }),
-            },
-            include: {
-              sessions: {
-                include: {
-                  userWorkspace: {
-                    select: {
-                      user: {
-                        select: {
-                          firstName: true,
-                          lastName: true,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              parentTask: {
-                select: {
-                  title: true,
-                  url: true,
-                  key: true,
-                },
-              },
-              childTask: {
-                select: {
-                  title: true,
-                  url: true,
-                  key: true,
-                },
-              },
-            },
-          });
+          // return await this.prisma.task.findMany({
+          //   where: {
+          //     workspaceId: user.activeWorkspaceId,
+          //     source: IntegrationType.JIRA,
+          //     id: { in: taskIds },
+          //     ...(priority1 && { priority: { in: priority1 } }),
+          //     ...(status1 && { status: { in: status1 } }),
+          //     ...(text && {
+          //       title: {
+          //         contains: text.replace(/[+\-]/g, (match) => `\\${match}`),
+          //         mode: 'insensitive',
+          //       },
+          //     }),
+          //   },
+          //   include: {
+          //     sessions: {
+          //       include: {
+          //         userWorkspace: {
+          //           select: {
+          //             user: {
+          //               select: {
+          //                 firstName: true,
+          //                 lastName: true,
+          //               },
+          //             },
+          //           },
+          //         },
+          //       },
+          //     },
+          //     parentTask: {
+          //       select: {
+          //         title: true,
+          //         url: true,
+          //         key: true,
+          //       },
+          //     },
+          //     childTask: {
+          //       select: {
+          //         title: true,
+          //         url: true,
+          //         key: true,
+          //       },
+          //     },
+          //   },
+          // });
         } else {
           const databaseQuery = {
             workspaceId: user.activeWorkspaceId,
@@ -1026,13 +1040,18 @@ export class TasksService {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${userIntegration.accessToken}`,
     };
-
+    const sprintCustomField = await getCustomSprintField(
+      userIntegration.siteId!,
+      headers,
+    );
     const mappedUserWorkspaceAndJiraId =
       await this.mappingUserWorkspaceAndJiraAccountId(user);
     const settings = await this.tasksDatabase.getSettings(user);
     const syncTime: number = settings ? settings.syncTime : 6;
     let respTasks;
     const parentChildMapped = new Map<number, number>();
+    const mappedSprint = new Map<number, any>();
+    const mappedSprintTask = new Map();
 
     for (let startAt = 0; startAt < 5000; startAt += 100) {
       let worklogPromises: Promise<any>[] = [];
@@ -1075,8 +1094,19 @@ export class TasksService {
         const key = integratedTasks[j].integratedTaskId;
         key && mappedIssues.delete(key);
       }
+      // const sprintArray = new Set();
       // let assigneeFlag = true;
       for (const [integratedTaskId, integratedTask] of mappedIssues) {
+        const sprints = integratedTask[`${sprintCustomField}`];
+        if (sprints) {
+          sprints.forEach((sprint: any) => {
+            if (!mappedSprint.has(Number(sprint.id))) {
+              mappedSprintTask.set(Number(sprint.id), []);
+              mappedSprint.set(Number(Number(sprint.id)), sprint);
+            }
+            mappedSprintTask.get(Number(sprint.id)).push(integratedTaskId);
+          }); // Add each sprint, duplicates will be ignored
+        }
         const taskStatus = integratedTask.status.name;
         const taskPriority = integratedTask.priority.name;
         const key = integratedTask?.key;
@@ -1242,6 +1272,27 @@ export class TasksService {
         );
       }
     }
+
+    // key = jira sprint id, value = tracker23 sprint id
+    const JiraSprintIdMappedWithSprintId = await this.createSprint(
+      [...mappedSprint.values()],
+      project.id,
+    );
+
+    //bind the sprint with the task
+    for (const [jiraSprintId, sprintId] of JiraSprintIdMappedWithSprintId) {
+      const jiraTaskIds: number[] = mappedSprintTask.get(jiraSprintId);
+      await this.prisma.task.updateMany({
+        where: {
+          workspaceId: user.activeWorkspaceId!,
+          projectId: project.id,
+          integratedTaskId: { in: jiraTaskIds },
+        },
+        data: {
+          sprintId,
+        },
+      });
+    }
     //parent task update
     const mappedTaskIdForParentChild = new Map<number, number>();
     const updateTaskPromises: Promise<any>[] = [];
@@ -1284,6 +1335,59 @@ export class TasksService {
       );
     }
     await Promise.allSettled(updateTaskPromises);
+  }
+
+  async createSprint(sprints: any[], projectId: number) {
+    for (const sprint of sprints) {
+      await this.prisma.sprint.upsert({
+        where: {
+          sprintIdentifier: {
+            jiraSprintId: Number(sprint.id),
+            projectId: projectId,
+          },
+        },
+        create: {
+          jiraSprintId: Number(sprint.id),
+          projectId: projectId,
+          state: sprint.state,
+          name: sprint.name,
+          startDate: sprint?.startDate
+            ? new Date(sprint?.startDate)
+            : sprint?.createdDate
+            ? new Date(sprint?.createdDate)
+            : new Date(),
+          endDate: sprint?.endDate ? new Date(sprint?.endDate) : null,
+          completeDate: sprint?.completeDate
+            ? new Date(sprint?.completeDate)
+            : sprint?.endDate
+            ? new Date(sprint?.endDate)
+            : null,
+        },
+        update: {
+          state: sprint.state,
+          name: sprint.name,
+          startDate: sprint?.startDate
+            ? new Date(sprint?.startDate)
+            : sprint?.createdDate
+            ? new Date(sprint?.createdDate)
+            : new Date(),
+          endDate: sprint?.endDate ? new Date(sprint?.endDate) : null,
+          completeDate: sprint?.completeDate
+            ? new Date(sprint?.completeDate)
+            : sprint?.endDate
+            ? new Date(sprint?.endDate)
+            : null,
+        },
+      });
+    }
+    const sprintIdMappedWithJiraSprintId = new Map<number, number>();
+    const sprintList = await this.prisma.sprint.findMany({
+      where: { projectId },
+    });
+    for (const sprint of sprintList) {
+      sprintIdMappedWithJiraSprintId.set(sprint.jiraSprintId, sprint.id);
+    }
+    return sprintIdMappedWithJiraSprintId;
   }
 
   private async mappingUserWorkspaceAndJiraAccountId(user: User) {
@@ -2443,6 +2547,23 @@ export class TasksService {
         HttpStatus.BAD_REQUEST,
       );
     }
+  }
+
+  private findMatchingAuthors(
+    sessions: any[],
+    activeUserWorkspaceIds: string | any[],
+    givenId: number,
+  ): number[] {
+    if (!Array.isArray(sessions) || sessions.length === 0) {
+      return [];
+    }
+    return sessions
+      .filter(
+        (session) =>
+          activeUserWorkspaceIds.includes(session.userWorkspaceId) &&
+          session.userWorkspaceId !== givenId,
+      )
+      .map((session) => session.userWorkspaceId);
   }
 }
 

@@ -12,6 +12,7 @@ import { ExcelExport } from "@/services/exportHelpers";
 import { useMediaQuery } from "react-responsive";
 import ScrumReportComponent from "../components/scrumReportComponent";
 import { FilterDateType } from "models/reports";
+import dayjs from "dayjs";
 
 type Props = {
   reportData: ReportData;
@@ -23,9 +24,11 @@ const ScrumReport = ({ reportData, inView }: Props) => {
   const [scrumReportData, setScrumReportData] = useState<any>();
   const [downloading, setDownloading] = useState<boolean>(false);
 
-  const dateRange = reportData?.config?.filterDateType ? reportData.config.filterDateType === "CUSTOM_DATE"?
-  [reportData.config.startDate, reportData.config.endDate] : getDateRangeArray(reportData?.config?.filterDateType, true) :
-  getDateRangeArray(FilterDateType.TODAY, true) 
+  const dateRange = reportData?.config?.filterDateType
+    ? reportData.config.filterDateType === "CUSTOM_DATE"
+      ? [reportData.config.startDate, reportData.config.endDate]
+      : getDateRangeArray(reportData?.config?.filterDateType, true)
+    : getDateRangeArray(FilterDateType.TODAY, true);
   const isMobile = useMediaQuery({ maxWidth: 767 });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -34,7 +37,7 @@ const ScrumReport = ({ reportData, inView }: Props) => {
     setIsLoading(true);
     const res = await userAPI.getScrumReport(
       reportData?.config?.projectIds,
-      dateRange[1],
+      dateRange[1]
     );
     if (res) {
       setScrumReportData(res);
@@ -57,7 +60,12 @@ const ScrumReport = ({ reportData, inView }: Props) => {
           res?.error?.message ? res?.error?.message : "Export Failed"
         );
       } else {
-        ExcelExport({ file: res, name: `${reportData.name}` });
+        console.log(reportData.config.startDate, reportData.config.endDate)
+        ExcelExport({
+          file: res,
+          name: `${reportData.name}`,
+          date: reportData.config.startDate,
+        });
       }
     } catch (error) {
       message.error("Export Failed");

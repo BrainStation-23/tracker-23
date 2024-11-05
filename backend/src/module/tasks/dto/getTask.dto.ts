@@ -26,7 +26,7 @@ export enum StatusEnum {
 export class GetScrumTaskQuery {
   @IsOptional()
   @IsString()
-  date: Date | string;
+  date: string;
 
   @IsString()
   @IsOptional()

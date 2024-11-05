@@ -242,6 +242,8 @@ model Task {
   dataSource           String          @default("Tracker 23")
   integratedTaskId     Int?
   integratedEventId    String?
+  sprint               Sprint?         @relation(fields: [sprintId], references: [id])
+  sprintId             Int?
   url                  String?
   key                  String?
   pinned               Boolean?        @default(false)
@@ -317,6 +319,8 @@ model Sprint {
   startDate    DateTime?
   endDate      DateTime?
   completeDate DateTime?
+  Task         Task[]
+  @@unique([jiraSprintId, projectId], name: "sprintIdentifier")
 }
 
 model SprintTask {
