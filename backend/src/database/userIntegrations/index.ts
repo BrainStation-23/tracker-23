@@ -20,7 +20,6 @@ export class UserIntegrationDatabase {
       return [];
     }
   }
-  
 
   async getUserIntegrationListWithIntegrations(filter: Record<string, any>) {
     try {
