@@ -18,7 +18,6 @@ type Props = {
   inView: Boolean;
 };
 const ScrumReport = ({ reportData, inView }: Props) => {
-  console.log(reportData)
   const [isLoading, setIsLoading] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [scrumReportData, setScrumReportData] = useState<any>();
