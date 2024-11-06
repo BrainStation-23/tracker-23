@@ -3,11 +3,7 @@ import { userAPI } from "APIs";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
-import DateRangePicker, {
-  getDate,
-  getDateRangeArray,
-  SingleDatePicker,
-} from "@/components/common/datePicker";
+import { getDate, SingleDatePicker } from "@/components/common/datePicker";
 import {
   ReportData,
   setReportInEditSlice,
@@ -24,7 +20,9 @@ type Props = {
 const ScrumReportSettings = ({ reportData }: Props) => {
   const dispatch = useDispatch();
   const [filterDateType, setFilterDateType] = useState(
-    FilterDateType.TODAY
+    reportData?.config?.filterDateType
+      ? reportData.config.filterDateType
+      : FilterDateType.TODAY
   );
   const [sprint, setSprint] = useState<number>(
     reportData?.config?.sprintIds?.length > 0
@@ -36,9 +34,11 @@ const ScrumReportSettings = ({ reportData }: Props) => {
   );
 
   const [selectedDate, setSelectedDate] = useState(
-    reportData?.config?.startDate
-      ? reportData?.config?.startDate
-      : getDate(reportData?.config?.filterDateType)
+    filterDateType
+      ? filterDateType === "CUSTOM_DATE"
+        ? reportData?.config?.startDate
+        : getDate(filterDateType)
+      : getDate("today")
   );
 
   const getFilterDateType = (type: FilterDateType) => {
@@ -47,12 +47,11 @@ const ScrumReportSettings = ({ reportData }: Props) => {
   const [excludeUnworkedTasks, setExcludeUnworkedTasks] = useState(
     reportData?.config?.excludeUnworkedTasks
   );
-
   const saveConfig = async (extraData?: UpdateReportDto) => {
     const res = await userAPI.updateReport(reportData.id, {
       projectIds: projects,
       sprintIds: sprint ? [sprint] : [],
-      startDate:selectedDate,
+      startDate: selectedDate,
       endDate: selectedDate,
       filterDateType,
       excludeUnworkedTasks,
@@ -78,10 +77,11 @@ const ScrumReportSettings = ({ reportData }: Props) => {
         saveConfig,
       }}
     >
-      <SingleDatePicker selectedDate= {selectedDate} 
-      setSelectedDate={setSelectedDate }
-      setFilterDateType={getFilterDateType}
-       />
+      <SingleDatePicker
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+        setFilterDateType={getFilterDateType}
+      />
 
       <Checkbox
         checked={excludeUnworkedTasks}

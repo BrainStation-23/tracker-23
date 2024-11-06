@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { LuDownload } from "react-icons/lu";
 
 import { getDateRangeArray } from "@/components/common/datePicker";
-import { ReportData, updateReportSlice } from "@/storage/redux/reportsSlice";
+import { ReportData } from "@/storage/redux/reportsSlice";
 
 import ReportHeaderComponent from "../components/reportHeaderComponent";
 import ReportConfigDescription from "../components/reportSettings/components/reportConfigDescription";
@@ -12,23 +12,27 @@ import { ExcelExport } from "@/services/exportHelpers";
 import { useMediaQuery } from "react-responsive";
 import ScrumReportComponent from "../components/scrumReportComponent";
 import { FilterDateType } from "models/reports";
-import dayjs from "dayjs";
 
 type Props = {
   reportData: ReportData;
   inView: Boolean;
 };
 const ScrumReport = ({ reportData, inView }: Props) => {
+  console.log(reportData)
   const [isLoading, setIsLoading] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [scrumReportData, setScrumReportData] = useState<any>();
   const [downloading, setDownloading] = useState<boolean>(false);
+  const dateRange = (() => {
+    if (!reportData?.config?.filterDateType) {
+      return getDateRangeArray(FilterDateType.TODAY, true);
+    }
 
-  const dateRange = reportData?.config?.filterDateType
-    ? reportData.config.filterDateType === "CUSTOM_DATE"
+    return reportData.config.filterDateType === "CUSTOM_DATE"
       ? [reportData.config.startDate, reportData.config.endDate]
-      : getDateRangeArray(reportData?.config?.filterDateType, true)
-    : getDateRangeArray(FilterDateType.TODAY, true);
+      : getDateRangeArray(reportData.config.filterDateType, true);
+  })();
+
   const isMobile = useMediaQuery({ maxWidth: 767 });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -37,7 +41,7 @@ const ScrumReport = ({ reportData, inView }: Props) => {
     setIsLoading(true);
     const res = await userAPI.getScrumReport(
       reportData?.config?.projectIds,
-      dateRange[1]
+      dateRange[0]
     );
     if (res) {
       setScrumReportData(res);
@@ -60,7 +64,6 @@ const ScrumReport = ({ reportData, inView }: Props) => {
           res?.error?.message ? res?.error?.message : "Export Failed"
         );
       } else {
-        console.log(reportData.config.startDate, reportData.config.endDate)
         ExcelExport({
           file: res,
           name: `${reportData.name}`,
@@ -77,7 +80,7 @@ const ScrumReport = ({ reportData, inView }: Props) => {
   useEffect(() => {
     getScrumReport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reportData.config, inView]);
+  }, [reportData, reportData?.config?.filterDateType, inView]);
 
   return (
     <>
