@@ -738,35 +738,49 @@ export async function deleteProjectTasksRest(id: number) {
     return false;
   }
 }
+
+
 export async function getWorkspaceListRest() {
   try {
     const res = await api.get(`${apiEndPoints.workspaces}`);
-    res.data.workspaces = res.data.workspaces.map((workspace: any) => {
-      return {
-        ...workspace,
-        active: workspace.id === res.data.user.activeWorkspaceId,
-      };
-    });
+    res.data.workspaces = res.data.workspaces.map((workspace: any) => ({
+      ...workspace,
+      active: workspace.id === res.data.user.activeWorkspaceId,
+    }));
+    
     res.data.pages = res.data.pages.map((page: any) => ({
       ...page,
-      reports: page.reports.map((report: any) => ({
-        ...report,
-        config: {
-          ...report?.config,
-          filterDateType:
-            //@ts-ignore
-            FilterDateType[report?.config?.filterDateType] ||
-              (report?.config?.startDate && report?.config?.endDate)
-              ? FilterDateType.CUSTOM_DATE
-              : FilterDateType.THIS_WEEK,
-        },
-      })),
+      reports: page.reports.map((report: any) => {
+        let filterDateType;
+
+        if (report?.config?.filterDateType) {
+          // Convert to uppercase and check against the enum
+          const filterDateTypeKey = report.config.filterDateType.toUpperCase();
+          filterDateType = FilterDateType[filterDateTypeKey as keyof typeof FilterDateType];
+        }
+
+        if (!filterDateType && report?.config?.startDate && report?.config?.endDate) {
+          filterDateType = FilterDateType.CUSTOM_DATE;
+        } else if (!filterDateType) {
+          filterDateType = FilterDateType.THIS_WEEK;
+        }
+
+        return {
+          ...report,
+          config: {
+            ...report?.config,
+            filterDateType,
+          },
+        };
+      }),
     }));
+    
     return res.data;
   } catch (error: any) {
     return false;
   }
 }
+
 
 export async function getWorkspaceMembersRest(): Promise<
   WorkspaceMemberDto[] | false

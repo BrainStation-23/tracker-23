@@ -306,7 +306,15 @@ export class ProjectDatabase {
             include: {
               Task: {
                 include: {
-                  sessions: true,
+                  sessions: {
+                    include: {
+                      userWorkspace: {
+                        include: {
+                          user: true,
+                        },
+                      },
+                    },
+                  },
                 },
               },
             },

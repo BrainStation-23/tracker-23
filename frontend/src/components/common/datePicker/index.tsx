@@ -268,9 +268,10 @@ const DateRangePicker = ({
 
 export default DateRangePicker;
 
-export const getDateRangeArray = (key: string, scrum?: boolean) => {
+export const getDateRangeArray = (key: string = "", scrum?: boolean) => {
+  const normalizedKey = key.toLowerCase();
   let startDate, endDate;
-  switch (key) {
+  switch (normalizedKey) {
     case "today":
       startDate = localFormat(dayjs());
       endDate = localFormat(dayjs());
@@ -382,28 +383,30 @@ export function formatUserData(dataArray: any[]) {
   });
 }
 export const getDate = (key: string) => {
+  const normalizedKey = key.toLowerCase();
   let date;
-  switch (key) {
+
+  switch (normalizedKey) {
     case "today":
-      date = localFormat(dayjs());
+      date = dayjs();
       break;
     case "yesterday":
-      date = localFormat(dayjs().subtract(1, "day"));
+      date = dayjs().subtract(1, "day");
       break;
     case "tomorrow":
-      date = localFormat(dayjs().add(1, "day"));
+      date = dayjs().add(1, "day");
       break;
     default:
-      date = localFormat(dayjs());
+      date = dayjs();
   }
 
-  return date;
+  return localFormat(date);
 };
 
 export const singleDateOptions = {
-  today: "Today",
-  yesterday: "Yesterday",
-  tomorrow: "Tomorrow",
+  TODAY: "Today",
+  YESTERDAY: "Yesterday",
+  TOMORROW: "Tomorrow",
 };
 
 export function SingleDatePicker({
@@ -470,8 +473,9 @@ export function SingleDatePicker({
       setDateType(val.key);
       setDropdownText(getDate(val.key));
       setSelectedDate(getDate(val.key));
-      // @ts-ignore
-      setFilterDateType && setFilterDateType(FilterReverseDateType[val.key]);
+      setFilterDateType?.(
+        FilterDateType[val.key as keyof typeof FilterDateType]
+      );
       setDropdownOpen(false);
     },
   };
