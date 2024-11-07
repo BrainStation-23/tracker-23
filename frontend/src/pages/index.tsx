@@ -7,8 +7,10 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/taskList");
-  }, []);
+    if (router.pathname === "/") {
+      router.replace("/taskList");
+    }
+  }, [router]);
 
   return (
     <div className="mx-auto mt-5 w-max">
