@@ -351,9 +351,9 @@ export interface UpdateReportPageDto {
 }
 
 export enum FilterDateType {
+  YESTERDAY = "YESTERDAY",
   TODAY = "today",
-  YESTERDAY = "yesterday",
-  TOMORROW = "tomorrow",
+  TOMORROW = "TOMORROW",
   THIS_WEEK = "this-week",
   PAST_WEEK = "last-week",
   NEXT_WEEK = "next-week",

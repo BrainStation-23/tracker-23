@@ -13,6 +13,8 @@ import { useDispatch } from "react-redux";
 import { useAppSelector } from "@/storage/redux";
 import { RootState } from "@/storage/redux/store";
 import { useEffect, useState } from "react";
+import { report } from "process";
+import { getDate } from "@/components/common/datePicker";
 
 const { Text } = Typography;
 
@@ -24,6 +26,13 @@ const ReportConfigDescription = ({
   const dispatch = useDispatch();
   const [sprintName, setSprintName] = useState("");
   const [fullSprintName, setFullSprintName] = useState("");
+  const [selectedDate, setSelectedDate] = useState(
+    reportData?.config?.filterDateType
+      ? reportData?.config?.filterDateType === "CUSTOM_DATE"
+        ? reportData?.config?.startDate
+        : getDate(reportData?.config?.filterDateType)
+      : getDate("today")
+  );
 
   const sprintData = useAppSelector(
     (state: RootState) => state.projectList.reportSprintList
@@ -77,7 +86,7 @@ const ReportConfigDescription = ({
           </Tooltip>
           <div className="text-sm">
             {reportData?.reportType === "SCRUM_REPORT"
-              ? reportData?.config?.startDate
+              ? `${selectedDate}`
               : `${reportData?.config?.startDate} - ${reportData?.config?.endDate}`}
           </div>
         </div>

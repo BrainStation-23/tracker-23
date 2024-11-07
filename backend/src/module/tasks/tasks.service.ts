@@ -307,12 +307,10 @@ export class TasksService {
           ...(status1 && { status: { in: status1 } }),
           ...queryFilter,
         };
-        const tt = await this.sprintTaskDatabase.findSprintTaskBySprintIds(
+        return await this.sprintTaskDatabase.findSprintTaskBySprintIds(
           sprintIdArray,
           query,
         );
-        console.log('🚀 ~ TasksService ~ getTasks ~ tt:', tt);
-        return tt;
         // return await this.prisma.task.findMany({
         //   where: {
         //     userWorkspaceId: userWorkspace.id,
