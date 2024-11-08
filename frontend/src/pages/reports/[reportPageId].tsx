@@ -5,12 +5,15 @@ import { useEffect, useState } from "react";
 const ReportPage = () => {
   const router = useRouter();
   const [pageId, setPageId] = useState(
-    router.query.reportPageId ? Number(router.query.reportPageId) : undefined
+    router?.query?.reportPageId!
+      ? Number(router?.query?.reportPageId!)
+      : undefined
   );
+  console.log("🚀 ~ ReportPage ~ pageId:", pageId);
 
   useEffect(() => {
     if (router.isReady) {
-      setPageId(Number(router.query.reportPageId));
+      setPageId(Number(router?.query?.reportPageId!));
     }
   }, [router]);
 
