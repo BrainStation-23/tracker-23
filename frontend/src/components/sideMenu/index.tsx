@@ -149,7 +149,7 @@ const SideMenu = ({ toggleCollapsed }: { toggleCollapsed: () => void }) => {
     });
     if (res) {
       dispatch(addReportPage(res));
-      router.push("/reports/" + res.id);
+      router.push(`/reports/reportPage=${res.id}`);
     }
     setIsCreatingPage(false);
   };
@@ -293,7 +293,7 @@ const SideMenu = ({ toggleCollapsed }: { toggleCollapsed: () => void }) => {
                           >
                             <MyLink
                               onClick={toggleCollapsed}
-                              href={"/reports/" + reportPage.id}
+                              href={`/reports?reportPage=${reportPage.id}`}
                               className="flex items-center gap-2 px-2 py-1"
                             >
                               <div
