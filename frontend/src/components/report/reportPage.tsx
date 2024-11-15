@@ -87,7 +87,7 @@ export default function ReportPageComponent({ pageId }: { pageId: number }) {
   }, []);
 
   if (!reportPageData) {
-    router.replace("/reports/");
+    router.replace("/reports");
   }
 
   return (
