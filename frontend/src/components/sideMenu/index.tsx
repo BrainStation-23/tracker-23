@@ -125,7 +125,6 @@ const SideMenu = ({ toggleCollapsed }: { toggleCollapsed: () => void }) => {
   const reportPages = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages
   );
-  console.log("router", router.query)
   const pageId = router.query?.reportPage
     ? parseInt(router.query?.reportPage as string)
     : -1;
