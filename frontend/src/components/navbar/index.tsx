@@ -37,8 +37,8 @@ const Navbar = ({ extraComponent, collapsed, toggleCollapsed }: Props) => {
   const formFieldId = Form.useWatch("id", form);
 
   const path = router.asPath;
-  const pageId = router.query?.reportPageId
-    ? parseInt(router.query?.reportPageId as string)
+  const pageId = router.query?.reportPage
+    ? parseInt(router.query?.reportPage as string)
     : -1;
 
   const syncing: boolean = useAppSelector(
