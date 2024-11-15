@@ -125,9 +125,9 @@ const SideMenu = ({ toggleCollapsed }: { toggleCollapsed: () => void }) => {
   const reportPages = useAppSelector(
     (state: RootState) => state.reportsSlice.reportPages
   );
-
-  const pageId = router.query?.reportPageId
-    ? parseInt(router.query?.reportPageId as string)
+  console.log("router", router.query)
+  const pageId = router.query?.reportPage
+    ? parseInt(router.query?.reportPage as string)
     : -1;
 
   const [isCreatingPage, setIsCreatingPage] = useState(false);
@@ -149,7 +149,7 @@ const SideMenu = ({ toggleCollapsed }: { toggleCollapsed: () => void }) => {
     });
     if (res) {
       dispatch(addReportPage(res));
-      router.push(`/reports/reportPage=${res.id}`);
+      router.push(`/reports?reportPage=${res.id}`);
     }
     setIsCreatingPage(false);
   };

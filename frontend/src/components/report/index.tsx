@@ -22,7 +22,7 @@ const ReportPage = () => {
               className={`group flex w-min items-center justify-between gap-2 rounded px-2 text-black hover:bg-[#ECECED] hover:font-semibold hover:text-primary `}
             >
               <MyLink
-                href={"/reports/" + reportPage.id}
+                href={`/reports?reportPage=${reportPage.id}`}
                 className="flex items-center  gap-2 p-1"
               >
                 <div
