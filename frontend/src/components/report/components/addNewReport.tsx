@@ -18,8 +18,8 @@ import { getDateRangeArray } from "@/components/common/datePicker";
 const AddNewReport = ({ setIsModalOpen }: { setIsModalOpen: Function }) => {
   const router = useRouter();
   const dispatch = useDispatch();
-  const pageId = router.query?.reportPageId
-    ? parseInt(router.query?.reportPageId as string)
+  const pageId = router.query?.reportPage
+    ? parseInt(router.query?.reportPage as string)
     : -1;
 
   const [form] = Form.useForm();
