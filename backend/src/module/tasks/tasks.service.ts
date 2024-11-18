@@ -49,6 +49,7 @@ import {
   doesTodayTask,
   getYesterday,
 } from 'src/utils/helper/helper';
+import { SprintsService } from '../sprints/sprints.service';
 
 @Injectable()
 export class TasksService {
@@ -62,6 +63,7 @@ export class TasksService {
     private jiraClient: JiraClientService,
     private sprintTaskDatabase: SprintTaskDatabase,
     private readonly rabbitMQService: RabbitMQService,
+    private sprintService: SprintsService,
   ) {}
 
   async getTasksByWeek(
@@ -1445,7 +1447,7 @@ export class TasksService {
 
   async syncAndGetTasks(user: User, projectId: number) {
     this.sendQueue(user, QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK, projectId);
-    return await this.syncCall(StatusEnum.IN_PROGRESS, user);
+    return await this.syncCall(StatusEnum.IN_PROGRESS, user, projectId);
   }
 
   formatStatus(status: string) {
@@ -1459,7 +1461,7 @@ export class TasksService {
     }
   }
 
-  async getCallSync(user: User) {
+  async getCallSync(user: User, projectId?: number) {
     try {
       const userWorkspace = await this.workspacesService.getUserWorkspace(user);
       if (!userWorkspace) {
@@ -1468,9 +1470,58 @@ export class TasksService {
           HttpStatus.BAD_REQUEST,
         );
       }
+      if (!projectId && userWorkspace) {
+        // Fetch all sync records for the user's workspace
+        const allSyncData = await this.prisma.callSync.findMany({
+          where: {
+            userWorkspaceId: userWorkspace.id,
+          },
+        });
+
+        // Handle case where no sync data is found
+        if (allSyncData.length === 0) {
+          return {
+            status: StatusEnum.FAILED,
+            message: 'You have no project to sync!',
+          };
+        }
+
+        // Determine overall status based on the records
+        let hasInProgress = false;
+        let hasFailed = false;
+        let failedCount = 0;
+
+        for (const record of allSyncData) {
+          if (record.status === StatusEnum.IN_PROGRESS) {
+            hasInProgress = true;
+          } else if (record.status === StatusEnum.FAILED) {
+            hasFailed = true;
+            failedCount++;
+          }
+        }
+
+        // Return appropriate status based on the conditions
+        if (hasInProgress) {
+          return {
+            status: StatusEnum.IN_PROGRESS,
+            message: 'Synchronization is in progress.',
+          };
+        } else if (hasFailed) {
+          return {
+            status: StatusEnum.DONE,
+            message: `Sync completed, but ${failedCount} project\'s sync failed.`,
+          };
+        } else {
+          return {
+            status: StatusEnum.DONE,
+            message: 'All records are successfully synced.',
+          };
+        }
+      }
       const getData = await this.prisma.callSync.findFirst({
         where: {
           userWorkspaceId: userWorkspace.id,
+          projectId: projectId,
         },
       });
       if (!getData) {
@@ -1487,9 +1538,8 @@ export class TasksService {
     }
   }
 
-  async syncCall(status: string, user: User) {
+  async syncCall(status: string, user: User, projectId?: number) {
     try {
-      const doesExist = await this.getCallSync(user);
       const userWorkspace = await this.workspacesService.getUserWorkspace(user);
       if (!userWorkspace) {
         throw new APIException(
@@ -1497,32 +1547,51 @@ export class TasksService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      if (!doesExist || doesExist.id === -1) {
-        return await this.prisma.callSync.create({
-          data: {
-            status,
-            userWorkspaceId: userWorkspace.id,
-          },
-        });
+
+      const projectIds: number[] = [];
+      // If a specific projectId is provided, handle only that project
+      if (projectId) {
+        projectIds.push(projectId);
+      } else {
+        // Fetch all project IDs if no projectId is provided
+        const [jiraProjectIds, outLookCalendarIds] = await Promise.all([
+          this.sprintService.getProjectIds(user),
+          this.sprintService.getCalenderIds(user),
+        ]);
+        projectIds.push(...jiraProjectIds, ...outLookCalendarIds);
       }
 
-      if (status === StatusEnum.DONE) {
-        return await this.prisma.callSync.update({
-          where: { id: doesExist.id },
-          data: {
-            status: status,
-            lastSync: new Date(Date.now()),
-          },
-        });
+      // Loop through each project ID and process sync logic
+      for (const projId of projectIds) {
+        const doesExist = await this.getCallSync(user, projId);
+
+        if (!doesExist || doesExist?.id === -1) {
+          await this.prisma.callSync.create({
+            data: {
+              status,
+              userWorkspaceId: userWorkspace.id,
+              projectId: projId, // Ensure project ID is recorded
+            },
+          });
+        } else if (status === StatusEnum.DONE) {
+          await this.prisma.callSync.update({
+            where: { id: doesExist.id },
+            data: {
+              status: StatusEnum.DONE,
+              lastSync: new Date(),
+            },
+          });
+        } else {
+          await this.prisma.callSync.update({
+            where: { id: doesExist.id },
+            data: {
+              status,
+            },
+          });
+        }
       }
-      return await this.prisma.callSync.update({
-        where: { id: doesExist.id },
-        data: {
-          status: status,
-        },
-      });
     } catch (err) {
-      console.log(err.message);
+      console.error(err.message);
       return null;
     }
   }
