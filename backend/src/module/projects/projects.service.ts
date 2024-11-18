@@ -148,7 +148,12 @@ export class ProjectsService {
 
     try {
       Promise.allSettled([
-        res && (await this.tasksService.syncCall(StatusEnum.IN_PROGRESS, user)),
+        res &&
+          (await this.tasksService.syncCall(
+            StatusEnum.IN_PROGRESS,
+            user,
+            projId,
+          )),
 
         await this.tasksService.setProjectStatuses(
           project,
@@ -173,7 +178,8 @@ export class ProjectsService {
         //   updatedUserIntegration,
         // ),
         await this.tasksService.updateProjectIntegrationStatus(projId),
-        res && (await this.tasksService.syncCall(StatusEnum.DONE, user)),
+        res &&
+          (await this.tasksService.syncCall(StatusEnum.DONE, user, project.id)),
         await this.tasksService.sendImportedNotification(
           user,
           'Project Imported Successfully!',
@@ -187,7 +193,7 @@ export class ProjectsService {
           user,
           'Importing Tasks Failed',
         ),
-        await this.tasksService.syncCall(StatusEnum.FAILED, user),
+        await this.tasksService.syncCall(StatusEnum.FAILED, user, project.id),
       ]);
       throw new APIException(
         error.message || 'Could not import project tasks',
@@ -342,7 +348,7 @@ export class ProjectsService {
         ]);
       }
       Promise.allSettled([
-        res && (await this.tasksService.syncCall(StatusEnum.DONE, user)),
+        // res && (await this.tasksService.syncCall(StatusEnum.DONE, user)),
         await this.tasksService.sendImportedNotification(
           user,
           'Calender Imported Successfully!',

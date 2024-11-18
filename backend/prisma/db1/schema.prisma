@@ -292,6 +292,7 @@ model callSync {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   lastSync  DateTime?
+  projectId Int?
 
   UserWorkspace   UserWorkspace @relation(fields: [userWorkspaceId], references: [id], onDelete: Cascade)
   userWorkspaceId Int
