@@ -400,6 +400,7 @@ export class WorkerService {
     const userWorkspace = await this.workspacesService.getUserWorkspace(user);
     const syncState = await this.tasksDatabase.callSync({
       userWorkspaceId: userWorkspace.id,
+      projectId: project.id,
     });
     let urlParam;
     if (syncState?.lastSync) {
@@ -848,7 +849,7 @@ export class WorkerService {
     if (!calender) {
       Promise.allSettled([
         await this.sendImportedNotification(user, 'Syncing Failed!'),
-        await this.syncCall(StatusEnum.FAILED, user),
+        await this.syncCall(StatusEnum.FAILED, user, calenId),
       ]);
       throw new APIException('Calendar Not Found', HttpStatus.BAD_REQUEST);
     }
@@ -857,7 +858,7 @@ export class WorkerService {
     if (!userWorkspace) {
       Promise.allSettled([
         await this.sendImportedNotification(user, 'Syncing Failed!'),
-        await this.syncCall(StatusEnum.FAILED, user),
+        await this.syncCall(StatusEnum.FAILED, user, calenId),
       ]);
       throw new APIException(
         'Can not import calender events, userWorkspace not found!',
@@ -872,13 +873,13 @@ export class WorkerService {
     if (!userIntegration) {
       Promise.allSettled([
         await this.sendImportedNotification(user, 'Syncing Failed!'),
-        await this.syncCall(StatusEnum.FAILED, user),
+        await this.syncCall(StatusEnum.FAILED, user, calenId),
       ]);
       return [];
     }
     try {
       Promise.allSettled([
-        await this.syncCall(StatusEnum.IN_PROGRESS, user),
+        await this.syncCall(StatusEnum.IN_PROGRESS, user, calenId),
         await this.sendImportedNotification(user, 'Syncing in progress!'),
         await this.fetchAndProcessCalenderEvents(
           user,
@@ -886,7 +887,7 @@ export class WorkerService {
           calender,
           userIntegration,
         ),
-        await this.syncCall(StatusEnum.DONE, user),
+        await this.syncCall(StatusEnum.DONE, user, calenId),
         await this.sendImportedNotification(
           user,
           'Calendar Synced Successfully!',
@@ -900,7 +901,7 @@ export class WorkerService {
       );
       Promise.allSettled([
         await this.sendImportedNotification(user, 'Syncing Failed!'),
-        await this.syncCall(StatusEnum.FAILED, user),
+        await this.syncCall(StatusEnum.FAILED, user, calenId),
       ]);
       throw new APIException(
         'Could not Sync Calendar Events!',
@@ -1092,7 +1093,7 @@ export class WorkerService {
     if (!project) {
       Promise.allSettled([
         await this.sendImportedNotification(user, 'Syncing Failed!'),
-        await this.syncCall(StatusEnum.FAILED, user),
+        await this.syncCall(StatusEnum.FAILED, user, projId),
       ]);
       throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
     }
@@ -1101,7 +1102,7 @@ export class WorkerService {
     if (!userWorkspace) {
       Promise.allSettled([
         await this.sendImportedNotification(user, 'Syncing Failed!'),
-        await this.syncCall(StatusEnum.FAILED, user),
+        await this.syncCall(StatusEnum.FAILED, user, projId),
       ]);
       throw new APIException(
         'Can not import project tasks, userWorkspace not found!',
@@ -1122,7 +1123,7 @@ export class WorkerService {
     if (!updatedUserIntegration) {
       Promise.allSettled([
         await this.sendImportedNotification(user, 'Syncing Failed!'),
-        await this.syncCall(StatusEnum.FAILED, user),
+        await this.syncCall(StatusEnum.FAILED, user, projId),
       ]);
       // throw new APIException(
       //   'Could not sync project tasks, userWorkspace not found!',
@@ -1146,7 +1147,7 @@ export class WorkerService {
         //   updatedUserIntegration,
         // ),
         await this.updateProjectIntegrationStatus(projId),
-        await this.syncCall(StatusEnum.DONE, user),
+        await this.syncCall(StatusEnum.DONE, user, projId),
         await this.sendImportedNotification(
           user,
           'Project Synced Successfully!',
@@ -1160,7 +1161,7 @@ export class WorkerService {
       );
       Promise.allSettled([
         await this.sendImportedNotification(user, 'Syncing Failed!'),
-        await this.syncCall(StatusEnum.FAILED, user),
+        await this.syncCall(StatusEnum.FAILED, user, projId),
       ]);
       throw new APIException(
         'Could not Sync project tasks!',
@@ -1226,8 +1227,7 @@ export class WorkerService {
       { lastSync: time },
     );
   }
-
-  async getCallSync(user: User) {
+  async getCallSync(user: User, projectId?: number) {
     try {
       const userWorkspace = await this.workspacesService.getUserWorkspace(user);
       if (!userWorkspace) {
@@ -1236,9 +1236,58 @@ export class WorkerService {
           HttpStatus.BAD_REQUEST,
         );
       }
+      if (!projectId && userWorkspace) {
+        // Fetch all sync records for the user's workspace
+        const allSyncData = await this.prisma.callSync.findMany({
+          where: {
+            userWorkspaceId: userWorkspace.id,
+          },
+        });
+
+        // Handle case where no sync data is found
+        if (allSyncData.length === 0) {
+          return {
+            status: StatusEnum.FAILED,
+            message: 'You have no project to sync!',
+          };
+        }
+
+        // Determine overall status based on the records
+        let hasInProgress = false;
+        let hasFailed = false;
+        let failedCount = 0;
+
+        for (const record of allSyncData) {
+          if (record.status === StatusEnum.IN_PROGRESS) {
+            hasInProgress = true;
+          } else if (record.status === StatusEnum.FAILED) {
+            hasFailed = true;
+            failedCount++;
+          }
+        }
+
+        // Return appropriate status based on the conditions
+        if (hasInProgress) {
+          return {
+            status: StatusEnum.IN_PROGRESS,
+            message: 'Synchronization is in progress.',
+          };
+        } else if (hasFailed) {
+          return {
+            status: StatusEnum.DONE,
+            message: `Sync completed, but ${failedCount} project\'s sync failed.`,
+          };
+        } else {
+          return {
+            status: StatusEnum.DONE,
+            message: 'All records are successfully synced.',
+          };
+        }
+      }
       const getData = await this.prisma.callSync.findFirst({
         where: {
           userWorkspaceId: userWorkspace.id,
+          projectId: projectId,
         },
       });
       if (!getData) {
@@ -1255,9 +1304,8 @@ export class WorkerService {
     }
   }
 
-  async syncCall(status: string, user: User) {
+  async syncCall(status: string, user: User, projectId?: number) {
     try {
-      const doesExist = await this.getCallSync(user);
       const userWorkspace = await this.workspacesService.getUserWorkspace(user);
       if (!userWorkspace) {
         throw new APIException(
@@ -1265,33 +1313,51 @@ export class WorkerService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      if (!doesExist || doesExist.id === -1) {
-        return await this.prisma.callSync.create({
-          data: {
-            status,
-            userWorkspaceId: userWorkspace.id,
-          },
-        });
+
+      const projectIds: number[] = [];
+      // If a specific projectId is provided, handle only that project
+      if (projectId) {
+        projectIds.push(projectId);
+      } else {
+        // Fetch all project IDs if no projectId is provided
+        const [jiraProjectIds, outLookCalendarIds] = await Promise.all([
+          this.sprintService.getProjectIds(user),
+          this.sprintService.getCalenderIds(user),
+        ]);
+        projectIds.push(...jiraProjectIds, ...outLookCalendarIds);
       }
 
-      if (status === StatusEnum.DONE) {
-        return await this.prisma.callSync.update({
-          where: { id: doesExist.id },
-          data: {
-            status: status,
-            lastSync: new Date(Date.now()),
-          },
-        });
-      }
+      // Loop through each project ID and process sync logic
+      for (const projId of projectIds) {
+        const doesExist = await this.getCallSync(user, projId);
 
-      return await this.prisma.callSync.update({
-        where: { id: doesExist.id },
-        data: {
-          status: status,
-        },
-      });
+        if (!doesExist || doesExist?.id === -1) {
+          await this.prisma.callSync.create({
+            data: {
+              status,
+              userWorkspaceId: userWorkspace.id,
+              projectId: projId, // Ensure project ID is recorded
+            },
+          });
+        } else if (status === StatusEnum.DONE) {
+          await this.prisma.callSync.update({
+            where: { id: doesExist.id },
+            data: {
+              status: StatusEnum.DONE,
+              lastSync: new Date(),
+            },
+          });
+        } else {
+          await this.prisma.callSync.update({
+            where: { id: doesExist.id },
+            data: {
+              status,
+            },
+          });
+        }
+      }
     } catch (err) {
-      console.log(err.message);
+      console.error(err.message);
       return null;
     }
   }
