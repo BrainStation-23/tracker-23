@@ -1,4 +1,4 @@
-import { Modal } from "antd";
+import { Input, Modal, Space } from "antd";
 type Props = {
   children: any;
   isModalOpen: boolean;
@@ -7,6 +7,8 @@ type Props = {
   title?: string;
   className?: string;
   width?: number;
+  search?: boolean;
+  setQueryData?: Function
 };
 const GlobalModal = ({
   children,
@@ -16,6 +18,8 @@ const GlobalModal = ({
   className,
   handleCancel,
   width,
+  search,
+  setQueryData
 }: Props) => {
   const handleOk = () => {
     setIsModalOpen(false);
@@ -24,7 +28,28 @@ const GlobalModal = ({
     if (handleCancel) handleCancel();
     setIsModalOpen(false);
   };
-  return (
+  return search ? (
+    <Modal
+      title={
+        <Space style={{ width: "90%", justifyContent: "space-between" }}>
+          <span>{title}</span>
+          <Input
+            placeholder="Search..."
+            onChange={(e) => setQueryData(e.target.value)}
+            style={{ width: "110%" }}
+          />
+        </Space>
+      }
+      open={isModalOpen}
+      onOk={handleOk}
+      onCancel={handleOnCancel}
+      width={width ? width : "720px"}
+      className={className}
+      footer={null}
+    >
+      {children}
+    </Modal>
+  ) : (
     <Modal
       title={title}
       open={isModalOpen}
