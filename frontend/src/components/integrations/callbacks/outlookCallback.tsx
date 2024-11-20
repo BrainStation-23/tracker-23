@@ -18,6 +18,7 @@ const OutlookCallBack = () => {
   const [newIntegrationProjects, setNewIntegrationProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
+  const [queryData, setQueryData] = useState("");
 
   const getIntegrations = async () => {
     setSpinning(true);
@@ -72,12 +73,14 @@ const OutlookCallBack = () => {
 
       <GlobalModal
         {...{ isModalOpen, setIsModalOpen, handleCancel }}
+        setQueryData={setQueryData}
         title="Select Calendar"
       >
         <Spin spinning={spinning}>
           <NewIntegrationProjectImportComponent
             newIntegrationProjects={newIntegrationProjects}
             importIntegrationTasks={importIntegrationTasks}
+            queryData={queryData}
           />
         </Spin>
       </GlobalModal>
