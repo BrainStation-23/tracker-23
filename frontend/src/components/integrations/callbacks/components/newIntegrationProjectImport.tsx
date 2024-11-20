@@ -4,10 +4,12 @@ import AddIntegrationProjectList from "./addIntegrationProjectList";
 type Props = {
   newIntegrationProjects: ProjectDto[];
   importIntegrationTasks: Function;
+  queryData : String
 };
 const NewIntegrationProjectImportComponent = ({
   newIntegrationProjects,
   importIntegrationTasks,
+  queryData
 }: Props) => {
   return (
     <AddIntegrationProjectList
@@ -15,6 +17,7 @@ const NewIntegrationProjectImportComponent = ({
         (project) => !project.integrated
       )}
       importIntegrationTasks={importIntegrationTasks}
+      queryData={queryData}
     />
   );
 };
