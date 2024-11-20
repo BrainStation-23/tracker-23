@@ -105,6 +105,12 @@ export class TasksController {
     return await this.tasksService.getCallSync(user);
   }
 
+  @Delete('sync/delete')
+  @UseGuards(JwtAuthGuard)
+  async deleteAllSyncCall() {
+    await this.tasksService.deleteAllSyncCall();
+  }
+
   @Get('sync/:projectId')
   @UseGuards(JwtAuthGuard)
   async syncSingleProjectOrCalendar(

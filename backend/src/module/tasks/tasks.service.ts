@@ -1538,6 +1538,16 @@ export class TasksService {
     }
   }
 
+  async deleteAllSyncCall() {
+    const deletedSyncData = await this.prisma.callSync.deleteMany({
+      where: {},
+    });
+    console.log(
+      '🚀 ~ TasksService ~ deleteAllSyncCall ~ deletedSyncData:',
+      deletedSyncData,
+    );
+  }
+
   async syncCall(status: string, user: User, projectId?: number) {
     try {
       const userWorkspace = await this.workspacesService.getUserWorkspace(user);
