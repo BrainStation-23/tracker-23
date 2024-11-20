@@ -13,13 +13,14 @@ import { setIntegrationsSlice } from "@/storage/redux/integrationsSlice";
 
 const JiraCallBack = () => {
   const dispatch = useAppDispatch();
-  
+
   const router = useRouter();
   const [newIntegrationProjects, setNewIntegrationProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSpinning] = useState(true);
   const [spinning, setSpinning] = useState(false);
-
+  const [queryData, setQueryData] = useState("");
+  
   const getIntegrations = async () => {
     setSpinning(true);
     const integrations = await userAPI.getIntegrations();
@@ -86,15 +87,18 @@ const JiraCallBack = () => {
       </div>
 
       <GlobalModal
-        {...{ isModalOpen, setIsModalOpen, handleCancel }}
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+        handleCancel={handleCancel}
+        search={true}
+        setQueryData={setQueryData}
         title="Select Project"
       >
         <Spin spinning={spinning}>
           <NewIntegrationProjectImportComponent
-            {...{
-              newIntegrationProjects,
-              importIntegrationTasks,
-            }}
+          newIntegrationProjects={newIntegrationProjects}
+          importIntegrationTasks={importIntegrationTasks}
+          queryData={queryData}
           />
         </Spin>
       </GlobalModal>
