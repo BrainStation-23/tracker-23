@@ -36,6 +36,7 @@ export class WebhooksService {
   ) {}
 
   async getWebhooks(user: User) {
+    console.log('🚀 ~ WebhooksService ~ getWebhooks ~ user:', user);
     const userIntegrationIds: any[] = [];
     const getUserIntegrationList =
       await this.integrationsService.getUserIntegrations(user);
@@ -122,25 +123,20 @@ export class WebhooksService {
   async getAllWebhooks(user: User, userIntegrationIds: number[]) {
     const webhooks = [];
     for (let index = 0, len = userIntegrationIds.length; index < len; index++) {
-      const updated_integration =
-        await this.integrationsService.getUpdatedUserIntegration(
-          user,
-          userIntegrationIds[index],
-        );
-      if (!updated_integration) {
-        return [];
-      }
-      const url = `https://api.atlassian.com/ex/jira/${updated_integration.siteId}/rest/api/3/webhook`;
-      const config = {
-        method: 'get',
-        url,
-        headers: {
-          Authorization: `Bearer ${updated_integration.accessToken}`,
-          'Content-Type': 'application/json',
+      const userIntegration = await this.prisma.userIntegration.findFirst({
+        where: {
+          id: userIntegrationIds[index],
         },
-      };
-      const webhookJira = (await axios(config)).data;
-      webhooks.push(webhookJira);
+      });
+      if (!userIntegration) return [];
+      const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/webhook`;
+      const webhookJira = await this.jiraClient.CallJira(
+        userIntegration,
+        this.jiraApiCalls.getWebhookList,
+        url,
+      );
+
+      webhookJira && webhooks.push(webhookJira);
     }
     return webhooks;
   }
@@ -577,6 +573,7 @@ export class WebhooksService {
       if (!userIntegration) {
         return null;
       }
+
       const projectList = reqBody.projectName.map((el) => el);
       const formateReqBody = {
         url: reqBody.url,
@@ -587,6 +584,7 @@ export class WebhooksService {
           },
         ],
       };
+
       let webhook: any;
       try {
         const webhookUrl = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/webhook`;
@@ -596,10 +594,10 @@ export class WebhooksService {
           webhookUrl,
           formateReqBody,
         );
-        // console.log(
-        //   '🚀 ~ file: webhooks.service.ts:217 ~ WebhooksService ~ registerWebhook ~ webhook:',
-        //   webhook.webhookRegistrationResult[0],
-        // );
+        console.log(
+          '🚀 ~ WebhooksService ~ registerWebhook ~ webhook:',
+          webhook?.webhookRegistrationResult[0],
+        );
       } catch (err) {
         console.log(
           '🚀 ~ file: webhooks.service.ts:223 ~ WebhooksService ~ registerWebhook ~ err:',
@@ -611,7 +609,7 @@ export class WebhooksService {
       currentDate.setDate(currentDate.getDate() + 30);
 
       const localWebhook =
-        webhook &&
+        webhook?.webhookRegistrationResult[0]?.createdWebhookId &&
         userIntegration.siteId &&
         (await this.prisma.webhook.create({
           data: {
@@ -623,13 +621,13 @@ export class WebhooksService {
             expirationDate: currentDate,
           },
         }));
+      console.log(
+        '🚀 ~ WebhooksService ~ registerWebhook ~ localWebhook:',
+        localWebhook,
+      );
       return localWebhook;
     } catch (err) {
       console.log(err);
-      throw new APIException(
-        err.message || 'Fetching problem to register webhook!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
     }
   }
 
