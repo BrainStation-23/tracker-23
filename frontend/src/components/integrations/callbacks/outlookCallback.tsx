@@ -72,7 +72,6 @@ const OutlookCallBack = () => {
       </div>
 
       <GlobalModal
-        {...{ isModalOpen, setIsModalOpen, handleCancel }}
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
         handleCancel={handleCancel}
