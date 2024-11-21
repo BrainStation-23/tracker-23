@@ -73,6 +73,10 @@ const OutlookCallBack = () => {
 
       <GlobalModal
         {...{ isModalOpen, setIsModalOpen, handleCancel }}
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+        handleCancel={handleCancel}
+        search={true}
         setQueryData={setQueryData}
         title="Select Calendar"
       >
