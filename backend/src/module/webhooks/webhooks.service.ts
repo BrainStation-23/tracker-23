@@ -44,7 +44,7 @@ export class WebhooksService {
       userIntegrationIds.push(userIntegration.id);
     });
     console.log(
-      '🚀 ~ WebhooksService ~ getUserIntegrationList.map ~ userIntegrationIds:',
+      '🚀 ~ WebhooksService ~ getUserIntegrationList.map ~ userIntegrationIds - list:',
       userIntegrationIds,
     );
     // await this.getAllWebhooks(user, userIntegrationIds);
