@@ -1,5 +1,10 @@
 {
-  "cSpell.words": ["amcharts", "antd", "worklog", "worklogs"],
+  "cSpell.words": [
+    "amcharts",
+    "antd",
+    "worklog",
+    "worklogs"
+  ],
   "cSpell.ignoreWords": [
     "DDTHH",
     "SSSZ",
@@ -19,5 +24,14 @@
     "svgr",
     "timeoriginalestimate",
     "zeeshan"
-  ]
+  ],
+  "task.allowAutomaticTasks": true,
+  "debug.openDebug": "neverOpen",
+  "terminal.integrated.inheritEnv": false,
+  "tasks": {
+    "label": "lint on open",
+    "type": "shell",
+    "command": "npm run lint",
+    "runOn": "folderOpen"
+  }
 }
