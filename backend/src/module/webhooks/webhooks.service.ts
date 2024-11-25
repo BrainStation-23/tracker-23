@@ -43,7 +43,12 @@ export class WebhooksService {
     getUserIntegrationList.map(async (userIntegration: any) => {
       userIntegrationIds.push(userIntegration.id);
     });
-    return await this.getAllWebhooks(user, userIntegrationIds);
+    console.log(
+      '🚀 ~ WebhooksService ~ getUserIntegrationList.map ~ userIntegrationIds:',
+      userIntegrationIds,
+    );
+    // await this.getAllWebhooks(user, userIntegrationIds);
+    return await this.prisma.webhook.findMany({});
   }
   async getOutlookWebhooks(user: User) {
     const userWorkspace = await this.workspaceService.getUserWorkspace(user);
@@ -129,7 +134,7 @@ export class WebhooksService {
         },
       });
       if (!userIntegration) return [];
-      const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/webhook`;
+      const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/webhook`;
       const webhookJira = await this.jiraClient.CallJira(
         userIntegration,
         this.jiraApiCalls.getWebhookList,
