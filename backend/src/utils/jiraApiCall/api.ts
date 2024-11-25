@@ -8,7 +8,7 @@ export class JiraApiCalls {
         method: 'get',
         url,
         headers: {
-          Authorization: `Bearer ${userIntegration.accessToken}`,
+          Authorization: `Bearer ${userIntegration?.accessToken}`,
           'Content-Type': 'application/json',
         },
       };
