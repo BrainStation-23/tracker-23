@@ -256,7 +256,25 @@ export class ProjectsService {
     });
 
     const host = this.config.get('WEBHOOK_HOST');
-    if (!doesExistWebhook.length && host) {
+    if (doesExistWebhook.length) {
+      for (let index = 0; index < doesExistWebhook.length; index++) {
+        const singleWebhook = doesExistWebhook[index];
+        if (
+          singleWebhook?.webhookId === 'undefined' ||
+          !singleWebhook?.webhookId
+        ) {
+          await this.webhookDatabase.deleteOutlookWebhook({
+            id: singleWebhook.id,
+          });
+        }
+      }
+    }
+    const doesExistValidWebhook = await this.webhookDatabase.getWebhooks({
+      siteId: userIntegration?.siteId,
+      projectKey: project.projectKey,
+    });
+
+    if (!doesExistValidWebhook.length && host && userIntegration?.id) {
       const payload: RegisterWebhookDto = {
         url: `${host}/webhook/receiver`,
         webhookEvents: [
@@ -267,7 +285,7 @@ export class ProjectsService {
           // 'sprint_closed',
         ],
         projectName: [project.projectKey],
-        userIntegrationId: userIntegration?.id || 0,
+        userIntegrationId: userIntegration.id,
       };
       this.webhooksService.registerWebhook(user, payload);
     }
