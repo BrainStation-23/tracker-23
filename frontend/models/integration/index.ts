@@ -3,6 +3,7 @@ export type IntegrationDto = {
   site?: string;
   siteId?: string;
   accessToken?: string;
+  refreshToken?: string;
   type: IntegrationType;
 };
 
