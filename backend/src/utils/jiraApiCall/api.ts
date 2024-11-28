@@ -2,6 +2,30 @@ import { UserIntegration } from '@prisma/client';
 import axios from 'axios';
 
 export class JiraApiCalls {
+  async getWebhookList(userIntegration: UserIntegration, url: string) {
+    try {
+      const config = {
+        method: 'get',
+        url,
+        headers: {
+          Authorization: `Bearer ${userIntegration?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      };
+      const webhookJira = (await axios(config)).data;
+      console.log(
+        '🚀 ~ JiraApiCalls ~ getWebhookList ~ webhookJira:',
+        webhookJira,
+      );
+      return webhookJira;
+    } catch (err) {
+      console.log(
+        '🚀 ~ file: api.ts:17 ~ JiraApiCalls ~ getTransitions ~ err:',
+        err,
+      );
+      return null;
+    }
+  }
   async getTransitions(userIntegration: UserIntegration, url: string) {
     try {
       const config = {
