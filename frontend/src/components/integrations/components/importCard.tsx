@@ -87,6 +87,15 @@ const ImportCard = ({
                   window.open(response, "_self");
                 } catch (error) {}
               }
+            } else if (data.type === "AZURE_DEVOPS") {
+              if (installed) {
+                await handleUninstallIntegration(data.id);
+              } else {
+                try {
+                  const response = await userAPI.getAzureDevopsLink();
+                  window.open(response, "_self");
+                } catch (error) {}
+              }
             } else if (data.type === "OUTLOOK") {
               if (installed) {
                 await handleUninstallIntegration(data.id);

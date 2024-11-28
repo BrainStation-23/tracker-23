@@ -423,6 +423,24 @@ export async function getJiraLinkRest() {
   }
 }
 
+export async function authAzureDevOpsRest() {
+  try {
+    const res = await api.get(`${apiEndPoints.azure_devops}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getAzureDevOpsLinkRest() {
+  try {
+    const res = await api.get(`${apiEndPoints.azure_devops}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
 export async function getOutlookLinkRest() {
   try {
     const res = await api.get(`${apiEndPoints.outlook}`);
@@ -435,6 +453,17 @@ export async function getOutlookLinkRest() {
 export async function sendJiraCodeRest(code: string) {
   try {
     const res = await api.post(`${apiEndPoints.authJira}`, {
+      code: code,
+    });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function sendAzureDevOpsCodeRest(code: string) {
+  try {
+    const res = await api.post(`${apiEndPoints.auth_azure_devops}`, {
       code: code,
     });
     return res.data;
