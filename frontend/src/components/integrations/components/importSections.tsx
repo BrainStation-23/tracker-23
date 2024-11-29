@@ -27,7 +27,7 @@ const IntegrationCard = ({
     >
       <div className="flex w-full flex-col gap-4 ">
         <div className="text-xl font-bold">{title}</div>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex justify-between flex-wrap gap-y-4">
           {integrations?.map((d) => (
             <ImportCard
               data={d}
