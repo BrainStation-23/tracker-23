@@ -16,6 +16,8 @@ async function bootstrap() {
   // app.enableCors(options);
   app.enableCors(options);
   app.useGlobalFilters(new AllExceptionsFilter());
-  await app.listen(process.env.PORT || 8080);
+  await app.listen(process.env.PORT || 8080).then(() => {
+    console.log(`Listening on port ${process.env.PORT}`);
+  });
 }
 bootstrap();

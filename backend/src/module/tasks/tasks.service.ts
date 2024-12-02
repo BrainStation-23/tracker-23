@@ -21,7 +21,7 @@ import {
 } from '@prisma/client';
 
 import { APIException } from '../exception/api.exception';
-import { JiraClientService } from '../helper/client';
+import { ClientService } from '../helper/client';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { MyGateway } from '../notifications/socketGateway';
 import { PrismaService } from '../prisma/prisma.service';
@@ -50,6 +50,8 @@ import {
   getYesterday,
 } from 'src/utils/helper/helper';
 import { SprintsService } from '../sprints/sprints.service';
+import { getAOrganization } from '../azure_dev/azure_dev.axios';
+import { AzureDevApiCalls } from 'src/utils/azureDevApiCall/api';
 
 @Injectable()
 export class TasksService {
@@ -60,7 +62,8 @@ export class TasksService {
     private workspacesService: WorkspacesService,
     private tasksDatabase: TasksDatabase,
     private jiraApiCalls: JiraApiCalls,
-    private jiraClient: JiraClientService,
+    private azureDevApiCalls: AzureDevApiCalls,
+    private clientService: ClientService,
     private sprintTaskDatabase: SprintTaskDatabase,
     private readonly rabbitMQService: RabbitMQService,
     private sprintService: SprintsService,
@@ -1125,7 +1128,7 @@ export class TasksService {
         // if (assigneeFlag && !integratedTask.assignee) {
         //   const issueUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/issue/${integratedTask?.key}`;
         //   // console.log('🚀 ~ TasksService ~ issueUrl 1:', issueUrl);
-        //   const issue = await this.jiraClient.CallJira(
+        //   const issue = await this.clientService.CallJira(
         //     userIntegration,
         //     this.jiraApiCalls.jiraApiGetCall,
         //     issueUrl,
@@ -1670,7 +1673,7 @@ export class TasksService {
         const statusNames = statuses?.map((status) => status.name);
         const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}/transitions`;
         if (statuses[0].transitionId === null) {
-          const { transitions } = await this.jiraClient.CallJira(
+          const { transitions } = await this.clientService.CallJira(
             userIntegration,
             this.jiraApiCalls.getTransitions,
             url,
@@ -1703,7 +1706,7 @@ export class TasksService {
             id: statusDetails?.transitionId,
           },
         });
-        const updatedIssue: any = await this.jiraClient.CallJira(
+        const updatedIssue: any = await this.clientService.CallJira(
           userIntegration,
           this.jiraApiCalls.updatedIssues,
           url,
@@ -1800,7 +1803,7 @@ export class TasksService {
             ],
           },
         });
-        const updatedIssueEstimation = await this.jiraClient.CallJira(
+        const updatedIssueEstimation = await this.clientService.CallJira(
           userIntegration,
           this.jiraApiCalls.UpdateIssueEstimation,
           url,
@@ -2072,9 +2075,77 @@ export class TasksService {
       }
 
       const getProjectListUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/project`;
-      const projectList: any = await this.jiraClient.CallJira(
+      const projectList: any = await this.clientService.CallJira(
         userIntegration,
         this.jiraApiCalls.jiraApiGetCall,
+        getProjectListUrl,
+      );
+      const projectIdList = new Set();
+      const projectListArray: any[] = [];
+
+      for (const project of projectList) {
+        const { id: projectId, key: projectKey, name: projectName } = project;
+        if (projectId) {
+          if (!projectIdList.has(projectId)) {
+            projectIdList.add(projectId);
+            projectListArray.push({
+              projectId: Number(projectId),
+              projectName,
+              projectKey,
+              source: userIntegration
+                ? `${userIntegration?.integration?.site}/browse/${projectKey}`
+                : '',
+              integrationId: integration.id,
+              workspaceId: userWorkspace.workspaceId,
+              integrated: false,
+            });
+          }
+        }
+      }
+      await this.prisma.project.createMany({
+        data: projectListArray,
+      });
+      const projects = await this.tasksDatabase.getProjectList(
+        userIntegration?.integration?.id,
+      );
+      return projects;
+    } catch (err) {
+      console.log(err);
+      return [];
+    }
+  }
+
+  async fetchAllAzureDevProjects(user: User, integration: Integration) {
+    try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new Error('User workspace not found');
+      }
+      const userIntegration: any =
+        user?.activeWorkspaceId &&
+        (await this.prisma.userIntegration.findUnique({
+          where: {
+            UserIntegrationIdentifier: {
+              integrationId: integration.id,
+              userWorkspaceId: userWorkspace.id,
+            },
+          },
+          include: {
+            integration: true,
+          },
+        }));
+      if (!userIntegration) {
+        throw new Error('User Integration not found');
+      }
+
+      const orgName = await getAOrganization({
+        access_token: userIntegration.accessToken,
+      });
+
+      const getProjectListUrl = `https://dev.azure.com/${orgName}/_apis/projects?api-version=7.1-preview.4`;
+      const projectList: any = await this.clientService.CallAzureDev(
+        userIntegration,
+        this.azureDevApiCalls.azureGetApiCall,
         getProjectListUrl,
       );
       const projectIdList = new Set();
@@ -2171,7 +2242,7 @@ export class TasksService {
   ) {
     try {
       const getPriorityByProjectIdUrl = `https://api.atlassian.com/ex/jira/${updatedUserIntegration.siteId}/rest/api/3/priority`;
-      const priorityList: any = await this.jiraClient.CallJira(
+      const priorityList: any = await this.clientService.CallJira(
         updatedUserIntegration,
         this.jiraApiCalls.importJiraPriorities,
         getPriorityByProjectIdUrl,
@@ -2339,7 +2410,7 @@ export class TasksService {
         //     id: statusDetails?.transitionId,
         //   },
         // });
-        const updatedIssue: any = await this.jiraClient.CallJira(
+        const updatedIssue: any = await this.clientService.CallJira(
           userIntegration,
           this.jiraApiCalls.updateIssuePriority,
           url,
@@ -2469,7 +2540,7 @@ export class TasksService {
 
     do {
       events = null;
-      events = await this.jiraClient.CallOutlook(
+      events = await this.clientService.CallOutlook(
         userIntegration,
         this.jiraApiCalls.getCalendarEvents,
         url,

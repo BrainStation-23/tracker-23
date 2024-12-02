@@ -438,6 +438,7 @@ enum IntegrationType {
   JIRA
   TRACKER23
   OUTLOOK
+  AZURE_DEVOPS
 }
 
 enum Role {
