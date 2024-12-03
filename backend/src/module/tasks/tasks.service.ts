@@ -38,6 +38,7 @@ import { UpdateIssuePriorityReqBodyDto } from './dto/update.issue.req.dto';
 import { QueuePayloadType } from 'src/module/queue/types';
 import { RabbitMQService } from '../queue/queue.service';
 import {
+  fetchAzureTasksByProject,
   fetchProjectStatusList,
   fetchTasksByProject,
   getCustomSprintField,
@@ -1340,6 +1341,49 @@ export class TasksService {
     await Promise.allSettled(updateTaskPromises);
   }
 
+  async fetchAndProcessAzureDevOpsTasksAndWorklog(
+    user: User,
+    project: Project,
+    userIntegration: UserIntegration,
+  ){
+    const organizationName = ""
+    const projectName = ""
+    const taskIds = await fetchAzureTasksByProject({
+      organizationName: '',
+      projectName: '',
+      accessToken: userIntegration.accessToken,
+    });
+
+  // fetch all task details
+    const url = `https://dev.azure.com/AbirHussain/MY-TRACKER-23/_apis/wit/workitemsbatch?api-version=7.1`
+    const body = {ids: taskIds}
+    const headers: any = {
+      Authorization: `Bearer ${userIntegration.accessToken}`,
+      'Content-Type': 'application/json',
+    };
+    const allTaskDetails = await axios.post(url, body, { headers });
+  // process all task logs
+    const workLogs = [];
+    for (const task of allTaskDetails.data.value) {
+      const taskObject = {
+        title: task.fields.System.Title,
+        assigneeId: task.fields.System.AssignedTo.id,
+        projectName: task.fields.System.TeamProject,
+        projectId: task.url.split("/").find((part: string) => /^[0-9a-fA-F-]{36}$/.test(part)) || null,
+        workItemType: task.fields.System.WorkItemType,
+        spentHours: task.fields.Microsoft.VSTS.Scheduling.Effort,
+        status: task.fields.System.State,
+        priority: String(task.fields.Microsoft.VSTS.Common.Priority),
+        source: "AZURE_DEVOPS",
+        dataSource: project.source,
+        integratedTaskId: task.id,
+        url: task.url.replace('/_apis/wit/workItems/', '/_workitems/edit/'),
+      };
+      workLogs.push(taskObject);
+    }
+    return workLogs;
+  }
+
   async createSprint(sprints: any[], projectId: number) {
     for (const sprint of sprints) {
       await this.prisma.sprint.upsert({
@@ -2197,12 +2241,12 @@ export class TasksService {
         project?.projectId &&
         (await fetchProjectStatusList({
           siteId: updatedUserIntegration.siteId,
-          projectId: project.projectId,
+          project: project,
           accessToken: updatedUserIntegration.accessToken,
         }));
 
       const StatusListByProjectId: any[] =
-        statusList && statusList.length > 0 ? statusList[0].statuses : [];
+        statusList && statusList.length > 0 ? statusList : [];
       const statusArray: any[] = [];
       const mappedStatuses = new Map<string, number>();
 
@@ -2211,8 +2255,10 @@ export class TasksService {
       });
 
       for (const status of StatusListByProjectId) {
-        const { name, untranslatedName, id, statusCategory } = status;
+        const { name, untranslatedName, id, statusCategory } = status.status;
+        const type = status.type;
         const statusDetail: any = {
+          type,
           name,
           untranslatedName,
           statusId: id,

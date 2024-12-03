@@ -131,6 +131,79 @@ export class ProjectsService {
     const project = await this.projectDatabase.getProjectByIdWithIntegration(
       projId,
     );
+    let projectSource = "";
+    if (!project)
+      throw new APIException('Invalid Project Id', HttpStatus.BAD_REQUEST);
+    projectSource = project.source;
+
+    const updatedUserIntegration = await this.getUserIntegration(project, user);
+    if (!updatedUserIntegration) {
+      throw new APIException(
+        'User Integration not found. Could not import project tasks',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (project?.projectKey && updatedUserIntegration?.siteId) {
+      this.createWebhook(updatedUserIntegration, project, user);
+    }
+
+    try {
+      Promise.allSettled([
+        res &&
+          (await this.tasksService.syncCall(
+            StatusEnum.IN_PROGRESS,
+            user,
+            projId,
+          )),
+
+        await this.tasksService.setProjectStatuses(
+          project,
+          updatedUserIntegration,
+        ),
+     
+        projectSource.includes("pm23.atlassian.net") && await this.tasksService.importPriorities(
+          project,
+          updatedUserIntegration,
+        ),
+        await this.tasksService.sendImportedNotification(
+          user,
+          'Importing Project in progress!',
+        ),
+        await this.tasksService.fetchAndProcessTasksAndWorklog(
+          user,
+          project,
+          updatedUserIntegration,
+        ),
+        await this.tasksService.updateProjectIntegrationStatus(projId),
+        res &&
+          (await this.tasksService.syncCall(StatusEnum.DONE, user, project.id)),
+        await this.tasksService.sendImportedNotification(
+          user,
+          'Project Imported Successfully!',
+          res,
+        ),
+      ]),
+        res?.json({ message: 'Project Imported Successfully' });
+    } catch (error) {
+      Promise.allSettled([
+        await this.tasksService.sendImportedNotification(
+          user,
+          'Importing Tasks Failed',
+        ),
+        await this.tasksService.syncCall(StatusEnum.FAILED, user, project.id),
+      ]);
+      throw new APIException(
+        error.message || 'Could not import project tasks',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async importAzureDevopsProject(user: User, projId: number, res?: Response) {
+    const project = await this.projectDatabase.getProjectByIdWithIntegration(
+      projId,
+    );
     if (!project)
       throw new APIException('Invalid Project Id', HttpStatus.BAD_REQUEST);
 
@@ -159,10 +232,10 @@ export class ProjectsService {
           project,
           updatedUserIntegration,
         ),
-        await this.tasksService.importPriorities(
-          project,
-          updatedUserIntegration,
-        ),
+        // await this.tasksService.importPriorities(
+        //   project,
+        //   updatedUserIntegration,
+        // ),
         await this.tasksService.sendImportedNotification(
           user,
           'Importing Project in progress!',
@@ -172,11 +245,6 @@ export class ProjectsService {
           project,
           updatedUserIntegration,
         ),
-        // await this.sprintService.createSprintAndTask(
-        //   user,
-        //   project,
-        //   updatedUserIntegration,
-        // ),
         await this.tasksService.updateProjectIntegrationStatus(projId),
         res &&
           (await this.tasksService.syncCall(StatusEnum.DONE, user, project.id)),

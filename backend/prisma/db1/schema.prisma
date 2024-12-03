@@ -218,7 +218,7 @@ model StatusDetail {
   statusCategoryId   String?
   statusCategoryName String
   transitionId       String?
-
+  type               String?
   projects  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId Int
 
@@ -229,6 +229,7 @@ model Task {
   id                   Int             @id @default(autoincrement())
   title                String
   description          String?
+  spentHours           Float?
   assigneeId           String?
   projectName          String?
   estimation           Float?
