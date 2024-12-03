@@ -59,12 +59,13 @@ export class AzureDevService {
       //fetch all resources from jira
       const respResources = await getAOrganization({
         access_token: resp.access_token,
+        accountId,
       });
 
       const integrationWithProjects: any[] = [];
       await Promise.all(
         respResources?.count > 0 &&
-          respResources?.value.map(async (element: any) => {
+          respResources?.value?.map(async (element: any) => {
             const expires_in = 3500000;
             const issued_time = Date.now();
             const token_expire = new Date(issued_time + expires_in);
@@ -163,6 +164,10 @@ export class AzureDevService {
               const projects = await this.tasksService.fetchAllAzureDevProjects(
                 user,
                 integration,
+              );
+              console.log(
+                '🚀 ~ AzureDevService ~ respResources?.value.map ~ projects:',
+                projects,
               );
 
               integrationWithProjects.push({

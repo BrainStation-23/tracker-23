@@ -191,6 +191,7 @@ model Project {
   id          Int              @id @default(autoincrement())
   projectId   Int?
   calendarId  String?
+  azureProjectId String?
   projectName String?
   projectKey  String?
   source      String

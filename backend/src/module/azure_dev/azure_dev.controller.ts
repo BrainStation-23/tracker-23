@@ -28,13 +28,13 @@ export class AzureDevController {
     //console.log(req.query);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   async integrationLink() {
     return this.azureDevService.getIntegrationLink(undefined);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('authorization')
   async findIntegration(@GetUser() user: User, @Body() dto: AuthorizeJiraDto) {
     console.log('🚀 ~ AzureDevController ~ findIntegration ~ dto:', dto);

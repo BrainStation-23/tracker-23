@@ -60,7 +60,6 @@ export class AzureDevApiCalls {
         headers,
       };
       const data = (await axios(config)).data;
-      console.log('🚀 ~ AzureDevApiCalls ~ azureGetApiCall ~ data:', data);
       return data;
     } catch (err) {
       console.log(
