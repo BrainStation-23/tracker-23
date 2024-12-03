@@ -113,14 +113,14 @@ export class IntegrationDatabase {
   }
 
   async updateTasks(
-    jiraAccountId: string,
+    accountId: string,
     importedProject: Project[],
     userWorkspaceId: number,
   ) {
     try {
       return await this.prisma.task.updateMany({
         where: {
-          assigneeId: jiraAccountId,
+          assigneeId: accountId,
           projectId: {
             in: importedProject.map((project: any) => {
               return project.id;
