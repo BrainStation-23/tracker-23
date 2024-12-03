@@ -2138,11 +2138,11 @@ export class TasksService {
         throw new Error('User Integration not found');
       }
 
-      const orgName = await getAOrganization({
-        access_token: userIntegration.accessToken,
-      });
+      // const organization = await getAOrganization({
+      //   access_token: userIntegration.accessToken,
+      // });
 
-      const getProjectListUrl = `https://dev.azure.com/${orgName}/_apis/projects?api-version=7.1-preview.4`;
+      const getProjectListUrl = `https://dev.azure.com/${integration.siteId}/_apis/projects?api-version=7.1-preview.4`;
       const projectList: any = await this.clientService.CallAzureDev(
         userIntegration,
         this.azureDevApiCalls.azureGetApiCall,
@@ -2151,18 +2151,15 @@ export class TasksService {
       const projectIdList = new Set();
       const projectListArray: any[] = [];
 
-      for (const project of projectList) {
-        const { id: projectId, key: projectKey, name: projectName } = project;
+      for (const project of projectList?.value) {
+        const { id: projectId, name: projectName } = project;
         if (projectId) {
           if (!projectIdList.has(projectId)) {
             projectIdList.add(projectId);
             projectListArray.push({
-              projectId: Number(projectId),
+              azureProjectId: projectId,
               projectName,
-              projectKey,
-              source: userIntegration
-                ? `${userIntegration?.integration?.site}/browse/${projectKey}`
-                : '',
+              source: `${project.url.split('/_apis')[0]}/${projectName}`,
               integrationId: integration.id,
               workspaceId: userWorkspace.workspaceId,
               integrated: false,

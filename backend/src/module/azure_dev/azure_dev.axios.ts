@@ -42,11 +42,13 @@ export const getAzureDevMemberId = async (params: { access_token: string }) => {
   }
 };
 
-export const getAOrganization = async (params: { access_token: string }) => {
+export const getAOrganization = async (params: {
+  access_token: string;
+  accountId: string;
+}) => {
   try {
-    const { access_token } = params;
-    const memberId = await getAzureDevMemberId({ access_token });
-    const url = `${azureDevConfig.base_url}/accounts?memberId=${memberId}&api-version=6.0`;
+    const { access_token, accountId } = params;
+    const url = `${azureDevConfig.base_url}/accounts?memberId=${accountId}&api-version=6.0`;
     const headers: any = {
       Authorization: `Bearer ${access_token}`,
     };
