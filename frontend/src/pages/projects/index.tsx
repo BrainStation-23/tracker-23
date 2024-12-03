@@ -22,6 +22,7 @@ const ProjectPage = () => {
     TRELLO: [],
     OUTLOOK: [],
     TRACKER23: [],
+    AZURE_DEVOPS: []
   });
   const [searchGroupProjects, setSearchGroupProjects] = useState<GroupProjects>(
     {
@@ -29,6 +30,7 @@ const ProjectPage = () => {
       TRELLO: [],
       OUTLOOK: [],
       TRACKER23: [],
+      AZURE_DEVOPS: []
     }
   );
 
@@ -56,6 +58,7 @@ const ProjectPage = () => {
         TRELLO: [],
         OUTLOOK: [],
         TRACKER23: [],
+        AZURE_DEVOPS: []
       };
       if (Array.isArray(res)) {
         res.forEach((project: ProjectDto) => {
@@ -86,6 +89,7 @@ const ProjectPage = () => {
         TRELLO: [],
         OUTLOOK: [],
         TRACKER23: [],
+        AZURE_DEVOPS: []
       };
       res.forEach((project: ProjectDto) => {
         groupProjects[project.integrationType].push(project);

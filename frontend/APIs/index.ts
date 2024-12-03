@@ -89,7 +89,10 @@ import {
   allTaskReload,
   syncProjects,
   getScrumReportRest,
-  exportScrumViewSheetRest
+  exportScrumViewSheetRest,
+  getAzureDevOpsLinkRest,
+  authAzureDevOpsRest,
+  sendAzureDevOpsCodeRest
 } from "./restApi";
 
 const restApi: apiFunction = {
@@ -112,9 +115,12 @@ const restApi: apiFunction = {
   createSession: createSessionRest,
   stopSession: stopSessionRest,
   authJira: authJiraRest,
+  authAzureDevOps: authAzureDevOpsRest,
   getJiraLink: getJiraLinkRest,
+  getAzureDevopsLink: getAzureDevOpsLinkRest,
   getOutlookLink: getOutlookLinkRest,
   sendJiraCode: sendJiraCodeRest,
+  sendAzureDevOpsCode: sendAzureDevOpsCodeRest,
   sendOutlookCode: sendOutlookCodeRest,
   getIntegrations: getIntegrationsRest,
   uninstallIntegration: uninstallIntegrationRest,

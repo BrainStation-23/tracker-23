@@ -20,6 +20,7 @@ import { EmailService } from '../email/email.service';
 import { UsersDatabase } from 'src/database/users';
 import { RabbitMQService } from '../queue/queue.service';
 import { WorkerService } from '../worker/worker.service';
+import { AzureDevApiCalls } from 'src/utils/azureDevApiCall/api';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { WorkerService } from '../worker/worker.service';
     SprintTaskDatabase,
     ProjectDatabase,
     JiraApiCalls,
+    AzureDevApiCalls,
     AuthService,
     JwtService,
     EmailService,

@@ -25,7 +25,7 @@ import { JiraService } from '../jira/jira.service';
 import { ImportCalendarProjectQueryDto, UpdateProjectRequest } from './dto';
 import { TasksDatabase } from 'src/database/tasks';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
-import { JiraClientService } from '../helper/client';
+import { ClientService } from '../helper/client';
 import * as dayjs from 'dayjs';
 import { ReportsService } from '../reports/reports.service';
 import { WebhookDatabase } from 'src/database/webhook';
@@ -46,7 +46,7 @@ export class ProjectsService {
     private readonly jiraService: JiraService,
     private readonly tasksDatabase: TasksDatabase,
     private jiraApiCalls: JiraApiCalls,
-    private jiraClient: JiraClientService,
+    private clientService: ClientService,
     private reportService: ReportsService,
   ) {}
 
@@ -91,7 +91,7 @@ export class ProjectsService {
       const allNewProjects: any[] = [];
       for (const userIntegration of userIntegrations) {
         const getProjectListUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/project`;
-        const jiraProjects: any = await this.jiraClient.CallJira(
+        const jiraProjects: any = await this.clientService.CallJira(
           userIntegration,
           this.jiraApiCalls.jiraApiGetCall,
           getProjectListUrl,
@@ -619,7 +619,7 @@ export class ProjectsService {
 
     do {
       events = null;
-      events = await this.jiraClient.CallOutlook(
+      events = await this.clientService.CallOutlook(
         userIntegration,
         this.jiraApiCalls.getCalendarEvents,
         url,

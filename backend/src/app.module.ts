@@ -25,6 +25,7 @@ import { ReportsModule } from './module/reports/reports.module';
 import { OnboardingModule } from './module/onboarding/onboarding.module';
 import { RequestLimitMiddleware } from './middleware/request-limit.middleware';
 import { WorkerModule } from './module/worker/worker.module';
+import { AzureDevModule } from './module/azure_dev/azure_dev.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { WorkerModule } from './module/worker/worker.module';
     ReportsModule,
     OnboardingModule,
     WorkerModule,
+    AzureDevModule,
   ],
   providers: [CronService],
 })

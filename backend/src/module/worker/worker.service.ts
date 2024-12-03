@@ -18,7 +18,7 @@ import {
 } from '@prisma/client';
 
 import { APIException } from '../exception/api.exception';
-import { JiraClientService } from '../helper/client';
+import { ClientService } from '../helper/client';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { MyGateway } from '../notifications/socketGateway';
 import { PrismaService } from '../prisma/prisma.service';
@@ -39,7 +39,7 @@ export class WorkerService {
     private sprintService: SprintsService,
     private tasksDatabase: TasksDatabase,
     private jiraApiCalls: JiraApiCalls,
-    private jiraClient: JiraClientService,
+    private clientService: ClientService,
   ) {}
 
   async performTask(data: any) {
@@ -930,7 +930,7 @@ export class WorkerService {
 
     do {
       events = null;
-      events = await this.jiraClient.CallOutlook(
+      events = await this.clientService.CallOutlook(
         userIntegration,
         this.jiraApiCalls.getCalendarEvents,
         url,

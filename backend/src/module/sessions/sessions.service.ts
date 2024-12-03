@@ -34,7 +34,7 @@ import { TasksDatabase } from 'src/database/tasks';
 import * as dayjs from 'dayjs';
 import { SprintReportFilterDto } from './dto/sprint-report.dto';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
-import { JiraClientService } from '../helper/client';
+import { ClientService } from '../helper/client';
 import { SprintDatabase } from 'src/database/sprints';
 
 @Injectable()
@@ -50,7 +50,7 @@ export class SessionsService {
     private tasksDatabase: TasksDatabase,
     private sprintDatabase: SprintDatabase,
     private jiraApiCalls: JiraApiCalls,
-    private jiraClient: JiraClientService,
+    private clientService: ClientService,
   ) {}
 
   async getSessions(user: User, taskId: number) {
@@ -250,7 +250,7 @@ export class SessionsService {
         timeSpent: timeSpentReqBody,
       });
 
-      const workLog: any = await this.jiraClient.CallJira(
+      const workLog: any = await this.clientService.CallJira(
         integration,
         this.jiraApiCalls.updatedIssues,
         url,
@@ -449,7 +449,7 @@ export class SessionsService {
           timeSpent: timeSpent,
         });
         const url = `https://api.atlassian.com/ex/jira/${userIntegration[0]?.siteId}/rest/api/3/issue/${doesExistWorklog?.integratedTaskId}/worklog/${doesExistWorklog.worklogId}`;
-        const response: any = await this.jiraClient.CallJira(
+        const response: any = await this.clientService.CallJira(
           userIntegration[0],
           this.jiraApiCalls.UpdateWorkLog,
           url,

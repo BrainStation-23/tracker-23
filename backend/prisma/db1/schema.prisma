@@ -191,6 +191,7 @@ model Project {
   id          Int              @id @default(autoincrement())
   projectId   Int?
   calendarId  String?
+  azureProjectId String?
   projectName String?
   projectKey  String?
   source      String
@@ -438,6 +439,7 @@ enum IntegrationType {
   JIRA
   TRACKER23
   OUTLOOK
+  AZURE_DEVOPS
 }
 
 enum Role {

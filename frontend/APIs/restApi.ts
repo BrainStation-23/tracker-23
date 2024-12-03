@@ -97,7 +97,8 @@ export async function googleLoginRest(
 ): Promise<LoginResponseDto | undefined> {
   try {
     const res = await api.post(
-      `${apiEndPoints.googleLogin}?code=${code}${invitationCode ? `&invitationCode=${invitationCode}` : ""
+      `${apiEndPoints.googleLogin}?code=${code}${
+        invitationCode ? `&invitationCode=${invitationCode}` : ""
       }`
     );
     return res.data;
@@ -221,20 +222,20 @@ export async function getTasksRest(searchParams: SearchParamsModel) {
   try {
     const res = await api.get(
       apiEndPoints.tasks +
-      "?" +
-      (sprints?.length > 0
-        ? `sprintId=${sprints}`
-        : searchParams?.selectedDate?.length === 2
+        "?" +
+        (sprints?.length > 0
+          ? `sprintId=${sprints}`
+          : searchParams?.selectedDate?.length === 2
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
-      (userIds ? `&userIds=${userIds}` : "") +
-      (searchParams?.searchText && searchParams?.searchText.length > 0
-        ? `&text=${encodeURIComponent(searchParams.searchText)}`
-        : "") +
-      (types?.length > 0 ? `&types=${types}` : "") +
-      (tmp?.length > 0 ? `&projectIds=${tmp}` : "") +
-      (priority && priority.length > 0 ? `&priority=${priority}` : "") +
-      (status && status.length > 0 ? `&status=${status}` : "")
+        (userIds ? `&userIds=${userIds}` : "") +
+        (searchParams?.searchText && searchParams?.searchText.length > 0
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
+          : "") +
+        (types?.length > 0 ? `&types=${types}` : "") +
+        (tmp?.length > 0 ? `&projectIds=${tmp}` : "") +
+        (priority && priority.length > 0 ? `&priority=${priority}` : "") +
+        (status && status.length > 0 ? `&status=${status}` : "")
     );
     const sortedTasks = sortByStatus(res.data);
     return sortedTasks;
@@ -263,20 +264,20 @@ export async function getTaskListReportRest(searchParams: SearchParamsModel) {
   try {
     const res = await api.get(
       apiEndPoints.taskListReport +
-      "?" +
-      (sprints?.length > 0 && (types.length === 0 || types.includes("JIRA"))
-        ? `sprintId=${sprints}`
-        : searchParams?.selectedDate?.length === 2
+        "?" +
+        (sprints?.length > 0 && (types.length === 0 || types.includes("JIRA"))
+          ? `sprintId=${sprints}`
+          : searchParams?.selectedDate?.length === 2
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
-      (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
-      (searchParams?.searchText && searchParams?.searchText.length > 0
-        ? `&text=${encodeURIComponent(searchParams.searchText)}`
-        : "") +
-      (types?.length > 0 ? `&types=${types}` : "") +
-      (tmp?.length > 0 ? `&projectIds=${tmp}` : "") +
-      (priority && priority.length > 0 ? `&priority=${priority}` : "") +
-      (status && status.length > 0 ? `&status=${status}` : "")
+        (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
+        (searchParams?.searchText && searchParams?.searchText.length > 0
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
+          : "") +
+        (types?.length > 0 ? `&types=${types}` : "") +
+        (tmp?.length > 0 ? `&projectIds=${tmp}` : "") +
+        (priority && priority.length > 0 ? `&priority=${priority}` : "") +
+        (status && status.length > 0 ? `&status=${status}` : "")
     );
     const sortedTasks = sortByStatus(res.data);
     // const sortedTasks = sortByStatus(getFormattedTasks(res.data));
@@ -309,20 +310,20 @@ export async function exportTasksRest(searchParams: SearchParamsModel) {
   try {
     const res = await api.get(
       apiEndPoints.export +
-      "?" +
-      (sprints?.length > 0
-        ? `sprintId=${sprints}`
-        : searchParams?.selectedDate?.length === 2
+        "?" +
+        (sprints?.length > 0
+          ? `sprintId=${sprints}`
+          : searchParams?.selectedDate?.length === 2
           ? `startDate=${searchParams?.selectedDate[0]}&endDate=${searchParams?.selectedDate[1]}`
           : "") +
-      (searchParams?.searchText && searchParams?.searchText.length > 0
-        ? `&text=${encodeURIComponent(searchParams.searchText)}`
-        : "") +
-      (types?.length > 0 ? `&types=${types}` : "") +
-      (userIds ? `&userIds=${userIds}` : "") +
-      (tmp?.length > 0 ? `&projectIds=${tmp}` : "") +
-      (priority && priority.length > 0 ? `&priority=${priority}` : "") +
-      (status && status.length > 0 ? `&status=${status}` : ""),
+        (searchParams?.searchText && searchParams?.searchText.length > 0
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
+          : "") +
+        (types?.length > 0 ? `&types=${types}` : "") +
+        (userIds ? `&userIds=${userIds}` : "") +
+        (tmp?.length > 0 ? `&projectIds=${tmp}` : "") +
+        (priority && priority.length > 0 ? `&priority=${priority}` : "") +
+        (status && status.length > 0 ? `&status=${status}` : ""),
       {
         responseType: "blob", // Set responseType to 'blob' to receive binary data
       }
@@ -340,14 +341,14 @@ export async function exportSprintReportRest({
   try {
     const res = await api.get(
       apiEndPoints.exportSprintReport +
-      (sprints?.length > 0 ||
+        (sprints?.length > 0 ||
         selectedUsers?.length > 0 ||
         projectIds?.length > 0
-        ? `?`
-        : "") +
-      (sprints?.length > 0 ? `sprintId=${sprints}` : "") +
-      (selectedUsers?.length > 0 ? `&userId=${selectedUsers}` : "") +
-      (projectIds?.length > 0 ? `&projectIds=${projectIds}` : ""),
+          ? `?`
+          : "") +
+        (sprints?.length > 0 ? `sprintId=${sprints}` : "") +
+        (selectedUsers?.length > 0 ? `&userId=${selectedUsers}` : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : ""),
       {
         responseType: "blob", // Set responseType to 'blob' to receive binary data
       }
@@ -423,6 +424,25 @@ export async function getJiraLinkRest() {
   }
 }
 
+export async function authAzureDevOpsRest() {
+  try {
+    console.log("🚀 ~ authAzureDevOpsRest ~ res:", apiEndPoints.azure_devops);
+    const res = await api.get(`${apiEndPoints.azure_devops}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function getAzureDevOpsLinkRest() {
+  try {
+    const res = await api.get(`${apiEndPoints.azure_devops}`);
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
 export async function getOutlookLinkRest() {
   try {
     const res = await api.get(`${apiEndPoints.outlook}`);
@@ -435,6 +455,17 @@ export async function getOutlookLinkRest() {
 export async function sendJiraCodeRest(code: string) {
   try {
     const res = await api.post(`${apiEndPoints.authJira}`, {
+      code: code,
+    });
+    return res.data;
+  } catch (error: any) {
+    return false;
+  }
+}
+
+export async function sendAzureDevOpsCodeRest(code: string) {
+  try {
+    const res = await api.post(`${apiEndPoints.auth_azure_devops}`, {
       code: code,
     });
     return res.data;
@@ -495,9 +526,10 @@ export async function getIntegrationsRest() {
 export async function getProjectWiseHourRest(dates?: any) {
   try {
     const res = await api.get(
-      `${apiEndPoints.spentTime}?${dates?.length > 0
-        ? `startDate=${dates[0]}&endDate=${dates[1]}`
-        : `startDate=Apr 01, 2022&endDate=Apr 09 , 2023`
+      `${apiEndPoints.spentTime}?${
+        dates?.length > 0
+          ? `startDate=${dates[0]}&endDate=${dates[1]}`
+          : `startDate=Apr 01, 2022&endDate=Apr 09 , 2023`
       }`
     );
     return res.data;
@@ -509,9 +541,10 @@ export async function getProjectWiseHourRest(dates?: any) {
 export async function getSpentTimePerDayRest(dates?: any) {
   try {
     const res = await api.get(
-      `${apiEndPoints.spentTimePerDay}?${dates?.length > 0
-        ? `startDate=${dates[0]}&endDate=${dates[1]}`
-        : `startDate=Apr 01, 2022&endDate=Apr 09 , 2023`
+      `${apiEndPoints.spentTimePerDay}?${
+        dates?.length > 0
+          ? `startDate=${dates[0]}&endDate=${dates[1]}`
+          : `startDate=Apr 01, 2022&endDate=Apr 09 , 2023`
       }`
     );
     return res.data;
@@ -663,12 +696,12 @@ export async function getJiraActiveSprintTasksRest(
   try {
     const res = await api.get(
       `${apiEndPoints.activeSprintTasks}/?state=${["active"]}` +
-      (searchParams?.searchText && searchParams?.searchText.length > 0
-        ? `&text=${encodeURIComponent(searchParams.searchText)}`
-        : "") +
-      (priority && priority.length > 0 ? `&priority=${priority}` : "") +
-      (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
-      (status && status.length > 0 ? `&status=${status}` : "")
+        (searchParams?.searchText && searchParams?.searchText.length > 0
+          ? `&text=${encodeURIComponent(searchParams.searchText)}`
+          : "") +
+        (priority && priority.length > 0 ? `&priority=${priority}` : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "") +
+        (status && status.length > 0 ? `&status=${status}` : "")
       // `${apiEndPoints.activeSprintTasks}/?state=${["closed"]}`
     );
     return res.data;
@@ -689,7 +722,7 @@ export async function getAllProjectsRest() {
 export async function syncProjects() {
   try {
     const res = await api.get(`${apiEndPoints.syncprojects}`);
-    return res.data
+    return res.data;
   } catch (error: any) {
     console.log(error.message);
     return false;
@@ -739,7 +772,6 @@ export async function deleteProjectTasksRest(id: number) {
   }
 }
 
-
 export async function getWorkspaceListRest() {
   try {
     const res = await api.get(`${apiEndPoints.workspaces}`);
@@ -747,7 +779,7 @@ export async function getWorkspaceListRest() {
       ...workspace,
       active: workspace.id === res.data.user.activeWorkspaceId,
     }));
-    
+
     res.data.pages = res.data.pages.map((page: any) => ({
       ...page,
       reports: page.reports.map((report: any) => {
@@ -756,10 +788,15 @@ export async function getWorkspaceListRest() {
         if (report?.config?.filterDateType) {
           // Convert to uppercase and check against the enum
           const filterDateTypeKey = report.config.filterDateType.toUpperCase();
-          filterDateType = FilterDateType[filterDateTypeKey as keyof typeof FilterDateType];
+          filterDateType =
+            FilterDateType[filterDateTypeKey as keyof typeof FilterDateType];
         }
 
-        if (!filterDateType && report?.config?.startDate && report?.config?.endDate) {
+        if (
+          !filterDateType &&
+          report?.config?.startDate &&
+          report?.config?.endDate
+        ) {
           filterDateType = FilterDateType.CUSTOM_DATE;
         } else if (!filterDateType) {
           filterDateType = FilterDateType.THIS_WEEK;
@@ -774,13 +811,12 @@ export async function getWorkspaceListRest() {
         };
       }),
     }));
-    
+
     return res.data;
   } catch (error: any) {
     return false;
   }
 }
-
 
 export async function getWorkspaceMembersRest(): Promise<
   WorkspaceMemberDto[] | false
@@ -931,10 +967,10 @@ export async function exportTimeSheetReportRest({
   try {
     const res = await api.get(
       `${apiEndPoints.exportTimeSheetReport}` +
-      `?startDate=${startDate}&endDate=${endDate}` +
-      (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
-      (types?.length > 0 ? `&types=${types}` : "") +
-      (tmp?.length > 0 ? `&projectIds=${tmp}` : ""),
+        `?startDate=${startDate}&endDate=${endDate}` +
+        (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
+        (types?.length > 0 ? `&types=${types}` : "") +
+        (tmp?.length > 0 ? `&projectIds=${tmp}` : ""),
       {
         responseType: "blob", // Set responseType to 'blob' to receive binary data
       }
@@ -963,10 +999,10 @@ export async function getTimeSheetReportRest({
   try {
     const res = await api.get(
       `${apiEndPoints.timeSheetReport}/` +
-      `?startDate=${startDate}&endDate=${endDate}` +
-      (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
-      (types?.length > 0 ? `&types=${types}` : "") +
-      (tmp?.length > 0 ? `&projectIds=${tmp}` : "")
+        `?startDate=${startDate}&endDate=${endDate}` +
+        (userIds?.length > 0 ? `&userIds=${userIds}` : "") +
+        (types?.length > 0 ? `&types=${types}` : "") +
+        (tmp?.length > 0 ? `&projectIds=${tmp}` : "")
     );
     return res.data;
   } catch (error: any) {
@@ -982,14 +1018,14 @@ export async function getSprintUserReportRest({
   try {
     const res = await api.get(
       `${apiEndPoints.sprintUserReport}` +
-      (sprints?.length > 0 ||
+        (sprints?.length > 0 ||
         selectedUsers?.length > 0 ||
         projectIds?.length > 0
-        ? `?`
-        : "") +
-      (sprints?.length > 0 ? `sprintId=${sprints}` : "") +
-      (selectedUsers?.length > 0 ? `&userId=${selectedUsers}` : "") +
-      (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "")
+          ? `?`
+          : "") +
+        (sprints?.length > 0 ? `sprintId=${sprints}` : "") +
+        (selectedUsers?.length > 0 ? `&userId=${selectedUsers}` : "") +
+        (projectIds?.length > 0 ? `&projectIds=${projectIds}` : "")
     );
     return res.data;
   } catch (error: any) {
@@ -997,21 +1033,29 @@ export async function getSprintUserReportRest({
   }
 }
 
-export async function getScrumReportRest(projectIds: string[], date: Date | string) {
+export async function getScrumReportRest(
+  projectIds: string[],
+  date: Date | string
+) {
   try {
     let url = apiEndPoints.scrumReport;
     const hasProjectIds = projectIds?.length > 0;
     if (hasProjectIds) {
-      url += `?projectIds=${projectIds.join(',')}`;
+      url += `?projectIds=${projectIds.join(",")}`;
     }
-    const formattedDate = typeof date === "string"
-      ? dayjs(date).isValid() ? dayjs(date).format("M-D-YYYY") : date
-      : dayjs(date).isValid() ? dayjs(date).format("M-D-YYYY") : null;
+    const formattedDate =
+      typeof date === "string"
+        ? dayjs(date).isValid()
+          ? dayjs(date).format("M-D-YYYY")
+          : date
+        : dayjs(date).isValid()
+        ? dayjs(date).format("M-D-YYYY")
+        : null;
     if (!formattedDate) {
       throw new Error("Invalid date");
     }
-    url += `${hasProjectIds ? '&' : '?'}date=${formattedDate}`;
-    const res = await api.get(url)
+    url += `${hasProjectIds ? "&" : "?"}date=${formattedDate}`;
+    const res = await api.get(url);
     return res.data;
   } catch (error: any) {
     return false;
@@ -1028,12 +1072,12 @@ export async function getSprintReportRest({
   try {
     const res = await api.get(
       `${apiEndPoints.sprintReport}?` +
-      (projectIds?.length > 0 ? `projectIds=${projectIds}` : "") +
-      (startDate ? `&startDate=${startDate}&endDate=${endDate}` : "") +
-      (sprintId ? `&sprintId=${sprintId}` : "") +
-      (excludeUnworkedTasks
-        ? `&excludeUnworkedTasks=${excludeUnworkedTasks}`
-        : "")
+        (projectIds?.length > 0 ? `projectIds=${projectIds}` : "") +
+        (startDate ? `&startDate=${startDate}&endDate=${endDate}` : "") +
+        (sprintId ? `&sprintId=${sprintId}` : "") +
+        (excludeUnworkedTasks
+          ? `&excludeUnworkedTasks=${excludeUnworkedTasks}`
+          : "")
     );
     return res.data;
   } catch (error: any) {
@@ -1520,8 +1564,8 @@ export async function getSprintViewReportRest({
     };
     const res = await fakeapiRequest(
       `${apiEndPoints.sprintReport}?` +
-      (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
-      (sprintId ? `&sprintId=${sprintId}` : ""),
+        (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
+        (sprintId ? `&sprintId=${sprintId}` : ""),
       data
     );
     // For now, just return the dummy response data
@@ -1540,11 +1584,11 @@ export async function getSprintViewTimelineReportRest({
   try {
     const res = await api.get(
       `${apiEndPoints.sprintTimelineReport}?` +
-      (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
-      (sprintId ? `&sprintId=${sprintId}` : "") +
-      (excludeUnworkedTasks
-        ? `&excludeUnworkedTasks=${excludeUnworkedTasks}`
-        : "")
+        (startDate ? `startDate=${startDate}&endDate=${endDate}` : "") +
+        (sprintId ? `&sprintId=${sprintId}` : "") +
+        (excludeUnworkedTasks
+          ? `&excludeUnworkedTasks=${excludeUnworkedTasks}`
+          : "")
     );
     // For now, just return the dummy response data
     return res.data;
@@ -1618,7 +1662,7 @@ export async function userListByProjectRest(projectIds: number[]) {
   try {
     const res = await api.get(
       `${apiEndPoints.userListByProject}` +
-      (projectIds?.length > 0 ? `?projectIds=${projectIds}` : "")
+        (projectIds?.length > 0 ? `?projectIds=${projectIds}` : "")
     );
     return res.data;
   } catch (error: any) {
@@ -1705,19 +1749,22 @@ export async function getIntegrationTypesReportPageRest() {
 
 export async function exportSprintViewSheetRest(reportData: ReportData) {
   const searchParams = new URLSearchParams({
-    projectIds: `${reportData?.config?.projectIds?.length > 0
-      ? reportData?.config?.projectIds
-      : []
-      }`,
-    sprintId: `${reportData?.config?.sprintIds?.length > 0
-      ? reportData?.config?.sprintIds
-      : []
-      }`,
+    projectIds: `${
+      reportData?.config?.projectIds?.length > 0
+        ? reportData?.config?.projectIds
+        : []
+    }`,
+    sprintId: `${
+      reportData?.config?.sprintIds?.length > 0
+        ? reportData?.config?.sprintIds
+        : []
+    }`,
     startDate: reportData?.config?.startDate,
     endDate: reportData?.config?.endDate,
   });
-  const url = `${apiEndPoints.exportSprintViewSheet
-    }?${searchParams.toString()}`;
+  const url = `${
+    apiEndPoints.exportSprintViewSheet
+  }?${searchParams.toString()}`;
   try {
     const res = await api.get(url, {
       responseType: "blob", // Set responseType to 'blob' to receive binary data
@@ -1729,15 +1776,15 @@ export async function exportSprintViewSheetRest(reportData: ReportData) {
 }
 
 export async function exportScrumViewSheetRest(reportData: ReportData) {
-
-  const tmp = Array.isArray(reportData?.config?.projectIds) ? reportData.config.projectIds.join(',') : '';
+  const tmp = Array.isArray(reportData?.config?.projectIds)
+    ? reportData.config.projectIds.join(",")
+    : "";
   const searchParams = new URLSearchParams({
     startDate: convertToISO(formatDate(reportData?.config?.startDate)),
     endDate: convertToISO(formatDate(reportData?.config?.endDate)),
-    projectIds: tmp
+    projectIds: tmp,
   });
-  const url = `${apiEndPoints.exportScrumViewSheet
-    }?${searchParams.toString()}`;
+  const url = `${apiEndPoints.exportScrumViewSheet}?${searchParams.toString()}`;
   try {
     const res = await api.get(url, {
       responseType: "blob",
@@ -1748,13 +1795,13 @@ export async function exportScrumViewSheetRest(reportData: ReportData) {
   }
 }
 
-
 export async function exportTimeLineSheetRest(reportData: ReportData) {
   const searchParams = new URLSearchParams({
-    sprintId: `${reportData?.config?.sprintIds?.length > 0
-      ? reportData?.config?.sprintIds
-      : []
-      }`,
+    sprintId: `${
+      reportData?.config?.sprintIds?.length > 0
+        ? reportData?.config?.sprintIds
+        : []
+    }`,
     startDate: reportData?.config?.startDate,
     endDate: reportData?.config?.endDate,
     ...(reportData?.config?.userIds && {
