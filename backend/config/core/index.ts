@@ -16,6 +16,7 @@ const {
   NODEMAILER_PASS,
   ADMIN_EMAIL,
   HOST_URL,
+  BACKDOOR_SECRET
 } = process.env;
 
 export const coreConfig = {
@@ -29,6 +30,7 @@ export const coreConfig = {
   ADMIN_URL: INVITE_URL || 'http://localhost:3001/inviteLink',
   admin_mail: ADMIN_EMAIL || 'admin@example.com',
   host_url: HOST_URL || 'http://localhost:3001',
+  backdoor_secret: BACKDOOR_SECRET || "",
 };
 
 export const nodemailerConfig = {

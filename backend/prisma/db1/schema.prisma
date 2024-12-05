@@ -95,6 +95,7 @@ model User {
   picture              String?
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
+  lastLoggedIn         DateTime?
   passwordResetToken   String?
   passwordResetExpires DateTime?
   approved             Boolean?        @default(true)

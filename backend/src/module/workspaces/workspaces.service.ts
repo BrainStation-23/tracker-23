@@ -34,6 +34,21 @@ export class WorkspacesService {
     private pagesService: PagesService,
   ) {}
 
+  async getTottalWorkSpaces (){
+    return this.prisma.workspace.count()
+  }
+
+  // Total users under each workspace
+  async countUsersInWorkspaces(){
+    return this.prisma.workspace.findMany({
+      select: {
+        id: true,
+        name: true,
+        _count: { select: { userWorkspaces: true } }, 
+      },
+    })
+  }
+
   async createWorkspace(
     user: Partial<User>,
     name: string,
