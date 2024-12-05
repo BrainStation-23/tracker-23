@@ -12,6 +12,35 @@ import { UpdateSettingsReqDto } from 'src/module/user/dto/create.settings.dto';
 export class UsersDatabase {
   constructor(private prisma: PrismaService) {}
 
+  async getTottalUsers() {
+    return this.prisma.user.count();
+  }
+
+  async getTottalActiveUsers() {
+    return this.prisma.user.count({ where: { status: 'ACTIVE' } });
+  }
+
+  // Users logged in in the last 24 hours
+  async findUsersLoggedInLast24Hours() {
+    return this.prisma.user.count({
+      where: {
+        // lastLoggedIn: {
+        //   gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        // },
+      },
+    });
+  }
+  
+
+  // update last logged in time
+  async updateLastLoggedIn(userId: number): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { //lastLoggedIn: new Date()
+         },
+    });
+  }
+
   async findUsers(user: User) {
     try {
       const workspace =

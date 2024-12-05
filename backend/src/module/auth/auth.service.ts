@@ -29,6 +29,7 @@ import { APIException } from '../exception/api.exception';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserWorkspaceDatabase } from 'src/database/userWorkspaces';
 import { coreConfig } from 'config/core';
+import { update } from 'lodash';
 
 @Injectable()
 export class AuthService {
@@ -68,6 +69,7 @@ export class AuthService {
         hash: await argon.hash(dto?.password),
         status: UserStatus.ONBOARD,
         onboadingSteps: [...this.onboadingSteps],
+        lastLoggedIn: new Date(),
       });
 
       const workspace =
@@ -224,6 +226,8 @@ export class AuthService {
     }
 
     const token = await this.createToken(user, dto.remember);
+    // update last logged in time
+    await this.usersDatabase.updateLastLoggedIn(user.id);
     return {
       id: user.id,
       email: user.email,
@@ -281,6 +285,7 @@ export class AuthService {
             doesExist.workspaceId &&
             (await this.usersDatabase.updateUser(oldUser, {
               activeWorkspaceId: doesExist.workspaceId,
+              lastLoggedIn: new Date(),
             }));
           if (!updatedOldUser)
             throw new APIException(
@@ -305,6 +310,7 @@ export class AuthService {
             },
             data: {
               activeWorkspaceId: workspace.id,
+              lastLoggedIn: new Date(),
             },
           }));
         const updatedUser =
@@ -514,6 +520,7 @@ export class AuthService {
       {
         hash: await argon.hash(data?.password),
         firstName: data?.firstName,
+        lastLoggedIn: new Date(),
         onboadingSteps: [...this.onboadingSteps],
         status: UserStatus.ACTIVE,
         ...(data?.lastName && { lastName: data?.lastName }),
@@ -625,6 +632,7 @@ export class AuthService {
       { id: user?.id },
       {
         activeWorkspaceId: updatedUserWorkspace?.workspaceId,
+        lastLoggedIn: new Date(),
       },
     );
 

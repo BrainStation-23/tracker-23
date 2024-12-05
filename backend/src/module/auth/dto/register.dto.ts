@@ -1,6 +1,7 @@
 import { UserStatus } from '@prisma/client';
 import {
   IsArray,
+  IsDate,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -71,6 +72,9 @@ export class CreateUserData {
   @IsOptional()
   @IsArray()
   onboadingSteps: object[];
+
+  @IsDate()
+  lastLoggedIn: Date;
 }
 
 export class GoogleLoginCreateUser {
