@@ -2,6 +2,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { UsersDatabase } from 'src/database/users';
 import { UsersController } from './users.controller';
+import { BackdoorUserController } from './backdoor-user.controller';
 import { UsersService } from './users.service';
 import { WorkspacesModule } from 'src/module/workspaces/workspaces.module';
 import { TasksModule } from 'src/module/tasks/tasks.module';
@@ -19,7 +20,7 @@ import { OnboardingModule } from 'src/module/onboarding/onboarding.module';
     ProjectsModule,
     OnboardingModule,
   ],
-  controllers: [UsersController],
+  controllers: [UsersController, BackdoorUserController],
   providers: [UsersService, UsersDatabase],
   exports: [UsersService, UsersDatabase],
 })
