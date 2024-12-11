@@ -188,6 +188,7 @@ const TableComponent = ({
           selectedStatus={{
             name: task.status,
             statusCategoryName: task.statusCategoryName,
+            type: task.statusType
           }}
         >
           <div
