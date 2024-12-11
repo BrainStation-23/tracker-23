@@ -36,7 +36,7 @@ export const getAzureDevMemberId = async (params: { access_token: string }) => {
     const response = await axios.get(url, {
       headers,
     });
-    return response.data.id;
+    return response.data;
   } catch (err) {
     return '';
   }

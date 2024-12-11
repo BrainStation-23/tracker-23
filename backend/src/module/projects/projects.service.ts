@@ -131,21 +131,23 @@ export class ProjectsService {
     const project = await this.projectDatabase.getProjectByIdWithIntegration(
       projId,
     );
-    let projectSource = "";
     if (!project)
       throw new APIException('Invalid Project Id', HttpStatus.BAD_REQUEST);
-    projectSource = project.source;
 
-    const updatedUserIntegration = await this.getUserIntegration(project, user);
-    if (!updatedUserIntegration) {
+    const userIntegration = await this.getUserIntegration(project, user);
+    console.log(
+      '🚀 ~ ProjectsService ~ importProject ~ userIntegration:',
+      userIntegration,
+    );
+    if (!userIntegration) {
       throw new APIException(
         'User Integration not found. Could not import project tasks',
         HttpStatus.BAD_REQUEST,
       );
     }
 
-    if (project?.projectKey && updatedUserIntegration?.siteId) {
-      this.createWebhook(updatedUserIntegration, project, user);
+    if (project?.projectKey && userIntegration?.siteId) {
+      this.createWebhook(userIntegration, project, user);
     }
 
     try {
@@ -157,24 +159,11 @@ export class ProjectsService {
             projId,
           )),
 
-        await this.tasksService.setProjectStatuses(
-          project,
-          updatedUserIntegration,
-        ),
-     
-        projectSource.includes("pm23.atlassian.net") && await this.tasksService.importPriorities(
-          project,
-          updatedUserIntegration,
-        ),
         await this.tasksService.sendImportedNotification(
           user,
           'Importing Project in progress!',
         ),
-        await this.tasksService.fetchAndProcessTasksAndWorklog(
-          user,
-          project,
-          updatedUserIntegration,
-        ),
+        await this.getTypeWiseProjectTaskFetch(user, project, userIntegration),
         await this.tasksService.updateProjectIntegrationStatus(projId),
         res &&
           (await this.tasksService.syncCall(StatusEnum.DONE, user, project.id)),
@@ -198,6 +187,51 @@ export class ProjectsService {
         HttpStatus.BAD_REQUEST,
       );
     }
+  }
+
+  async getTypeWiseProjectTaskFetch(
+    user: User,
+    project: any,
+    userIntegration: any,
+  ) {
+    if (project?.integration?.type === IntegrationType.JIRA) {
+      await Promise.allSettled([
+        await this.tasksService.setProjectStatuses(project, userIntegration),
+        await this.tasksService.importPriorities(project, userIntegration),
+        await this.tasksService.fetchAndProcessTasksAndWorklog(
+          user,
+          project,
+          userIntegration,
+        ),
+      ]);
+    } else if (project?.integration?.type === IntegrationType.AZURE_DEVOPS) {
+      console.log(
+        '🚀 ~ ProjectsService ~ project?.integration?.type:',
+        project?.integration?.type,
+      );
+      await Promise.allSettled([
+        await this.tasksService.setAzureDevProjectStatuses(
+          project,
+          userIntegration,
+        ),
+        await this.tasksService.fetchAndProcessAzureDevOpsTasksAndWorklog(
+          user,
+          project,
+          userIntegration,
+        ),
+      ]);
+    }
+    // else if (project?.integration?.type === IntegrationType.OUTLOOK) {
+    //   await Promise.allSettled([
+    //     this.tasksService.setProjectStatuses(project, userIntegration),
+    //     this.tasksService.importPriorities(project, userIntegration),
+    //     this.tasksService.fetchAndProcessTasksAndWorklog(
+    //       user,
+    //       project,
+    //       userIntegration,
+    //     ),
+    //   ]);
+    // }
   }
 
   async importAzureDevopsProject(user: User, projId: number, res?: Response) {
@@ -227,20 +261,11 @@ export class ProjectsService {
             user,
             projId,
           )),
-
-        await this.tasksService.setProjectStatuses(
-          project,
-          updatedUserIntegration,
-        ),
-        // await this.tasksService.importPriorities(
-        //   project,
-        //   updatedUserIntegration,
-        // ),
         await this.tasksService.sendImportedNotification(
           user,
           'Importing Project in progress!',
         ),
-        await this.tasksService.fetchAndProcessTasksAndWorklog(
+        await this.getTypeWiseProjectTaskFetch(
           user,
           project,
           updatedUserIntegration,
@@ -292,24 +317,19 @@ export class ProjectsService {
         });
         for (let index = 0; index < userIntegrations.length; index++) {
           const userInt = userIntegrations[index];
-          updatedUserIntegration =
-            userInt &&
-            (await this.integrationsService.getUpdatedUserIntegrationForOthers(
-              user,
-              userInt,
-            ));
+          updatedUserIntegration = userInt;
+          //   userInt &&
+          //   (await this.integrationsService.getUpdatedUserIntegrationForOthers(
+          //     user,
+          //     userInt,
+          //   ));
 
           if (updatedUserIntegration) {
             break;
           }
         }
       } else {
-        updatedUserIntegration =
-          userIntegration &&
-          (await this.integrationsService.getUpdatedUserIntegration(
-            user,
-            userIntegration.id,
-          ));
+        updatedUserIntegration = userIntegration;
       }
       return updatedUserIntegration;
     } catch (err) {

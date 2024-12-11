@@ -247,6 +247,23 @@ export class JiraApiCalls {
     return taskList;
   }
 
+  async jiraWorklogPromise(
+    userIntegration: UserIntegration,
+    url: string,
+    param: any,
+  ) {
+    const worklogConfig = {
+      method: 'get',
+      url,
+      headers: {
+        Authorization: `Bearer ${userIntegration?.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      params: param,
+    };
+    return axios(worklogConfig);
+  }
+
   async importJiraWorklog(
     userIntegration: UserIntegration,
     url: string,

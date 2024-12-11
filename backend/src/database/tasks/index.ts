@@ -421,6 +421,9 @@ export class TasksDatabase {
     try {
       return await this.prisma.userIntegration.findMany({
         where: query,
+        include: {
+          integration: true,
+        },
       });
     } catch (err) {
       console.log('🚀 ~ TasksDatabase ~ getUserIntegrations ~ err:', err);

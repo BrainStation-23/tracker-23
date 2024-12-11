@@ -37,12 +37,7 @@ import {
 import { UpdateIssuePriorityReqBodyDto } from './dto/update.issue.req.dto';
 import { QueuePayloadType } from 'src/module/queue/types';
 import { RabbitMQService } from '../queue/queue.service';
-import {
-  fetchAzureTasksByProject,
-  fetchProjectStatusList,
-  fetchTasksByProject,
-  getCustomSprintField,
-} from './tasks.axios';
+import { fetchTasksByProject } from './tasks.axios';
 import { startOfWeek, endOfWeek } from 'date-fns';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
 import {
@@ -51,7 +46,6 @@ import {
   getYesterday,
 } from 'src/utils/helper/helper';
 import { SprintsService } from '../sprints/sprints.service';
-import { getAOrganization } from '../azure_dev/azure_dev.axios';
 import { AzureDevApiCalls } from 'src/utils/azureDevApiCall/api';
 
 @Injectable()
@@ -1009,6 +1003,9 @@ export class TasksService {
             userWorkspaceId,
           },
         },
+        include: {
+          integration: true,
+        },
       });
     } catch (err) {
       return null;
@@ -1035,19 +1032,59 @@ export class TasksService {
     );
   }
 
+  async getCustomSprintField(userIntegration: UserIntegration) {
+    const fieldsUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/field`;
+    const response = await this.clientService.CallJira(
+      userIntegration,
+      this.jiraApiCalls.jiraApiGetCall,
+      fieldsUrl,
+    );
+    for (const field of response) {
+      if (field?.name == 'Sprint') return field.key;
+    }
+  }
+
+  async fetchTasksByProject(params: {
+    userIntegration: UserIntegration;
+    projectId: number;
+    syncTime: number;
+    startAt?: number; // Optional pagination parameter
+  }) {
+    const { userIntegration, projectId, syncTime, startAt = 0 } = params;
+    try {
+      const url = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/search`;
+      const jql = `project=${projectId} AND created >= startOfMonth(-${syncTime}M) AND created <= endOfDay()`;
+      const sprintCustomField = await this.getCustomSprintField(
+        userIntegration,
+      );
+      const fields = `summary,issuetype, assignee,timeoriginalestimate,project, comment,parent, created, updated, status, priority, ${sprintCustomField}`;
+      const response = await this.clientService.CallJira(
+        userIntegration,
+        this.jiraApiCalls.importJiraTasks,
+        url,
+        {
+          jql,
+          startAt,
+          maxResults: 100,
+          fields,
+        },
+      );
+      return response;
+    } catch (err) {
+      console.error('Error fetching tasks:', err);
+      return [];
+    }
+  }
   async fetchAndProcessTasksAndWorklog(
     user: User,
     project: Project,
     userIntegration: UserIntegration,
   ) {
-    const headers: any = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${userIntegration.accessToken}`,
-    };
-    const sprintCustomField = await getCustomSprintField(
-      userIntegration.siteId!,
-      headers,
-    );
+    // const headers: any = {
+    //   'Content-Type': 'application/json',
+    //   Authorization: `Bearer ${userIntegration.accessToken}`,
+    // };
+    const sprintCustomField = await this.getCustomSprintField(userIntegration);
     const mappedUserWorkspaceAndJiraId =
       await this.mappingUserWorkspaceAndJiraAccountId(user);
     const settings = await this.tasksDatabase.getSettings(user);
@@ -1064,15 +1101,14 @@ export class TasksService {
         sessionArray: any[] = [];
       const mappedIssues = new Map<number, any>();
 
-      respTasks = await fetchTasksByProject({
-        siteId: userIntegration.siteId!,
+      respTasks = await this.fetchTasksByProject({
+        userIntegration,
         projectId: project.projectId!,
         syncTime,
-        headers,
         startAt,
       });
 
-      if (!respTasks || respTasks.issues.length === 0) {
+      if (!respTasks || respTasks?.issues?.length === 0) {
         break;
       }
       respTasks?.issues?.map((issue: any) => {
@@ -1123,21 +1159,6 @@ export class TasksService {
               Number(integratedTask.parent.id),
             );
         }
-        // if (assigneeFlag && integratedTask.assignee) {
-        //   assigneeFlag = false;
-        // }
-        // if (assigneeFlag && !integratedTask.assignee) {
-        //   const issueUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/issue/${integratedTask?.key}`;
-        //   // console.log('🚀 ~ TasksService ~ issueUrl 1:', issueUrl);
-        //   const issue = await this.clientService.CallJira(
-        //     userIntegration,
-        //     this.jiraApiCalls.jiraApiGetCall,
-        //     issueUrl,
-        //   );
-        //   // console.log('🚀 ~ TasksService ~ issue 2:', issue);
-        //   integratedTask = issue.fields;
-        //   console.log('🚀 ~ TasksService ~ integratedTask 3:', integratedTask);
-        // }
 
         taskList.push({
           userWorkspaceId:
@@ -1156,6 +1177,7 @@ export class TasksService {
           statusCategoryName: integratedTask?.status?.statusCategory?.name
             .replace(' ', '_')
             .toUpperCase(),
+          statusType: integratedTask?.issuetype?.name,
           priority: taskPriority,
           integratedTaskId: integratedTaskId,
           createdAt: new Date(integratedTask.created),
@@ -1208,16 +1230,14 @@ export class TasksService {
         for (const [integratedTaskId] of mappedIssues) {
           const fields = 'issueId';
           const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/issue/${integratedTaskId}/worklog`;
-          const config = {
-            method: 'get',
+          const res = await this.clientService.CallJira(
+            userIntegration,
+            this.jiraApiCalls.jiraWorklogPromise,
             url,
-            headers: {
-              Authorization: `Bearer ${userIntegration?.accessToken}`,
-              'Content-Type': 'application/json',
+            {
               fields,
             },
-          };
-          const res = axios(config);
+          );
           worklogPromises.push(res);
           if (worklogPromises.length >= coreConfig.promiseQuantity) {
             total += coreConfig.promiseQuantity;
@@ -1345,43 +1365,100 @@ export class TasksService {
     user: User,
     project: Project,
     userIntegration: UserIntegration,
-  ){
-    const organizationName = ""
-    const projectName = ""
-    const taskIds = await fetchAzureTasksByProject({
-      organizationName: '',
-      projectName: '',
-      accessToken: userIntegration.accessToken,
-    });
+  ) {
+    const mappedUserWorkspaceAndJiraId =
+      await this.mappingUserWorkspaceAndJiraAccountId(user);
+    console.log(
+      '🚀 ~ TasksService ~ mappedUserWorkspaceAndJiraId:',
+      mappedUserWorkspaceAndJiraId,
+    );
+    const organizationName = userIntegration.siteId;
+    const projectName = project.projectName;
+    if (!organizationName || !projectName) return null;
 
-  // fetch all task details
-    const url = `https://dev.azure.com/AbirHussain/MY-TRACKER-23/_apis/wit/workitemsbatch?api-version=7.1`
-    const body = {ids: taskIds}
-    const headers: any = {
-      Authorization: `Bearer ${userIntegration.accessToken}`,
-      'Content-Type': 'application/json',
+    const fetchAzureTasksByProjectUrl = `https://dev.azure.com/${organizationName}/${projectName}/_apis/wit/wiql?api-version=7.0`;
+    const bodyQuery = {
+      query: `
+        SELECT [System.Id], [System.Title], [System.State]
+        FROM WorkItems
+        WHERE [System.TeamProject] = '${projectName}'
+        ORDER BY [System.CreatedDate] DESC
+      `,
     };
-    const allTaskDetails = await axios.post(url, body, { headers });
-  // process all task logs
-    const workLogs = [];
+    const response = await this.clientService.CallAzureDev(
+      userIntegration,
+      this.azureDevApiCalls.azurePostApiCall,
+      fetchAzureTasksByProjectUrl,
+      bodyQuery,
+    );
+    const taskIds = response.data.workItems.map((item: { id: any }) => item.id);
+    console.log('🚀 ~ TasksService ~ taskIds:', taskIds);
+
+    // fetch all task details
+    const url = `https://dev.azure.com/${organizationName}/${projectName}/_apis/wit/workitemsbatch?api-version=7.1`;
+    const body = { ids: taskIds };
+    const allTaskDetails = await this.clientService.CallAzureDev(
+      userIntegration,
+      this.azureDevApiCalls.azurePostApiCall,
+      url,
+      body,
+    );
+
+    // process all task logs
+    const taskList = [];
     for (const task of allTaskDetails.data.value) {
       const taskObject = {
-        title: task.fields.System.Title,
-        assigneeId: task.fields.System.AssignedTo.id,
-        projectName: task.fields.System.TeamProject,
-        projectId: task.url.split("/").find((part: string) => /^[0-9a-fA-F-]{36}$/.test(part)) || null,
-        workItemType: task.fields.System.WorkItemType,
-        spentHours: task.fields.Microsoft.VSTS.Scheduling.Effort,
-        status: task.fields.System.State,
-        priority: String(task.fields.Microsoft.VSTS.Common.Priority),
-        source: "AZURE_DEVOPS",
-        dataSource: project.source,
+        userWorkspaceId:
+          mappedUserWorkspaceAndJiraId.get(
+            task.fields['System.AssignedTo'].id,
+          ) || null,
+        workspaceId: project.workspaceId,
+        title: task.fields['System.Title'],
+        assigneeId: task.fields['System.AssignedTo'].id,
+        estimation: task.fields['Microsoft.VSTS.Scheduling.RemainingWork']
+          ? Number(
+              (
+                task.fields['Microsoft.VSTS.Scheduling.RemainingWork'] / 3600
+              ).toFixed(2),
+            )
+          : null,
+        projectName: task.fields['System.TeamProject'],
+        projectId:
+          task.url
+            .split('/')
+            .find((part: string) => /^[0-9a-fA-F-]{36}$/.test(part)) || null,
+        // spentHours: task.fields['Microsoft.VSTS.Scheduling.RemainingWork'],
+        status: task.fields['System.State'],
+        statusCategoryName: '',
+        statusType: task.fields['System.WorkItemType'],
+        priority: String(task.fields['Microsoft.VSTS.Common.Priority']),
         integratedTaskId: task.id,
+        source: IntegrationType.AZURE_DEVOPS,
+        dataSource: project.source,
+        // createdAt: new Date(task.fields['System.WorkItemType.CreatedAt']),
+        // updatedAt: new Date(task.fields['System.WorkItemType.UpdatedAt']),
+        // jiraUpdatedAt: new Date(task.fields['System.WorkItemType.UpdatedAt']),
         url: task.url.replace('/_apis/wit/workItems/', '/_workitems/edit/'),
       };
-      workLogs.push(taskObject);
+      taskList.push(taskObject);
     }
-    return workLogs;
+    console.log('🚀 ~ TasksService ~ taskList:', taskList);
+    const [t, tasks] = await Promise.all([
+      await this.prisma.task.createMany({
+        data: taskList,
+      }),
+      await this.prisma.task.findMany({
+        where: {
+          projectId: project.id,
+          source: IntegrationType.JIRA,
+        },
+        select: {
+          id: true,
+          integratedTaskId: true,
+        },
+      }),
+    ]);
+    return taskList;
   }
 
   async createSprint(sprints: any[], projectId: number) {
@@ -1457,14 +1534,19 @@ export class TasksService {
     workspace &&
       workspace.userWorkspaces &&
       workspace.userWorkspaces?.map((userWorkspace) => {
-        if (
-          userWorkspace.userIntegration.length > 0 &&
-          userWorkspace.userIntegration[0].jiraAccountId
+        for (
+          let index = 0;
+          index < userWorkspace?.userIntegration?.length;
+          index++
         ) {
-          mappedUserWorkspaceAndJiraId.set(
-            userWorkspace.userIntegration[0].jiraAccountId,
-            userWorkspace.id,
-          );
+          const userIntegration = userWorkspace.userIntegration[index];
+
+          if (userIntegration && userIntegration.jiraAccountId) {
+            mappedUserWorkspaceAndJiraId.set(
+              userIntegration.jiraAccountId,
+              userWorkspace.id,
+            );
+          }
         }
       });
     return mappedUserWorkspaceAndJiraId;
@@ -1670,6 +1752,7 @@ export class TasksService {
         select: {
           integratedTaskId: true,
           projectId: true,
+          statusType: true,
         },
       });
       if (task?.integratedTaskId === null) {
@@ -1730,6 +1813,7 @@ export class TasksService {
                   StatusDetailIdentifier: {
                     name: transition.name,
                     projectId: task.projectId,
+                    type: task.statusType!,
                   },
                 },
                 data: { transitionId: transition.id },
@@ -2223,27 +2307,38 @@ export class TasksService {
       return [];
     }
   }
-
-  async setProjectStatuses(
-    project: Project,
-    updatedUserIntegration: UserIntegration,
-  ) {
+  async setProjectStatuses(project: Project, userIntegration: UserIntegration) {
     const localStatus = await this.prisma.statusDetail.findMany({
       where: { projectId: project.id },
     });
     try {
-      const statusList =
-        updatedUserIntegration?.accessToken &&
-        updatedUserIntegration?.siteId &&
-        project?.projectId &&
-        (await fetchProjectStatusList({
-          siteId: updatedUserIntegration.siteId,
-          project: project,
-          accessToken: updatedUserIntegration.accessToken,
-        }));
+      const getStatusByProjectIdUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/project/${project.projectId}/statuses`;
+      const response = await this.clientService.CallJira(
+        userIntegration,
+        this.jiraApiCalls.jiraApiGetCall,
+        getStatusByProjectIdUrl,
+      );
 
-      const StatusListByProjectId: any[] =
-        statusList && statusList.length > 0 ? statusList : [];
+      const statusList = response?.map(
+        (workType: {
+          name: any;
+          statuses: {
+            id: any;
+            name: any;
+            untranslatedName: any;
+            statusCategory: any;
+          }[];
+        }) => ({
+          type: workType.name,
+          status: workType?.statuses?.map((status: any) => ({
+            id: status.id,
+            name: status.name,
+            untranslatedName: status.untranslatedName,
+            statusCategory: status.statusCategory,
+          })),
+        }),
+      );
+
       const statusArray: any[] = [];
       const mappedStatuses = new Map<string, number>();
 
@@ -2251,24 +2346,106 @@ export class TasksService {
         mappedStatuses.set(status?.name, status?.id);
       });
 
-      for (const status of StatusListByProjectId) {
-        const { name, untranslatedName, id, statusCategory } = status.status;
-        const type = status.type;
-        const statusDetail: any = {
-          type,
-          name,
-          untranslatedName,
-          statusId: id,
-          statusCategoryId: `${statusCategory?.id}`,
-          statusCategoryName: statusCategory?.name
-            .replace(' ', '_')
-            .toUpperCase(),
-          projectId: project.id,
-          // transitionId: null,
-        };
-        if (!mappedStatuses.has(name)) statusArray.push(statusDetail);
+      // for (const status of statusList) {
+      //   const { name, untranslatedName, id, statusCategory } = status;
+      //   const statusDetail: any = {
+      //     name,
+      //     untranslatedName,
+      //     statusId: id,
+      //     statusCategoryId: `${statusCategory?.id}`,
+      //     statusCategoryName: statusCategory?.name
+      //       .replace(' ', '_')
+      //       .toUpperCase(),
+      //     projectId: project.id,
+      //     // transitionId: null,
+      //   };
+      //   if (!mappedStatuses.has(name)) statusArray.push(statusDetail);
+      // }
+
+      for (const typeWiseStatus of statusList) {
+        const statuses = typeWiseStatus.status;
+        const type = typeWiseStatus.type;
+        for (let index = 0; index < statuses.length; index++) {
+          const { name, untranslatedName, id, statusCategory } =
+            statuses[index];
+          const statusDetail: any = {
+            name,
+            type,
+            untranslatedName,
+            statusId: id,
+            statusCategoryId: `${statusCategory?.id}`,
+            statusCategoryName: statusCategory?.name
+              .replace(' ', '_')
+              .toUpperCase(),
+            projectId: project.id,
+            // transitionId: null,
+          };
+          if (!mappedStatuses.has(name)) statusArray.push(statusDetail);
+        }
       }
 
+      if (statusArray.length > 0)
+        await this.tasksDatabase.createBatchStatus(statusArray);
+    } catch (error) {
+      console.log(
+        '🚀 ~ TasksService ~ setProjectStatuses ~ error-2361:',
+        error.message,
+      );
+    }
+  }
+  async setAzureDevProjectStatuses(
+    project: Project,
+    updatedUserIntegration: UserIntegration,
+  ) {
+    const projectExistingStatus = await this.prisma.statusDetail.findMany({
+      where: { projectId: project.id },
+    });
+    try {
+      const organizationName = updatedUserIntegration?.siteId;
+      const projectName = project.projectName;
+      const getStatusByProjectIdUrl = `https://dev.azure.com/${organizationName}/${projectName}/_apis/wit/workItemTypes?api-version=7.0`;
+      const response = await this.clientService.CallAzureDev(
+        updatedUserIntegration,
+        this.azureDevApiCalls.azureGetApiCall,
+        getStatusByProjectIdUrl,
+      );
+      const statusList = response.data.value.map(
+        (workType: { name: any; states: { name: any; category: any }[] }) => ({
+          type: workType.name,
+          status: workType.states.map(
+            (state: { name: any; category: any; id?: string }) => ({
+              name: state.name,
+              statusCategory: state.category,
+              id: undefined,
+              untranslatedName: undefined,
+            }),
+          ),
+        }),
+      );
+      console.log('🚀 ~ TasksService ~ statusList:', statusList);
+
+      const statusArray: any[] = [];
+      const mappedStatuses = new Map<string, number>();
+
+      projectExistingStatus.map((status: StatusDetail) => {
+        mappedStatuses.set(status?.name, status?.id);
+      });
+
+      for (const typeWiseStatus of statusList) {
+        const statuses = typeWiseStatus.status;
+        const type = typeWiseStatus.type;
+
+        for (let index = 0; index < statuses.length; index++) {
+          const { name, statusCategory } = statuses[index];
+          const statusDetail: any = {
+            type,
+            name,
+            statusCategoryName: statusCategory,
+            projectId: project.id,
+          };
+          if (!mappedStatuses.has(name)) statusArray.push(statusDetail);
+        }
+      }
       if (statusArray.length > 0)
         await this.tasksDatabase.createBatchStatus(statusArray);
     } catch (error) {
@@ -2279,14 +2456,11 @@ export class TasksService {
     }
   }
 
-  async importPriorities(
-    project: any,
-    updatedUserIntegration: UserIntegration,
-  ) {
+  async importPriorities(project: any, userIntegration: UserIntegration) {
     try {
-      const getPriorityByProjectIdUrl = `https://api.atlassian.com/ex/jira/${updatedUserIntegration.siteId}/rest/api/3/priority`;
+      const getPriorityByProjectIdUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/api/3/priority`;
       const priorityList: any = await this.clientService.CallJira(
-        updatedUserIntegration,
+        userIntegration,
         this.jiraApiCalls.importJiraPriorities,
         getPriorityByProjectIdUrl,
       );
@@ -2310,7 +2484,6 @@ export class TasksService {
         await this.tasksDatabase.createBatchPriority(priorityListByProjectId),
         await this.tasksDatabase.getPriorityList(project.id),
       ]);
-
       return getPriorities;
     } catch (error) {
       console.log(
