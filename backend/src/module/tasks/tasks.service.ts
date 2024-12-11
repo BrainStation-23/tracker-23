@@ -1784,7 +1784,7 @@ export class TasksService {
               },
             },
           }));
-
+          
         const statuses: StatusDetail[] = task?.projectId
           ? await this.prisma.statusDetail.findMany({
               where: {
@@ -1805,10 +1805,10 @@ export class TasksService {
             this.jiraApiCalls.getTransitions,
             url,
           );
-
+          
           for (const transition of transitions) {
             if (task.projectId && statusNames.includes(transition.name)) {
-              await this.prisma.statusDetail.update({
+                await this.prisma.statusDetail.update({
                 where: {
                   StatusDetailIdentifier: {
                     name: transition.name,
@@ -1826,6 +1826,7 @@ export class TasksService {
           where: {
             projectId: task?.projectId,
             name: status,
+            type: task.statusType,
           },
         });
 
