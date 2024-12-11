@@ -25,11 +25,6 @@ export class ClientService {
     ...rest: any
   ) {
     if (userIntegration?.expiration_time.getTime() > Date.now()) {
-      // console.log(
-      //   '🚀 ~ file: client.ts:22 ~ ClientService ~ userIntegration.expiration_time.getTime():',
-      //   userIntegration.expiration_time.getTime(),
-      //   Date.now(),
-      // );
       return await apiCaller(userIntegration, ...rest);
     } else {
       const url = 'https://auth.atlassian.com/oauth/token';
@@ -40,14 +35,12 @@ export class ClientService {
         client_secret: this.config.get('JIRA_SECRET_KEY'),
         refresh_token: userIntegration?.refreshToken,
       };
-      // console.log('🚀 ~ file: client.ts:37 ~ ClientService ~ data:', data);
       let tokenResp;
       try {
         tokenResp = (
           await lastValueFrom(this.httpService.post(url, data, headers))
         ).data;
       } catch (err) {
-        // console.log('🚀 ~ ClientService ~ err:', 'hello from inside');
         throw new APIException(
           ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
           HttpStatus.GONE,
