@@ -1368,10 +1368,6 @@ export class TasksService {
   ) {
     const mappedUserWorkspaceAndJiraId =
       await this.mappingUserWorkspaceAndJiraAccountId(user);
-    console.log(
-      '🚀 ~ TasksService ~ mappedUserWorkspaceAndJiraId:',
-      mappedUserWorkspaceAndJiraId,
-    );
     const organizationName = userIntegration.siteId;
     const projectName = project.projectName;
     if (!organizationName || !projectName) return null;
@@ -1391,8 +1387,29 @@ export class TasksService {
       fetchAzureTasksByProjectUrl,
       bodyQuery,
     );
-    const taskIds = response.data.workItems.map((item: { id: any }) => item.id);
-    console.log('🚀 ~ TasksService ~ taskIds:', taskIds);
+    let taskIds = response?.workItems?.map((item: { id: any }) => item.id);
+
+    const integratedTasks = await this.prisma.task.findMany({
+      where: {
+        workspaceId: user?.activeWorkspaceId,
+        integratedTaskId: { in: taskIds },
+        source: IntegrationType.AZURE_DEVOPS,
+      },
+      select: {
+        integratedTaskId: true,
+      },
+    });
+
+    // keep the task list that doesn't exist in the database
+    for (let j = 0, len = integratedTasks.length; j < len; j++) {
+      const key = integratedTasks[j].integratedTaskId;
+      // Remove the task ID from taskIds if it exists
+      taskIds = taskIds.filter((taskId: number) => taskId !== key);
+    }
+
+    if (!taskIds || !taskIds?.length) {
+      return [];
+    }
 
     // fetch all task details
     const url = `https://dev.azure.com/${organizationName}/${projectName}/_apis/wit/workitemsbatch?api-version=7.1`;
@@ -1406,7 +1423,8 @@ export class TasksService {
 
     // process all task logs
     const taskList = [];
-    for (const task of allTaskDetails.data.value) {
+    const mappedSession = new Map<number, any>();
+    for (const task of allTaskDetails?.value) {
       const taskObject = {
         userWorkspaceId:
           mappedUserWorkspaceAndJiraId.get(
@@ -1415,18 +1433,9 @@ export class TasksService {
         workspaceId: project.workspaceId,
         title: task.fields['System.Title'],
         assigneeId: task.fields['System.AssignedTo'].id,
-        estimation: task.fields['Microsoft.VSTS.Scheduling.RemainingWork']
-          ? Number(
-              (
-                task.fields['Microsoft.VSTS.Scheduling.RemainingWork'] / 3600
-              ).toFixed(2),
-            )
-          : null,
+        estimation: task.fields['Microsoft.VSTS.Scheduling.Effort'] ?? null,
         projectName: task.fields['System.TeamProject'],
-        projectId:
-          task.url
-            .split('/')
-            .find((part: string) => /^[0-9a-fA-F-]{36}$/.test(part)) || null,
+        projectId: project.id,
         // spentHours: task.fields['Microsoft.VSTS.Scheduling.RemainingWork'],
         status: task.fields['System.State'],
         statusCategoryName: '',
@@ -1435,14 +1444,45 @@ export class TasksService {
         integratedTaskId: task.id,
         source: IntegrationType.AZURE_DEVOPS,
         dataSource: project.source,
-        // createdAt: new Date(task.fields['System.WorkItemType.CreatedAt']),
-        // updatedAt: new Date(task.fields['System.WorkItemType.UpdatedAt']),
-        // jiraUpdatedAt: new Date(task.fields['System.WorkItemType.UpdatedAt']),
+        createdAt: new Date(task.fields['System.CreatedDate']),
+        updatedAt: new Date(task.fields['System.ChangedDate']),
+        jiraUpdatedAt: new Date(task.fields['System.ChangedDate']),
         url: task.url.replace('/_apis/wit/workItems/', '/_workitems/edit/'),
       };
+      const estimation =
+        task.fields['Microsoft.VSTS.Scheduling.Effort'] ?? null;
+      const remainingWork =
+        task.fields['Microsoft.VSTS.Scheduling.RemainingWork'] ?? null;
+      const startTime =
+        task.fields['Microsoft.VSTS.Common.StateChangeDate'] ?? new Date();
+      let spentHour;
+      if (estimation && remainingWork) {
+        spentHour = estimation - remainingWork;
+      } else if (estimation && !remainingWork) {
+        spentHour = 0;
+      } else if (!estimation && remainingWork) {
+        spentHour = 8 - remainingWork;
+      } else {
+        spentHour = 0;
+      }
+
+      if (!mappedSession.has(task.id)) {
+        mappedSession.set(task.id, {
+          startTime: new Date(startTime),
+          endTime: new Date(
+            new Date(startTime).getTime() + spentHour * 60 * 60 * 1000,
+          ),
+          status: SessionStatus.STOPPED,
+          userWorkspaceId:
+            mappedUserWorkspaceAndJiraId.get(
+              task.fields['System.AssignedTo'].id,
+            ) || null,
+          integratedTaskId: Number(task.id),
+        });
+      }
       taskList.push(taskObject);
     }
-    console.log('🚀 ~ TasksService ~ taskList:', taskList);
+
     const [t, tasks] = await Promise.all([
       await this.prisma.task.createMany({
         data: taskList,
@@ -1450,7 +1490,7 @@ export class TasksService {
       await this.prisma.task.findMany({
         where: {
           projectId: project.id,
-          source: IntegrationType.JIRA,
+          source: IntegrationType.AZURE_DEVOPS,
         },
         select: {
           id: true,
@@ -1458,6 +1498,28 @@ export class TasksService {
         },
       }),
     ]);
+
+    //insert taskId
+    for (const [key, value] of mappedSession.entries()) {
+      const task = tasks.find(
+        (t) => t.integratedTaskId !== null && t.integratedTaskId === key,
+      );
+      if (task) {
+        mappedSession.set(key, { ...value, taskId: task.id });
+      }
+    }
+
+    try {
+      await this.prisma.session.createMany({
+        data: Array.from(mappedSession.values()),
+      });
+    } catch (error) {
+      console.log('🚀 ~ TasksService ~ error:', error);
+      throw new APIException(
+        'Could not create session!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     return taskList;
   }
 
@@ -2409,7 +2471,8 @@ export class TasksService {
         this.azureDevApiCalls.azureGetApiCall,
         getStatusByProjectIdUrl,
       );
-      const statusList = response.data.value.map(
+      console.log('🚀 ~ TasksService ~ response:', response);
+      const statusList = response.value.map(
         (workType: { name: any; states: { name: any; category: any }[] }) => ({
           type: workType.name,
           status: workType.states.map(

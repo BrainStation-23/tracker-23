@@ -146,7 +146,7 @@ export class ClientService {
       const body = {
         client_assertion_type: azureDevConfig.client_assertion_type,
         client_assertion: azureDevConfig.client_assertion,
-        grant_type: azureDevConfig.grant_type,
+        grant_type: 'refresh_token',
         assertion: userIntegration.refreshToken,
         redirect_uri: azureDevConfig.redirect_uri,
       };

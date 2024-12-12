@@ -38,10 +38,11 @@ export class AzureDevApiCalls {
         },
         data: formateReqBody,
       };
-      const webhook = await (await axios(config)).data;
-      return webhook;
+      return await (
+        await axios(config)
+      ).data;
     } catch (err) {
-      console.log('🚀 ~ file: api.ts:69 ~ JiraApiCalls ~ err:', err);
+      console.log('🚀 ~ AzureDevApiCalls ~ err:', err);
       return null;
     }
   }
