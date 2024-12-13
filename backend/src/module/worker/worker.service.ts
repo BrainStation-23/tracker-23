@@ -27,6 +27,7 @@ import { WorkspacesService } from '../workspaces/workspaces.service';
 import { StatusEnum } from '../tasks/dto';
 import { QueuePayloadType } from '../queue/types';
 import { getCustomSprintField } from '../tasks/tasks.axios';
+import { AzureDevApiCalls } from 'src/utils/azureDevApiCall/api';
 
 @Injectable()
 export class WorkerService {
@@ -40,6 +41,7 @@ export class WorkerService {
     private tasksDatabase: TasksDatabase,
     private jiraApiCalls: JiraApiCalls,
     private clientService: ClientService,
+    private azureDevApiCalls: AzureDevApiCalls,
   ) {}
 
   async performTask(data: any) {
@@ -721,6 +723,301 @@ export class WorkerService {
     }
   }
 
+  private async syncTasksFetchAndProcessAzureDevOpsTasksAndWorklog(
+    user: User,
+    project: Project,
+    userIntegration: UserIntegration,
+    type: QueuePayloadType,
+  ) {
+    const mappedUserWorkspaceAndAzureDevOpsId =
+      await this.mappingUserWorkspaceAndAzureDevOpsAccountId(user);
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    const syncState = await this.tasksDatabase.callSync({
+      userWorkspaceId: userWorkspace.id,
+      projectId: project.id,
+    });
+
+    let startDate;
+    if (syncState?.lastSync) {
+      startDate = syncState.lastSync;
+    } else {
+      startDate = new Date();
+    }
+
+    const organizationName = userIntegration.siteId;
+    const projectName = project.projectName;
+    if (!organizationName || !projectName) return null;
+
+    const fetchAzureTasksByProjectUrl = `https://dev.azure.com/${organizationName}/${projectName}/_apis/wit/wiql?api-version=7.0`;
+    const bodyQuery = {
+      query: `
+         SELECT [System.Id], [System.Title], [System.State], [System.ChangedDate]
+      FROM WorkItems
+      WHERE 
+        [System.TeamProject] = '${projectName}' 
+        AND [System.WorkItemType] = 'Task'
+        AND [System.ChangedDate] >= '${startDate}' 
+        AND [System.ChangedDate] <= '${new Date()}'
+      ORDER BY [System.ChangedDate] DESC
+      `,
+    };
+
+    const response = await this.clientService.CallAzureDev(
+      userIntegration,
+      this.azureDevApiCalls.azurePostApiCall,
+      fetchAzureTasksByProjectUrl,
+      bodyQuery,
+    );
+
+    let taskIds = response?.workItems?.map((item: { id: any }) => item.id);
+
+    // fetch all task details
+    const url = `https://dev.azure.com/${organizationName}/${projectName}/_apis/wit/workitemsbatch?api-version=7.1`;
+    const body = { ids: taskIds };
+    const allTaskDetails = await this.clientService.CallAzureDev(
+      userIntegration,
+      this.azureDevApiCalls.azurePostApiCall,
+      url,
+      body,
+    );
+    if (!taskIds || !taskIds?.length) {
+      return [];
+    }
+    // process all task logs
+    const taskList = [];
+    for (const task of allTaskDetails?.value) {
+      const taskObject = {
+        userWorkspaceId:
+          mappedUserWorkspaceAndAzureDevOpsId.get(
+            task.fields['System.AssignedTo'].id,
+          ) || null,
+        workspaceId: project.workspaceId,
+        title: task.fields['System.Title'],
+        assigneeId: task.fields['System.AssignedTo'].id,
+        estimation: task.fields['Microsoft.VSTS.Scheduling.Effort'] ?? null,
+        projectName: task.fields['System.TeamProject'],
+        projectId: project.id,
+        // spentHours: task.fields['Microsoft.VSTS.Scheduling.RemainingWork'],
+        status: task.fields['System.State'],
+        statusCategoryName: '',
+        statusType: task.fields['System.WorkItemType'],
+        priority: String(task.fields['Microsoft.VSTS.Common.Priority']),
+        integratedTaskId: task.id,
+        source: IntegrationType.AZURE_DEVOPS,
+        dataSource: project.source,
+        createdAt: new Date(task.fields['System.CreatedDate']),
+        updatedAt: new Date(task.fields['System.ChangedDate']),
+        jiraUpdatedAt: new Date(task.fields['System.ChangedDate']),
+        url: task.url.replace('/_apis/wit/workItems/', '/_workitems/edit/'),
+      };
+      const estimation =
+        task.fields['Microsoft.VSTS.Scheduling.Effort'] ?? null;
+      const remainingWork =
+        task.fields['Microsoft.VSTS.Scheduling.RemainingWork'] ?? null;
+      const startTime =
+        task.fields['Microsoft.VSTS.Common.StateChangeDate'] ?? new Date();
+      let spentHour;
+      if (estimation && remainingWork) {
+        spentHour = estimation - remainingWork;
+      } else if (estimation && !remainingWork) {
+        spentHour = 0;
+      } else if (!estimation && remainingWork) {
+        spentHour = 8 - remainingWork;
+      } else {
+        spentHour = 0;
+      }
+
+      if (!mappedSession.has(task.id)) {
+        mappedSession.set(task.id, {
+          startTime: new Date(startTime),
+          endTime: new Date(
+            new Date(startTime).getTime() + spentHour * 60 * 60 * 1000,
+          ),
+          status: SessionStatus.STOPPED,
+          userWorkspaceId:
+            mappedUserWorkspaceAndAzureDevOpsId.get(
+              task.fields['System.AssignedTo'].id,
+            ) || null,
+          integratedTaskId: Number(task.id),
+        });
+      }
+      taskList.push(taskObject);
+    }
+    // find existing tasks in local
+    const integratedTasks = await this.prisma.task.findMany({
+      where: {
+        workspaceId: user?.activeWorkspaceId,
+        integratedTaskId: { in: taskIds },
+        source: IntegrationType.AZURE_DEVOPS,
+      },
+      select: {
+        id: true,
+        integratedTaskId: true,
+      },
+    });
+
+    const existingTaskMap = new Map(
+      integratedTasks.map((task) => [task.integratedTaskId, task.id]),
+    );
+
+    const tasksToCreate: {
+      userWorkspaceId: number | null;
+      workspaceId: number;
+      title: any;
+      assigneeId: any;
+      estimation: any;
+      projectName: any;
+      projectId: number;
+      status: any;
+      statusCategoryName: string;
+      statusType: any;
+      priority: string;
+      integratedTaskId: any;
+      source: 'AZURE_DEVOPS';
+      dataSource: string;
+      createdAt: Date;
+      updatedAt: Date;
+      jiraUpdatedAt: Date;
+      url: any;
+    }[] = [];
+    const tasksToUpdate: {
+      userWorkspaceId: number | null;
+      workspaceId: number;
+      title: any;
+      assigneeId: any;
+      estimation: any;
+      projectName: any;
+      projectId: number;
+      // spentHours: task.fields['Microsoft.VSTS.Scheduling.RemainingWork'],
+      status: any;
+      statusCategoryName: string;
+      statusType: any;
+      priority: string;
+      integratedTaskId: any;
+      source: 'AZURE_DEVOPS';
+      dataSource: string;
+      createdAt: Date;
+      updatedAt: Date;
+      jiraUpdatedAt: Date;
+      url: any;
+      id: number;
+    }[] = [];
+
+    taskList.forEach((task) => {
+      const existingTaskId = existingTaskMap.get(task.integratedTaskId);
+      if (existingTaskId) {
+        tasksToUpdate.push({
+          id: existingTaskId,
+          ...task,
+        });
+      } else {
+        tasksToCreate.push(task);
+      }
+    });
+
+    const [t, t1, tasks] = await Promise.all([
+      await this.prisma.$transaction(
+        tasksToUpdate.map((task) =>
+          this.prisma.task.update({
+            where: { id: task.id },
+            data: task,
+          }),
+        ),
+      ),
+
+      await this.prisma.task.createMany({
+        data: tasksToCreate,
+      }),
+
+      await this.prisma.task.findMany({
+        where: {
+          projectId: project.id,
+          source: IntegrationType.AZURE_DEVOPS,
+        },
+        select: {
+          id: true,
+          integratedTaskId: true,
+        },
+      }),
+    ]);
+
+    //insert taskId
+    const mappedSession = new Map<number, any>();
+    for (const [key, value] of mappedSession.entries()) {
+      const task = tasks.find(
+        (t) => t.integratedTaskId !== null && t.integratedTaskId === key,
+      );
+      if (task) {
+        mappedSession.set(key, { ...value, taskId: task.id });
+      }
+    }
+    // Fetch existing sessions
+    const existingSessions = await this.prisma.session.findMany({
+      where: {
+        integratedTaskId: { in: taskIds },
+      },
+      select: {
+        id: true,
+        integratedTaskId: true,
+      },
+    });
+    // Create a map for quick lookup of existing sessions
+    const existingSessionMap = new Map(
+      existingSessions.map((session) => [session.integratedTaskId, session.id]),
+    );
+
+    // Prepare sessions to create or update
+    const sessionsToCreate = [];
+    const sessionsToUpdate = [];
+
+    for (const [key, value] of mappedSession.entries()) {
+      const existingSessionId = existingSessionMap.get(key);
+
+      const sessionObject = {
+        userWorkspaceId: value.userWorkspaceId,
+        integratedTaskId: value.integratedTaskId,
+        startTime: value.startTime,
+        endTime: value.endTime,
+        status: value.status,
+        taskId: value.taskId,
+      };
+
+      if (existingSessionId) {
+        // Add to update list
+        sessionsToUpdate.push({
+          id: existingSessionId,
+          ...sessionObject,
+        });
+      } else {
+        // Add to create list
+        sessionsToCreate.push(sessionObject);
+      }
+    }
+
+    try {
+      await this.prisma.$transaction([
+        // Update existing sessions
+        ...sessionsToUpdate.map((session) =>
+          this.prisma.session.update({
+            where: { id: session.id },
+            data: session,
+          }),
+        ),
+        // Create new sessions
+        this.prisma.session.createMany({
+          data: sessionsToCreate,
+        }),
+      ]);
+    } catch (error) {
+      console.log('🚀 ~ TasksService ~ error:', error);
+      throw new APIException(
+        'Could not create session!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return taskList;
+  }
+
   async createSprint(sprints: any[], projectId: number) {
     for (const sprint of sprints) {
       await this.prisma.sprint.upsert({
@@ -805,6 +1102,38 @@ export class WorkerService {
       });
     return mappedUserWorkspaceAndJiraId;
   }
+  private async mappingUserWorkspaceAndAzureDevOpsAccountId(user: User) {
+    const mappedUserWorkspaceAndAzureDevOpsId = new Map<string, number>();
+    const workspace =
+      user?.activeWorkspaceId &&
+      (await this.prisma.workspace.findUnique({
+        where: {
+          id: user.activeWorkspaceId,
+        },
+        include: {
+          userWorkspaces: {
+            include: {
+              userIntegration: true,
+            },
+          },
+        },
+      }));
+
+    workspace &&
+      workspace.userWorkspaces &&
+      workspace.userWorkspaces?.map((userWorkspace) => {
+        if (
+          userWorkspace.userIntegration.length > 0 &&
+          userWorkspace.userIntegration[0].AzureAccountId
+        ) {
+          mappedUserWorkspaceAndAzureDevOpsId.set(
+            userWorkspace.userIntegration[0].AzureAccountId,
+            userWorkspace.id,
+          );
+        }
+      });
+    return mappedUserWorkspaceAndAzureDevOpsId;
+  }
 
   async updateProjectIntegrationStatus(projId: number) {
     await this.prisma.project.update({
@@ -834,6 +1163,12 @@ export class WorkerService {
       return await this.syncEvents(user, project.id);
     } else if (project.integration?.type === IntegrationType.JIRA) {
       return await this.syncTasks(
+        user,
+        project.id,
+        QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK,
+      );
+    } else if (project.integration?.type === IntegrationType.AZURE_DEVOPS) {
+      return await this.syncAzureDevOpsTasks(
         user,
         project.id,
         QueuePayloadType.SYNC_PROJECT_OR_OUTLOOK,
@@ -1146,6 +1481,86 @@ export class WorkerService {
         //   project,
         //   updatedUserIntegration,
         // ),
+        await this.updateProjectIntegrationStatus(projId),
+        await this.syncCall(StatusEnum.DONE, user, projId),
+        await this.sendImportedNotification(
+          user,
+          'Project Synced Successfully!',
+        ),
+      ]);
+      return { message: 'Project Synced Successfully!' };
+    } catch (err) {
+      console.log(
+        '🚀 ~ file: tasks.service.ts:1511 ~ TasksService ~ syncTasks ~ err:',
+        err,
+      );
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user, projId),
+      ]);
+      throw new APIException(
+        'Could not Sync project tasks!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async syncAzureDevOpsTasks(
+    user: User,
+    projId: number,
+    type: QueuePayloadType,
+  ) {
+    const project = await this.prisma.project.findUnique({
+      where: { id: projId },
+      include: { integration: true },
+    });
+    if (!project) {
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user, projId),
+      ]);
+      throw new APIException('Project Not Found', HttpStatus.BAD_REQUEST);
+    }
+
+    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+    if (!userWorkspace) {
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user, projId),
+      ]);
+      throw new APIException(
+        'Can not import project tasks, userWorkspace not found!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const userIntegration =
+      project?.integrationId &&
+      (await this.getUserIntegration(userWorkspace.id, project.integrationId));
+    const updatedUserIntegration =
+      userIntegration &&
+      (await this.integrationsService.getUpdatedUserIntegration(
+        user,
+        userIntegration.id,
+      ));
+
+    if (!updatedUserIntegration) {
+      Promise.allSettled([
+        await this.sendImportedNotification(user, 'Syncing Failed!'),
+        await this.syncCall(StatusEnum.FAILED, user, projId),
+      ]);
+      return [];
+    }
+    try {
+      Promise.allSettled([
+        // await this.syncCall(StatusEnum.IN_PROGRESS, user),
+        await this.sendImportedNotification(user, 'Syncing in progress!'),
+        await this.syncTasksFetchAndProcessAzureDevOpsTasksAndWorklog(
+          user,
+          project,
+          updatedUserIntegration,
+          type,
+        ),
         await this.updateProjectIntegrationStatus(projId),
         await this.syncCall(StatusEnum.DONE, user, projId),
         await this.sendImportedNotification(
