@@ -54,7 +54,7 @@ jobs:
       #     path: .
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build
     environment:
       name: "Production"
