@@ -23,6 +23,7 @@ import { AuthService } from '../auth/auth.service';
 import { RabbitMQService } from '../queue/queue.service';
 import { WorkerService } from '../worker/worker.service';
 import { WebhookDatabase } from 'src/database/webhook';
+import { AzureDevApiCalls } from 'src/utils/azureDevApiCall/api';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { WebhookDatabase } from 'src/database/webhook';
     SprintDatabase,
     SprintTaskDatabase,
     JiraApiCalls,
+    AzureDevApiCalls,
     JiraService,
     AuthService,
     JwtService,

@@ -84,12 +84,13 @@ export const monthsList = [
   "December",
 ];
 
-export const supportedIntegrations = ["JIRA", "OUTLOOK"];
-export const allIntegrations = ["JIRA", "OUTLOOK", "TRELLO"];
+export const supportedIntegrations = ["JIRA", "OUTLOOK", "AZURE_DEVOPS"];
+export const allIntegrations = ["JIRA", "OUTLOOK", "AZURE_DEVOPS", "TRELLO"];
 
 export enum IntegrationTitlesEnum {
   JIRA = "Jira Software",
   TRELLO = "Trello",
+  AZURE_DEVOPS="Azure DevOps"
 }
 
 export enum IntegrationDescriptionsEnum {
@@ -97,6 +98,7 @@ export enum IntegrationDescriptionsEnum {
   TRELLO = "Connect Trello to your WorkSpace",
   OUTLOOK = "Connect Outlook to your WorkSpace",
   TRACKER23 = "Connect Tracker 23 to your WorkSpace",
+  AZURE_DEVOPS="Connect Azure DevOps to your WorkSpace"
 }
 
 export const outlookSourceUrl = "https://outlook.office.com/calendar/view";

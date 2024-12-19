@@ -17,7 +17,7 @@ import { ProjectDatabase } from 'src/database/projects';
 import { SprintDatabase } from 'src/database/sprints';
 import { SprintTaskDatabase } from 'src/database/sprintTasks';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
-import { JiraClientService } from '../helper/client';
+import { ClientService } from '../helper/client';
 import {
   NewSprintViewQueryDto,
   SprintViewReqBodyDto,
@@ -38,7 +38,7 @@ export class SprintsService {
     private sprintTaskDatabase: SprintTaskDatabase,
     private tasksDatabase: TasksDatabase,
     private jiraApiCalls: JiraApiCalls,
-    private jiraClient: JiraClientService,
+    private clientService: ClientService,
   ) {}
 
   async createSprintAndTask(
@@ -58,7 +58,7 @@ export class SprintsService {
       throw new APIException('Can not sync with jira', HttpStatus.BAD_REQUEST);
 
     const boardUrl = `https://api.atlassian.com/ex/jira/${userIntegration.siteId}/rest/agile/1.0/board`;
-    const boardList = await this.jiraClient.CallJira(
+    const boardList = await this.clientService.CallJira(
       userIntegration,
       this.jiraApiCalls.getBoardList,
       boardUrl,
@@ -78,7 +78,7 @@ export class SprintsService {
     for (let index = 0, len = projectBoardIds.length; index < len; index++) {
       for (let startAt = 0; ; startAt += 50) {
         const sprintUrl = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/agile/1.0/board/${projectBoardIds[index]}/sprint`;
-        const sprintRes = await this.jiraClient.CallJira(
+        const sprintRes = await this.clientService.CallJira(
           userIntegration,
           this.jiraApiCalls.getJiraSprint,
           sprintUrl,
@@ -176,7 +176,7 @@ export class SprintsService {
       //jira task fetch by sprint id
       for (let startAt = 0; startAt < 5000; startAt += 50) {
         const sprintIssueUrl = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/agile/1.0/sprint/${sprint.jiraSprintId}/issue`;
-        const res = await this.jiraClient.CallJira(
+        const res = await this.clientService.CallJira(
           userIntegration,
           this.jiraApiCalls.getSprintIssueList,
           sprintIssueUrl,

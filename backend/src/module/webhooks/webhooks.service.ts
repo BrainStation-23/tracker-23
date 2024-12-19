@@ -12,7 +12,7 @@ import { IntegrationsService } from 'src/module/integrations/integrations.servic
 import { APIException } from 'src/module/exception/api.exception';
 import { JiraApiCalls } from 'src/utils/jiraApiCall/api';
 import { OutlookApiCalls } from 'src/utils/outlookApiCall/api';
-import { JiraClientService } from 'src/module/helper/client';
+import { ClientService } from 'src/module/helper/client';
 import { outLookConfig } from '../../../config/outlook';
 import { WorkspacesService } from 'src/module/workspaces/workspaces.service';
 import { WebhookDatabase } from 'src/database/webhook';
@@ -27,7 +27,7 @@ export class WebhooksService {
     private integrationsService: IntegrationsService,
     private jiraApiCalls: JiraApiCalls,
     private outlookApiCalls: OutlookApiCalls,
-    private jiraClient: JiraClientService,
+    private clientService: ClientService,
     private workspaceService: WorkspacesService,
     private webhookDatabase: WebhookDatabase,
     private projectDatabase: ProjectDatabase,
@@ -44,7 +44,7 @@ export class WebhooksService {
       userIntegrationIds.push(userIntegration.id);
     });
     console.log(
-      '🚀 ~ WebhooksService ~ getUserIntegrationList.map ~ userIntegrationIds:',
+      '🚀 ~ WebhooksService ~ getUserIntegrationList.map ~ userIntegrationIds - list:',
       userIntegrationIds,
     );
     // await this.getAllWebhooks(user, userIntegrationIds);
@@ -73,7 +73,7 @@ export class WebhooksService {
     const getSubscriptionUrl = `${outLookConfig.outlookWebhookRegisterEndPoint}`;
     let webhooks;
     try {
-      webhooks = await this.jiraClient.CallOutlook(
+      webhooks = await this.clientService.CallOutlook(
         userIntegration,
         this.outlookApiCalls.getOutlookWebhooks,
         getSubscriptionUrl,
@@ -116,7 +116,7 @@ export class WebhooksService {
     const deleteSubscriptionUrl = `${outLookConfig.outlookWebhookRegisterEndPoint}/${deletedWebhook?.webhookId}`;
 
     deletedWebhook &&
-      (await this.jiraClient.CallOutlook(
+      (await this.clientService.CallOutlook(
         userIntegration,
         this.outlookApiCalls.deleteOutlookWebhook,
         deleteSubscriptionUrl,
@@ -135,7 +135,7 @@ export class WebhooksService {
       });
       if (!userIntegration) return [];
       const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/webhook`;
-      const webhookJira = await this.jiraClient.CallJira(
+      const webhookJira = await this.clientService.CallJira(
         userIntegration,
         this.jiraApiCalls.getWebhookList,
         url,
@@ -318,7 +318,7 @@ export class WebhooksService {
         return false;
       }
       const eventUrl = `${outLookConfig.outlookGetEventByEventIdUrl}${eventId}`;
-      const outlookEvent = await this.jiraClient.CallOutlook(
+      const outlookEvent = await this.clientService.CallOutlook(
         userIntegration,
         this.outlookApiCalls.getOutlookEvent,
         eventUrl,
@@ -403,7 +403,7 @@ export class WebhooksService {
       }
 
       const eventUrl = `${outLookConfig.outlookGetEventByEventIdUrl}${eventId}`;
-      const outlookEvent = await this.jiraClient.CallOutlook(
+      const outlookEvent = await this.clientService.CallOutlook(
         userIntegration,
         this.outlookApiCalls.getOutlookEvent,
         eventUrl,
@@ -460,7 +460,7 @@ export class WebhooksService {
 
       const extendLifecycleUrl = `${outLookConfig.outlookWebhookRegisterEndPoint}/${payload.value[0].subscriptionId}`;
       try {
-        await this.jiraClient.CallOutlook(
+        await this.clientService.CallOutlook(
           userIntegration,
           this.outlookApiCalls.extendOutlookWebhookLifecycle,
           extendLifecycleUrl,
@@ -593,7 +593,7 @@ export class WebhooksService {
       let webhook: any;
       try {
         const webhookUrl = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/webhook`;
-        webhook = await this.jiraClient.CallJira(
+        webhook = await this.clientService.CallJira(
           userIntegration,
           this.jiraApiCalls.registerWebhook,
           webhookUrl,
@@ -672,7 +672,7 @@ export class WebhooksService {
     let webhook;
     const webhookUrl = outLookConfig.outlookWebhookRegisterEndPoint;
     try {
-      webhook = await this.jiraClient.CallOutlook(
+      webhook = await this.clientService.CallOutlook(
         userIntegration,
         this.outlookApiCalls.registerOutlookWebhook,
         webhookUrl,

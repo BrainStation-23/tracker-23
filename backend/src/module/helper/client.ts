@@ -9,9 +9,10 @@ import axios from 'axios';
 import { APIException } from '../exception/api.exception';
 import { ErrorMessage } from '../integrations/dto/get.userIntegrations.filter.dto';
 import { StatusEnum } from '../tasks/dto';
+import { azureDevConfig } from 'config/azure_dev';
 
 @Injectable()
-export class JiraClientService {
+export class ClientService {
   constructor(
     private readonly config: ConfigService,
     private httpService: HttpService,
@@ -25,7 +26,7 @@ export class JiraClientService {
   ) {
     if (userIntegration?.expiration_time.getTime() > Date.now()) {
       // console.log(
-      //   '🚀 ~ file: client.ts:22 ~ JiraClientService ~ userIntegration.expiration_time.getTime():',
+      //   '🚀 ~ file: client.ts:22 ~ ClientService ~ userIntegration.expiration_time.getTime():',
       //   userIntegration.expiration_time.getTime(),
       //   Date.now(),
       // );
@@ -39,14 +40,14 @@ export class JiraClientService {
         client_secret: this.config.get('JIRA_SECRET_KEY'),
         refresh_token: userIntegration?.refreshToken,
       };
-      // console.log('🚀 ~ file: client.ts:37 ~ JiraClientService ~ data:', data);
+      // console.log('🚀 ~ file: client.ts:37 ~ ClientService ~ data:', data);
       let tokenResp;
       try {
         tokenResp = (
           await lastValueFrom(this.httpService.post(url, data, headers))
         ).data;
       } catch (err) {
-        // console.log('🚀 ~ JiraClientService ~ err:', 'hello from inside');
+        // console.log('🚀 ~ ClientService ~ err:', 'hello from inside');
         throw new APIException(
           ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
           HttpStatus.GONE,
@@ -124,6 +125,56 @@ export class JiraClientService {
             accessToken: tokenResp.access_token,
             refreshToken: tokenResp.refresh_token,
             expiration_time: new Date(issuedTime + tokenResp.expires_in * 1000),
+          },
+        ));
+      return await apiCaller(newUserIntegration, ...rest);
+    }
+  }
+
+  async CallAzureDev(
+    userIntegration: UserIntegration,
+    apiCaller: (userIntegration: UserIntegration, ...rest: any) => Promise<any>,
+    ...rest: any
+  ) {
+    if (userIntegration?.expiration_time.getTime() > Date.now()) {
+      return await apiCaller(userIntegration, ...rest);
+    } else {
+      const url = 'https://app.vssps.visualstudio.com/oauth2/token';
+      const headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      };
+      const body = {
+        client_assertion_type: azureDevConfig.client_assertion_type,
+        client_assertion: azureDevConfig.client_assertion,
+        grant_type: azureDevConfig.grant_type,
+        assertion: userIntegration.refreshToken,
+        redirect_uri: azureDevConfig.redirect_uri,
+      };
+      // console.log('🚀 ~ file: client.ts:37 ~ ClientService ~ data:', data);
+      let tokenResp: any;
+      try {
+        tokenResp = await axios.post(url, body, {
+          headers,
+        });
+      } catch (err) {
+        // console.log('🚀 ~ ClientService ~ err:', 'hello from inside');
+        throw new APIException(
+          ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
+          HttpStatus.GONE,
+        );
+      }
+      const expires_in = 3500000;
+      const issued_time = Date.now();
+      const token_expire = issued_time + expires_in;
+
+      const newUserIntegration: any =
+        userIntegration &&
+        (await this.userIntegrationDatabase.updateUserIntegrationById(
+          userIntegration?.id,
+          {
+            accessToken: tokenResp.access_token,
+            refreshToken: tokenResp.refresh_token,
+            expiration_time: new Date(token_expire),
           },
         ));
       return await apiCaller(newUserIntegration, ...rest);
