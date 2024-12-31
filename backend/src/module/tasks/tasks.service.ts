@@ -43,6 +43,7 @@ import { SprintTaskDatabase } from 'src/database/sprintTasks';
 import {
   convertToISO,
   doesTodayTask,
+  getSpentHour,
   getYesterday,
 } from 'src/utils/helper/helper';
 import { SprintsService } from '../sprints/sprints.service';
@@ -1403,7 +1404,6 @@ export class TasksService {
     // keep the task list that doesn't exist in the database
     for (let j = 0, len = integratedTasks.length; j < len; j++) {
       const key = integratedTasks[j].integratedTaskId;
-      // Remove the task ID from taskIds if it exists
       taskIds = taskIds.filter((taskId: number) => taskId !== key);
     }
 
@@ -1432,6 +1432,9 @@ export class TasksService {
           ) || null,
         workspaceId: project.workspaceId,
         title: task.fields['System.Title'],
+        description: task.fields['System.Description']
+          ?.replace(/<\/?div>/g, '')
+          ?.trim(),
         assigneeId: task.fields['System.AssignedTo'].id,
         estimation: task.fields['Microsoft.VSTS.Scheduling.Effort'] ?? null,
         projectName: task.fields['System.TeamProject'],
@@ -1449,35 +1452,23 @@ export class TasksService {
         jiraUpdatedAt: new Date(task.fields['System.ChangedDate']),
         url: task.url.replace('/_apis/wit/workItems/', '/_workitems/edit/'),
       };
-      const estimation =
-        task.fields['Microsoft.VSTS.Scheduling.Effort'] ?? null;
-      const remainingWork =
-        task.fields['Microsoft.VSTS.Scheduling.RemainingWork'] ?? null;
+
       const startTime =
         task.fields['Microsoft.VSTS.Common.StateChangeDate'] ?? new Date();
-      let spentHour;
-      if (estimation && remainingWork) {
-        spentHour = estimation - remainingWork;
-      } else if (estimation && !remainingWork) {
-        spentHour = 0;
-      } else if (!estimation && remainingWork) {
-        spentHour = 8 - remainingWork;
-      } else {
-        spentHour = 0;
-      }
-
       if (!mappedSession.has(task.id)) {
         mappedSession.set(task.id, {
           startTime: new Date(startTime),
           endTime: new Date(
-            new Date(startTime).getTime() + spentHour * 60 * 60 * 1000,
+            new Date(startTime).getTime() +
+              getSpentHour(task.fields) * 60 * 60 * 1000,
           ),
           status: SessionStatus.STOPPED,
+          authorId: task['System.AssignedTo']?.id || null,
           userWorkspaceId:
             mappedUserWorkspaceAndJiraId.get(
               task.fields['System.AssignedTo'].id,
             ) || null,
-          integratedTaskId: Number(task.id),
+          integratedAzureTaskId: task.id,
         });
       }
       taskList.push(taskObject);
@@ -2471,7 +2462,6 @@ export class TasksService {
         this.azureDevApiCalls.azureGetApiCall,
         getStatusByProjectIdUrl,
       );
-      console.log('🚀 ~ TasksService ~ response:', response);
       const statusList = response.value.map(
         (workType: { name: any; states: { name: any; category: any }[] }) => ({
           type: workType.name,
@@ -2485,7 +2475,6 @@ export class TasksService {
           ),
         }),
       );
-      console.log('🚀 ~ TasksService ~ statusList:', statusList);
 
       const statusArray: any[] = [];
       const mappedStatuses = new Map<string, number>();

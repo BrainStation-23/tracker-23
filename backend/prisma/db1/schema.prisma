@@ -272,18 +272,19 @@ model Task {
 }
 
 model Session {
-  id                Int            @id @default(autoincrement())
-  startTime         DateTime       @default(now())
-  endTime           DateTime?
-  status            SessionStatus  @default(STARTED)
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  authorId          String?
-  integratedTaskId  Int?
-  integratedEventId String?
-  worklogId         Int?
-  userWorkspace     UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
-  userWorkspaceId   Int?
+  id                    Int            @id @default(autoincrement())
+  startTime             DateTime       @default(now())
+  endTime               DateTime?
+  status                SessionStatus  @default(STARTED)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  authorId              String?
+  integratedTaskId      Int?
+  integratedEventId     String?
+  integratedAzureTaskId Int?
+  worklogId             Int?
+  userWorkspace         UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
+  userWorkspaceId       Int?
 
   task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId Int

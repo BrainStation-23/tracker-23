@@ -135,10 +135,6 @@ export class ProjectsService {
       throw new APIException('Invalid Project Id', HttpStatus.BAD_REQUEST);
 
     const userIntegration = await this.getUserIntegration(project, user);
-    console.log(
-      '🚀 ~ ProjectsService ~ importProject ~ userIntegration:',
-      userIntegration,
-    );
     if (!userIntegration) {
       throw new APIException(
         'User Integration not found. Could not import project tasks',
@@ -205,10 +201,6 @@ export class ProjectsService {
         ),
       ]);
     } else if (project?.integration?.type === IntegrationType.AZURE_DEVOPS) {
-      console.log(
-        '🚀 ~ ProjectsService ~ project?.integration?.type:',
-        project?.integration?.type,
-      );
       await Promise.allSettled([
         await this.tasksService.setAzureDevProjectStatuses(
           project,

@@ -157,9 +157,8 @@ export class ClientService {
           headers,
         });
       } catch (err) {
-        // console.log('🚀 ~ ClientService ~ err:', 'hello from inside');
         throw new APIException(
-          ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
+          ErrorMessage.INVALID_AZURE_DEV_REFRESH_TOKEN,
           HttpStatus.GONE,
         );
       }
@@ -172,8 +171,8 @@ export class ClientService {
         (await this.userIntegrationDatabase.updateUserIntegrationById(
           userIntegration?.id,
           {
-            accessToken: tokenResp.access_token,
-            refreshToken: tokenResp.refresh_token,
+            accessToken: tokenResp.data.access_token,
+            refreshToken: tokenResp.data.refresh_token,
             expiration_time: new Date(token_expire),
           },
         ));
