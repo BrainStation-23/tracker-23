@@ -90,6 +90,7 @@ model User {
   hash                 String?
   firstName            String?
   lastName             String?
+  lastLoggedIn         DateTime?
   activeWorkspace      Workspace?      @relation(fields: [activeWorkspaceId], references: [id])
   activeWorkspaceId    Int?
   picture              String?
