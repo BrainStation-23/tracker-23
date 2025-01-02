@@ -38,7 +38,7 @@ export class AzureDevService {
 
     return `${authorizeUrl}?client_id=${clientId}&response_type=Assertion&scope=${encodeURIComponent(
       scopes,
-    )}${stateParam}&redirect_uri=${callbackUrl}`;
+    )}${stateParam}&redirect_uri=${callbackUrl}&prompt=consent`;
   }
 
   async findIntegration(dto: AuthorizeJiraDto, user: User) {
@@ -52,15 +52,22 @@ export class AzureDevService {
 
       // get access token and refresh tokens and store those on integrations table.
       const resp = await getIntegrationDetails({ code: dto?.code });
-      const accountId = await getAzureDevMemberId({
+      const account = await getAzureDevMemberId({
         access_token: resp.access_token,
       });
+      const accountId = account.id;
 
       //fetch all resources from jira
       const respResources = await getAOrganization({
         access_token: resp.access_token,
         accountId,
       });
+      if (respResources?.count === 0) {
+        throw new APIException(
+          `You have no organizations available to access with ${account.emailAddress}!`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       const integrationWithProjects: any[] = [];
       await Promise.all(
@@ -164,10 +171,6 @@ export class AzureDevService {
               const projects = await this.tasksService.fetchAllAzureDevProjects(
                 user,
                 integration,
-              );
-              console.log(
-                '🚀 ~ AzureDevService ~ respResources?.value.map ~ projects:',
-                projects,
               );
 
               integrationWithProjects.push({

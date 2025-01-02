@@ -37,7 +37,6 @@ export class AzureDevController {
   @UseGuards(JwtAuthGuard)
   @Post('authorization')
   async findIntegration(@GetUser() user: User, @Body() dto: AuthorizeJiraDto) {
-    console.log('🚀 ~ AzureDevController ~ findIntegration ~ dto:', dto);
     return this.azureDevService.findIntegration(dto, user);
   }
 
