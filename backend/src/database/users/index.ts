@@ -12,13 +12,12 @@ import { UpdateSettingsReqDto } from 'src/module/user/dto/create.settings.dto';
 export class UsersDatabase {
   constructor(private prisma: PrismaService) {}
 
-  async getTottalUsers() {
+  async getTotalUsers() {
     try {
       return await this.prisma.user.count();
     } catch (error) {
       return null;
     }
-    
   }
 
   async getTotalActiveUsers() {
@@ -27,7 +26,6 @@ export class UsersDatabase {
     } catch (error) {
       return null;
     }
-    
   }
 
   // Users logged in in the last 24 hours
@@ -43,7 +41,6 @@ export class UsersDatabase {
     } catch (error) {
       return null;
     }
-    
   }
 
   // update last logged in time
@@ -54,9 +51,8 @@ export class UsersDatabase {
         data: { lastLoggedIn: new Date() },
       });
     } catch (error) {
-      return null
+      return null;
     }
-   
   }
 
   async findUsers(user: User) {

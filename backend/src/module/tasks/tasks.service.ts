@@ -1806,8 +1806,10 @@ export class TasksService {
           integratedTaskId: true,
           projectId: true,
           statusType: true,
+          source: true,
         },
       });
+      console.log('🚀 ~ TasksService ~ updateIssueStatus ~ task:', task);
       if (task?.integratedTaskId === null) {
         const updatedTask = await this.prisma.task.update({
           where: {
@@ -1819,7 +1821,12 @@ export class TasksService {
           },
         });
         return updatedTask;
-      } else if (task && task.projectId && task.integratedTaskId) {
+      } else if (
+        task &&
+        task.projectId &&
+        task.integratedTaskId &&
+        task.source === IntegrationType.JIRA
+      ) {
         const project = await this.prisma.project.findFirst({
           where: { id: task.projectId },
           include: { integration: true },
@@ -1852,7 +1859,7 @@ export class TasksService {
           );
         const statusNames = statuses?.map((status) => status.name);
         const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}/transitions`;
-        if (statuses[0].transitionId === null) {
+        if (!statuses[0]?.transitionId) {
           const { transitions } = await this.clientService.CallJira(
             userIntegration,
             this.jiraApiCalls.getTransitions,
@@ -1875,10 +1882,13 @@ export class TasksService {
           }
         }
 
-        const statusDetails = await this.prisma.statusDetail.findFirst({
+        const statusDetails = await this.prisma.statusDetail.findUnique({
           where: {
-            projectId: task?.projectId,
-            name: status,
+            StatusDetailIdentifier: {
+              name: status,
+              projectId: task.projectId,
+              type: task.statusType!,
+            },
           },
         });
 
