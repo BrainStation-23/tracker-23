@@ -12,6 +12,7 @@ import { AuthService } from '../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { EmailService } from '../email/email.service';
 import { UsersDatabase } from 'src/database/users';
+import { AzureDevApiCalls } from 'src/utils/azureDevApiCall/api';
 
 @Module({
   imports: [
@@ -30,8 +31,9 @@ import { UsersDatabase } from 'src/database/users';
     JwtService,
     EmailService,
     UsersDatabase,
+    AzureDevApiCalls,
   ],
   controllers: [],
-  exports: [WorkerService, TasksDatabase],
+  exports: [WorkerService],
 })
 export class WorkerModule {}

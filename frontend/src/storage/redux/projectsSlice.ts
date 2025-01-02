@@ -5,6 +5,7 @@ import { PriorityDto } from "models/projects";
 import { SprintDto, StatusDto } from "models/tasks";
 
 export interface ProjectStatus {
+  type: any;
   id: string;
   name: string;
   untranslatedName: string;
@@ -31,6 +32,7 @@ export interface Project {
   integrationType: IntegrationType;
 }
 export interface StatusType {
+  type: any;
   name: string;
   statusCategoryName: StatusDto;
 }
@@ -74,6 +76,7 @@ const projectsSlice = createSlice({
             statusCategoryName: status.statusCategoryName
               .replace(" ", "_")
               .toUpperCase() as StatusDto,
+            type: status.type
           };
           if (!tmpArray.find((item) => isSame(tmpStatus, item)))
             tmpArray.push(tmpStatus);
@@ -95,6 +98,7 @@ const projectsSlice = createSlice({
             statusCategoryName: status.statusCategoryName
               .replace(" ", "_")
               .toUpperCase() as StatusDto,
+              type: status.type
           };
           if (!tmpArray.find((item) => isSame(tmpStatus, item)))
             tmpArray.push(tmpStatus);
@@ -118,6 +122,7 @@ const projectsSlice = createSlice({
           statusCategoryName: status.statusCategoryName
             .replace(" ", "_")
             .toUpperCase() as StatusDto,
+            type: status.type
         })
       );
 

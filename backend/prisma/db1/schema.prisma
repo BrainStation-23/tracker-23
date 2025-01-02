@@ -90,6 +90,7 @@ model User {
   hash                 String?
   firstName            String?
   lastName             String?
+  lastLoggedIn         DateTime?
   activeWorkspace      Workspace?      @relation(fields: [activeWorkspaceId], references: [id])
   activeWorkspaceId    Int?
   picture              String?
@@ -188,18 +189,18 @@ model TempIntegration {
 }
 
 model Project {
-  id          Int              @id @default(autoincrement())
-  projectId   Int?
-  calendarId  String?
+  id             Int              @id @default(autoincrement())
+  projectId      Int?
+  calendarId     String?
   azureProjectId String?
-  projectName String?
-  projectKey  String?
-  source      String
-  integrated  Boolean          @default(false)
-  statuses    StatusDetail[]
-  tasks       Task[]
-  sprints     Sprint[]
-  priorities  PriorityScheme[]
+  projectName    String?
+  projectKey     String?
+  source         String
+  integrated     Boolean          @default(false)
+  statuses       StatusDetail[]
+  tasks          Task[]
+  sprints        Sprint[]
+  priorities     PriorityScheme[]
 
   integration     Integration? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
   integrationId   Int?
@@ -219,22 +220,24 @@ model StatusDetail {
   statusCategoryId   String?
   statusCategoryName String
   transitionId       String?
+  type               String? @default("Task")
+  projects           Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId          Int
 
-  projects  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId Int
-
-  @@unique([name, projectId], name: "StatusDetailIdentifier")
+  @@unique([name, type, projectId], name: "StatusDetailIdentifier")
 }
 
 model Task {
   id                   Int             @id @default(autoincrement())
   title                String
   description          String?
+  spentHours           Float?
   assigneeId           String?
   projectName          String?
   estimation           Float?
   status               String?         @default("To Do")
   statusCategoryName   String?         @default("TO_DO")
+  statusType           String?         @default("Task")
   due                  DateTime?
   priority             String?         @default("MEDIUM")
   priorityCategoryName String?         @default("MEDIUM")
@@ -270,18 +273,19 @@ model Task {
 }
 
 model Session {
-  id                Int            @id @default(autoincrement())
-  startTime         DateTime       @default(now())
-  endTime           DateTime?
-  status            SessionStatus  @default(STARTED)
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  authorId          String?
-  integratedTaskId  Int?
-  integratedEventId String?
-  worklogId         Int?
-  userWorkspace     UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
-  userWorkspaceId   Int?
+  id                    Int            @id @default(autoincrement())
+  startTime             DateTime       @default(now())
+  endTime               DateTime?
+  status                SessionStatus  @default(STARTED)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  authorId              String?
+  integratedTaskId      Int?
+  integratedEventId     String?
+  integratedAzureTaskId Int?
+  worklogId             Int?
+  userWorkspace         UserWorkspace? @relation(fields: [userWorkspaceId], references: [id])
+  userWorkspaceId       Int?
 
   task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId Int
@@ -322,6 +326,7 @@ model Sprint {
   endDate      DateTime?
   completeDate DateTime?
   Task         Task[]
+
   @@unique([jiraSprintId, projectId], name: "sprintIdentifier")
 }
 
