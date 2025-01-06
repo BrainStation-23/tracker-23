@@ -1809,7 +1809,6 @@ export class TasksService {
           source: true,
         },
       });
-      console.log('🚀 ~ TasksService ~ updateIssueStatus ~ task:', task);
       if (task?.integratedTaskId === null) {
         const updatedTask = await this.prisma.task.update({
           where: {
@@ -1831,8 +1830,7 @@ export class TasksService {
           where: { id: task.projectId },
           include: { integration: true },
         });
-        if (!project)
-          throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+        if (!project) throw new Error('Invalid Project');
 
         const userIntegration =
           project?.integrationId &&
@@ -1852,11 +1850,7 @@ export class TasksService {
               },
             })
           : [];
-        if (!userIntegration)
-          throw new APIException(
-            'User integration not found!',
-            HttpStatus.BAD_REQUEST,
-          );
+        if (!userIntegration) throw new Error('User integration not found!');
         const statusNames = statuses?.map((status) => status.name);
         const url = `https://api.atlassian.com/ex/jira/${userIntegration?.siteId}/rest/api/3/issue/${task?.integratedTaskId}/transitions`;
         if (!statuses[0]?.transitionId) {
@@ -1915,16 +1909,16 @@ export class TasksService {
             },
           }));
         if (!updatedTask) {
-          throw new APIException(
-            'Can not update issue status 1',
-            HttpStatus.BAD_REQUEST,
-          );
+          throw new Error('Can not update issue status');
         }
         return updatedTask;
       } else
-        throw new APIException('Something went wrong!', HttpStatus.BAD_REQUEST);
+        throw new Error('Status updates are not available for Azure DevOps.!');
     } catch (err) {
-      throw err;
+      throw new APIException(
+        err.message || 'Could not update task status!',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 

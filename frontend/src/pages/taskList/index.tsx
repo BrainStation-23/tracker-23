@@ -180,7 +180,8 @@ const TasksPage = () => {
       setRunningTask({ ...task });
       session && message.success("Session Started");
       setReload(!reload);
-    } else message.error("Session Start Failed");
+    } 
+    // else message.error("Session Start Failed");
   };
   const handleAddManualSession = (task: TaskDto, session: any) => {
     if (session) {

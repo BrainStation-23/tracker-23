@@ -304,10 +304,13 @@ export class TasksDatabase {
     }
   }
 
-  async getTaskbyId(taskId: number) {
+  async getTaskById(taskId: number) {
     try {
       return await this.prisma.task.findUnique({
         where: { id: taskId },
+        include: {
+          project: true,
+        },
       });
     } catch (error) {
       console.log(error);
