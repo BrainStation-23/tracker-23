@@ -34,7 +34,7 @@ jobs:
           cd prisma/db1/
           npx prisma generate
           cd ../../
-          yarn build --if-present
+          yarn build
         env:
           DATABASE_URL: "postgres://gwfhbaxioo:4OLB4578A2NE512I$@tracker23-backend-server.postgres.database.azure.com:5432/tracker23-backend-database"
         # npm run test -- --passWithNoTests
