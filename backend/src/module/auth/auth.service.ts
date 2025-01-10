@@ -68,6 +68,7 @@ export class AuthService {
         hash: await argon.hash(dto?.password),
         status: UserStatus.ONBOARD,
         onboadingSteps: [...this.onboadingSteps],
+        lastLoggedIn: new Date(),
       });
 
       const workspace =
@@ -224,6 +225,8 @@ export class AuthService {
     }
 
     const token = await this.createToken(user, dto.remember);
+    // update last logged in time
+    await this.usersDatabase.updateLastLoggedIn(user.id);
     return {
       id: user.id,
       email: user.email,
@@ -281,13 +284,15 @@ export class AuthService {
             doesExist.workspaceId &&
             (await this.usersDatabase.updateUser(oldUser, {
               activeWorkspaceId: doesExist.workspaceId,
+              lastLoggedIn: new Date(),
             }));
-          if (!updatedOldUser)
+
+          if (!updatedOldUser){
             throw new APIException(
               'Could not create user',
               HttpStatus.INTERNAL_SERVER_ERROR,
             );
-
+          }
           return await this.getFormattedUserData(updatedOldUser);
         }
 
@@ -305,6 +310,7 @@ export class AuthService {
             },
             data: {
               activeWorkspaceId: workspace.id,
+              lastLoggedIn: new Date(),
             },
           }));
         const updatedUser =
@@ -312,6 +318,7 @@ export class AuthService {
         return updatedUser;
       }
 
+      await this.usersDatabase.updateLastLoggedIn(oldUser.id);
       return await this.getFormattedUserData(oldUser);
     }
 
@@ -323,7 +330,6 @@ export class AuthService {
         'Could not create user',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-
     const workspace =
       user &&
       user.firstName &&
@@ -342,6 +348,7 @@ export class AuthService {
       ? user
       : await this.usersDatabase.updateUser(user, {
           activeWorkspaceId: workspace.id,
+          lastLoggedIn: new Date(),
         });
     if (!updateUser)
       throw new APIException(
@@ -515,6 +522,7 @@ export class AuthService {
         hash: await argon.hash(data?.password),
         firstName: data?.firstName,
         onboadingSteps: [...this.onboadingSteps],
+        lastLoggedIn: new Date(),
         status: UserStatus.ACTIVE,
         ...(data?.lastName && { lastName: data?.lastName }),
       },
@@ -625,6 +633,7 @@ export class AuthService {
       { id: user?.id },
       {
         activeWorkspaceId: updatedUserWorkspace?.workspaceId,
+        lastLoggedIn: new Date(),
       },
     );
 

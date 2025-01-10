@@ -355,6 +355,73 @@ export class SprintsService {
     return projectIds;
   }
 
+  async getAzureDevProjectIds(user: User): Promise<number[] | []> {
+    if (!user.activeWorkspaceId) {
+      throw new APIException(
+        'user workspace not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const userIntegrations =
+      await this.integrationsService.getUserIntegrationsByRole(user);
+    const integrationIds: any[] = [];
+    const projectIds: any[] = [];
+
+    for (let i = 0, len = userIntegrations.length; i < len; i++) {
+      const userIntegration = userIntegrations[i];
+      if (userIntegration.integration?.type === IntegrationType.AZURE_DEVOPS)
+        integrationIds.push(userIntegrations[i].integrationId);
+    }
+
+    const projects = await this.projectDatabase.getProjects({
+      integrated: true,
+      workspaceId: user.activeWorkspaceId,
+      integration: {
+        type: IntegrationType.AZURE_DEVOPS,
+      },
+      integrationId: { in: integrationIds },
+    });
+
+    for (let i = 0, len = projects.length; i < len; i++) {
+      projectIds.push(projects[i].id);
+    }
+
+    return projectIds;
+  }
+  async getAzureDevOpsProjectIds(user: User): Promise<number[] | []> {
+    if (!user.activeWorkspaceId) {
+      throw new APIException(
+        'user workspace not found',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const userIntegrations =
+      await this.integrationsService.getUserIntegrationsByRole(user);
+    const integrationIds: any[] = [];
+    const projectIds: any[] = [];
+
+    for (let i = 0, len = userIntegrations.length; i < len; i++) {
+      integrationIds.push(userIntegrations[i].integrationId);
+    }
+
+    const projects = await this.projectDatabase.getProjects({
+      integrated: true,
+      workspaceId: user.activeWorkspaceId,
+      integration: {
+        type: IntegrationType.AZURE_DEVOPS,
+      },
+      integrationId: { in: integrationIds },
+    });
+
+    for (let i = 0, len = projects.length; i < len; i++) {
+      projectIds.push(projects[i].id);
+    }
+
+    return projectIds;
+  }
+
   async sprintView(user: User, query: SprintViewReqBodyDto) {
     if (
       (!query.projectIds || query.projectIds.length === 0) &&

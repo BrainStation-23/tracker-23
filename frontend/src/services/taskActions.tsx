@@ -73,6 +73,7 @@ export const getProjectStatusList = (
         return {
           name: status.name,
           statusCategoryName: status.statusCategoryName as StatusDto,
+          type: status.type
         };
       });
       return tmpArray.sort((a, b) => {

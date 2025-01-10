@@ -74,6 +74,18 @@ const ReportConfigDescription = ({
     setSprintName(truncateName(getSprintName()));
   }, [sprintData, reportData, getSprintName]);
 
+  useEffect(() => {
+    if (reportData?.config?.filterDateType) {
+      if (reportData.config.filterDateType === "CUSTOM_DATE") {
+        setSelectedDate(reportData.config.startDate);
+      } else {
+        setSelectedDate(getDate(reportData.config.filterDateType));
+      }
+    } else {
+      setSelectedDate(getDate("today"));
+    }
+  }, [reportData]);
+
   return (
     <div className="flex flex-wrap items-center justify-start gap-4">
       {reportData?.config?.startDate && reportData?.config?.endDate && (

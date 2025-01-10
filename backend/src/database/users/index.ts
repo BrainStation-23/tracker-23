@@ -12,6 +12,49 @@ import { UpdateSettingsReqDto } from 'src/module/user/dto/create.settings.dto';
 export class UsersDatabase {
   constructor(private prisma: PrismaService) {}
 
+  async getTotalUsers() {
+    try {
+      return await this.prisma.user.count();
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async getTotalActiveUsers() {
+    try {
+      return await this.prisma.user.count({ where: { status: 'ACTIVE' } });
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // Users logged in in the last 24 hours
+  async findUsersLoggedInLast24Hours() {
+    try {
+      return await this.prisma.user.count({
+        where: {
+          lastLoggedIn: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+          },
+        },
+      });
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // update last logged in time
+  async updateLastLoggedIn(userId: number) {
+    try {
+      return await this.prisma.user.update({
+        where: { id: userId },
+        data: { lastLoggedIn: new Date() },
+      });
+    } catch (error) {
+      return null;
+    }
+  }
+
   async findUsers(user: User) {
     try {
       const workspace =
@@ -263,6 +306,7 @@ export class UsersDatabase {
         ...data,
         onboadingSteps: [...onboadingSteps],
         status: UserStatus.ONBOARD,
+        lastLoggedIn: new Date(),
       };
       return await this.prisma.user.create({
         data: newModifiedData,
@@ -275,6 +319,7 @@ export class UsersDatabase {
           activeWorkspaceId: true,
           approved: true,
           status: true,
+          lastLoggedIn: true,
         },
       });
     } catch (error) {
@@ -304,6 +349,7 @@ export class UsersDatabase {
         ...data,
         onboadingSteps: [...onboadingSteps],
         status: UserStatus.ACTIVE,
+        lastLoggedIn: new Date(),
       };
       return await this.prisma.user.update({
         where: {

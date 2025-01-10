@@ -60,31 +60,38 @@ export class SessionsService {
   }
 
   async createSession(user: User, dto: SessionDto) {
-    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace) {
+    try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new Error('UserWorkspace not found!');
+      }
+
+      const task = await this.validateTaskAccess(user, dto.taskId);
+      if (task.source === IntegrationType.AZURE_DEVOPS) {
+        throw new Error('Time entry is not supported to Azure DevOps yet!');
+      }
+      await this.sessionDatabase.updateTask(
+        { id: dto.taskId },
+        { status: 'In Progress', statusCategoryName: 'IN_PROGRESS' },
+      );
+
+      // Checking for previous active session
+      const activeSession = await this.sessionDatabase.getSession(dto.taskId);
+
+      if (activeSession) {
+        await this.stopSession(user, activeSession.taskId);
+      }
+
+      return await this.sessionDatabase.createSession({
+        ...dto,
+        userWorkspaceId: userWorkspace.id,
+      });
+    } catch (err) {
       throw new APIException(
-        'UserWorkspace not found!',
+        err.message || 'Could not start task session!',
         HttpStatus.BAD_REQUEST,
       );
     }
-
-    await this.validateTaskAccess(user, dto.taskId);
-    await this.sessionDatabase.updateTask(
-      { id: dto.taskId },
-      { status: 'In Progress', statusCategoryName: 'IN_PROGRESS' },
-    );
-
-    // Checking for previous active session
-    const activeSession = await this.sessionDatabase.getSession(dto.taskId);
-
-    if (activeSession) {
-      await this.stopSession(user, activeSession.taskId);
-    }
-
-    return await this.sessionDatabase.createSession({
-      ...dto,
-      userWorkspaceId: userWorkspace.id,
-    });
   }
 
   async stopSession(user: User, taskId: number) {
@@ -155,23 +162,23 @@ export class SessionsService {
   }
 
   async validateTaskAccess(user: User, taskId: number) {
-    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace) {
+    try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new Error('User workspace not found');
+      }
+
+      const task = await this.tasksDatabase.getTaskById(taskId);
+      if (!task || task.userWorkspaceId !== userWorkspace.id) {
+        throw new Error('You do not have access to this task');
+      }
+      return task;
+    } catch (err) {
       throw new APIException(
-        'User workspace not found',
+        err.message || 'Could not access to this task',
         HttpStatus.BAD_REQUEST,
       );
     }
-    const task = await this.tasksDatabase.getTaskbyId(taskId);
-
-    if (!task) {
-      throw new BadRequestException('Task not found');
-    }
-    //have to think about it
-    if (task.userWorkspaceId !== userWorkspace.id) {
-      throw new UnauthorizedException('You do not have access to this task');
-    }
-    return task;
   }
 
   async stopSessionUtil(sessionId: number) {
@@ -282,98 +289,85 @@ export class SessionsService {
   }
 
   async manualTimeEntry(user: User, dto: ManualTimeEntryReqBody) {
-    const userWorkspace = await this.workspacesService.getUserWorkspace(user);
-    if (!userWorkspace) {
-      throw new APIException(
-        'UserWorkspace not found!',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const startTime = new Date(`${dto.startTime}`);
-    const endTime = new Date(`${dto.endTime}`);
-
-    const { integratedTaskId, id, projectId } = await this.validateTaskAccess(
-      user,
-      dto.taskId,
-    );
-
-    const timeSpent = Math.floor(
-      (endTime.getTime() - startTime.getTime()) / 1000,
-    );
-    if (timeSpent < 60) {
-      throw new APIException('Insufficient TimeSpent', HttpStatus.BAD_REQUEST);
-    }
-
-    let jiraSession: any;
-    let updated_integration: any;
-
-    if (integratedTaskId) {
-      const getUserIntegrationList =
-        await this.integrationsService.getUserIntegrations(user);
-
-      const project =
-        projectId &&
-        (await this.projectDatabase.getProjectWithRes(
-          { id: projectId },
-          { integration: true },
-        ));
-
-      if (!project) {
-        throw new APIException('Invalid Project', HttpStatus.BAD_REQUEST);
+    try {
+      const userWorkspace = await this.workspacesService.getUserWorkspace(user);
+      if (!userWorkspace) {
+        throw new Error('UserWorkspace not found!');
       }
 
-      const userIntegration: number[] = [];
-      getUserIntegrationList.map((userInt: any) => {
-        if (
-          project.integrationId &&
-          userInt.integrationId === project.integrationId
-        ) {
-          userIntegration.push(userInt.id);
-        }
-      });
+      let jiraSession: any;
+      let updated_integration: any;
+      const startTime = new Date(`${dto.startTime}`);
+      const endTime = new Date(`${dto.endTime}`);
+      const task = await this.validateTaskAccess(user, dto.taskId);
+      const project = task?.project;
 
-      updated_integration =
-        userIntegration.length &&
-        (await this.integrationsService.getUpdatedUserIntegration(
-          user,
-          userIntegration[0],
-        ));
-      if (updated_integration)
-        jiraSession = await this.addWorkLog(
-          startTime,
-          integratedTaskId as unknown as string,
-          this.timeConverter(Number(timeSpent)),
-          updated_integration,
+      if (!project) {
+        throw new Error('Could not find project of this task!');
+      } else if (task.source === IntegrationType.AZURE_DEVOPS) {
+        throw new Error(
+          'Manual time entry to Azure DevOps is not supported yet.',
         );
+      }
 
-      jiraSession && this.updateTaskUpdatedAt(dto.taskId);
-    }
-    if (id) {
-      const createdSession = await this.sessionDatabase.createSession({
-        startTime: startTime,
-        endTime: endTime,
-        status: SessionStatus.STOPPED,
-        taskId: id,
-        authorId: updated_integration?.jiraAccountId
-          ? updated_integration?.jiraAccountId
-          : null,
-        integratedTaskId: jiraSession ? Number(jiraSession.issueId) : null,
-        worklogId: jiraSession ? Number(jiraSession.id) : null,
-        userWorkspaceId: userWorkspace.id,
-      });
+      const timeSpent = Math.floor(
+        (endTime.getTime() - startTime.getTime()) / 1000,
+      );
+      if (timeSpent < 60) {
+        throw new Error('Insufficient Spent Time!');
+      }
 
-      if (!createdSession)
-        throw new APIException(
-          'Could not create session',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+      if (task?.integratedTaskId) {
+        const getUserIntegrationList =
+          await this.integrationsService.getUserIntegrations(user);
 
-      return createdSession;
-    } else {
+        const userIntegration: number[] = [];
+        getUserIntegrationList.map((userInt: any) => {
+          if (
+            project.integrationId &&
+            userInt.integrationId === project.integrationId
+          ) {
+            userIntegration.push(userInt.id);
+          }
+        });
+
+        updated_integration =
+          userIntegration.length &&
+          (await this.integrationsService.getUpdatedUserIntegration(
+            user,
+            userIntegration[0],
+          ));
+        if (updated_integration)
+          jiraSession = await this.addWorkLog(
+            startTime,
+            task.integratedTaskId as unknown as string,
+            this.timeConverter(Number(timeSpent)),
+            updated_integration,
+          );
+
+        jiraSession && this.updateTaskUpdatedAt(dto.taskId);
+      }
+      if (task.id) {
+        const createdSession = await this.sessionDatabase.createSession({
+          startTime: startTime,
+          endTime: endTime,
+          status: SessionStatus.STOPPED,
+          taskId: task.id,
+          authorId: updated_integration?.jiraAccountId
+            ? updated_integration?.jiraAccountId
+            : null,
+          integratedTaskId: jiraSession ? Number(jiraSession.issueId) : null,
+          worklogId: jiraSession ? Number(jiraSession.id) : null,
+          userWorkspaceId: userWorkspace.id,
+        });
+
+        if (!createdSession) throw new Error('Could not create session');
+        return createdSession;
+      }
+    } catch (err) {
       throw new APIException(
-        'Something is wrong in manual time entry',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        err.message || 'Something is wrong in manual time entry',
+        HttpStatus.BAD_REQUEST,
       );
     }
   }

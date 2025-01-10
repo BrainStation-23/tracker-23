@@ -5,7 +5,6 @@ export const getIntegrationDetails = async (params: { code: string }) => {
   try {
     const { code } = params;
     const url = 'https://app.vssps.visualstudio.com/oauth2/token';
-    console.log('🚀 ~ getIntegrationDetails ~ url:', url);
     const headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
     };
@@ -36,7 +35,7 @@ export const getAzureDevMemberId = async (params: { access_token: string }) => {
     const response = await axios.get(url, {
       headers,
     });
-    return response.data.id;
+    return response.data;
   } catch (err) {
     return '';
   }

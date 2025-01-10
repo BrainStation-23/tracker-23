@@ -62,7 +62,7 @@ const TaskListReportSettings = ({ reportData }: Props) => {
       projectIds: projects,
       calendarIds,
       userIds: selectedUser ? [selectedUser] : [],
-      types: selectedSource,
+      // types: selectedSource,
       filterDateType,
       ...(extraData ?? {}),
     });

@@ -1,6 +1,7 @@
 import { UserStatus } from '@prisma/client';
 import {
   IsArray,
+  IsDate,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -67,6 +68,10 @@ export class CreateUserData {
   @IsOptional()
   @IsString()
   status: UserStatus;
+
+  @IsOptional()
+  @IsDate()
+  lastLoggedIn: Date;
 
   @IsOptional()
   @IsArray()

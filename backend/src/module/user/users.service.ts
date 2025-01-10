@@ -38,6 +38,35 @@ export class UsersService {
 
     return await this.usersDatabase.findUsers(user);
   }
+  async getStatistics(token: string) {
+    const hardCodedToken =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9qZWN0TmFtZSI6IlRyYWNrZXItMjMiLCJvd25lck5hbWUiOiJTdWRpcHRvIEdob3NoIiwiaWF0IjoxNTE2MjM5MDIyfQ.8xFOck39dRi37Ue8_cM6PLUcFdWsKzcGjZZxKB_j6EI';
+    if (token !== hardCodedToken) {
+      throw new APIException('You are not authorized', HttpStatus.FORBIDDEN);
+    }
+
+    const [
+      totalUsers,
+      activeUsers,
+      totalWorkspaces,
+      userCountsPerWorkspace,
+      usersLoggedInLast24Hrs,
+    ] = await Promise.all([
+      this.usersDatabase.getTotalUsers(),
+      this.usersDatabase.getTotalActiveUsers(),
+      this.workspacesService.getTottalWorkSpaces(),
+      this.workspacesService.countUsersInWorkspaces(), // Total users under each workspace
+      this.usersDatabase.findUsersLoggedInLast24Hours(), // Users logged in in the last 24 hours
+    ]);
+
+    return {
+      totalUsers,
+      activeUsers,
+      totalWorkspaces,
+      userCountsPerWorkspace,
+      usersLoggedInLast24Hrs,
+    };
+  }
 
   async updateRole(user: User, userId: number, role: Role) {
     if (!user || !user.activeWorkspaceId)
