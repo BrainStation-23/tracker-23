@@ -74,3 +74,33 @@ export function doesTodayTask(
 
   return false;
 }
+
+export function formattedDate(syncDateTime: Date | null | undefined): string {
+  let startDate;
+  if (syncDateTime) {
+    startDate = new Date(syncDateTime).toISOString();
+  } else {
+    startDate = new Date().toISOString();
+  }
+  const date = new Date(startDate);
+  const pad = (num: any) => num.toString().padStart(2, '0');
+  return (
+    `${pad(date.getMonth() + 1)}/${pad(
+      date.getDate(),
+    )}/${date.getFullYear()} ` + `00:00:00Z`
+  );
+}
+
+export function getSpentHour(task: any) {
+  const estimation = task['Microsoft.VSTS.Scheduling.Effort'] ?? null;
+  const remainingWork = task['Microsoft.VSTS.Scheduling.RemainingWork'] ?? null;
+  if (estimation && remainingWork) {
+    return estimation - remainingWork;
+  } else if (estimation && !remainingWork) {
+    return 0;
+  } else if (!estimation && remainingWork) {
+    return 8 - remainingWork;
+  } else {
+    return 0;
+  }
+}

@@ -26,6 +26,7 @@ const StatusDropdownComponent = ({
   const [dropDownOpen, setDropdownOpen] = useState(false);
 
   const [status, setStatus] = useState(selectedStatus);
+  
   const projects = useAppSelector(
     (state: RootState) => state.projectList.projects
   );
@@ -34,6 +35,7 @@ const StatusDropdownComponent = ({
     projects,
     task.projectId ? task.projectId : 0
   );
+  
   const statusComponent = (status: StatusType, selectedStatus: StatusType) => {
     return {
       key: `${Math.random()}`,
@@ -72,14 +74,15 @@ const StatusDropdownComponent = ({
       ),
     };
   };
-  const items: MenuProps["items"] = statuses?.map((status) =>
-    statusComponent(status, selectedStatus)
-  );
+  const items: MenuProps["items"] = statuses?.map((stat) =>
+    stat.type.toLowerCase() === selectedStatus.type.toLowerCase()
+      ? statusComponent(stat, selectedStatus)
+      : null
+  ).filter(Boolean);
   const menuProps = {
     items,
     // onClick: () => {},
   };
-
   const updateStatus = async (value: StatusType) => {
     if (status !== value && value !== selectedStatus) {
       setStatus(value);

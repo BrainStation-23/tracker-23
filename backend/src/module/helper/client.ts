@@ -25,11 +25,6 @@ export class ClientService {
     ...rest: any
   ) {
     if (userIntegration?.expiration_time.getTime() > Date.now()) {
-      // console.log(
-      //   '🚀 ~ file: client.ts:22 ~ ClientService ~ userIntegration.expiration_time.getTime():',
-      //   userIntegration.expiration_time.getTime(),
-      //   Date.now(),
-      // );
       return await apiCaller(userIntegration, ...rest);
     } else {
       const url = 'https://auth.atlassian.com/oauth/token';
@@ -40,14 +35,12 @@ export class ClientService {
         client_secret: this.config.get('JIRA_SECRET_KEY'),
         refresh_token: userIntegration?.refreshToken,
       };
-      // console.log('🚀 ~ file: client.ts:37 ~ ClientService ~ data:', data);
       let tokenResp;
       try {
         tokenResp = (
           await lastValueFrom(this.httpService.post(url, data, headers))
         ).data;
       } catch (err) {
-        // console.log('🚀 ~ ClientService ~ err:', 'hello from inside');
         throw new APIException(
           ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
           HttpStatus.GONE,
@@ -146,7 +139,7 @@ export class ClientService {
       const body = {
         client_assertion_type: azureDevConfig.client_assertion_type,
         client_assertion: azureDevConfig.client_assertion,
-        grant_type: azureDevConfig.grant_type,
+        grant_type: 'refresh_token',
         assertion: userIntegration.refreshToken,
         redirect_uri: azureDevConfig.redirect_uri,
       };
@@ -157,9 +150,8 @@ export class ClientService {
           headers,
         });
       } catch (err) {
-        // console.log('🚀 ~ ClientService ~ err:', 'hello from inside');
         throw new APIException(
-          ErrorMessage.INVALID_JIRA_REFRESH_TOKEN,
+          ErrorMessage.INVALID_AZURE_DEV_REFRESH_TOKEN,
           HttpStatus.GONE,
         );
       }
@@ -172,8 +164,8 @@ export class ClientService {
         (await this.userIntegrationDatabase.updateUserIntegrationById(
           userIntegration?.id,
           {
-            accessToken: tokenResp.access_token,
-            refreshToken: tokenResp.refresh_token,
+            accessToken: tokenResp.data.access_token,
+            refreshToken: tokenResp.data.refresh_token,
             expiration_time: new Date(token_expire),
           },
         ));

@@ -512,7 +512,7 @@ export class ExportService {
           userWorkspaceIds.length > 0
             ? { in: userWorkspaceIds }
             : currentUserWorkspace?.id,
-        source: IntegrationType.JIRA,
+        // source: IntegrationType.JIRA,
         ...(projectIdArray && {
           projectId: { in: projectIdArray.map((id) => Number(id)) },
         }),
